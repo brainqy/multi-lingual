@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, Mic, FileText, Users2, CalendarDays, Rss, BookOpen, Calendar, Lightbulb, Image, Gamepad2, ClipboardList, ListOrdered, Briefcase, Target, Trophy, Video, Files, UserCircle } from "lucide-react";
+import { LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, Mic, FileText, Users2, CalendarDays, Rss, Mail, BookOpen, Calendar, Lightbulb, Image, Gamepad2, ClipboardList, ListOrdered, Briefcase, Target, Trophy, Video, Files, UserCircle, MessageSquare } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 import {
