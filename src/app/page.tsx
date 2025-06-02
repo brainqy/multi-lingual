@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -12,7 +13,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace('/dashboard'); // Next.js maps this to /(app)/dashboard
     }
   }, [isAuthenticated, isLoading, router]);
 

@@ -1,9 +1,11 @@
+
 "use client";
 
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { BookText, Languages, Globe } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -76,5 +78,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Already imported by MetricCard but good for explicitness here

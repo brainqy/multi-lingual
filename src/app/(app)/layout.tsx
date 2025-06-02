@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from "react";
@@ -9,7 +10,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function AppGroupLayout({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 

@@ -1,3 +1,4 @@
+
 // src/contexts/auth-provider.tsx
 "use client";
 
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const loggedInUser: User = { id: Date.now().toString(), email, name: name || email.split('@')[0], role };
     setUser(loggedInUser);
     localStorage.setItem('bhashaSetuUser', JSON.stringify(loggedInUser));
-    router.push('/dashboard');
+    router.push('/dashboard'); // Next.js maps this to /(app)/dashboard
   }, [router]);
 
   const logout = useCallback(() => {
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const newUser: User = { id: Date.now().toString(), email, name, role };
     setUser(newUser);
     localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
-    router.push('/dashboard');
+    router.push('/dashboard'); // Next.js maps this to /(app)/dashboard
   }, [router]);
 
   const isAuthenticated = !!user;
