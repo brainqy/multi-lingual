@@ -1,3 +1,4 @@
+
 {
   "appName": "Bhasha Setu",
   "login": {
@@ -65,5 +66,18 @@
   "validation": {
     "required": "This field is required.",
     "email": "Invalid email address."
+  },
+  "landingPage": {
+    "subtitle": "Your Gateway to Multilingual Communication",
+    "description": "Experience seamless translation and content management across multiple languages. Join our community and bridge language barriers.",
+    "exploreDashboard": "Explore Dashboard",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "localizedPage": {
+    "title": "Localized Content Area",
+    "greeting": "Welcome to the page for locale:",
+    "description": "This page demonstrates content that could be specific to the selected language path. The actual language displayed depends on the i18n context, which can be changed via the language switcher.",
+    "backHome": "Back to Main Home"
   }
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,8 +41,7 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, add password handling. Here, we simulate login.
-    login(values.email, values.email.split('@')[0], 'user'); // Default role user for demo
+    login(values.email, values.email.split('@')[0], 'user'); 
   }
 
   return (
@@ -102,7 +102,7 @@ export function LoginForm() {
         </Form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t("login.signupPrompt")}{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          <Link href="/auth/signup" className="font-medium text-primary hover:underline">
             {t("login.signupLink")}
           </Link>
         </p>

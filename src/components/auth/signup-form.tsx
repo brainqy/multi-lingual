@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +31,7 @@ export function SignupForm() {
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     email: z.string().email({ message: t("validation.email") }),
-    password: z.string().min(1, { message: t("validation.required") }), // Add more password validation in real app
+    password: z.string().min(1, { message: t("validation.required") }), 
     role: z.enum(["user", "admin"]),
   });
 
@@ -146,7 +147,7 @@ export function SignupForm() {
         </Form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t("signup.loginPrompt")}{" "}
-          <Link href="/" className="font-medium text-primary hover:underline">
+          <Link href="/auth/login" className="font-medium text-primary hover:underline">
             {t("signup.loginLink")}
           </Link>
         </p>

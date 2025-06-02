@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, Mic, FileText, Users2, CalendarDays, Rss, Mail, BookOpen, Calendar, Lightbulb, Image, Gamepad2, ClipboardList, ListOrdered, Briefcase, Target, Trophy, Video, Files, UserCircle, MessageSquare } from "lucide-react";
+import { LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, Mic, FileText, Users2, CalendarDays, Rss, Mail, BookOpen, Calendar, Lightbulb, Image as ImageIcon, Gamepad2, ClipboardList, ListOrdered, Briefcase, Target, Trophy, Video, Files, UserCircle, MessageSquare, Gift, FileSearch, FilePlus2, History, LayoutGrid, Wallet } from "lucide-react"; // Added new icons
 import { useI18n } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -14,14 +14,13 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  ScrollArea, // Assuming ScrollArea is available or part of Sidebar
 } from "@/components/ui/sidebar"; 
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
 
-  // Existing main navigation items
   const mainMenuItems = [
     {
       href: "/dashboard",
@@ -29,18 +28,17 @@ export function AppSidebar() {
       icon: LayoutDashboard,
     },
     {
-      href: "/translate", // Updated path
+      href: "/translate", 
       label: t("dashboard.navigation.translate"),
       icon: MessageSquareText,
     },
     {
-      href: "/settings", // Updated path
+      href: "/settings", 
       label: t("dashboard.navigation.settings"),
       icon: Settings,
     },
   ];
 
-  // New feature navigation items
   const featureMenuItems = [
     { href: "/activity-log", label: "Activity Log", icon: Activity },
     { href: "/admin", label: "Admin", icon: ShieldCheck },
@@ -51,14 +49,13 @@ export function AppSidebar() {
     { href: "/appointments", label: "Appointments", icon: CalendarDays },
     { href: "/blog", label: "Blog", icon: Rss },
     { href: "/community-feed", label: "Community Feed", icon: MessageSquare },
-    { href: "/cover-letter-generator", label: "Cover Letter Generator", icon: Mail }, // Using Mail icon as in component
+    { href: "/cover-letter-generator", label: "Cover Letter Generator", icon: Mail },
     { href: "/documentation", label: "Documentation", icon: BookOpen },
     { href: "/events", label: "Events", icon: Calendar },
     { href: "/feature-requests", label: "Feature Requests", icon: Lightbulb },
-    { href: "/gallery", label: "Gallery", icon: Image },
+    { href: "/gallery", label: "Gallery", icon: ImageIcon },
     { href: "/gamification", label: "Gamification", icon: Gamepad2 },
     { href: "/interview-prep", label: "Interview Prep", icon: ClipboardList },
-    // Quiz is a sub-page of interview-prep, so not in main sidebar here
     { href: "/interview-queue", label: "Interview Queue", icon: ListOrdered },
     { href: "/job-board", label: "Job Board", icon: Briefcase },
     { href: "/job-tracker", label: "Job Tracker", icon: Target },
@@ -66,6 +63,12 @@ export function AppSidebar() {
     { href: "/live-interview", label: "Live Interview", icon: Video },
     { href: "/my-resumes", label: "My Resumes", icon: Files },
     { href: "/profile", label: "Profile", icon: UserCircle },
+    { href: "/referrals", label: "Referrals", icon: Gift },
+    { href: "/resume-analyzer", label: "Resume Analyzer", icon: FileSearch },
+    { href: "/resume-builder", label: "Resume Builder", icon: FilePlus2 },
+    { href: "/resume-history", label: "Resume History", icon: History },
+    { href: "/resume-templates", label: "Resume Templates", icon: LayoutGrid },
+    { href: "/wallet", label: "Wallet", icon: Wallet },
   ];
 
 
@@ -81,8 +84,8 @@ export function AppSidebar() {
           </h1>
         </Link>
       </SidebarHeader>
-      <SidebarContent> {/* Ensure SidebarContent can handle overflow if using ScrollArea inside */}
-        {/* <ScrollArea className="h-full">  You might wrap SidebarMenu in ScrollArea if content exceeds height */}
+      <SidebarContent>
+        <ScrollArea className="h-full">
           <SidebarMenu>
             {mainMenuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
@@ -100,7 +103,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
             ))}
             <SidebarSeparator className="my-4" />
-            {featureMenuItems.map((item) => (
+            {featureMenuItems.sort((a, b) => a.label.localeCompare(b.label)).map((item) => ( // Sorted alphabetically
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
@@ -116,7 +119,7 @@ export function AppSidebar() {
             </SidebarMenuItem>
           ))}
           </SidebarMenu>
-        {/* </ScrollArea> */}
+        </ScrollArea>
       </SidebarContent>
       <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden">
         <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Bhasha Setu</p>
@@ -125,6 +128,4 @@ export function AppSidebar() {
   );
 }
 
-// Ensure SidebarSeparator and other necessary components are correctly imported or defined within ui/sidebar
 const SidebarSeparator = ({className}: {className?: string}) => <hr className={cn("border-border my-2", className)} />;
-
