@@ -1,27 +1,26 @@
 
 "use client";
+// This page is intentionally left blank or can be used for a redirect.
+// The main admin content is now in /admin/dashboard.
+// The /admin path itself will be handled by src/app/(app)/admin/layout.tsx
+// and potentially src/app/(app)/admin/dashboard/page.tsx if configured as an index.
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useI18n } from "@/hooks/use-i18n";
-import { ShieldCheck } from "lucide-react";
+// For now, this page can redirect to the admin dashboard or show a simple message.
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
-export default function AdminPage() {
-  const { t } = useI18n();
-  const pageTitle = "Admin Panel"; // Example: t("appFeatures.admin.title")
+export default function AdminRootPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/admin/dashboard');
+  }, [router]);
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-            <ShieldCheck className="h-6 w-6"/>
-            {pageTitle}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Content for {pageTitle} coming soon. This section is for administrators.</p>
-        </CardContent>
-      </Card>
+    <div className="flex h-full flex-1 items-center justify-center bg-background p-6">
+      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <p className="ml-4 text-muted-foreground">Redirecting to Admin Dashboard...</p>
     </div>
   );
 }

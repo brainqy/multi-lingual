@@ -21,22 +21,39 @@ export function AppHeader() {
   const pathname = usePathname();
 
   const getPageTitle = () => {
+    // Handle base (app) routes
     if (pathname === "/dashboard") return t("dashboard.navigation.overview");
     if (pathname === "/translate") return t("dashboard.navigation.translate");
     if (pathname === "/settings") return t("dashboard.navigation.settings");
 
-    // For new feature pages, derive title from path
-    // Example: /activity-log -> Activity Log
+    // Handle admin routes
+    if (pathname.startsWith("/admin/")) {
+      const adminSubPath = pathname.substring("/admin/".length);
+      if (adminSubPath === "dashboard") return "Admin Dashboard";
+      if (adminSubPath === "user-management") return "User Management";
+      if (adminSubPath === "tenants") return "Tenant Management";
+      if (adminSubPath === "tenant-onboarding") return "Tenant Onboarding";
+      if (adminSubPath === "platform-settings") return "Platform Settings";
+      if (adminSubPath === "content-moderation") return "Content Moderation";
+      if (adminSubPath === "announcements") return "Announcements Management";
+      if (adminSubPath === "blog-settings") return "Blog Settings";
+      if (adminSubPath === "gallery-management") return "Gallery Management";
+      if (adminSubPath === "gamification-rules") return "Gamification Rules";
+      if (adminSubPath === "affiliate-management") return "Affiliate Management";
+      if (adminSubPath === "messenger-management") return "Messenger Settings";
+      return kebabToTitleCase(adminSubPath); // Fallback for other admin pages
+    }
+    
+    // For other feature pages under (app)
     const pathSegments = pathname.split('/').filter(Boolean);
     if (pathSegments.length > 0 && 
-        !["dashboard", "translate", "settings"].includes(pathSegments[0])) {
-      // Assuming top-level feature pages like /activity-log, /blog, etc.
-      // For nested pages like /interview-prep/quiz, it will take the parent.
+        !["dashboard", "translate", "settings", "admin"].includes(pathSegments[0])) {
       const baseFeaturePath = pathSegments[0];
-      const titleFromPath = kebabToTitleCase(baseFeaturePath);
-      // You might want to add specific translations for these in your i18n files
-      // e.g., t(`appFeatures.${baseFeaturePath}.title`) or similar
-      return titleFromPath; 
+      // For nested feature pages like /interview-prep/quiz
+      if (pathSegments.length > 1 && baseFeaturePath === "interview-prep" && pathSegments[1] === "quiz") {
+        return "Interview Quiz";
+      }
+      return kebabToTitleCase(baseFeaturePath);
     }
     
     return t("appName");
