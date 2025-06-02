@@ -1,0 +1,69 @@
+{
+  "appName": "भाषा सेतु",
+  "login": {
+    "title": "लॉगिन",
+    "emailLabel": "ईमेल",
+    "passwordLabel": "पासवर्ड",
+    "submitButton": "लॉगिन करा",
+    "signupPrompt": "खाते नाही?",
+    "signupLink": "नोंदणी करा"
+  },
+  "signup": {
+    "title": "नवीन खाते तयार करा",
+    "nameLabel": "नाव",
+    "emailLabel": "ईमेल",
+    "passwordLabel": "पासवर्ड",
+    "roleLabel": "भूमिका",
+    "roleUser": "वापरकर्ता",
+    "roleAdmin": "प्रशासक",
+    "submitButton": "नोंदणी करा",
+    "loginPrompt": "आधीपासून खाते आहे?",
+    "loginLink": "लॉगिन करा"
+  },
+  "dashboard": {
+    "title": "डॅशबोर्ड",
+    "welcome": "स्वागत आहे, {name}!",
+    "navigation": {
+      "overview": "आढावा",
+      "translate": "भाषांतर करा",
+      "settings": "सेटिंग्ज"
+    },
+    "metrics": {
+      "totalWords": "एकूण शब्द",
+      "englishWords": "इंग्रजी शब्द",
+      "marathiWords": "मराठी शब्द",
+      "hindiWords": "हिंदी शब्द"
+    },
+    "userMenu": {
+      "profile": "प्रोफाइल",
+      "logout": "लॉगआउट"
+    }
+  },
+  "translateTool": {
+    "title": "भाषांतर साधन",
+    "enterTextLabel": "भाषांतर करण्यासाठी मजकूर प्रविष्ट करा",
+    "enterTextPlaceholder": "शब्द किंवा वाक्य टाइप करा...",
+    "submitButton": "भाषांतराची सूचना द्या",
+    "originalText": "मूळ मजकूर",
+    "suggestedTranslations": "सुचवलेली भाषांतरे",
+    "marathi": "मराठी",
+    "hindi": "हिंदी",
+    "english": "इंग्रजी",
+    "qualityScore": "गुणवत्ता गुण",
+    "errorTranslating": "भाषांतराची सूचना देताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा."
+  },
+  "settings": {
+    "title": "सेटिंग्ज",
+    "languageManagement": "भाषा व्यवस्थापन",
+    "comingSoon": "अधिक सेटिंग्ज लवकरच येत आहेत."
+  },
+  "languages": {
+    "en": "इंग्रजी",
+    "mr": "मराठी",
+    "hi": "हिंदी"
+  },
+  "validation": {
+    "required": "हे क्षेत्र आवश्यक आहे.",
+    "email": "अवैध ईमेल पत्ता."
+  }
+}

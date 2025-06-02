@@ -1,0 +1,69 @@
+{
+  "appName": "Bhasha Setu",
+  "login": {
+    "title": "Login",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitButton": "Login",
+    "signupPrompt": "Don't have an account?",
+    "signupLink": "Sign Up"
+  },
+  "signup": {
+    "title": "Create Account",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "roleLabel": "Role",
+    "roleUser": "User",
+    "roleAdmin": "Admin",
+    "submitButton": "Sign Up",
+    "loginPrompt": "Already have an account?",
+    "loginLink": "Login"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}!",
+    "navigation": {
+      "overview": "Overview",
+      "translate": "Translate",
+      "settings": "Settings"
+    },
+    "metrics": {
+      "totalWords": "Total Words",
+      "englishWords": "English Words",
+      "marathiWords": "Marathi Words",
+      "hindiWords": "Hindi Words"
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "logout": "Logout"
+    }
+  },
+  "translateTool": {
+    "title": "Translation Tool",
+    "enterTextLabel": "Enter text to translate",
+    "enterTextPlaceholder": "Type a word or sentence...",
+    "submitButton": "Suggest Translations",
+    "originalText": "Original Text",
+    "suggestedTranslations": "Suggested Translations",
+    "marathi": "Marathi",
+    "hindi": "Hindi",
+    "english": "English",
+    "qualityScore": "Quality Score",
+    "errorTranslating": "Error suggesting translations. Please try again."
+  },
+  "settings": {
+    "title": "Settings",
+    "languageManagement": "Language Management",
+    "comingSoon": "More settings coming soon."
+  },
+  "languages": {
+    "en": "English",
+    "mr": "Marathi",
+    "hi": "Hindi"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Invalid email address."
+  }
+}
