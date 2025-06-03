@@ -551,6 +551,242 @@
     },
     "editActionMock": "Editing tenant {tenantId}... (This would typically navigate to a detailed tenant settings page or a more complex edit dialog).",
     "deleteActionToast": "Tenant {tenantId} deleted."
+  },
+  "tenantOnboarding": {
+    "title": "Tenant Onboarding",
+    "steps": {
+      "basicInfo": "Basic Information",
+      "branding": "Branding",
+      "features": "Feature Configuration",
+      "adminUser": "Initial Admin User",
+      "review": "Review & Create"
+    },
+    "currentStep": "Step {current} of {total}",
+    "formLabels": {
+      "tenantName": "Tenant Name",
+      "tenantDomain": "Tenant Domain (Optional)",
+      "tenantDomainPlaceholder": "e.g., myuniversity.resumematch.ai",
+      "customLogoUrl": "Custom Logo URL (Optional)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "Primary Color (HSL or HEX)",
+      "primaryColorPlaceholder": "e.g., hsl(180 100% 25%) or #008080",
+      "accentColor": "Accent Color (HSL or HEX)",
+      "accentColorPlaceholder": "e.g., hsl(180 100% 30%) or #009688",
+      "coreFeaturesTitle": "Core Features:",
+      "featureCommunityFeed": "Community Feed",
+      "featureJobBoard": "Job Board",
+      "featureGamification": "Gamification (XP, Badges)",
+      "featureWallet": "Digital Wallet (Coins)",
+      "featureEventRegistration": "Event Registration",
+      "signupTitle": "Signup:",
+      "allowPublicSignup": "Allow Public Signup for this Tenant",
+      "adminFullName": "Admin Full Name",
+      "adminEmail": "Admin Email Address",
+      "adminPassword": "Admin Password"
+    },
+    "reviewSection": {
+      "title": "Review Tenant Configuration:",
+      "nameLabel": "Name:",
+      "domainLabel": "Domain:",
+      "logoUrlLabel": "Logo URL:",
+      "primaryColorLabel": "Primary Color:",
+      "accentColorLabel": "Accent Color:",
+      "publicSignupLabel": "Public Signup:",
+      "featuresLabel": "Features:",
+      "initialAdminUserTitle": "Initial Admin User:",
+      "emailLabel": "Email:"
+    },
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "createTenant": "Create Tenant"
+    },
+    "toast": {
+      "tenantCreated": {
+        "title": "Tenant Created Successfully!",
+        "description": "Tenant \"{tenantName}\" has been onboarded."
+      }
+    },
+    "validation": {
+      "tenantNameMin": "Tenant name must be at least 3 characters",
+      "invalidUrl": "Invalid URL format",
+      "invalidColor": "Invalid color format (HSL or HEX)",
+      "adminEmailInvalid": "Invalid email for admin",
+      "adminNameRequired": "Admin name is required",
+      "adminPasswordMin": "Password must be at least 8 characters"
+    }
+  },
+  "announcementsAdmin": {
+    "title": "Announcement Management",
+    "manageTenant": "Manage platform-wide or targeted announcements for {tenantId}.",
+    "managePlatform": "Manage platform-wide or targeted announcements.",
+    "createNewButton": "Create New Announcement",
+    "dialog": {
+      "createTitle": "Create New Announcement",
+      "editTitle": "Edit Announcement",
+      "titleLabel": "Title",
+      "contentLabel": "Content",
+      "contentPlaceholder": "Enter announcement details. Supports Markdown.",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "End Date (Optional)",
+      "audienceLabel": "Audience",
+      "audienceAllUsers": "All Users",
+      "audienceSpecificTenant": "Specific Tenant",
+      "audienceSpecificRole": "Specific Role (mocked)",
+      "targetTenantLabel": "Target Tenant",
+      "selectTenantPlaceholder": "Select Tenant",
+      "targetRoleLabel": "Target Role",
+      "selectRolePlaceholder": "Select Role",
+      "roleUser": "User",
+      "roleManager": "Manager",
+      "roleAdmin": "Admin",
+      "statusLabel": "Status",
+      "statusDraft": "Draft",
+      "statusPublished": "Published",
+      "statusArchived": "Archived",
+      "cancelButton": "Cancel",
+      "saveChangesButton": "Save Changes",
+      "createButton": "Create Announcement"
+    },
+    "currentAnnouncementsTitle": "Current Announcements",
+    "noAnnouncementsTenant": "No announcements found for your tenant or globally.",
+    "noAnnouncementsPlatform": "No announcements found.",
+    "table": {
+      "title": "Title",
+      "status": "Status",
+      "audience": "Audience",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "actions": "Actions"
+    },
+    "audienceTargetDisplay": "({target})",
+    "audiencePlatformWide": "(Platform-wide)",
+    "endDateOngoing": "Ongoing",
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "Permission Denied",
+        "description": "You can only edit announcements you created for your tenant, or platform-wide announcements if applicable."
+      },
+      "permissionDeniedDelete": {
+        "title": "Permission Denied",
+        "description": "You can only delete announcements you created for your tenant."
+      },
+      "announcementUpdated": {
+        "title": "Announcement Updated",
+        "description": "Announcement \"{title}\" has been updated."
+      },
+      "announcementCreated": {
+        "title": "Announcement Created",
+        "description": "Announcement \"{title}\" has been added."
+      },
+      "announcementDeleted": {
+        "title": "Announcement Deleted",
+        "description": "Announcement removed."
+      }
+    },
+    "validation": {
+      "titleMin": "Title must be at least 5 characters",
+      "contentMin": "Content must be at least 10 characters",
+      "startDateRequired": "Start date is required."
+    }
+  },
+  "contentModeration": {
+    "title": "Content Moderation",
+    "descriptionTenant": "Review and manage posts flagged by users or AI within your tenant: {tenantId}.",
+    "descriptionPlatform": "Review and manage posts flagged by users or AI.",
+    "flaggedPostsTitle": "Flagged Posts for Review",
+    "noFlaggedPostsTenant": "No posts are currently flagged for review in your tenant.",
+    "noFlaggedPostsPlatform": "No posts are currently flagged for review.",
+    "table": {
+      "author": "Author",
+      "contentSnippet": "Content Snippet",
+      "flagCount": "Flag Count",
+      "dateFlagged": "Date Flagged",
+      "actions": "Actions"
+    },
+    "viewOnFeedTitle": "View on Feed (feature in development)",
+    "toast": {
+      "postApproved": {
+        "title": "Post Approved",
+        "description": "Post marked as visible. Refresh Community Feed to see changes."
+      },
+      "postRemoved": {
+        "title": "Post Removed",
+        "description": "Post marked as removed. Refresh Community Feed to see changes."
+      }
+    }
+  },
+  "blogSettingsAdmin": {
+    "title": "AI Blog Generation Settings",
+    "description": "Configure automated blog post generation and manually trigger posts.",
+    "automationSettingsTitle": "Automation Settings",
+    "generationIntervalLabel": "Generation Interval (Hours)",
+    "generationIntervalHelp": "How often should a new blog post be generated? (e.g., 24 for daily)",
+    "topicsLabel": "Topics (Comma-separated)",
+    "topicsPlaceholder": "e.g., Resume Tips, Interview Skills, Career Growth",
+    "topicsHelp": "AI will pick from these topics for scheduled posts.",
+    "styleLabel": "Writing Style (Optional)",
+    "stylePlaceholder": "Select style (default: Informative)",
+    "styleInformative": "Informative",
+    "styleCasual": "Casual",
+    "styleFormal": "Formal",
+    "styleTechnical": "Technical",
+    "styleStorytelling": "Storytelling",
+    "saveAutomationButton": "Save Automation Settings",
+    "manualGenerationTitle": "Manual Blog Post Generation",
+    "lastGeneratedPrefix": "Last AI post generated:",
+    "lastGeneratedNever": "Never",
+    "selectTopicManualLabel": "Select Topic for Manual Generation",
+    "selectTopicManualPlaceholder": "Select a topic or enter custom",
+    "customTopicPlaceholder": "Or type a custom topic here",
+    "generateNowButton": "Generate Blog Post Now",
+    "generatingButton": "Generating...",
+    "importantNoteTitle": "Important Note on Automation",
+    "importantNoteContent": "Actual automated scheduling of blog posts (e.g., every X hours) requires a background task runner or cron job on a server. This UI configures the parameters for such a system. The \"Generate Now\" button allows manual triggering for testing and content creation.",
+    "toast": {
+      "settingsSaved": {
+        "title": "Settings Saved",
+        "description": "AI blog generation settings have been updated."
+      },
+      "noTopicSelected": {
+        "title": "No Topic Selected",
+        "description": "Please select or enter a topic to generate a blog post."
+      },
+      "postGenerated": {
+        "title": "AI Blog Post Generated!",
+        "description": "Post titled \"{title}\" has been created. You can view it on the blog page."
+      },
+      "generationFailed": {
+        "title": "Generation Failed",
+        "description": "An error occurred while generating the blog post."
+      }
+    },
+    "validation": {
+      "intervalMin": "Interval must be at least 1 hour",
+      "intervalMax": "Interval too long (max 30 days)",
+      "topicsRequired": "At least one topic is required"
+    }
+  },
+  "welcomeTour": {
+    "previousButton": "Previous",
+    "nextButton": "Next",
+    "finishButton": "Got it!"
+  },
+  "dailyStreakPopup": {
+    "title": "Your Activity Streak!",
+    "currentStreakLabel": "Current streak",
+    "longestStreakLabel": "Longest streak",
+    "totalActiveDaysLabel": "Total active days:",
+    "keepItUpButton": "Keep it up!",
+    "dayLabels": {
+      "S": "S",
+      "M": "M",
+      "T": "T",
+      "W": "W",
+      "Th": "Th",
+      "F": "F",
+      "Sa": "Sa"
+    }
   }
 }
 

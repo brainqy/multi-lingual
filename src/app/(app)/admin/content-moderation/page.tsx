@@ -18,22 +18,21 @@ import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 export default function ContentModerationPage() {
   const currentUser = sampleUserProfile;
   const { toast } = useToast();
+  const { t } = useI18n();
   
-  // Initial posts state based on role
   const [posts, setPosts] = useState<CommunityPost[]>(
     currentUser.role === 'admin' 
       ? sampleCommunityPosts 
       : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
   );
 
-  // Update posts if the global sample data changes (for demo purposes)
   useEffect(() => {
      setPosts(
       currentUser.role === 'admin' 
         ? sampleCommunityPosts 
         : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
     );
-  }, []); // Rerun if sampleCommunityPosts identity changes (won't for this setup, but good for real data)
+  }, []); 
 
 
   const flaggedPosts = useMemo(() => {
@@ -47,7 +46,7 @@ export default function ContentModerationPage() {
         setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
     };
     updateGlobalAndLocal(p => ({...p, moderationStatus: 'visible', flagCount: 0}));
-    toast({ title: "Post Approved", description: "Post marked as visible. Refresh Community Feed to see changes." });
+    toast({ title: t("contentModeration.toast.postApproved.title"), description: t("contentModeration.toast.postApproved.description") });
   };
 
   const handleRemove = (postId: string) => {
@@ -57,7 +56,7 @@ export default function ContentModerationPage() {
         setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
     };
     updateGlobalAndLocal(p => ({...p, moderationStatus: 'removed'}));
-    toast({ title: "Post Removed", description: "Post marked as removed. Refresh Community Feed to see changes.", variant: "destructive" });
+    toast({ title: t("contentModeration.toast.postRemoved.title"), description: t("contentModeration.toast.postRemoved.description"), variant: "destructive" });
   };
 
 
@@ -68,26 +67,32 @@ export default function ContentModerationPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <ShieldAlert className="h-8 w-8" /> Content Moderation {currentUser.role === 'manager' && `(Tenant: ${currentUser.tenantId})`}
+        <ShieldAlert className="h-8 w-8" /> 
+        {t("contentModeration.title")}
+        {currentUser.role === 'manager' && ` (${t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "Your Tenant" }).substring(t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "Your Tenant" }).indexOf(':') + 1).trim()})`}
       </h1>
-      <CardDescription>Review and manage posts flagged by users or AI{currentUser.role === 'manager' && ' within your tenant'}.</CardDescription>
+      <CardDescription>
+        {currentUser.role === 'manager' ? t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "your tenant"}) : t("contentModeration.descriptionPlatform")}
+      </CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Flagged Posts for Review</CardTitle>
+          <CardTitle>{t("contentModeration.flaggedPostsTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {flaggedPosts.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No posts are currently flagged for review{currentUser.role === 'manager' && ' in your tenant'}.</p>
+            <p className="text-center text-muted-foreground py-8">
+              {currentUser.role === 'manager' ? t("contentModeration.noFlaggedPostsTenant") : t("contentModeration.noFlaggedPostsPlatform")}
+            </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Author</TableHead>
-                  <TableHead>Content Snippet</TableHead>
-                  <TableHead>Flag Count</TableHead>
-                  <TableHead>Date Flagged</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("contentModeration.table.author")}</TableHead>
+                  <TableHead>{t("contentModeration.table.contentSnippet")}</TableHead>
+                  <TableHead>{t("contentModeration.table.flagCount")}</TableHead>
+                  <TableHead>{t("contentModeration.table.dateFlagged")}</TableHead>
+                  <TableHead className="text-right">{t("contentModeration.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -107,7 +112,7 @@ export default function ContentModerationPage() {
                     <TableCell>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/community-feed#post-${post.id}`} title="View on Feed (feature in development)">
+                        <Link href={`/community-feed#post-${post.id}`} title={t("contentModeration.viewOnFeedTitle")}>
                            <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -128,3 +133,5 @@ export default function ContentModerationPage() {
     </div>
   );
 }
+
+    

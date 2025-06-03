@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types";
 import { Flame, Trophy } from "lucide-react";
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/hooks/use-i18n';
 
 interface DailyStreakPopupProps {
   isOpen: boolean;
@@ -14,21 +15,19 @@ interface DailyStreakPopupProps {
   userProfile: UserProfile | null;
 }
 
-const dayLabels = ["S", "M", "T", "W", "T", "F", "S"]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
+const dayLabelsKeys = ["S", "M", "T", "W", "Th", "F", "Sa"] as const; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
 
 export default function DailyStreakPopup({ isOpen, onClose, userProfile }: DailyStreakPopupProps) {
+  const { t } = useI18n();
   if (!userProfile) return null;
 
   const todayIndex = new Date().getDay(); // 0 for Sunday, 6 for Saturday
 
-  // Create a 7-day array for display, aligning today with the last element of weeklyActivity
-  // weeklyActivity: [day-6, day-5, day-4, day-3, day-2, day-1, today]
   const displayActivity = userProfile.weeklyActivity || Array(7).fill(false);
   
-  // Adjust dayLabels to start from 7 days ago, ending with today
   const adjustedDayLabels = [...Array(7)].map((_, i) => {
     const dayOffset = (todayIndex - (6 - i) + 7) % 7;
-    return dayLabels[dayOffset];
+    return t(`dailyStreakPopup.dayLabels.${dayLabelsKeys[dayOffset]}` as any, { defaultValue: dayLabelsKeys[dayOffset]});
   });
 
 
@@ -37,28 +36,27 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
       <DialogContent className="sm:max-w-md bg-card text-card-foreground p-0 overflow-hidden">
         <div className="bg-gray-800 text-white p-6 rounded-t-lg">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-bold text-center">Your Activity Streak!</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center">{t("dailyStreakPopup.title")}</DialogTitle>
           </DialogHeader>
 
           <div className="flex justify-around items-center mb-6 text-center">
             <div>
               <p className="text-4xl font-bold">{userProfile.dailyStreak || 0}</p>
-              <p className="text-sm text-gray-300">Current streak</p>
+              <p className="text-sm text-gray-300">{t("dailyStreakPopup.currentStreakLabel")}</p>
             </div>
             <div>
               <p className="text-4xl font-bold flex items-center justify-center">
                 {userProfile.longestStreak || 0}
                 <Trophy className="ml-2 h-7 w-7 text-yellow-400" />
               </p>
-              <p className="text-sm text-gray-300">Longest streak</p>
+              <p className="text-sm text-gray-300">{t("dailyStreakPopup.longestStreakLabel")}</p>
             </div>
           </div>
 
           <div className="flex justify-center items-end space-x-2 mb-6">
             {displayActivity.map((isActive, index) => (
               <div key={index} className="flex flex-col items-center relative">
-                {/* Pointer for today */}
-                {index === 6 && ( // Last element is today
+                {index === 6 && ( 
                   <div className="absolute -top-3 w-0 h-0 
                     border-l-[6px] border-l-transparent
                     border-t-[8px] border-t-pink-500
@@ -77,16 +75,18 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
           </div>
 
           <p className="text-center text-lg font-semibold">
-            Total active days: {userProfile.totalActiveDays || 0}
+            {t("dailyStreakPopup.totalActiveDaysLabel")} {userProfile.totalActiveDays || 0}
           </p>
         </div>
         
         <DialogFooter className="p-6 bg-card border-t border-border">
           <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-            Keep it up!
+            {t("dailyStreakPopup.keepItUpButton")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    

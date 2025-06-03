@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { TourStep } from "@/types";
 import { ScrollArea } from '../ui/scroll-area';
 import { CheckCircle } from 'lucide-react';
+import { useI18n } from '@/hooks/use-i18n';
 
 interface WelcomeTourDialogProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface WelcomeTourDialogProps {
 
 export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, title }: WelcomeTourDialogProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const { t } = useI18n();
   
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -39,10 +41,9 @@ export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, tit
       localStorage.setItem(tourKey, 'true');
     }
     onClose();
-    setCurrentStepIndex(0); // Reset for next time if needed, though typically won't show again
+    setCurrentStepIndex(0); 
   };
 
-  // If only one step, consider it a simple welcome/info dialog
   const isSingleStepInfo = steps.length === 1;
   const currentStep = steps[currentStepIndex];
 
@@ -69,14 +70,14 @@ export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, tit
         <DialogFooter className="mt-4 gap-2 sm:justify-between">
           {!isSingleStepInfo && (
             <Button variant="outline" onClick={handlePrevious} disabled={currentStepIndex === 0}>
-              Previous
+              {t("welcomeTour.previousButton")}
             </Button>
           )}
           <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isSingleStepInfo || currentStepIndex === steps.length - 1 ? (
-              <> <CheckCircle className="mr-2 h-4 w-4" /> Got it! </>
+              <> <CheckCircle className="mr-2 h-4 w-4" /> {t("welcomeTour.finishButton")} </>
             ) : (
-              "Next"
+              t("welcomeTour.nextButton")
             )}
           </Button>
         </DialogFooter>
@@ -84,3 +85,5 @@ export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, tit
     </Dialog>
   );
 }
+
+    

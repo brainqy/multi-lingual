@@ -2,8 +2,6 @@
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
-
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -25,22 +23,29 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
-const announcementSchema = z.object({
+const announcementSchemaBase = z.object({
   id: z.string().optional(),
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  content: z.string().min(10, "Content must be at least 10 characters"),
-  startDate: z.date({ required_error: "Start date is required." }),
+  title: z.string().min(5, "validation.titleMin").max(100, "Title cannot exceed 100 characters."), // Added max
+  content: z.string().min(10, "validation.contentMin").max(2000, "Content cannot exceed 2000 characters."), // Added max
+  startDate: z.date({ required_error: "validation.startDateRequired" }),
   endDate: z.date().optional(),
   audience: z.enum(['All Users', 'Specific Tenant', 'Specific Role']),
   audienceTarget: z.string().optional(),
   status: z.enum(['Draft', 'Published', 'Archived']),
 });
 
-type AnnouncementFormData = z.infer<typeof announcementSchema>;
+type AnnouncementFormData = z.infer<typeof announcementSchemaBase>;
 
 export default function AnnouncementManagementPage() {
   const currentUser = sampleUserProfile;
   const { toast } = useToast();
+  const { t } = useI18n();
+
+  const translatedAnnouncementSchema = announcementSchemaBase.extend({
+    title: z.string().min(5, t("announcementsAdmin.validation.titleMin")).max(100, "Title cannot exceed 100 characters."),
+    content: z.string().min(10, t("announcementsAdmin.validation.contentMin")).max(2000, "Content cannot exceed 2000 characters."),
+    startDate: z.date({ required_error: t("announcementsAdmin.validation.startDateRequired") })
+  });
   
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
     if (currentUser.role === 'admin') {
@@ -49,7 +54,7 @@ export default function AnnouncementManagementPage() {
     return sampleAnnouncements.filter(a => 
       a.audience === 'All Users' || 
       (a.audience === 'Specific Tenant' && a.audienceTarget === currentUser.tenantId) ||
-      (a.audience === 'Specific Role' && a.audienceTarget === currentUser.role && a.tenantId === currentUser.tenantId) // Assuming role-specific might be tenant-scoped too
+      (a.audience === 'Specific Role' && a.audienceTarget === currentUser.role && a.tenantId === currentUser.tenantId) 
     );
   });
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -57,7 +62,7 @@ export default function AnnouncementManagementPage() {
   
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementFormData>({
-    resolver: zodResolver(announcementSchema),
+    resolver: zodResolver(translatedAnnouncementSchema),
     defaultValues: { status: 'Draft', audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users' }
   });
 
@@ -78,7 +83,7 @@ export default function AnnouncementManagementPage() {
   const onSubmitForm = (data: AnnouncementFormData) => {
     let audienceTarget = data.audienceTarget;
     if (currentUser.role === 'manager' && data.audience === 'Specific Tenant') {
-        audienceTarget = currentUser.tenantId; // Ensure manager can only target their tenant
+        audienceTarget = currentUser.tenantId; 
     }
 
     const announcementData: Announcement = {
@@ -93,22 +98,22 @@ export default function AnnouncementManagementPage() {
       createdAt: editingAnnouncement ? editingAnnouncement.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: currentUser.id,
-      tenantId: data.audience === 'Specific Tenant' ? audienceTarget : (data.audience === 'All Users' ? 'platform' : currentUser.tenantId) // Assign tenantId
+      tenantId: data.audience === 'Specific Tenant' ? audienceTarget : (data.audience === 'All Users' ? 'platform' : currentUser.tenantId) 
     };
 
     if (editingAnnouncement) {
       if (currentUser.role === 'manager' && editingAnnouncement.createdBy !== currentUser.id && editingAnnouncement.tenantId !== currentUser.tenantId && editingAnnouncement.audience !== 'All Users') {
-        toast({ title: "Permission Denied", description: "You can only edit announcements you created for your tenant.", variant: "destructive" });
+        toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
         return;
       }
       setAnnouncements(prev => prev.map(a => a.id === editingAnnouncement.id ? announcementData : a));
       const globalIndex = sampleAnnouncements.findIndex(sa => sa.id === editingAnnouncement.id);
       if (globalIndex !== -1) sampleAnnouncements[globalIndex] = announcementData;
-      toast({ title: "Announcement Updated", description: `Announcement "${data.title}" has been updated.` });
+      toast({ title: t("announcementsAdmin.toast.announcementUpdated.title"), description: t("announcementsAdmin.toast.announcementUpdated.description", { title: data.title }) });
     } else {
       setAnnouncements(prev => [announcementData, ...prev]);
       sampleAnnouncements.unshift(announcementData);
-      toast({ title: "Announcement Created", description: `Announcement "${data.title}" has been added.` });
+      toast({ title: t("announcementsAdmin.toast.announcementCreated.title"), description: t("announcementsAdmin.toast.announcementCreated.description", { title: data.title }) });
     }
     setIsFormDialogOpen(false);
     reset({ title: '', content: '', audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users', audienceTarget: currentUser.role === 'manager' ? currentUser.tenantId : '', status: 'Draft' });
@@ -123,7 +128,7 @@ export default function AnnouncementManagementPage() {
 
   const openEditAnnouncementDialog = (announcement: Announcement) => {
      if (currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users') {
-      toast({ title: "Permission Denied", description: "You can only edit announcements you created for your tenant, or platform-wide announcements if applicable.", variant: "destructive" });
+      toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
       return;
     }
     setEditingAnnouncement(announcement);
@@ -140,26 +145,28 @@ export default function AnnouncementManagementPage() {
   const handleDeleteAnnouncement = (announcementId: string) => {
     const announcementToDelete = announcements.find(a => a.id === announcementId);
      if (currentUser.role === 'manager' && announcementToDelete && announcementToDelete.createdBy !== currentUser.id && announcementToDelete.tenantId !== currentUser.tenantId && announcementToDelete.audience !== 'All Users') {
-      toast({ title: "Permission Denied", description: "You can only delete announcements you created for your tenant.", variant: "destructive" });
+      toast({ title: t("announcementsAdmin.toast.permissionDeniedDelete.title"), description: t("announcementsAdmin.toast.permissionDeniedDelete.description"), variant: "destructive" });
       return;
     }
     setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
     const globalIndex = sampleAnnouncements.findIndex(sa => sa.id === announcementId);
     if (globalIndex !== -1) sampleAnnouncements.splice(globalIndex, 1);
-    toast({ title: "Announcement Deleted", description: "Announcement removed.", variant: "destructive" });
+    toast({ title: t("announcementsAdmin.toast.announcementDeleted.title"), description: t("announcementsAdmin.toast.announcementDeleted.description"), variant: "destructive" });
   };
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <Megaphone className="h-8 w-8" /> Announcement Management {currentUser.role === 'manager' && `(Tenant: ${currentUser.tenantId})`}
+          <Megaphone className="h-8 w-8" /> 
+          {t("announcementsAdmin.title")} 
+          {currentUser.role === 'manager' && ` (${t("announcementsAdmin.manageTenant", {tenantId: currentUser.tenantId || "Your Tenant"})})`}
         </h1>
         <Button onClick={openNewAnnouncementDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> Create New Announcement
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("announcementsAdmin.createNewButton")}
         </Button>
       </div>
-      <CardDescription>Manage platform-wide or targeted announcements.</CardDescription>
+      <CardDescription>{currentUser.role === 'manager' ? t("announcementsAdmin.manageTenant", {tenantId: currentUser.tenantId || "your tenant"}) : t("announcementsAdmin.managePlatform")}</CardDescription>
 
       <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => {
         if (!isOpen) {
@@ -171,51 +178,51 @@ export default function AnnouncementManagementPage() {
         <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}
+              {editingAnnouncement ? t("announcementsAdmin.dialog.editTitle") : t("announcementsAdmin.dialog.createTitle")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="announcement-title">Title</Label>
+              <Label htmlFor="announcement-title">{t("announcementsAdmin.dialog.titleLabel")}</Label>
               <Controller name="title" control={control} render={({ field }) => <Input id="announcement-title" {...field} />} />
               {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="announcement-content">Content</Label>
-              <Controller name="content" control={control} render={({ field }) => <Textarea id="announcement-content" rows={5} {...field} placeholder="Enter announcement details. Supports Markdown." />} />
+              <Label htmlFor="announcement-content">{t("announcementsAdmin.dialog.contentLabel")}</Label>
+              <Controller name="content" control={control} render={({ field }) => <Textarea id="announcement-content" rows={5} {...field} placeholder={t("announcementsAdmin.dialog.contentPlaceholder")} />} />
               {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="announcement-startDate">Start Date</Label>
+                <Label htmlFor="announcement-startDate">{t("announcementsAdmin.dialog.startDateLabel")}</Label>
                 <Controller name="startDate" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
                 {errors.startDate && <p className="text-sm text-destructive mt-1">{errors.startDate.message}</p>}
               </div>
               <div>
-                <Label htmlFor="announcement-endDate">End Date (Optional)</Label>
+                <Label htmlFor="announcement-endDate">{t("announcementsAdmin.dialog.endDateLabel")}</Label>
                 <Controller name="endDate" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="announcement-audience">Audience</Label>
+                <Label htmlFor="announcement-audience">{t("announcementsAdmin.dialog.audienceLabel")}</Label>
                 <Controller name="audience" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value} disabled={currentUser.role === 'manager' && editingAnnouncement?.audience !== 'Specific Tenant'}>
                     <SelectTrigger id="announcement-audience"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {currentUser.role === 'admin' && <SelectItem value="All Users">All Users</SelectItem>}
-                      <SelectItem value="Specific Tenant">Specific Tenant</SelectItem>
-                      {currentUser.role === 'admin' && <SelectItem value="Specific Role">Specific Role (mocked)</SelectItem>}
+                      {currentUser.role === 'admin' && <SelectItem value="All Users">{t("announcementsAdmin.dialog.audienceAllUsers")}</SelectItem>}
+                      <SelectItem value="Specific Tenant">{t("announcementsAdmin.dialog.audienceSpecificTenant")}</SelectItem>
+                      {currentUser.role === 'admin' && <SelectItem value="Specific Role">{t("announcementsAdmin.dialog.audienceSpecificRole")}</SelectItem>}
                     </SelectContent>
                   </Select>
                 )} />
               </div>
               {watchedAudience === 'Specific Tenant' && (
                 <div>
-                  <Label htmlFor="announcement-audienceTarget">Target Tenant</Label>
+                  <Label htmlFor="announcement-audienceTarget">{t("announcementsAdmin.dialog.targetTenantLabel")}</Label>
                   <Controller name="audienceTarget" control={control} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value} disabled={currentUser.role === 'manager'}>
-                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder="Select Tenant" /></SelectTrigger>
+                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder={t("announcementsAdmin.dialog.selectTenantPlaceholder")} /></SelectTrigger>
                       <SelectContent>
                         {currentUser.role === 'manager' ? (
                            <SelectItem value={currentUser.tenantId!}>{sampleTenants.find(t=>t.id === currentUser.tenantId)?.name || currentUser.tenantId}</SelectItem>
@@ -231,14 +238,14 @@ export default function AnnouncementManagementPage() {
               )}
               {currentUser.role === 'admin' && watchedAudience === 'Specific Role' && (
                  <div>
-                  <Label htmlFor="announcement-audienceTarget">Target Role</Label>
+                  <Label htmlFor="announcement-audienceTarget">{t("announcementsAdmin.dialog.targetRoleLabel")}</Label>
                   <Controller name="audienceTarget" control={control} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder="Select Role" /></SelectTrigger>
+                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder={t("announcementsAdmin.dialog.selectRolePlaceholder")} /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="user">{t("announcementsAdmin.dialog.roleUser")}</SelectItem>
+                        <SelectItem value="manager">{t("announcementsAdmin.dialog.roleManager")}</SelectItem>
+                        <SelectItem value="admin">{t("announcementsAdmin.dialog.roleAdmin")}</SelectItem>
                       </SelectContent>
                     </Select>
                   )} />
@@ -246,22 +253,22 @@ export default function AnnouncementManagementPage() {
               )}
             </div>
             <div>
-              <Label htmlFor="announcement-status">Status</Label>
+              <Label htmlFor="announcement-status">{t("announcementsAdmin.dialog.statusLabel")}</Label>
               <Controller name="status" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="announcement-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                    <SelectItem value="Published">Published</SelectItem>
-                    {currentUser.role === 'admin' && <SelectItem value="Archived">Archived</SelectItem>}
+                    <SelectItem value="Draft">{t("announcementsAdmin.dialog.statusDraft")}</SelectItem>
+                    <SelectItem value="Published">{t("announcementsAdmin.dialog.statusPublished")}</SelectItem>
+                    {currentUser.role === 'admin' && <SelectItem value="Archived">{t("announcementsAdmin.dialog.statusArchived")}</SelectItem>}
                   </SelectContent>
                 </Select>
               )} />
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <DialogClose asChild><Button type="button" variant="outline">{t("announcementsAdmin.dialog.cancelButton")}</Button></DialogClose>
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                {editingAnnouncement ? "Save Changes" : "Create Announcement"}
+                {editingAnnouncement ? t("announcementsAdmin.dialog.saveChangesButton") : t("announcementsAdmin.dialog.createButton")}
               </Button>
             </DialogFooter>
           </form>
@@ -270,21 +277,21 @@ export default function AnnouncementManagementPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Current Announcements</CardTitle>
+          <CardTitle>{t("announcementsAdmin.currentAnnouncementsTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {announcements.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No announcements found{currentUser.role === 'manager' && ' for your tenant or globally'}.</p>
+            <p className="text-center text-muted-foreground py-8">{currentUser.role === 'manager' ? t("announcementsAdmin.noAnnouncementsTenant") : t("announcementsAdmin.noAnnouncementsPlatform")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Audience</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("announcementsAdmin.table.title")}</TableHead>
+                  <TableHead>{t("announcementsAdmin.table.status")}</TableHead>
+                  <TableHead>{t("announcementsAdmin.table.audience")}</TableHead>
+                  <TableHead>{t("announcementsAdmin.table.startDate")}</TableHead>
+                  <TableHead>{t("announcementsAdmin.table.endDate")}</TableHead>
+                  <TableHead className="text-right">{t("announcementsAdmin.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -297,16 +304,16 @@ export default function AnnouncementManagementPage() {
                         announcement.status === 'Draft' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {announcement.status}
+                        {t(`announcementsAdmin.dialog.status${announcement.status}` as any)}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {announcement.audience}
-                      {announcement.audienceTarget && ` (${announcement.audience === 'Specific Tenant' ? sampleTenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget})`}
-                      {announcement.audience === 'All Users' && ' (Platform-wide)'}
+                      {t(`announcementsAdmin.dialog.audience${announcement.audience.replace(/\s/g, '')}` as any)}
+                      {announcement.audienceTarget && ` ${t("announcementsAdmin.audienceTargetDisplay", {target: (announcement.audience === 'Specific Tenant' ? sampleTenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget) })}`}
+                      {announcement.audience === 'All Users' && ` ${t("announcementsAdmin.audiencePlatformWide")}`}
                     </TableCell>
                     <TableCell>{format(parseISO(announcement.startDate), "MMM dd, yyyy")}</TableCell>
-                    <TableCell>{announcement.endDate ? format(parseISO(announcement.endDate), "MMM dd, yyyy") : 'Ongoing'}</TableCell>
+                    <TableCell>{announcement.endDate ? format(parseISO(announcement.endDate), "MMM dd, yyyy") : t("announcementsAdmin.endDateOngoing")}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" onClick={() => openEditAnnouncementDialog(announcement)} disabled={currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users'}>
                         <Edit3 className="h-4 w-4" />
@@ -325,3 +332,5 @@ export default function AnnouncementManagementPage() {
     </div>
   );
 }
+
+    

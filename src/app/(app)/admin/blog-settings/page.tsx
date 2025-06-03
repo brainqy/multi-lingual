@@ -2,8 +2,6 @@
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Settings2 } from "lucide-react";
-
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -23,25 +21,31 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
-const settingsSchema = z.object({
-  generationIntervalHours: z.coerce.number().min(1, "Interval must be at least 1 hour").max(720, "Interval too long (max 30 days)"),
-  topics: z.string().min(1, "At least one topic is required"),
+const settingsSchemaBase = z.object({
+  generationIntervalHours: z.coerce.number().min(1, "validation.intervalMin").max(720, "validation.intervalMax"),
+  topics: z.string().min(1, "validation.topicsRequired"),
   style: z.enum(['informative', 'casual', 'formal', 'technical', 'storytelling']).optional(),
 });
 
-type SettingsFormData = z.infer<typeof settingsSchema>;
+type SettingsFormData = z.infer<typeof settingsSchemaBase>;
 
 const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
 export default function AdminBlogSettingsPage() {
+  const { t } = useI18n();
   const [settings, setSettings] = useState<BlogGenerationSettings>(sampleBlogGenerationSettings);
   const [isLoading, setIsLoading] = useState(false);
   const [manualTopic, setManualTopic] = useState(settings.topics[0] || "");
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
 
+  const translatedSettingsSchema = settingsSchemaBase.extend({
+    generationIntervalHours: z.coerce.number().min(1, t("blogSettingsAdmin.validation.intervalMin")).max(720, t("blogSettingsAdmin.validation.intervalMax")),
+    topics: z.string().min(1, t("blogSettingsAdmin.validation.topicsRequired")),
+  });
+
   const { control, handleSubmit, reset, formState: { errors } } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(translatedSettingsSchema),
     defaultValues: {
       generationIntervalHours: settings.generationIntervalHours,
       topics: settings.topics.join(", "),
@@ -70,12 +74,12 @@ export default function AdminBlogSettingsPage() {
     };
     setSettings(updatedSettings);
     Object.assign(sampleBlogGenerationSettings, updatedSettings); 
-    toast({ title: "Settings Saved", description: "AI blog generation settings have been updated." });
+    toast({ title: t("blogSettingsAdmin.toast.settingsSaved.title"), description: t("blogSettingsAdmin.toast.settingsSaved.description") });
   };
 
   const handleManualGenerate = async () => {
     if (!manualTopic.trim()) {
-      toast({ title: "No Topic Selected", description: "Please select or enter a topic to generate a blog post.", variant: "destructive" });
+      toast({ title: t("blogSettingsAdmin.toast.noTopicSelected.title"), description: t("blogSettingsAdmin.toast.noTopicSelected.description"), variant: "destructive" });
       return;
     }
     setIsLoading(true);
@@ -109,14 +113,14 @@ export default function AdminBlogSettingsPage() {
       Object.assign(sampleBlogGenerationSettings, updatedSettings);
 
       toast({ 
-        title: "AI Blog Post Generated!", 
-        description: `Post titled "${blogOutput.title}" has been created. You can view it on the blog page.`,
+        title: t("blogSettingsAdmin.toast.postGenerated.title"), 
+        description: t("blogSettingsAdmin.toast.postGenerated.description", { title: blogOutput.title }),
         duration: 7000,
       });
 
     } catch (error) {
       console.error("AI Blog generation error:", error);
-      toast({ title: "Generation Failed", description: "An error occurred while generating the blog post.", variant: "destructive" });
+      toast({ title: t("blogSettingsAdmin.toast.generationFailed.title"), description: t("blogSettingsAdmin.toast.generationFailed.description"), variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -125,50 +129,50 @@ export default function AdminBlogSettingsPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Settings className="h-8 w-8" /> AI Blog Generation Settings
+        <Settings className="h-8 w-8" /> {t("blogSettingsAdmin.title")}
       </h1>
-      <CardDescription>Configure automated blog post generation and manually trigger posts.</CardDescription>
+      <CardDescription>{t("blogSettingsAdmin.description")}</CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Automation Settings</CardTitle>
+          <CardTitle>{t("blogSettingsAdmin.automationSettingsTitle")}</CardTitle>
         </CardHeader>
         <form onSubmit={handleSubmit(onSettingsSubmit)}>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="generationIntervalHours">Generation Interval (Hours)</Label>
+              <Label htmlFor="generationIntervalHours">{t("blogSettingsAdmin.generationIntervalLabel")}</Label>
               <Controller 
                 name="generationIntervalHours" 
                 control={control} 
                 render={({ field }) => <Input id="generationIntervalHours" type="number" {...field} />} 
               />
               {errors.generationIntervalHours && <p className="text-sm text-destructive mt-1">{errors.generationIntervalHours.message}</p>}
-              <p className="text-xs text-muted-foreground mt-1">How often should a new blog post be generated? (e.g., 24 for daily)</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("blogSettingsAdmin.generationIntervalHelp")}</p>
             </div>
             <div>
-              <Label htmlFor="topics">Topics (Comma-separated)</Label>
+              <Label htmlFor="topics">{t("blogSettingsAdmin.topicsLabel")}</Label>
               <Controller 
                 name="topics" 
                 control={control} 
-                render={({ field }) => <Textarea id="topics" {...field} rows={3} placeholder="e.g., Resume Tips, Interview Skills, Career Growth" />} 
+                render={({ field }) => <Textarea id="topics" {...field} rows={3} placeholder={t("blogSettingsAdmin.topicsPlaceholder")} />} 
               />
               {errors.topics && <p className="text-sm text-destructive mt-1">{errors.topics.message}</p>}
-               <p className="text-xs text-muted-foreground mt-1">AI will pick from these topics for scheduled posts.</p>
+               <p className="text-xs text-muted-foreground mt-1">{t("blogSettingsAdmin.topicsHelp")}</p>
             </div>
             <div>
-              <Label htmlFor="style">Writing Style (Optional)</Label>
+              <Label htmlFor="style">{t("blogSettingsAdmin.styleLabel")}</Label>
               <Controller 
                 name="style" 
                 control={control} 
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="style"><SelectValue placeholder="Select style (default: Informative)" /></SelectTrigger>
+                    <SelectTrigger id="style"><SelectValue placeholder={t("blogSettingsAdmin.stylePlaceholder")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="informative">Informative</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                      <SelectItem value="formal">Formal</SelectItem>
-                      <SelectItem value="technical">Technical</SelectItem>
-                      <SelectItem value="storytelling">Storytelling</SelectItem>
+                      <SelectItem value="informative">{t("blogSettingsAdmin.styleInformative")}</SelectItem>
+                      <SelectItem value="casual">{t("blogSettingsAdmin.styleCasual")}</SelectItem>
+                      <SelectItem value="formal">{t("blogSettingsAdmin.styleFormal")}</SelectItem>
+                      <SelectItem value="technical">{t("blogSettingsAdmin.styleTechnical")}</SelectItem>
+                      <SelectItem value="storytelling">{t("blogSettingsAdmin.styleStorytelling")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )} 
@@ -177,7 +181,7 @@ export default function AdminBlogSettingsPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Save Automation Settings
+              {t("blogSettingsAdmin.saveAutomationButton")}
             </Button>
           </CardFooter>
         </form>
@@ -185,17 +189,17 @@ export default function AdminBlogSettingsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Manual Blog Post Generation</CardTitle>
+          <CardTitle>{t("blogSettingsAdmin.manualGenerationTitle")}</CardTitle>
           <CardDescription>
-            Last AI post generated: {settings.lastGenerated ? formatDistanceToNow(new Date(settings.lastGenerated), { addSuffix: true }) : 'Never'}
+            {t("blogSettingsAdmin.lastGeneratedPrefix")} {settings.lastGenerated ? formatDistanceToNow(new Date(settings.lastGenerated), { addSuffix: true }) : t("blogSettingsAdmin.lastGeneratedNever")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <div>
-            <Label htmlFor="manual-topic">Select Topic for Manual Generation</Label>
+            <Label htmlFor="manual-topic">{t("blogSettingsAdmin.selectTopicManualLabel")}</Label>
              <Select value={manualTopic} onValueChange={setManualTopic}>
                 <SelectTrigger id="manual-topic">
-                  <SelectValue placeholder="Select a topic or enter custom" />
+                  <SelectValue placeholder={t("blogSettingsAdmin.selectTopicManualPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {settings.topics.map(topic => (
@@ -206,7 +210,7 @@ export default function AdminBlogSettingsPage() {
               <Input 
                 value={manualTopic}
                 onChange={(e) => setManualTopic(e.target.value)}
-                placeholder="Or type a custom topic here"
+                placeholder={t("blogSettingsAdmin.customTopicPlaceholder")}
                 className="mt-2"
               />
            </div>
@@ -214,9 +218,9 @@ export default function AdminBlogSettingsPage() {
         <CardFooter>
           <Button onClick={handleManualGenerate} disabled={isLoading} className="w-full md:w-auto">
             {isLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("blogSettingsAdmin.generatingButton")}</>
             ) : (
-              <><Sparkles className="mr-2 h-4 w-4" /> Generate Blog Post Now</>
+              <><Sparkles className="mr-2 h-4 w-4" /> {t("blogSettingsAdmin.generateNowButton")}</>
             )}
           </Button>
         </CardFooter>
@@ -225,12 +229,11 @@ export default function AdminBlogSettingsPage() {
       <Card className="shadow-md bg-secondary/50 border-primary/20">
         <CardHeader className="flex flex-row items-center gap-3">
            <Info className="h-6 w-6 text-primary" />
-          <CardTitle className="text-lg">Important Note on Automation</CardTitle>
+          <CardTitle className="text-lg">{t("blogSettingsAdmin.importantNoteTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Actual automated scheduling of blog posts (e.g., every X hours) requires a background task runner or cron job on a server.
-            This UI configures the parameters for such a system. The "Generate Now" button allows manual triggering for testing and content creation.
+            {t("blogSettingsAdmin.importantNoteContent")}
           </p>
         </CardContent>
       </Card>
@@ -238,3 +241,5 @@ export default function AdminBlogSettingsPage() {
     </div>
   );
 }
+
+    

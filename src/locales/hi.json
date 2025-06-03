@@ -551,6 +551,242 @@
     },
     "editActionMock": "किरायेदार {tenantId} का संपादन... (यह आमतौर पर एक विस्तृत किरायेदार सेटिंग्स पृष्ठ या एक अधिक जटिल संपादन संवाद पर नेविगेट करेगा)।",
     "deleteActionToast": "किरायेदार {tenantId} हटा दिया गया।"
+  },
+  "tenantOnboarding": {
+    "title": "किरायेदार ऑनबोर्डिंग",
+    "steps": {
+      "basicInfo": "बुनियादी जानकारी",
+      "branding": "ब्रांडिंग",
+      "features": "सुविधा कॉन्फ़िगरेशन",
+      "adminUser": "प्रारंभिक व्यवस्थापक उपयोगकर्ता",
+      "review": "समीक्षा और बनाएँ"
+    },
+    "currentStep": "चरण {current} / {total}",
+    "formLabels": {
+      "tenantName": "किरायेदार का नाम",
+      "tenantDomain": "किरायेदार डोमेन (वैकल्पिक)",
+      "tenantDomainPlaceholder": "उदाहरण, myuniversity.resumematch.ai",
+      "customLogoUrl": "कस्टम लोगो यूआरएल (वैकल्पिक)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (HSL या HEX)",
+      "primaryColorPlaceholder": "उदाहरण, hsl(180 100% 25%) या #008080",
+      "accentColor": "एक्सेंट रंग (HSL या HEX)",
+      "accentColorPlaceholder": "उदाहरण, hsl(180 100% 30%) या #009688",
+      "coreFeaturesTitle": "मुख्य सुविधाएँ:",
+      "featureCommunityFeed": "सामुदायिक फ़ीड",
+      "featureJobBoard": "नौकरी बोर्ड",
+      "featureGamification": "गेमिफिकेशन (XP, बैज)",
+      "featureWallet": "डिजिटल वॉलेट (सिक्के)",
+      "featureEventRegistration": "इवेंट पंजीकरण",
+      "signupTitle": "साइनअप:",
+      "allowPublicSignup": "इस किरायेदार के लिए सार्वजनिक साइनअप की अनुमति दें",
+      "adminFullName": "व्यवस्थापक का पूरा नाम",
+      "adminEmail": "व्यवस्थापक ईमेल पता",
+      "adminPassword": "व्यवस्थापक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "किरायेदार कॉन्फ़िगरेशन की समीक्षा करें:",
+      "nameLabel": "नाम:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो यूआरएल:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "एक्सेंट रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "सुविधाएँ:",
+      "initialAdminUserTitle": "प्रारंभिक व्यवस्थापक उपयोगकर्ता:",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "पिछला",
+      "next": "अगला",
+      "createTenant": "किरायेदार बनाएँ"
+    },
+    "toast": {
+      "tenantCreated": {
+        "title": "किरायेदार सफलतापूर्वक बनाया गया!",
+        "description": "किरायेदार \"{tenantName}\" ऑनबोर्ड किया गया है।"
+      }
+    },
+    "validation": {
+      "tenantNameMin": "किरायेदार का नाम कम से कम 3 अक्षर का होना चाहिए",
+      "invalidUrl": "अमान्य यूआरएल प्रारूप",
+      "invalidColor": "अमान्य रंग प्रारूप (HSL या HEX)",
+      "adminEmailInvalid": "व्यवस्थापक के लिए अमान्य ईमेल",
+      "adminNameRequired": "व्यवस्थापक का नाम आवश्यक है",
+      "adminPasswordMin": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए"
+    }
+  },
+  "announcementsAdmin": {
+    "title": "घोषणा प्रबंधन",
+    "manageTenant": "{tenantId} के लिए प्लेटफ़ॉर्म-व्यापी या लक्षित घोषणाएँ प्रबंधित करें।",
+    "managePlatform": "प्लेटफ़ॉर्म-व्यापी या लक्षित घोषणाएँ प्रबंधित करें।",
+    "createNewButton": "नई घोषणा बनाएँ",
+    "dialog": {
+      "createTitle": "नई घोषणा बनाएँ",
+      "editTitle": "घोषणा संपादित करें",
+      "titleLabel": "शीर्षक",
+      "contentLabel": "सामग्री",
+      "contentPlaceholder": "घोषणा विवरण दर्ज करें। मार्कडाउन समर्थित है।",
+      "startDateLabel": "प्रारंभ तिथि",
+      "endDateLabel": "समाप्ति तिथि (वैकल्पिक)",
+      "audienceLabel": "श्रोता",
+      "audienceAllUsers": "सभी उपयोगकर्ता",
+      "audienceSpecificTenant": "विशिष्ट किरायेदार",
+      "audienceSpecificRole": "विशिष्ट भूमिका (मॉक)",
+      "targetTenantLabel": "लक्षित किरायेदार",
+      "selectTenantPlaceholder": "किरायेदार चुनें",
+      "targetRoleLabel": "लक्षित भूमिका",
+      "selectRolePlaceholder": "भूमिका चुनें",
+      "roleUser": "उपयोगकर्ता",
+      "roleManager": "प्रबंधक",
+      "roleAdmin": "प्रशासक",
+      "statusLabel": "स्थिति",
+      "statusDraft": "मसौदा",
+      "statusPublished": "प्रकाशित",
+      "statusArchived": "संग्रहीत",
+      "cancelButton": "रद्द करें",
+      "saveChangesButton": "बदलाव सहेजें",
+      "createButton": "घोषणा बनाएँ"
+    },
+    "currentAnnouncementsTitle": "वर्तमान घोषणाएँ",
+    "noAnnouncementsTenant": "आपके किरायेदार या वैश्विक रूप से कोई घोषणा नहीं मिली।",
+    "noAnnouncementsPlatform": "कोई घोषणा नहीं मिली।",
+    "table": {
+      "title": "शीर्षक",
+      "status": "स्थिति",
+      "audience": "श्रोता",
+      "startDate": "प्रारंभ तिथि",
+      "endDate": "समाप्ति तिथि",
+      "actions": "कार्रवाइयाँ"
+    },
+    "audienceTargetDisplay": "({target})",
+    "audiencePlatformWide": "(प्लेटफ़ॉर्म-व्यापी)",
+    "endDateOngoing": "जारी",
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "अनुमति अस्वीकृत",
+        "description": "आप केवल अपने किरायेदार के लिए बनाई गई घोषणाओं, या यदि लागू हो तो प्लेटफ़ॉर्म-व्यापी घोषणाओं को संपादित कर सकते हैं।"
+      },
+      "permissionDeniedDelete": {
+        "title": "अनुमति अस्वीकृत",
+        "description": "आप केवल अपने किरायेदार के लिए बनाई गई घोषणाओं को हटा सकते हैं।"
+      },
+      "announcementUpdated": {
+        "title": "घोषणा अपडेट की गई",
+        "description": "घोषणा \"{title}\" अपडेट की गई है।"
+      },
+      "announcementCreated": {
+        "title": "घोषणा बनाई गई",
+        "description": "घोषणा \"{title}\" जोड़ी गई है।"
+      },
+      "announcementDeleted": {
+        "title": "घोषणा हटाई गई",
+        "description": "घोषणा हटा दी गई।"
+      }
+    },
+    "validation": {
+      "titleMin": "शीर्षक कम से कम 5 अक्षर का होना चाहिए",
+      "contentMin": "सामग्री कम से कम 10 अक्षर की होनी चाहिए",
+      "startDateRequired": "प्रारंभ तिथि आवश्यक है।"
+    }
+  },
+  "contentModeration": {
+    "title": "सामग्री मॉडरेशन",
+    "descriptionTenant": "{tenantId} में उपयोगकर्ताओं या AI द्वारा फ़्लैग की गई पोस्ट की समीक्षा करें और प्रबंधित करें।",
+    "descriptionPlatform": "उपयोगकर्ताओं या AI द्वारा फ़्लैग की गई पोस्ट की समीक्षा करें और प्रबंधित करें।",
+    "flaggedPostsTitle": "समीक्षा के लिए फ़्लैग की गई पोस्ट",
+    "noFlaggedPostsTenant": "आपके किरायेदार में वर्तमान में समीक्षा के लिए कोई पोस्ट फ़्लैग नहीं की गई है।",
+    "noFlaggedPostsPlatform": "वर्तमान में समीक्षा के लिए कोई पोस्ट फ़्लैग नहीं की गई है।",
+    "table": {
+      "author": "लेखक",
+      "contentSnippet": "सामग्री स्निपेट",
+      "flagCount": "फ़्लैग गणना",
+      "dateFlagged": "फ़्लैग करने की तिथि",
+      "actions": "कार्रवाइयाँ"
+    },
+    "viewOnFeedTitle": "फ़ीड पर देखें (यह सुविधा विकास के अधीन है)",
+    "toast": {
+      "postApproved": {
+        "title": "पोस्ट स्वीकृत",
+        "description": "पोस्ट दृश्यमान के रूप में चिह्नित। परिवर्तन देखने के लिए सामुदायिक फ़ीड रीफ़्रेश करें।"
+      },
+      "postRemoved": {
+        "title": "पोस्ट हटाई गई",
+        "description": "पोस्ट हटाए गए के रूप में चिह्नित। परिवर्तन देखने के लिए सामुदायिक फ़ीड रीफ़्रेश करें।"
+      }
+    }
+  },
+  "blogSettingsAdmin": {
+    "title": "AI ब्लॉग निर्माण सेटिंग",
+    "description": "स्वचालित ब्लॉग पोस्ट निर्माण कॉन्फ़िगर करें और मैन्युअल रूप से पोस्ट ट्रिगर करें।",
+    "automationSettingsTitle": "स्वचालन सेटिंग",
+    "generationIntervalLabel": "निर्माण अंतराल (घंटे)",
+    "generationIntervalHelp": "कितनी बार एक नया ब्लॉग पोस्ट बनाया जाना चाहिए? (उदाहरण के लिए, दैनिक के लिए 24)",
+    "topicsLabel": "विषय (अल्पविराम से अलग)",
+    "topicsPlaceholder": "जैसे, रिज्यूमे टिप्स, साक्षात्कार कौशल, करियर ग्रोथ",
+    "topicsHelp": "AI इन विषयों में से अनुसूचित पोस्ट के लिए चयन करेगा।",
+    "styleLabel": "लेखन शैली (वैकल्पिक)",
+    "stylePlaceholder": "शैली चुनें (डिफ़ॉल्ट: सूचनात्मक)",
+    "styleInformative": "सूचनात्मक",
+    "styleCasual": "अनौपचारिक",
+    "styleFormal": "औपचारिक",
+    "styleTechnical": "तकनीकी",
+    "styleStorytelling": "कहानी कहने की शैली",
+    "saveAutomationButton": "स्वचालन सेटिंग सहेजें",
+    "manualGenerationTitle": "मैन्युअल ब्लॉग पोस्ट निर्माण",
+    "lastGeneratedPrefix": "अंतिम AI पोस्ट बनाई गई:",
+    "lastGeneratedNever": "कभी नहीं",
+    "selectTopicManualLabel": "मैन्युअल निर्माण के लिए विषय चुनें",
+    "selectTopicManualPlaceholder": "एक विषय चुनें या कस्टम दर्ज करें",
+    "customTopicPlaceholder": "या यहाँ एक कस्टम विषय टाइप करें",
+    "generateNowButton": "अभी ब्लॉग पोस्ट बनाएँ",
+    "generatingButton": "बनाया जा रहा है...",
+    "importantNoteTitle": "स्वचालन पर महत्वपूर्ण नोट",
+    "importantNoteContent": "ब्लॉग पोस्ट का वास्तविक स्वचालित शेड्यूलिंग (जैसे, हर X घंटे) सर्वर पर बैकग्राउंड टास्क रनर या क्रॉन जॉब की आवश्यकता होती है। यह UI ऐसी प्रणाली के लिए पैरामीटर कॉन्फ़िगर करता है। \"अभी बनाएँ\" बटन परीक्षण और सामग्री निर्माण के लिए मैन्युअल ट्रिगरिंग की अनुमति देता है।",
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्स सहेजी गईं",
+        "description": "AI ब्लॉग निर्माण सेटिंग अपडेट की गई हैं।"
+      },
+      "noTopicSelected": {
+        "title": "कोई विषय नहीं चुना गया",
+        "description": "ब्लॉग पोस्ट बनाने के लिए कृपया एक विषय चुनें या दर्ज करें।"
+      },
+      "postGenerated": {
+        "title": "AI ब्लॉग पोस्ट बनाई गई!",
+        "description": "\"{title}\" शीर्षक वाली पोस्ट बनाई गई है। आप इसे ब्लॉग पेज पर देख सकते हैं।"
+      },
+      "generationFailed": {
+        "title": "निर्माण विफल",
+        "description": "ब्लॉग पोस्ट बनाते समय एक त्रुटि हुई।"
+      }
+    },
+    "validation": {
+      "intervalMin": "अंतराल कम से कम 1 घंटा होना चाहिए",
+      "intervalMax": "अंतराल बहुत लंबा है (अधिकतम 30 दिन)",
+      "topicsRequired": "कम से कम एक विषय आवश्यक है"
+    }
+  },
+  "welcomeTour": {
+    "previousButton": "पिछला",
+    "nextButton": "अगला",
+    "finishButton": "समझ गया!"
+  },
+  "dailyStreakPopup": {
+    "title": "आपकी गतिविधि की लकीर!",
+    "currentStreakLabel": "वर्तमान लकीर",
+    "longestStreakLabel": "सबसे लंबी लकीर",
+    "totalActiveDaysLabel": "कुल सक्रिय दिन:",
+    "keepItUpButton": "जारी रखो!",
+    "dayLabels": {
+      "S": "र",
+      "M": "सो",
+      "T": "मं",
+      "W": "बु",
+      "Th": "गु",
+      "F": "शु",
+      "Sa": "श"
+    }
   }
 }
 

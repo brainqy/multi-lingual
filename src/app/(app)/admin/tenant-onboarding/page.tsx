@@ -19,37 +19,57 @@ import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
 const tenantOnboardingSchema = z.object({
-  tenantName: z.string().min(3, "Tenant name must be at least 3 characters"),
+  tenantName: z.string().min(3, "validation.tenantNameMin"),
   tenantDomain: z.string().optional(),
-  customLogoUrl: z.string().url("Invalid URL format").optional().or(z.literal('')),
-  primaryColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid color format (HSL or HEX)").optional().or(z.literal('')),
-  accentColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid color format (HSL or HEX)").optional().or(z.literal('')),
+  customLogoUrl: z.string().url("validation.invalidUrl").optional().or(z.literal('')),
+  primaryColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "validation.invalidColor").optional().or(z.literal('')),
+  accentColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "validation.invalidColor").optional().or(z.literal('')),
   allowPublicSignup: z.boolean().default(true),
   communityFeedEnabled: z.boolean().default(true),
   jobBoardEnabled: z.boolean().default(true),
   gamificationEnabled: z.boolean().default(true),
   walletEnabled: z.boolean().default(true),
   eventRegistrationEnabled: z.boolean().default(true),
-  adminEmail: z.string().email("Invalid email for admin"),
-  adminName: z.string().min(1, "Admin name is required"),
-  adminPassword: z.string().min(8, "Password must be at least 8 characters"),
+  adminEmail: z.string().email("validation.adminEmailInvalid"),
+  adminName: z.string().min(1, "validation.adminNameRequired"),
+  adminPassword: z.string().min(8, "validation.adminPasswordMin"),
 });
 
 type TenantOnboardingFormData = z.infer<typeof tenantOnboardingSchema>;
 
-const STEPS = [
-  { id: "basicInfo", title: "Basic Information", icon: Building2 },
-  { id: "branding", title: "Branding", icon: Palette },
-  { id: "features", title: "Feature Configuration", icon: Settings },
-  { id: "adminUser", title: "Initial Admin User", icon: UserPlus },
-  { id: "review", title: "Review & Create", icon: Eye },
+const STEPS_CONFIG = [
+  { id: "basicInfo", titleKey: "tenantOnboarding.steps.basicInfo", icon: Building2 },
+  { id: "branding", titleKey: "tenantOnboarding.steps.branding", icon: Palette },
+  { id: "features", titleKey: "tenantOnboarding.steps.features", icon: Settings },
+  { id: "adminUser", titleKey: "tenantOnboarding.steps.adminUser", icon: UserPlus },
+  { id: "review", titleKey: "tenantOnboarding.steps.review", icon: Eye },
 ];
 
 export default function TenantOnboardingPage() {
+  const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
+
+  const translatedSchema = z.object({
+    tenantName: z.string().min(3, t("tenantOnboarding.validation.tenantNameMin")),
+    tenantDomain: z.string().optional(),
+    customLogoUrl: z.string().url(t("tenantOnboarding.validation.invalidUrl")).optional().or(z.literal('')),
+    primaryColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t("tenantOnboarding.validation.invalidColor")).optional().or(z.literal('')),
+    accentColor: z.string().regex(/^hsl\(\d{1,3}\s\d{1,3}%\s\d{1,3}%\)$|^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t("tenantOnboarding.validation.invalidColor")).optional().or(z.literal('')),
+    allowPublicSignup: z.boolean().default(true),
+    communityFeedEnabled: z.boolean().default(true),
+    jobBoardEnabled: z.boolean().default(true),
+    gamificationEnabled: z.boolean().default(true),
+    walletEnabled: z.boolean().default(true),
+    eventRegistrationEnabled: z.boolean().default(true),
+    adminEmail: z.string().email(t("tenantOnboarding.validation.adminEmailInvalid")),
+    adminName: z.string().min(1, t("tenantOnboarding.validation.adminNameRequired")),
+    adminPassword: z.string().min(8, t("tenantOnboarding.validation.adminPasswordMin")),
+  });
+
+
   const { control, handleSubmit, trigger, getValues, formState: { errors } } = useForm<TenantOnboardingFormData>({
-    resolver: zodResolver(tenantOnboardingSchema),
+    resolver: zodResolver(translatedSchema),
     defaultValues: {
       allowPublicSignup: true,
       communityFeedEnabled: true,
@@ -78,7 +98,7 @@ export default function TenantOnboardingPage() {
     
     const isValid = fieldsToValidate.length > 0 ? await trigger(fieldsToValidate) : true;
 
-    if (isValid && currentStep < STEPS.length - 1) {
+    if (isValid && currentStep < STEPS_CONFIG.length - 1) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -116,7 +136,7 @@ export default function TenantOnboardingPage() {
     console.log("New Tenant Created (Mock):", newTenant);
     console.log("Initial Admin User (Mock):", { email: data.adminEmail, name: data.adminName });
 
-    toast({ title: "Tenant Created Successfully!", description: `Tenant "${data.tenantName}" has been onboarded.` });
+    toast({ title: t("tenantOnboarding.toast.tenantCreated.title"), description: t("tenantOnboarding.toast.tenantCreated.description", {tenantName: data.tenantName}) });
     setCurrentStep(0); 
   };
 
@@ -127,13 +147,13 @@ export default function TenantOnboardingPage() {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="tenantName">Tenant Name</Label>
+              <Label htmlFor="tenantName">{t("tenantOnboarding.formLabels.tenantName")}</Label>
               <Controller name="tenantName" control={control} render={({ field }) => <Input id="tenantName" {...field} />} />
               {errors.tenantName && <p className="text-sm text-destructive mt-1">{errors.tenantName.message}</p>}
             </div>
             <div>
-              <Label htmlFor="tenantDomain">Tenant Domain (Optional)</Label>
-              <Controller name="tenantDomain" control={control} render={({ field }) => <Input id="tenantDomain" placeholder="e.g., myuniversity.resumematch.ai" {...field} />} />
+              <Label htmlFor="tenantDomain">{t("tenantOnboarding.formLabels.tenantDomain")}</Label>
+              <Controller name="tenantDomain" control={control} render={({ field }) => <Input id="tenantDomain" placeholder={t("tenantOnboarding.formLabels.tenantDomainPlaceholder")} {...field} />} />
               {errors.tenantDomain && <p className="text-sm text-destructive mt-1">{errors.tenantDomain.message}</p>}
             </div>
           </div>
@@ -142,18 +162,18 @@ export default function TenantOnboardingPage() {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="customLogoUrl">Custom Logo URL (Optional)</Label>
-              <Controller name="customLogoUrl" control={control} render={({ field }) => <Input id="customLogoUrl" placeholder="https://example.com/logo.png" {...field} />} />
+              <Label htmlFor="customLogoUrl">{t("tenantOnboarding.formLabels.customLogoUrl")}</Label>
+              <Controller name="customLogoUrl" control={control} render={({ field }) => <Input id="customLogoUrl" placeholder={t("tenantOnboarding.formLabels.customLogoUrlPlaceholder")} {...field} />} />
               {errors.customLogoUrl && <p className="text-sm text-destructive mt-1">{errors.customLogoUrl.message}</p>}
             </div>
             <div>
-              <Label htmlFor="primaryColor">Primary Color (HSL or HEX)</Label>
-              <Controller name="primaryColor" control={control} render={({ field }) => <Input id="primaryColor" placeholder="e.g., hsl(180 100% 25%) or #008080" {...field} />} />
+              <Label htmlFor="primaryColor">{t("tenantOnboarding.formLabels.primaryColor")}</Label>
+              <Controller name="primaryColor" control={control} render={({ field }) => <Input id="primaryColor" placeholder={t("tenantOnboarding.formLabels.primaryColorPlaceholder")} {...field} />} />
               {errors.primaryColor && <p className="text-sm text-destructive mt-1">{errors.primaryColor.message}</p>}
             </div>
             <div>
-              <Label htmlFor="accentColor">Accent Color (HSL or HEX)</Label>
-              <Controller name="accentColor" control={control} render={({ field }) => <Input id="accentColor" placeholder="e.g., hsl(180 100% 30%) or #009688" {...field} />} />
+              <Label htmlFor="accentColor">{t("tenantOnboarding.formLabels.accentColor")}</Label>
+              <Controller name="accentColor" control={control} render={({ field }) => <Input id="accentColor" placeholder={t("tenantOnboarding.formLabels.accentColorPlaceholder")} {...field} />} />
               {errors.accentColor && <p className="text-sm text-destructive mt-1">{errors.accentColor.message}</p>}
             </div>
           </div>
@@ -161,13 +181,13 @@ export default function TenantOnboardingPage() {
       case 2: 
         return (
           <div className="space-y-3">
-            <h3 className="text-md font-medium mb-2">Core Features:</h3>
+            <h3 className="text-md font-medium mb-2">{t("tenantOnboarding.formLabels.coreFeaturesTitle")}</h3>
              {[
-                { id: "communityFeedEnabled", label: "Community Feed" },
-                { id: "jobBoardEnabled", label: "Job Board" },
-                { id: "gamificationEnabled", label: "Gamification (XP, Badges)" },
-                { id: "walletEnabled", label: "Digital Wallet (Coins)" },
-                { id: "eventRegistrationEnabled", label: "Event Registration" },
+                { id: "communityFeedEnabled", labelKey: "tenantOnboarding.formLabels.featureCommunityFeed" },
+                { id: "jobBoardEnabled", labelKey: "tenantOnboarding.formLabels.featureJobBoard" },
+                { id: "gamificationEnabled", labelKey: "tenantOnboarding.formLabels.featureGamification" },
+                { id: "walletEnabled", labelKey: "tenantOnboarding.formLabels.featureWallet" },
+                { id: "eventRegistrationEnabled", labelKey: "tenantOnboarding.formLabels.featureEventRegistration" },
              ].map(feature => (
                 <div key={feature.id} className="flex items-center space-x-2">
                     <Controller
@@ -181,13 +201,13 @@ export default function TenantOnboardingPage() {
                         />
                         )}
                     />
-                    <Label htmlFor={feature.id} className="font-normal">{feature.label}</Label>
+                    <Label htmlFor={feature.id} className="font-normal">{t(feature.labelKey)}</Label>
                 </div>
              ))}
-             <h3 className="text-md font-medium mb-2 mt-4">Signup:</h3>
+             <h3 className="text-md font-medium mb-2 mt-4">{t("tenantOnboarding.formLabels.signupTitle")}</h3>
              <div className="flex items-center space-x-2">
                 <Controller name="allowPublicSignup" control={control} render={({ field }) => <Checkbox id="allowPublicSignup" checked={field.value} onCheckedChange={field.onChange} />} />
-                <Label htmlFor="allowPublicSignup" className="font-normal">Allow Public Signup for this Tenant</Label>
+                <Label htmlFor="allowPublicSignup" className="font-normal">{t("tenantOnboarding.formLabels.allowPublicSignup")}</Label>
              </div>
           </div>
         );
@@ -195,17 +215,17 @@ export default function TenantOnboardingPage() {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="adminName">Admin Full Name</Label>
+              <Label htmlFor="adminName">{t("tenantOnboarding.formLabels.adminFullName")}</Label>
               <Controller name="adminName" control={control} render={({ field }) => <Input id="adminName" {...field} />} />
               {errors.adminName && <p className="text-sm text-destructive mt-1">{errors.adminName.message}</p>}
             </div>
             <div>
-              <Label htmlFor="adminEmail">Admin Email Address</Label>
+              <Label htmlFor="adminEmail">{t("tenantOnboarding.formLabels.adminEmail")}</Label>
               <Controller name="adminEmail" control={control} render={({ field }) => <Input id="adminEmail" type="email" {...field} />} />
               {errors.adminEmail && <p className="text-sm text-destructive mt-1">{errors.adminEmail.message}</p>}
             </div>
             <div>
-              <Label htmlFor="adminPassword">Admin Password</Label>
+              <Label htmlFor="adminPassword">{t("tenantOnboarding.formLabels.adminPassword")}</Label>
               <Controller name="adminPassword" control={control} render={({ field }) => <Input id="adminPassword" type="password" {...field} />} />
               {errors.adminPassword && <p className="text-sm text-destructive mt-1">{errors.adminPassword.message}</p>}
             </div>
@@ -214,24 +234,24 @@ export default function TenantOnboardingPage() {
       case 4: 
         return (
           <div className="space-y-3 text-sm">
-            <h3 className="text-md font-semibold text-primary">Review Tenant Configuration:</h3>
-            <p><strong>Name:</strong> {formData.tenantName}</p>
-            <p><strong>Domain:</strong> {formData.tenantDomain || 'N/A'}</p>
-            <p><strong>Logo URL:</strong> {formData.customLogoUrl || 'Default'}</p>
-            <p><strong>Primary Color:</strong> {formData.primaryColor}</p>
-            <p><strong>Accent Color:</strong> {formData.accentColor}</p>
-            <p><strong>Public Signup:</strong> {formData.allowPublicSignup ? 'Enabled' : 'Disabled'}</p>
-            <p><strong>Features:</strong></p>
+            <h3 className="text-md font-semibold text-primary">{t("tenantOnboarding.reviewSection.title")}</h3>
+            <p><strong>{t("tenantOnboarding.reviewSection.nameLabel")}</strong> {formData.tenantName}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.domainLabel")}</strong> {formData.tenantDomain || 'N/A'}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.logoUrlLabel")}</strong> {formData.customLogoUrl || 'Default'}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.primaryColorLabel")}</strong> {formData.primaryColor}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.accentColorLabel")}</strong> {formData.accentColor}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.publicSignupLabel")}</strong> {formData.allowPublicSignup ? 'Enabled' : 'Disabled'}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.featuresLabel")}</strong></p>
             <ul className="list-disc list-inside ml-4">
-                {formData.communityFeedEnabled && <li>Community Feed</li>}
-                {formData.jobBoardEnabled && <li>Job Board</li>}
-                {formData.gamificationEnabled && <li>Gamification</li>}
-                {formData.walletEnabled && <li>Wallet</li>}
-                {formData.eventRegistrationEnabled && <li>Event Registration</li>}
+                {formData.communityFeedEnabled && <li>{t("tenantOnboarding.formLabels.featureCommunityFeed")}</li>}
+                {formData.jobBoardEnabled && <li>{t("tenantOnboarding.formLabels.featureJobBoard")}</li>}
+                {formData.gamificationEnabled && <li>{t("tenantOnboarding.formLabels.featureGamification")}</li>}
+                {formData.walletEnabled && <li>{t("tenantOnboarding.formLabels.featureWallet")}</li>}
+                {formData.eventRegistrationEnabled && <li>{t("tenantOnboarding.formLabels.featureEventRegistration")}</li>}
             </ul>
-            <h3 className="text-md font-semibold text-primary mt-2">Initial Admin User:</h3>
-            <p><strong>Name:</strong> {formData.adminName}</p>
-            <p><strong>Email:</strong> {formData.adminEmail}</p>
+            <h3 className="text-md font-semibold text-primary mt-2">{t("tenantOnboarding.reviewSection.initialAdminUserTitle")}</h3>
+            <p><strong>{t("tenantOnboarding.reviewSection.nameLabel")}</strong> {formData.adminName}</p>
+            <p><strong>{t("tenantOnboarding.reviewSection.emailLabel")}</strong> {formData.adminEmail}</p>
           </div>
         );
       default:
@@ -239,21 +259,21 @@ export default function TenantOnboardingPage() {
     }
   };
 
-  const CurrentIcon = STEPS[currentStep].icon;
+  const CurrentIcon = STEPS_CONFIG[currentStep].icon;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Layers3 className="h-8 w-8" /> Tenant Onboarding
+        <Layers3 className="h-8 w-8" /> {t("tenantOnboarding.title")}
       </h1>
       
       <Card className="shadow-xl">
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
-            <CardTitle className="text-xl flex items-center gap-2"><CurrentIcon className="h-6 w-6 text-primary"/>{STEPS[currentStep].title}</CardTitle>
-            <span className="text-sm text-muted-foreground">Step {currentStep + 1} of {STEPS.length}</span>
+            <CardTitle className="text-xl flex items-center gap-2"><CurrentIcon className="h-6 w-6 text-primary"/>{t(STEPS_CONFIG[currentStep].titleKey)}</CardTitle>
+            <span className="text-sm text-muted-foreground">{t("tenantOnboarding.currentStep", {current: currentStep + 1, total: STEPS_CONFIG.length})}</span>
           </div>
-          <Progress value={((currentStep + 1) / STEPS.length) * 100} className="w-full h-2 [&>div]:bg-primary" />
+          <Progress value={((currentStep + 1) / STEPS_CONFIG.length) * 100} className="w-full h-2 [&>div]:bg-primary" />
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="min-h-[300px]">
@@ -261,15 +281,15 @@ export default function TenantOnboardingPage() {
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={handlePrevStep} disabled={currentStep === 0}>
-              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              <ChevronLeft className="mr-2 h-4 w-4" /> {t("tenantOnboarding.buttons.previous")}
             </Button>
-            {currentStep < STEPS.length - 1 ? (
+            {currentStep < STEPS_CONFIG.length - 1 ? (
               <Button type="button" onClick={handleNextStep} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Next <ChevronRight className="ml-2 h-4 w-4" />
+                {t("tenantOnboarding.buttons.next")} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
               <Button type="submit" className="bg-green-600 hover:bg-green-700 text-primary-foreground">
-                Create Tenant
+                {t("tenantOnboarding.buttons.createTenant")}
               </Button>
             )}
           </CardFooter>
@@ -278,3 +298,5 @@ export default function TenantOnboardingPage() {
     </div>
   );
 }
+
+    

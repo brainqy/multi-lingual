@@ -551,6 +551,242 @@
     },
     "editActionMock": "भाडेकरू {tenantId} संपादित करत आहे... (हे साधारणपणे तपशीलवार भाडेकरू सेटिंग्ज पृष्ठावर किंवा अधिक जटिल संपादन डायलॉगवर नेव्हिगेट करेल).",
     "deleteActionToast": "भाडेकरू {tenantId} हटवला."
+  },
+  "tenantOnboarding": {
+    "title": "भाडेकरू ऑनबोर्डिंग",
+    "steps": {
+      "basicInfo": "मूलभूत माहिती",
+      "branding": "ब्रँडिंग",
+      "features": "वैशिष्ट्य संरचना",
+      "adminUser": "प्रारंभिक प्रशासक वापरकर्ता",
+      "review": "पुनरावलोकन आणि तयार करा"
+    },
+    "currentStep": "पायरी {current} / {total}",
+    "formLabels": {
+      "tenantName": "भाडेकरूचे नाव",
+      "tenantDomain": "भाडेकरू डोमेन (पर्यायी)",
+      "tenantDomainPlaceholder": "उदा. myuniversity.resumematch.ai",
+      "customLogoUrl": "सानुकूल लोगो URL (पर्यायी)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (HSL किंवा HEX)",
+      "primaryColorPlaceholder": "उदा. hsl(180 100% 25%) किंवा #008080",
+      "accentColor": "उच्चार रंग (HSL किंवा HEX)",
+      "accentColorPlaceholder": "उदा. hsl(180 100% 30%) किंवा #009688",
+      "coreFeaturesTitle": "मुख्य वैशिष्ट्ये:",
+      "featureCommunityFeed": "समुदाय फीड",
+      "featureJobBoard": "नोकरी मंडळ",
+      "featureGamification": "गेमिफिकेशन (XP, बॅज)",
+      "featureWallet": "डिजिटल वॉलेट (नाणी)",
+      "featureEventRegistration": "कार्यक्रम नोंदणी",
+      "signupTitle": "साइनअप:",
+      "allowPublicSignup": "या भाडेकरूसाठी सार्वजनिक साइनअपला परवानगी द्या",
+      "adminFullName": "प्रशासकाचे पूर्ण नाव",
+      "adminEmail": "प्रशासक ईमेल पत्ता",
+      "adminPassword": "प्रशासक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "भाडेकरू संरचनेचे पुनरावलोकन करा:",
+      "nameLabel": "नाव:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो URL:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "उच्चार रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "वैशिष्ट्ये:",
+      "initialAdminUserTitle": "प्रारंभिक प्रशासक वापरकर्ता:",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "मागील",
+      "next": "पुढील",
+      "createTenant": "भाडेकरू तयार करा"
+    },
+    "toast": {
+      "tenantCreated": {
+        "title": "भाडेकरू यशस्वीरित्या तयार झाला!",
+        "description": "भाडेकरू \"{tenantName}\" ऑनबोर्ड झाला आहे."
+      }
+    },
+    "validation": {
+      "tenantNameMin": "भाडेकरूचे नाव किमान ३ अक्षरे असणे आवश्यक आहे",
+      "invalidUrl": "अवैध URL स्वरूप",
+      "invalidColor": "अवैध रंग स्वरूप (HSL किंवा HEX)",
+      "adminEmailInvalid": "प्रशासकासाठी अवैध ईमेल",
+      "adminNameRequired": "प्रशासकाचे नाव आवश्यक आहे",
+      "adminPasswordMin": "पासवर्ड किमान ८ अक्षरे असणे आवश्यक आहे"
+    }
+  },
+  "announcementsAdmin": {
+    "title": "घोषणा व्यवस्थापन",
+    "manageTenant": "{tenantId} साठी प्लॅटफॉर्म-व्यापी किंवा लक्ष्यित घोषणा व्यवस्थापित करा.",
+    "managePlatform": "प्लॅटफॉर्म-व्यापी किंवा लक्ष्यित घोषणा व्यवस्थापित करा.",
+    "createNewButton": "नवीन घोषणा तयार करा",
+    "dialog": {
+      "createTitle": "नवीन घोषणा तयार करा",
+      "editTitle": "घोषणा संपादित करा",
+      "titleLabel": "शीर्षक",
+      "contentLabel": "सामग्री",
+      "contentPlaceholder": "घोषणा तपशील प्रविष्ट करा. मार्कडाउन समर्थित आहे.",
+      "startDateLabel": "प्रारंभ तारीख",
+      "endDateLabel": "समाप्ती तारीख (पर्यायी)",
+      "audienceLabel": "श्रोते",
+      "audienceAllUsers": "सर्व वापरकर्ते",
+      "audienceSpecificTenant": "विशिष्ट भाडेकरू",
+      "audienceSpecificRole": "विशिष्ट भूमिका (मॉक)",
+      "targetTenantLabel": "लक्षित भाडेकरू",
+      "selectTenantPlaceholder": "भाडेकरू निवडा",
+      "targetRoleLabel": "लक्षित भूमिका",
+      "selectRolePlaceholder": "भूमिका निवडा",
+      "roleUser": "वापरकर्ता",
+      "roleManager": "व्यवस्थापक",
+      "roleAdmin": "प्रशासक",
+      "statusLabel": "स्थिती",
+      "statusDraft": "मसुदा",
+      "statusPublished": "प्रकाशित",
+      "statusArchived": "संग्रहित",
+      "cancelButton": "रद्द करा",
+      "saveChangesButton": "बदल जतन करा",
+      "createButton": "घोषणा तयार करा"
+    },
+    "currentAnnouncementsTitle": "सध्याच्या घोषणा",
+    "noAnnouncementsTenant": "तुमच्या भाडेकरूसाठी किंवा जागतिक स्तरावर कोणतीही घोषणा आढळली नाही.",
+    "noAnnouncementsPlatform": "कोणतीही घोषणा आढळली नाही.",
+    "table": {
+      "title": "शीर्षक",
+      "status": "स्थिती",
+      "audience": "श्रोते",
+      "startDate": "प्रारंभ तारीख",
+      "endDate": "समाप्ती तारीख",
+      "actions": "क्रिया"
+    },
+    "audienceTargetDisplay": "({target})",
+    "audiencePlatformWide": "(प्लॅटफॉर्म-व्यापी)",
+    "endDateOngoing": "चालू",
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "परवानगी नाकारली",
+        "description": "तुम्ही फक्त तुमच्या भाडेकरूसाठी तयार केलेल्या घोषणा, किंवा लागू असल्यास प्लॅटफॉर्म-व्यापी घोषणा संपादित करू शकता."
+      },
+      "permissionDeniedDelete": {
+        "title": "परवानगी नाकारली",
+        "description": "तुम्ही फक्त तुमच्या भाडेकरूसाठी तयार केलेल्या घोषणा हटवू शकता."
+      },
+      "announcementUpdated": {
+        "title": "घोषणा अद्यतनित केली",
+        "description": "घोषणा \"{title}\" अद्यतनित केली आहे."
+      },
+      "announcementCreated": {
+        "title": "घोषणा तयार केली",
+        "description": "घोषणा \"{title}\" जोडली आहे."
+      },
+      "announcementDeleted": {
+        "title": "घोषणा हटवली",
+        "description": "घोषणा काढली."
+      }
+    },
+    "validation": {
+      "titleMin": "शीर्षक किमान ५ अक्षरे असणे आवश्यक आहे",
+      "contentMin": "सामग्री किमान १० अक्षरे असणे आवश्यक आहे",
+      "startDateRequired": "प्रारंभ तारीख आवश्यक आहे."
+    }
+  },
+  "contentModeration": {
+    "title": "सामग्री नियंत्रण",
+    "descriptionTenant": "{tenantId} मध्ये वापरकर्ते किंवा AI द्वारे ध्वजांकित केलेल्या पोस्टचे पुनरावलोकन करा आणि व्यवस्थापित करा.",
+    "descriptionPlatform": "वापरकर्ते किंवा AI द्वारे ध्वजांकित केलेल्या पोस्टचे पुनरावलोकन करा आणि व्यवस्थापित करा.",
+    "flaggedPostsTitle": "पुनरावलोकनासाठी ध्वजांकित पोस्ट्स",
+    "noFlaggedPostsTenant": "तुमच्या भाडेकरूमध्ये सध्या पुनरावलोकनासाठी कोणतीही पोस्ट ध्वजांकित केलेली नाही.",
+    "noFlaggedPostsPlatform": "सध्या पुनरावलोकनासाठी कोणतीही पोस्ट ध्वजांकित केलेली नाही.",
+    "table": {
+      "author": "लेखक",
+      "contentSnippet": "सामग्री स्निपेट",
+      "flagCount": "ध्वज संख्या",
+      "dateFlagged": "ध्वजांकित तारीख",
+      "actions": "क्रिया"
+    },
+    "viewOnFeedTitle": "फीडवर पहा (हे वैशिष्ट्य विकासाधीन आहे)",
+    "toast": {
+      "postApproved": {
+        "title": "पोस्ट मंजूर",
+        "description": "पोस्ट दृश्यमान म्हणून चिन्हांकित. बदल पाहण्यासाठी समुदाय फीड रिफ्रेश करा."
+      },
+      "postRemoved": {
+        "title": "पोस्ट काढली",
+        "description": "पोस्ट काढली म्हणून चिन्हांकित. बदल पाहण्यासाठी समुदाय फीड रिफ्रेश करा."
+      }
+    }
+  },
+  "blogSettingsAdmin": {
+    "title": "AI ब्लॉग निर्मिती सेटिंग्ज",
+    "description": "स्वयंचलित ब्लॉग पोस्ट निर्मिती कॉन्फिगर करा आणि मॅन्युअली पोस्ट ट्रिगर करा.",
+    "automationSettingsTitle": "स्वचालन सेटिंग्ज",
+    "generationIntervalLabel": "निर्मिती मध्यांतर (तास)",
+    "generationIntervalHelp": "किती वेळा नवीन ब्लॉग पोस्ट तयार करावी? (उदा. दररोज साठी २४)",
+    "topicsLabel": "विषय (अल्पविरामाने विभक्त)",
+    "topicsPlaceholder": "उदा. रेझ्युमे टिप्स, मुलाखत कौशल्ये, करिअर वाढ",
+    "topicsHelp": "AI अनुसूचित पोस्टसाठी या विषयांमधून निवडेल.",
+    "styleLabel": "लेखन शैली (पर्यायी)",
+    "stylePlaceholder": "शैली निवडा (डीफॉल्ट: माहितीपूर्ण)",
+    "styleInformative": "माहितीपूर्ण",
+    "styleCasual": "अनौपचारिक",
+    "styleFormal": "औपचारिक",
+    "styleTechnical": "तांत्रिक",
+    "styleStorytelling": "कथाकथन",
+    "saveAutomationButton": "स्वचालन सेटिंग्ज जतन करा",
+    "manualGenerationTitle": "मॅन्युअल ब्लॉग पोस्ट निर्मिती",
+    "lastGeneratedPrefix": "शेवटची AI पोस्ट तयार झाली:",
+    "lastGeneratedNever": "कधीही नाही",
+    "selectTopicManualLabel": "मॅन्युअल निर्मितीसाठी विषय निवडा",
+    "selectTopicManualPlaceholder": "एक विषय निवडा किंवा सानुकूल प्रविष्ट करा",
+    "customTopicPlaceholder": "किंवा येथे सानुकूल विषय टाइप करा",
+    "generateNowButton": "आता ब्लॉग पोस्ट तयार करा",
+    "generatingButton": "तयार होत आहे...",
+    "importantNoteTitle": "स्वचालनावरील महत्त्वाचे टीप",
+    "importantNoteContent": "ब्लॉग पोस्ट्सचे वास्तविक स्वयंचलित वेळापत्रक (उदा. दर X तासांनी) सर्व्हरवर बॅकग्राउंड टास्क रनर किंवा क्रॉन जॉब आवश्यक आहे. हे UI अशा प्रणालीसाठी पॅरामीटर्स कॉन्फिगर करते. \"आता तयार करा\" बटण चाचणी आणि सामग्री निर्मितीसाठी मॅन्युअल ट्रिगरिंगला अनुमती देते.",
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्ज जतन केल्या",
+        "description": "AI ब्लॉग निर्मिती सेटिंग्ज अद्यतनित केल्या आहेत."
+      },
+      "noTopicSelected": {
+        "title": "कोणताही विषय निवडलेला नाही",
+        "description": "ब्लॉग पोस्ट तयार करण्यासाठी कृपया एक विषय निवडा किंवा प्रविष्ट करा."
+      },
+      "postGenerated": {
+        "title": "AI ब्लॉग पोस्ट तयार झाली!",
+        "description": "\"{title}\" शीर्षकाची पोस्ट तयार झाली आहे. तुम्ही ती ब्लॉग पृष्ठावर पाहू शकता."
+      },
+      "generationFailed": {
+        "title": "निर्मिती अयशस्वी",
+        "description": "ब्लॉग पोस्ट तयार करताना एक त्रुटी आली."
+      }
+    },
+    "validation": {
+      "intervalMin": "मध्यांतर किमान १ तास असणे आवश्यक आहे",
+      "intervalMax": "मध्यांतर खूप मोठे आहे (कमाल ३० दिवस)",
+      "topicsRequired": "किमान एक विषय आवश्यक आहे"
+    }
+  },
+  "welcomeTour": {
+    "previousButton": "मागील",
+    "nextButton": "पुढील",
+    "finishButton": "समजले!"
+  },
+  "dailyStreakPopup": {
+    "title": "तुमची क्रियाकलाप स्ट्रीक!",
+    "currentStreakLabel": "सध्याची स्ट्रीक",
+    "longestStreakLabel": "सर्वात लांब स्ट्रीक",
+    "totalActiveDaysLabel": "एकूण सक्रिय दिवस:",
+    "keepItUpButton": "चालू ठेवा!",
+    "dayLabels": {
+      "S": "र",
+      "M": "सो",
+      "T": "मं",
+      "W": "बु",
+      "Th": "गु",
+      "F": "शु",
+      "Sa": "श"
+    }
   }
 }
 
