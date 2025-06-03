@@ -61,7 +61,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-card px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-       <SidebarTrigger className="md:hidden" />
+      <SidebarTrigger className="md:hidden" />
       <h1 className={cn("text-xl font-headline font-semibold", "md:text-2xl")}>
         {getPageTitle()}
       </h1>

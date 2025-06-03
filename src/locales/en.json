@@ -79,5 +79,88 @@
     "greeting": "Welcome to the page for locale:",
     "description": "This page demonstrates content that could be specific to the selected language path. The actual language displayed depends on the i18n context, which can be changed via the language switcher.",
     "backHome": "Back to Main Home"
+  },
+  "userDashboard": {
+    "title": "User Dashboard",
+    "customizeButton": "Customize Dashboard",
+    "promotionalSpotlight": {
+      "title": "Unlock Premium Features!",
+      "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
+      "learnMoreButton": "Learn More"
+    },
+    "stats": {
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "+{count}% from last month"
+      },
+      "avgMatchScore": {
+        "title": "Avg. Match Score",
+        "description": "+{score}% from last month"
+      },
+      "jobApplications": {
+        "title": "Job Applications",
+        "description": "{count} interviewing"
+      },
+      "alumniConnections": {
+        "title": "Alumni Connections",
+        "description": "+{count} new connections this week"
+      }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "Job Application Status",
+        "description": "Overview of your current application statuses."
+      },
+      "matchScoreOverTime": {
+        "title": "Average Match Score Over Time",
+        "description": "Track your resume match score improvement."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "Upcoming Job App Reminders",
+        "description": "Follow-ups and deadlines for your job applications.",
+        "noReminders": "No upcoming reminders set.",
+        "viewButton": "View"
+      }
+    },
+    "upcomingSessions": {
+      "title": "Upcoming Appointments & Interviews",
+      "description": "Your scheduled mentorship and practice sessions.",
+      "noSessions": "No upcoming sessions.",
+      "typeLabel": "Type",
+      "withLabel": "With",
+      "dateLabel": "Date",
+      "todayLabel": "(Today!)"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "description": "Your latest actions on the platform.",
+      "noActivities": "No recent activities to show.",
+      "viewAllButton": "View All Activities"
+    },
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard!"
+    },
+    "customizeDialog": {
+      "title": "Customize Your Dashboard",
+      "description": "Select the widgets you want to see on your dashboard.",
+      "saveButton": "Save Preferences",
+      "cancelButton": "Cancel"
+    },
+    "toast": {
+      "upgradeMock": {
+        "title": "Upgrade Mock",
+        "description": "Premium feature page would open."
+      },
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widget preferences have been saved for this session."
+      },
+      "appointmentReminder": {
+        "title": "Appointment Reminder",
+        "description": "You have an appointment for \"{title}\" with {user} today, {time}."
+      }
+    }
   }
 }

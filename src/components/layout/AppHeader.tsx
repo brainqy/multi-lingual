@@ -1,4 +1,7 @@
 "use client";
+
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
+
 import { useI18n } from "@/hooks/use-i18n";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -63,19 +66,7 @@ export function AppHeader() {
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Language Switcher (Placeholder - actual switching logic removed) */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Globe className="h-5 w-5 text-muted-foreground" />
-                  <span className="sr-only">Language</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleLanguageChange('en')}>English</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleLanguageChange('hi')}>हिन्दी (Mock)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleLanguageChange('mr')}>मराठी (Mock)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageSwitcher />
 
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell className="h-5 w-5 text-muted-foreground" />

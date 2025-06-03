@@ -778,17 +778,7 @@ export default function CommunityFeedPage() {
     </React.Fragment>
   );
 }
-function useState<T>(sampleCommunityPosts: CommunityPost[]): [any, any] {
-  throw new Error("Function not implemented.");
-}
 
-function useEffect(arg0: () => void, arg1: string[]) {
-  throw new Error("Function not implemented.");
-}
-
-function useMemo(arg0: () => UserProfile[], arg1: string[]) {
-  throw new Error("Function not implemented.");
-}
 
 
     

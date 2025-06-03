@@ -19,6 +19,7 @@ import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/hooks/use-i18n";
 
 const jobApplicationStatusData = sampleJobApplications.reduce((acc, curr) => {
   const status = curr.status;
@@ -111,6 +112,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
 ];
 
 export default function UserDashboard() {
+  const { t } = useI18n();
   const [totalResumesAnalyzed, setTotalResumesAnalyzed] = useState(0);
   const [averageMatchScore, setAverageMatchScore] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -140,8 +142,8 @@ export default function UserDashboard() {
         if (appt.requesterUserId === user.id || appt.alumniUserId === user.id) {
             if (appt.reminderDate && isToday(parseISO(appt.reminderDate))) {
                 toast({
-                    title: "Appointment Reminder",
-                    description: `You have an appointment for "${appt.title}" with ${appt.withUser} today, ${format(parseISO(appt.dateTime), 'p')}.`,
+                    title: t("userDashboard.toast.appointmentReminder.title"),
+                    description: t("userDashboard.toast.appointmentReminder.description", {title: appt.title, user: appt.withUser, time: format(parseISO(appt.dateTime), 'p')}),
                     duration: 10000,
                 });
             }
@@ -154,7 +156,7 @@ export default function UserDashboard() {
         setShowUserTour(true);
       }
     }
-  }, [user.id, toast]);
+  }, [user.id, toast, t]);
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setActiveIndex(index);
@@ -219,11 +221,11 @@ export default function UserDashboard() {
   const handleSaveCustomization = () => {
     setVisibleWidgetIds(tempVisibleWidgetIds);
     setIsCustomizeDialogOpen(false);
-    toast({ title: "Dashboard Updated", description: "Your dashboard widget preferences have been saved for this session." });
+    toast({ title: t("userDashboard.toast.dashboardUpdated.title"), description: t("userDashboard.toast.dashboardUpdated.description") });
   };
 
   const openCustomizeDialog = () => {
-    setTempVisibleWidgetIds(new Set(visibleWidgetIds)); // Initialize dialog state with current visible widgets
+    setTempVisibleWidgetIds(new Set(visibleWidgetIds)); 
     setIsCustomizeDialogOpen(true);
   };
 
@@ -234,13 +236,13 @@ export default function UserDashboard() {
         onClose={() => setShowUserTour(false)}
         tourKey="userDashboardTourSeen"
         steps={userDashboardTourSteps}
-        title="Welcome to Your Dashboard!"
+        title={t("userDashboard.welcomeTour.title")}
       />
       <div className="space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">User Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("userDashboard.title")}</h1>
           <Button variant="outline" onClick={openCustomizeDialog}>
-            <Settings className="mr-2 h-4 w-4" /> Customize Dashboard
+            <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton")}
           </Button>
         </div>
 
@@ -258,17 +260,17 @@ export default function UserDashboard() {
                 />
               </div>
               <div className="md:w-2/3 text-center md:text-left">
-                <h2 className="text-2xl font-bold mb-2">Unlock Premium Features!</h2>
+                <h2 className="text-2xl font-bold mb-2">{t("userDashboard.promotionalSpotlight.title")}</h2>
                 <p className="text-sm opacity-90 mb-4">
-                  Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.
+                  {t("userDashboard.promotionalSpotlight.description")}
                 </p>
                 <Button
                   variant="secondary"
                   size="lg"
                   className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  onClick={() => toast({ title: "Upgrade Mock", description: "Premium feature page would open."})}
+                  onClick={() => toast({ title: t("userDashboard.toast.upgradeMock.title"), description: t("userDashboard.toast.upgradeMock.description")})}
                 >
-                  Learn More <ExternalLink className="ml-2 h-4 w-4" />
+                  {t("userDashboard.promotionalSpotlight.learnMoreButton")} <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -279,48 +281,48 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('resumesAnalyzedStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Resumes Analyzed</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.resumesAnalyzed.title")}</CardTitle>
                 <Zap className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalResumesAnalyzed}</div>
-                <p className="text-xs text-muted-foreground">+10% from last month</p>
+                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.resumesAnalyzed.description", { count: 10 })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('avgMatchScoreStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Match Score</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.avgMatchScore.title")}</CardTitle>
                 <Target className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{averageMatchScore}%</div>
-                <p className="text-xs text-muted-foreground">+2.1% from last month</p>
+                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.avgMatchScore.description", { score: "2.1" })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('jobApplicationsStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Job Applications</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.jobApplications.title")}</CardTitle>
                 <Briefcase className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{sampleJobApplications.filter(app => app.userId === user.id).length}</div>
-                <p className="text-xs text-muted-foreground">{sampleJobApplications.filter(app => app.userId === user.id && app.status === 'Interviewing').length} interviewing</p>
+                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.jobApplications.description", { count: sampleJobApplications.filter(app => app.userId === user.id && app.status === 'Interviewing').length })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('alumniConnectionsStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Alumni Connections</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.alumniConnections.title")}</CardTitle>
                 <Users className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{sampleAlumni.length}</div>
-                <p className="text-xs text-muted-foreground">+5 new connections this week</p>
+                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.alumniConnections.description", { count: 5 })}</p>
               </CardContent>
             </Card>
           )}
@@ -330,8 +332,8 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('jobApplicationStatusChart') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Job Application Status</CardTitle>
-                <CardDescription>Overview of your current application statuses.</CardDescription>
+                <CardTitle>{t("userDashboard.charts.jobApplicationStatus.title")}</CardTitle>
+                <CardDescription>{t("userDashboard.charts.jobApplicationStatus.description")}</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -365,8 +367,8 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('matchScoreOverTimeChart') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Average Match Score Over Time</CardTitle>
-                <CardDescription>Track your resume match score improvement.</CardDescription>
+                <CardTitle>{t("userDashboard.charts.matchScoreOverTime.title")}</CardTitle>
+                <CardDescription>{t("userDashboard.charts.matchScoreOverTime.description")}</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -388,12 +390,12 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('jobAppReminders') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>Upcoming Job App Reminders</CardTitle>
-                <CardDescription>Follow-ups and deadlines for your job applications.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>{t("userDashboard.reminders.jobApp.title")}</CardTitle>
+                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingReminders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No upcoming reminders set.</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.reminders.jobApp.noReminders")}</p>
                 ) : (
                   <ul className="space-y-3">
                     {upcomingReminders.map(app => (
@@ -404,10 +406,10 @@ export default function UserDashboard() {
                               <p className="text-sm font-medium text-foreground">{app.jobTitle} at {app.companyName}</p>
                               <p className="text-xs text-amber-700 dark:text-amber-500">
                                 Reminder: {format(parseISO(app.reminderDate!), 'MMM dd, yyyy')}
-                                {differenceInDays(parseISO(app.reminderDate!), new Date()) === 0 && " (Today!)"}
+                                {differenceInDays(parseISO(app.reminderDate!), new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel")}`}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs text-primary">View</Button>
+                            <Button variant="ghost" size="sm" className="text-xs text-primary">{t("userDashboard.reminders.jobApp.viewButton")}</Button>
                           </div>
                         </Link>
                       </li>
@@ -421,12 +423,12 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('upcomingAppointments') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarCheck2 className="h-5 w-5 text-primary"/>Upcoming Appointments &amp; Interviews</CardTitle>
-                <CardDescription>Your scheduled mentorship and practice sessions.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><CalendarCheck2 className="h-5 w-5 text-primary"/>{t("userDashboard.upcomingSessions.title")}</CardTitle>
+                <CardDescription>{t("userDashboard.upcomingSessions.description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingAppointmentsAndSessions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No upcoming sessions.</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.upcomingSessions.noSessions")}</p>
                 ) : (
                   <ul className="space-y-3">
                     {upcomingAppointmentsAndSessions.map(item => (
@@ -435,14 +437,14 @@ export default function UserDashboard() {
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="text-sm font-medium text-foreground">{item.title}</p>
-                              <p className="text-xs text-muted-foreground">Type: {item.type}</p>
-                              <p className="text-xs text-muted-foreground">With: {item.with}</p>
+                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.typeLabel")}: {item.type}</p>
+                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.withLabel")}: {item.with}</p>
                               <p className="text-xs text-blue-600 dark:text-blue-400">
-                                Date: {format(item.date, 'MMM dd, yyyy, p')}
-                                {differenceInDays(item.date, new Date()) === 0 && " (Today!)"}
+                                {t("userDashboard.upcomingSessions.dateLabel")}: {format(item.date, 'MMM dd, yyyy, p')}
+                                {differenceInDays(item.date, new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel")}`}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs text-primary">View</Button>
+                            <Button variant="ghost" size="sm" className="text-xs text-primary">{t("userDashboard.reminders.jobApp.viewButton")}</Button>
                           </div>
                         </Link>
                       </li>
@@ -457,12 +459,12 @@ export default function UserDashboard() {
         {visibleWidgetIds.has('recentActivities') && (
           <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><HistoryIcon className="h-5 w-5 text-primary" />Recent Activities</CardTitle>
-                <CardDescription>Your latest actions on the platform.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><HistoryIcon className="h-5 w-5 text-primary" />{t("userDashboard.recentActivities.title")}</CardTitle>
+                <CardDescription>{t("userDashboard.recentActivities.description")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {recentUserActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No recent activities to show.</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.recentActivities.noActivities")}</p>
                 ) : (
                   <ScrollArea className="h-[250px] pr-3">
                     <ul className="space-y-3">
@@ -481,7 +483,7 @@ export default function UserDashboard() {
               </CardContent>
               <CardFooter>
                   <Button variant="link" asChild>
-                      <Link href="/activity-log">View All Activities</Link>
+                      <Link href="/activity-log">{t("userDashboard.recentActivities.viewAllButton")}</Link>
                   </Button>
               </CardFooter>
             </Card>
@@ -491,9 +493,9 @@ export default function UserDashboard() {
       <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Customize Your Dashboard</DialogTitle>
+            <DialogTitle>{t("userDashboard.customizeDialog.title")}</DialogTitle>
             <DialogUIDescription>
-              Select the widgets you want to see on your dashboard.
+              {t("userDashboard.customizeDialog.description")}
             </DialogUIDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] p-1 -mx-1">
@@ -506,18 +508,19 @@ export default function UserDashboard() {
                     onCheckedChange={(checked) => handleCustomizeToggle(widget.id, Boolean(checked))}
                   />
                   <Label htmlFor={`widget-toggle-${widget.id}`} className="font-normal text-sm flex-1 cursor-pointer">
-                    {widget.title}
+                    {t(`userDashboard.widgets.${widget.id}` as any, {defaultValue: widget.title})} 
                   </Label>
                 </div>
               ))}
             </div>
           </ScrollArea>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">Save Preferences</Button>
+            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>{t("userDashboard.customizeDialog.cancelButton")}</Button>
+            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">{t("userDashboard.customizeDialog.saveButton")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
 }
+

@@ -13,6 +13,7 @@ import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import { userDashboardTourSteps, adminDashboardTourSteps, managerDashboardTourSteps } from "@/lib/sample-data";
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showStreakPopup, setShowStreakPopup] = useState(false);

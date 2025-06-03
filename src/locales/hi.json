@@ -79,5 +79,88 @@
     "greeting": "स्थान-भाषा के लिए पृष्ठ में आपका स्वागत है:",
     "description": "यह पृष्ठ ऐसी सामग्री प्रदर्शित करता है जो चयनित भाषा पथ के लिए विशिष्ट हो सकती है। प्रदर्शित वास्तविक भाषा i18n संदर्भ पर निर्भर करती है, जिसे भाषा स्विचर के माध्यम से बदला जा सकता है।",
     "backHome": "मुख्य मुखपृष्ठ पर वापस"
+  },
+  "userDashboard": {
+    "title": "उपयोगकर्ता डैशबोर्ड",
+    "customizeButton": "डैशबोर्ड अनुकूलित करें",
+    "promotionalSpotlight": {
+      "title": "प्रीमियम सुविधाएँ अनलॉक करें!",
+      "description": "उन्नत एनालिटिक्स, असीमित रिज्यूमे स्कैन, प्राथमिकता समर्थन और विशेष टेम्पलेट्स के साथ अपने ResumeMatch AI अनुभव को अपग्रेड करें।",
+      "learnMoreButton": "और जानें"
+    },
+    "stats": {
+      "resumesAnalyzed": {
+        "title": "विश्लेषित रिज्यूमे",
+        "description": "पिछले महीने से +{count}%"
+      },
+      "avgMatchScore": {
+        "title": "औसत मैच स्कोर",
+        "description": "पिछले महीने से +{score}%"
+      },
+      "jobApplications": {
+        "title": "नौकरी आवेदन",
+        "description": "{count} साक्षात्कार में"
+      },
+      "alumniConnections": {
+        "title": "पूर्व छात्र कनेक्शन",
+        "description": "इस सप्ताह +{count} नए कनेक्शन"
+      }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "नौकरी आवेदन स्थिति",
+        "description": "आपके वर्तमान आवेदन स्थितियों का अवलोकन।"
+      },
+      "matchScoreOverTime": {
+        "title": "समय के साथ औसत मैच स्कोर",
+        "description": "अपने रिज्यूमे मैच स्कोर में सुधार ट्रैक करें।"
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "आगामी नौकरी ऐप अनुस्मारक",
+        "description": "आपके नौकरी आवेदनों के लिए फॉलो-अप और समय सीमा।",
+        "noReminders": "कोई आगामी अनुस्मारक सेट नहीं है।",
+        "viewButton": "देखें"
+      }
+    },
+    "upcomingSessions": {
+      "title": "आगामी नियुक्तियाँ और साक्षात्कार",
+      "description": "आपके निर्धारित मेंटरशिप और अभ्यास सत्र।",
+      "noSessions": "कोई आगामी सत्र नहीं।",
+      "typeLabel": "प्रकार",
+      "withLabel": "के साथ",
+      "dateLabel": "दिनांक",
+      "todayLabel": "(आज!)"
+    },
+    "recentActivities": {
+      "title": "हाल की गतिविधियाँ",
+      "description": "प्लेटफ़ॉर्म पर आपकी नवीनतम कार्रवाइयां।",
+      "noActivities": "दिखाने के लिए कोई हाल की गतिविधियाँ नहीं।",
+      "viewAllButton": "सभी गतिविधियाँ देखें"
+    },
+    "welcomeTour": {
+      "title": "आपके डैशबोर्ड में आपका स्वागत है!"
+    },
+    "customizeDialog": {
+      "title": "अपना डैशबोर्ड अनुकूलित करें",
+      "description": "उन विजेट्स का चयन करें जिन्हें आप अपने डैशबोर्ड पर देखना चाहते हैं।",
+      "saveButton": "वरीयताएँ सहेजें",
+      "cancelButton": "रद्द करें"
+    },
+    "toast": {
+      "upgradeMock": {
+        "title": "अपग्रेड मॉक",
+        "description": "प्रीमियम सुविधा पृष्ठ खुलेगा।"
+      },
+      "dashboardUpdated": {
+        "title": "डैशबोर्ड अपडेट किया गया",
+        "description": "आपकी डैशबोर्ड विजेट वरीयताएँ इस सत्र के लिए सहेजी गई हैं।"
+      },
+      "appointmentReminder": {
+        "title": "अपॉइंटमेंट रिमाइंडर",
+        "description": "आपकी \"{title}\" के लिए {user} के साथ आज {time} बजे अपॉइंटमेंट है।"
+      }
+    }
   }
 }
