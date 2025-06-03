@@ -365,6 +365,192 @@
       "tenantEngagementOverview": "भाडेकरू सहभाग अवलोकन चार्ट",
       "tenantManagementActions": "भाडेकरू व्यवस्थापन क्रिया"
     }
+  },
+  "errorPage": {
+    "title": "काहीतरी चूक झाली!",
+    "description": "आम्हाला एक अनपेक्षित समस्या आली. कृपया पुन्हा प्रयत्न करा, किंवा समस्या कायम राहिल्यास समर्थनाशी संपर्क साधा.",
+    "detailsPrefix": "त्रुटी तपशील:",
+    "retryButton": "पुन्हा प्रयत्न करा"
+  },
+  "accessDenied": {
+    "title": "प्रवेश नाकारला",
+    "message": "तुम्हाला हे पृष्ठ पाहण्याची परवानगी नाही.",
+    "dashboardButton": "डॅशबोर्डवर जा"
+  },
+  "announcementBanner": {
+    "dismiss": "घोषणा बंद करा"
+  },
+  "platformSettings": {
+    "title": "प्लॅटफॉर्म सेटिंग्ज",
+    "description": "ResumeMatch AI प्लॅटफॉर्मसाठी जागतिक सेटिंग्ज आणि डीफॉल्ट वर्तन कॉन्फिगर करा.",
+    "general": {
+      "sectionTitle": "सामान्य प्लॅटफॉर्म",
+      "platformName": {
+        "label": "प्लॅटफॉर्मचे नाव",
+        "description": "तुमच्या प्लॅटफॉर्मचे सार्वजनिक नाव."
+      },
+      "maintenanceMode": {
+        "label": "देखभाल मोड",
+        "description": "अद्यतने करत असताना वापरकर्त्यांसाठी तात्पुरता प्रवेश अक्षम करा."
+      },
+      "defaultProfileVisibility": {
+        "label": "डीफॉल्ट नवीन वापरकर्ता प्रोफाइल दृश्यमानता",
+        "description": "नवीन वापरकर्ता प्रोफाइलसाठी डीफॉल्ट दृश्यमानता सेट करा.",
+        "options": {
+          "public": "सार्वजनिक",
+          "alumni_only": "केवळ माजी विद्यार्थी",
+          "private": "खाजगी"
+        }
+      },
+      "maxResumesPerUser": {
+        "label": "प्रति वापरकर्ता कमाल बायोडाटा",
+        "description": "एक वापरकर्ता कमाल किती बायोडाटा प्रोफाइल तयार करू शकतो."
+      },
+      "defaultTheme": {
+        "label": "डीफॉल्ट थीम",
+        "description": "नवीन वापरकर्त्यांसाठी डीफॉल्ट थीम सेट करा.",
+        "options": {
+          "light": "प्रकाश",
+          "dark": "गडद"
+        }
+      },
+      "enablePublicProfilePages": {
+        "label": "सार्वजनिक प्रोफाइल पृष्ठे सक्षम करा",
+        "description": "वापरकर्त्यांना सार्वजनिकरित्या प्रवेश करण्यायोग्य प्रोफाइल URL ठेवण्याची परवानगी द्या."
+      },
+      "sessionTimeoutMinutes": {
+        "label": "सत्र कालबाह्यता (मिनिटे)",
+        "description": "वापरकर्त्यांना लॉग आउट करण्यापूर्वी निष्क्रियतेचा कालावधी."
+      },
+      "globalAnnouncement": {
+        "label": "जागतिक घोषणा",
+        "description": "प्लॅटफॉर्मवर एक बॅनर किंवा संदेश प्रदर्शित करा.",
+        "placeholder": "सर्व वापरकर्त्यांसाठी एक संक्षिप्त घोषणा प्रविष्ट करा"
+      }
+    },
+    "community": {
+      "sectionTitle": "समुदाय वैशिष्ट्ये",
+      "communityFeedEnabled": {
+        "label": "समुदाय फीड सक्षम करा"
+      },
+      "autoModeratePosts": {
+        "label": "नवीन पोस्ट स्वयं-मध्यस्थ करा (मॉक)",
+        "description": "सक्षम केल्यास, सामग्री फिल्टरच्या आधारावर पुनरावलोकनासाठी प्रलंबित असलेल्या नवीन पोस्ट लपवल्या जाऊ शकतात."
+      }
+    },
+    "career": {
+      "sectionTitle": "नोकरी आणि करिअर साधने",
+      "jobBoardEnabled": {
+        "label": "नोकरी मंडळ सक्षम करा"
+      },
+      "maxJobPostingDays": {
+        "label": "कमाल नोकरी पोस्टिंग कालावधी (दिवस)",
+        "description": "नोकरी पोस्टिंग किती दिवस सक्रिय राहते याची डीफॉल्ट संख्या."
+      },
+      "resumeAnalyzerEnabled": {
+        "label": "बायोडाटा विश्लेषक सक्षम करा"
+      },
+      "aiResumeWriterEnabled": {
+        "label": "AI बायोडाटा लेखक सक्षम करा"
+      },
+      "coverLetterGeneratorEnabled": {
+        "label": "कव्हर लेटर जनरेटर सक्षम करा"
+      },
+      "mockInterviewEnabled": {
+        "label": "AI मॉक मुलाखत सक्षम करा"
+      }
+    },
+    "engagement": {
+      "sectionTitle": "सहभाग वैशिष्ट्ये",
+      "gamificationEnabled": {
+        "label": "गेमिफिकेशन सक्षम करा (XP, बॅज)"
+      },
+      "xpForLogin": {
+        "label": "दैनिक लॉगिनसाठी XP",
+        "description": "दैनिक प्लॅटफॉर्म लॉगिनसाठी गुण."
+      },
+      "xpForNewPost": {
+        "label": "नवीन समुदाय पोस्टसाठी XP",
+        "description": "समुदाय फीडमध्ये नवीन पोस्ट तयार करण्यासाठी गुण."
+      },
+      "referralsEnabled": {
+        "label": "रेफरल प्रोग्राम सक्षम करा"
+      },
+      "affiliateProgramEnabled": {
+        "label": "संलग्न प्रोग्राम सक्षम करा"
+      },
+      "pointsForAffiliateSignup": {
+        "label": "संलग्न साइनअपसाठी गुण",
+        "description": "यशस्वी साइनअपवर रेफररला दिलेले XP किंवा नाणी."
+      },
+      "featureRequestsEnabled": {
+        "label": "वैशिष्ट्य विनंती सबमिशन सक्षम करा"
+      }
+    },
+    "alumniConnect": {
+      "sectionTitle": "माजी विद्यार्थी कनेक्ट",
+      "alumniConnectEnabled": {
+        "label": "माजी विद्यार्थी कनेक्ट डिरेक्टरी सक्षम करा"
+      },
+      "defaultAppointmentCost": {
+        "label": "डीफॉल्ट अपॉइंटमेंट किंमत (नाणी)",
+        "description": "माजी विद्यार्थ्यांसोबत अपॉइंटमेंट बुक करण्यासाठी डीफॉल्ट नाण्यांची किंमत."
+      },
+      "maxEventRegistrationsPerUser": {
+        "label": "प्रति वापरकर्ता कमाल कार्यक्रम नोंदणी",
+        "description": "एक वापरकर्ता किती कार्यक्रमांसाठी नोंदणी करू शकतो याची मर्यादा (पर्यायी)."
+      }
+    },
+    "tenantCustomization": {
+      "sectionTitle": "भाडेकरू सानुकूलन भत्ते",
+      "description": "वैयक्तिक भाडेकरू काही बाबी सानुकूलित करू शकतात की नाही हे नियंत्रित करा.",
+      "allowTenantCustomBranding": {
+        "label": "भाडेकरू सानुकूल ब्रांडिंगला परवानगी द्या",
+        "description": "भाडेकरू प्रशासकांना सानुकूल लोगो आणि थीम रंग सेट करण्याची परवानगी द्या."
+      },
+      "allowTenantEmailCustomization": {
+        "label": "भाडेकरू ईमेल सानुकूलनास परवानगी द्या (मॉक)",
+        "description": "भाडेकरू प्रशासकांना स्वयंचलित ईमेल टेम्पलेट्स सानुकूलित करण्याची परवानगी द्या."
+      }
+    },
+    "saveButton": "सर्व प्लॅटफॉर्म सेटिंग्ज जतन करा",
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्ज जतन केल्या",
+        "description": "प्लॅटफॉर्म सेटिंग्ज यशस्वीरित्या अद्यतनित केल्या गेल्या आहेत."
+      }
+    },
+    "validation": {
+        "platformNameMin": "प्लॅटफॉर्मचे नाव किमान ३ अक्षरे असणे आवश्यक आहे",
+        "maxJobPostingDaysMin": "कमाल नोकरी पोस्टिंग दिवस किमान १ असणे आवश्यक आहे",
+        "maxJobPostingDaysMax": "कमाल नोकरी पोस्टिंग दिवस ३६५ पेक्षा जास्त असू शकत नाहीत",
+        "xpMin": "XP ऋण नसावा",
+        "appointmentCostMin": "अपॉइंटमेंटची किंमत ऋण नसावी",
+        "maxResumesMin": "कमाल बायोडाटा किमान १ असणे आवश्यक आहे",
+        "maxResumesMax": "कमाल बायोडाटा ५० पेक्षा जास्त असू शकत नाही",
+        "sessionTimeoutMin": "सत्र कालबाह्यता किमान ५ मिनिटे असणे आवश्यक आहे",
+        "sessionTimeoutMax": "सत्र कालबाह्यता १४४० मिनिटांपेक्षा (२४ तास) जास्त असू शकत नाही",
+        "maxEventRegistrationsMin": "कमाल कार्यक्रम नोंदणी किमान १ असणे आवश्यक आहे",
+        "maxEventRegistrationsMax": "कमाल कार्यक्रम नोंदणी १०० पेक्षा जास्त असू शकत नाही",
+        "globalAnnouncementMax": "जागतिक घोषणा ५०० अक्षरांपेक्षा जास्त असू शकत नाही",
+        "pointsForAffiliateMin": "संलग्न साइनअपसाठी गुण ऋण नसावेत"
+    }
+  },
+  "tenantManagement": {
+    "title": "भाडेकरू व्यवस्थापन",
+    "description": "प्लॅटफॉर्मवरील सर्व भाडेकरूंचे निरीक्षण आणि व्यवस्थापन करा.",
+    "createNewButton": "नवीन भाडेकरू तयार करा",
+    "tenantListTitle": "भाडेकरू सूची",
+    "noTenantsFound": "एकही भाडेकरू आढळला नाही.",
+    "table": {
+      "name": "भाडेकरूचे नाव",
+      "id": "भाडेकरू आयडी",
+      "createdAt": "तयार केल्याची तारीख",
+      "publicSignup": "सार्वजनिक साइनअप",
+      "actions": "क्रिया"
+    },
+    "editActionMock": "भाडेकरू {tenantId} संपादित करत आहे... (हे साधारणपणे तपशीलवार भाडेकरू सेटिंग्ज पृष्ठावर किंवा अधिक जटिल संपादन डायलॉगवर नेव्हिगेट करेल).",
+    "deleteActionToast": "भाडेकरू {tenantId} हटवला."
   }
 }
 

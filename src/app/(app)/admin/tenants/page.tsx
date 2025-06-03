@@ -16,6 +16,7 @@ export default function TenantManagementPage() {
   const [tenants, setTenants] = useState<Tenant[]>(sampleTenants);
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
+  const { t } = useI18n();
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
@@ -23,7 +24,7 @@ export default function TenantManagementPage() {
 
 
   const handleEditTenant = (tenantId: string) => {
-    toast({ title: "Action Mocked", description: `Editing tenant ${tenantId}... (This would typically navigate to a detailed tenant settings page or a more complex edit dialog).` });
+    toast({ title: t("tenantManagement.editActionMock", {tenantId}), description: "" });
   };
 
   const handleDeleteTenant = (tenantId: string) => {
@@ -31,39 +32,39 @@ export default function TenantManagementPage() {
     // Also remove from global sample data for demo persistence
     const index = sampleTenants.findIndex(t => t.id === tenantId);
     if (index > -1) sampleTenants.splice(index, 1);
-    toast({ title: "Tenant Deleted", description: `Tenant ${tenantId} deleted.`, variant: "destructive" });
+    toast({ title: t("tenantManagement.deleteActionToast", {tenantId}), variant: "destructive" });
   };
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <Building2 className="h-8 w-8" /> Tenant Management
+          <Building2 className="h-8 w-8" /> {t("tenantManagement.title")}
         </h1>
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href="/admin/tenant-onboarding">
-              <PlusCircle className="mr-2 h-5 w-5" /> Create New Tenant
+              <PlusCircle className="mr-2 h-5 w-5" /> {t("tenantManagement.createNewButton")}
             </Link>
         </Button>
       </div>
-      <CardDescription>Oversee and manage all tenants within the platform.</CardDescription>
+      <CardDescription>{t("tenantManagement.description")}</CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Tenant List</CardTitle>
+          <CardTitle>{t("tenantManagement.tenantListTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {tenants.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No tenants found.</p>
+            <p className="text-center text-muted-foreground py-8">{t("tenantManagement.noTenantsFound")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tenant Name</TableHead>
-                  <TableHead>Tenant ID</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Public Signup</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("tenantManagement.table.name")}</TableHead>
+                  <TableHead>{t("tenantManagement.table.id")}</TableHead>
+                  <TableHead>{t("tenantManagement.table.createdAt")}</TableHead>
+                  <TableHead>{t("tenantManagement.table.publicSignup")}</TableHead>
+                  <TableHead className="text-right">{t("tenantManagement.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -91,3 +92,5 @@ export default function TenantManagementPage() {
     </div>
   );
 }
+
+    

@@ -21,15 +21,15 @@ import { Textarea } from "@/components/ui/textarea";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
 const settingsSchema = z.object({
-  platformName: z.string().min(3, "Platform name must be at least 3 characters"),
+  platformName: z.string().min(3, "platformSettings.validation.platformNameMin"),
   maintenanceMode: z.boolean(),
   communityFeedEnabled: z.boolean(),
   autoModeratePosts: z.boolean(),
   jobBoardEnabled: z.boolean(),
-  maxJobPostingDays: z.coerce.number().min(1).max(365),
+  maxJobPostingDays: z.coerce.number().min(1, "platformSettings.validation.maxJobPostingDaysMin").max(365, "platformSettings.validation.maxJobPostingDaysMax"),
   gamificationEnabled: z.boolean(),
-  xpForLogin: z.coerce.number().min(0),
-  xpForNewPost: z.coerce.number().min(0),
+  xpForLogin: z.coerce.number().min(0, "platformSettings.validation.xpMin"),
+  xpForNewPost: z.coerce.number().min(0, "platformSettings.validation.xpMin"),
   resumeAnalyzerEnabled: z.boolean(),
   aiResumeWriterEnabled: z.boolean(),
   coverLetterGeneratorEnabled: z.boolean(),
@@ -37,18 +37,19 @@ const settingsSchema = z.object({
   referralsEnabled: z.boolean(),
   affiliateProgramEnabled: z.boolean(),
   alumniConnectEnabled: z.boolean(),
-  defaultAppointmentCost: z.coerce.number().min(0),
+  defaultAppointmentCost: z.coerce.number().min(0, "platformSettings.validation.appointmentCostMin"),
   featureRequestsEnabled: z.boolean(),
   allowTenantCustomBranding: z.boolean(),
   allowTenantEmailCustomization: z.boolean(),
   defaultProfileVisibility: z.enum(['public', 'alumni_only', 'private']),
-  maxResumeUploadsPerUser: z.coerce.number().min(1).max(50).default(5),
+  maxResumeUploadsPerUser: z.coerce.number().min(1, "platformSettings.validation.maxResumesMin").max(50, "platformSettings.validation.maxResumesMax").default(5),
   defaultTheme: z.enum(['light', 'dark']).default('light'),
   enablePublicProfilePages: z.boolean().default(false),
-  sessionTimeoutMinutes: z.coerce.number().min(5).max(1440).default(60), 
-  maxEventRegistrationsPerUser: z.coerce.number().min(1).max(100).optional(),
-  globalAnnouncement: z.string().max(500).optional(),
-  pointsForAffiliateSignup: z.coerce.number().min(0).optional(),
+  sessionTimeoutMinutes: z.coerce.number().min(5, "platformSettings.validation.sessionTimeoutMin").max(1440, "platformSettings.validation.sessionTimeoutMax").default(60), 
+  maxEventRegistrationsPerUser: z.coerce.number().min(1, "platformSettings.validation.maxEventRegistrationsMin").max(100, "platformSettings.validation.maxEventRegistrationsMax").optional(),
+  globalAnnouncement: z.string().max(500, "platformSettings.validation.globalAnnouncementMax").optional(),
+  pointsForAffiliateSignup: z.coerce.number().min(0, "platformSettings.validation.pointsForAffiliateMin").optional(),
+  walletEnabled: z.boolean().optional().default(true),
 });
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
@@ -57,9 +58,43 @@ export default function PlatformSettingsPage() {
   const [currentSettings, setCurrentSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
+  const { t } = useI18n();
+
+  const translatedSchema = z.object({
+    platformName: z.string().min(3, t("platformSettings.validation.platformNameMin")),
+    maintenanceMode: z.boolean(),
+    communityFeedEnabled: z.boolean(),
+    autoModeratePosts: z.boolean(),
+    jobBoardEnabled: z.boolean(),
+    maxJobPostingDays: z.coerce.number().min(1, t("platformSettings.validation.maxJobPostingDaysMin")).max(365, t("platformSettings.validation.maxJobPostingDaysMax")),
+    gamificationEnabled: z.boolean(),
+    xpForLogin: z.coerce.number().min(0, t("platformSettings.validation.xpMin")),
+    xpForNewPost: z.coerce.number().min(0, t("platformSettings.validation.xpMin")),
+    resumeAnalyzerEnabled: z.boolean(),
+    aiResumeWriterEnabled: z.boolean(),
+    coverLetterGeneratorEnabled: z.boolean(),
+    mockInterviewEnabled: z.boolean(),
+    referralsEnabled: z.boolean(),
+    affiliateProgramEnabled: z.boolean(),
+    alumniConnectEnabled: z.boolean(),
+    defaultAppointmentCost: z.coerce.number().min(0, t("platformSettings.validation.appointmentCostMin")),
+    featureRequestsEnabled: z.boolean(),
+    allowTenantCustomBranding: z.boolean(),
+    allowTenantEmailCustomization: z.boolean(),
+    defaultProfileVisibility: z.enum(['public', 'alumni_only', 'private']),
+    maxResumeUploadsPerUser: z.coerce.number().min(1, t("platformSettings.validation.maxResumesMin")).max(50, t("platformSettings.validation.maxResumesMax")).default(5),
+    defaultTheme: z.enum(['light', 'dark']).default('light'),
+    enablePublicProfilePages: z.boolean().default(false),
+    sessionTimeoutMinutes: z.coerce.number().min(5, t("platformSettings.validation.sessionTimeoutMin")).max(1440, t("platformSettings.validation.sessionTimeoutMax")).default(60), 
+    maxEventRegistrationsPerUser: z.coerce.number().min(1, t("platformSettings.validation.maxEventRegistrationsMin")).max(100, t("platformSettings.validation.maxEventRegistrationsMax")).optional(),
+    globalAnnouncement: z.string().max(500, t("platformSettings.validation.globalAnnouncementMax")).optional(),
+    pointsForAffiliateSignup: z.coerce.number().min(0, t("platformSettings.validation.pointsForAffiliateMin")).optional(),
+    walletEnabled: z.boolean().optional().default(true),
+  });
+  
 
   const { control, handleSubmit, reset, formState: { errors, isDirty } } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(translatedSchema),
     defaultValues: currentSettings,
   });
 
@@ -75,15 +110,15 @@ export default function PlatformSettingsPage() {
     const updatedSettings: PlatformSettings = { ...currentSettings, ...data };
     Object.assign(samplePlatformSettings, updatedSettings); 
     setCurrentSettings(updatedSettings);
-    toast({ title: "Settings Saved", description: "Platform settings have been updated successfully." });
+    toast({ title: t("platformSettings.toast.settingsSaved.title"), description: t("platformSettings.toast.settingsSaved.description") });
     reset(updatedSettings); 
   };
 
-  const renderSettingRow = (id: keyof SettingsFormData, label: string, controlElement: React.ReactNode, description?: string, error?: string) => (
+  const renderSettingRow = (id: keyof SettingsFormData, labelKey: string, controlElement: React.ReactNode, descriptionKey?: string, error?: string) => (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-md hover:bg-secondary/20 transition-colors">
       <div className="mb-2 sm:mb-0">
-        <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        <Label htmlFor={id} className="text-sm font-medium">{t(labelKey)}</Label>
+        {descriptionKey && <p className="text-xs text-muted-foreground mt-0.5">{t(descriptionKey)}</p>}
       </div>
       <div className="sm:w-1/2 md:w-1/3">
        {controlElement}
@@ -96,108 +131,112 @@ export default function PlatformSettingsPage() {
     <TooltipProvider>
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Server className="h-8 w-8" /> Platform Settings
+        <Server className="h-8 w-8" /> {t("platformSettings.title")}
       </h1>
-      <CardDescription>Configure global settings and default behaviors for the ResumeMatch AI platform.</CardDescription>
+      <CardDescription>{t("platformSettings.description")}</CardDescription>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary"/>General Platform</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary"/>{t("platformSettings.general.sectionTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {renderSettingRow("platformName", "Platform Name", <Controller name="platformName" control={control} render={({ field }) => <Input {...field} />} />, "The public name of your platform.", errors.platformName?.message)}
-            {renderSettingRow("maintenanceMode", "Maintenance Mode", <Controller name="maintenanceMode" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "Temporarily disable access for users while performing updates.")}
-            {renderSettingRow("defaultProfileVisibility", "Default New User Profile Visibility", 
+            {renderSettingRow("platformName", "platformSettings.general.platformName.label", <Controller name="platformName" control={control} render={({ field }) => <Input {...field} />} />, "platformSettings.general.platformName.description", errors.platformName?.message)}
+            {renderSettingRow("maintenanceMode", "platformSettings.general.maintenanceMode.label", <Controller name="maintenanceMode" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "platformSettings.general.maintenanceMode.description")}
+            {renderSettingRow("defaultProfileVisibility", "platformSettings.general.defaultProfileVisibility.label", 
               <Controller name="defaultProfileVisibility" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="alumni_only">Alumni Only</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="public">{t("platformSettings.general.defaultProfileVisibility.options.public")}</SelectItem>
+                    <SelectItem value="alumni_only">{t("platformSettings.general.defaultProfileVisibility.options.alumni_only")}</SelectItem>
+                    <SelectItem value="private">{t("platformSettings.general.defaultProfileVisibility.options.private")}</SelectItem>
                   </SelectContent>
                 </Select>
-              )} />, "Set the default visibility for new user profiles."
+              )} />, "platformSettings.general.defaultProfileVisibility.description"
             )}
-            {renderSettingRow("maxResumeUploadsPerUser", "Max Resumes per User", <Controller name="maxResumeUploadsPerUser" control={control} render={({ field }) => <Input type="number" {...field} />} />, "Max number of resume profiles a user can create.", errors.maxResumeUploadsPerUser?.message)}
-            {renderSettingRow("defaultTheme", "Default Theme", <Controller name="defaultTheme" control={control} render={({ field }) => (
+            {renderSettingRow("maxResumeUploadsPerUser", "platformSettings.general.maxResumesPerUser.label", <Controller name="maxResumeUploadsPerUser" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.general.maxResumesPerUser.description", errors.maxResumeUploadsPerUser?.message)}
+            {renderSettingRow("defaultTheme", "platformSettings.general.defaultTheme.label", <Controller name="defaultTheme" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="light">Light</SelectItem><SelectItem value="dark">Dark</SelectItem></SelectContent>
+                    <SelectContent>
+                        <SelectItem value="light">{t("platformSettings.general.defaultTheme.options.light")}</SelectItem>
+                        <SelectItem value="dark">{t("platformSettings.general.defaultTheme.options.dark")}</SelectItem>
+                    </SelectContent>
                 </Select>
-            )} />, "Set the default theme for new users.")}
-            {renderSettingRow("enablePublicProfilePages", "Enable Public Profile Pages", <Controller name="enablePublicProfilePages" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "Allow users to have publicly accessible profile URLs.")}
-            {renderSettingRow("sessionTimeoutMinutes", "Session Timeout (Minutes)", <Controller name="sessionTimeoutMinutes" control={control} render={({ field }) => <Input type="number" {...field} />} />, "Duration of inactivity before users are logged out.", errors.sessionTimeoutMinutes?.message)}
-             {renderSettingRow("globalAnnouncement", "Global Announcement", <Controller name="globalAnnouncement" control={control} render={({ field }) => <Textarea {...field} placeholder="Enter a brief announcement for all users" />} />, "Display a banner or message across the platform.", errors.globalAnnouncement?.message)}
+            )} />, "platformSettings.general.defaultTheme.description")}
+            {renderSettingRow("enablePublicProfilePages", "platformSettings.general.enablePublicProfilePages.label", <Controller name="enablePublicProfilePages" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "platformSettings.general.enablePublicProfilePages.description")}
+            {renderSettingRow("sessionTimeoutMinutes", "platformSettings.general.sessionTimeoutMinutes.label", <Controller name="sessionTimeoutMinutes" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.general.sessionTimeoutMinutes.description", errors.sessionTimeoutMinutes?.message)}
+             {renderSettingRow("globalAnnouncement", "platformSettings.general.globalAnnouncement.label", <Controller name="globalAnnouncement" control={control} render={({ field }) => <Textarea {...field} placeholder={t("platformSettings.general.globalAnnouncement.placeholder")} />} />, "platformSettings.general.globalAnnouncement.description", errors.globalAnnouncement?.message)}
           </CardContent>
         </Card>
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary"/>Community Features</CardTitle>
+            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary"/>{t("platformSettings.community.sectionTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {renderSettingRow("communityFeedEnabled", "Enable Community Feed", <Controller name="communityFeedEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("autoModeratePosts", "Auto-Moderate New Posts (Mock)", <Controller name="autoModeratePosts" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "If enabled, new posts might be hidden pending review based on content filters.")}
+            {renderSettingRow("communityFeedEnabled", "platformSettings.community.communityFeedEnabled.label", <Controller name="communityFeedEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("autoModeratePosts", "platformSettings.community.autoModeratePosts.label", <Controller name="autoModeratePosts" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "platformSettings.community.autoModeratePosts.description")}
           </CardContent>
         </Card>
         
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary"/>Job & Career Tools</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary"/>{t("platformSettings.career.sectionTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {renderSettingRow("jobBoardEnabled", "Enable Job Board", <Controller name="jobBoardEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("maxJobPostingDays", "Max Job Posting Duration (Days)", <Controller name="maxJobPostingDays" control={control} render={({ field }) => <Input type="number" {...field} />} />, "Default number of days a job posting stays active.", errors.maxJobPostingDays?.message)}
-            {renderSettingRow("resumeAnalyzerEnabled", "Enable Resume Analyzer", <Controller name="resumeAnalyzerEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("aiResumeWriterEnabled", "Enable AI Resume Writer", <Controller name="aiResumeWriterEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("coverLetterGeneratorEnabled", "Enable Cover Letter Generator", <Controller name="coverLetterGeneratorEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("mockInterviewEnabled", "Enable AI Mock Interviews", <Controller name="mockInterviewEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("jobBoardEnabled", "platformSettings.career.jobBoardEnabled.label", <Controller name="jobBoardEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("maxJobPostingDays", "platformSettings.career.maxJobPostingDays.label", <Controller name="maxJobPostingDays" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.career.maxJobPostingDays.description", errors.maxJobPostingDays?.message)}
+            {renderSettingRow("resumeAnalyzerEnabled", "platformSettings.career.resumeAnalyzerEnabled.label", <Controller name="resumeAnalyzerEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("aiResumeWriterEnabled", "platformSettings.career.aiResumeWriterEnabled.label", <Controller name="aiResumeWriterEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("coverLetterGeneratorEnabled", "platformSettings.career.coverLetterGeneratorEnabled.label", <Controller name="coverLetterGeneratorEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("mockInterviewEnabled", "platformSettings.career.mockInterviewEnabled.label", <Controller name="mockInterviewEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
           </CardContent>
         </Card>
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary"/>Engagement Features</CardTitle>
+            <CardTitle className="flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary"/>{t("platformSettings.engagement.sectionTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {renderSettingRow("gamificationEnabled", "Enable Gamification (XP, Badges)", <Controller name="gamificationEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("xpForLogin", "XP Awarded for Daily Login", <Controller name="xpForLogin" control={control} render={({ field }) => <Input type="number" {...field} />} />, "Points for daily platform login.", errors.xpForLogin?.message)}
-            {renderSettingRow("xpForNewPost", "XP Awarded for New Community Post", <Controller name="xpForNewPost" control={control} render={({ field }) => <Input type="number" {...field} />} />, "Points for creating a new post in community feed.", errors.xpForNewPost?.message)}
-            {renderSettingRow("referralsEnabled", "Enable Referral Program", <Controller name="referralsEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("affiliateProgramEnabled", "Enable Affiliate Program", <Controller name="affiliateProgramEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-            {renderSettingRow("pointsForAffiliateSignup", "Points for Affiliate Signup", <Controller name="pointsForAffiliateSignup" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, "XP or Coins awarded to referrer on successful signup.", errors.pointsForAffiliateSignup?.message)}
-            {renderSettingRow("featureRequestsEnabled", "Enable Feature Request Submissions", <Controller name="featureRequestsEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("gamificationEnabled", "platformSettings.engagement.gamificationEnabled.label", <Controller name="gamificationEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("xpForLogin", "platformSettings.engagement.xpForLogin.label", <Controller name="xpForLogin" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.engagement.xpForLogin.description", errors.xpForLogin?.message)}
+            {renderSettingRow("xpForNewPost", "platformSettings.engagement.xpForNewPost.label", <Controller name="xpForNewPost" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.engagement.xpForNewPost.description", errors.xpForNewPost?.message)}
+            {renderSettingRow("referralsEnabled", "platformSettings.engagement.referralsEnabled.label", <Controller name="referralsEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("affiliateProgramEnabled", "platformSettings.engagement.affiliateProgramEnabled.label", <Controller name="affiliateProgramEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("pointsForAffiliateSignup", "platformSettings.engagement.pointsForAffiliateSignup.label", <Controller name="pointsForAffiliateSignup" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, "platformSettings.engagement.pointsForAffiliateSignup.description", errors.pointsForAffiliateSignup?.message)}
+            {renderSettingRow("featureRequestsEnabled", "platformSettings.engagement.featureRequestsEnabled.label", <Controller name="featureRequestsEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
           </CardContent>
         </Card>
         
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Handshake className="h-5 w-5 text-primary"/>Alumni Connect</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Handshake className="h-5 w-5 text-primary"/>{t("platformSettings.alumniConnect.sectionTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-             {renderSettingRow("alumniConnectEnabled", "Enable Alumni Connect Directory", <Controller name="alumniConnectEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
-             {renderSettingRow("defaultAppointmentCost", "Default Appointment Cost (Coins)", 
+             {renderSettingRow("alumniConnectEnabled", "platformSettings.alumniConnect.alumniConnectEnabled.label", <Controller name="alumniConnectEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+             {renderSettingRow("defaultAppointmentCost", "platformSettings.alumniConnect.defaultAppointmentCost.label", 
                 <Controller name="defaultAppointmentCost" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, 
-                "Default coin cost for booking an appointment with alumni.", errors.defaultAppointmentCost?.message)}
-             {renderSettingRow("maxEventRegistrationsPerUser", "Max Event Registrations per User", <Controller name="maxEventRegistrationsPerUser" control={control} render={({ field }) => <Input type="number" min="1" {...field} />} />, "Limit how many events a user can register for (optional).", errors.maxEventRegistrationsPerUser?.message)}
+                "platformSettings.alumniConnect.defaultAppointmentCost.description", errors.defaultAppointmentCost?.message)}
+             {renderSettingRow("maxEventRegistrationsPerUser", "platformSettings.alumniConnect.maxEventRegistrationsPerUser.label", <Controller name="maxEventRegistrationsPerUser" control={control} render={({ field }) => <Input type="number" min="1" {...field} />} />, "platformSettings.alumniConnect.maxEventRegistrationsPerUser.description", errors.maxEventRegistrationsPerUser?.message)}
+             {renderSettingRow("walletEnabled", "Digital Wallet System", <Controller name="walletEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "Enable or disable the digital wallet (coins) feature for the platform.")}
           </CardContent>
         </Card>
 
         <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Tenant Customization Allowances</CardTitle>
-                <CardDescription>Control whether individual tenants can customize certain aspects.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>{t("platformSettings.tenantCustomization.sectionTitle")}</CardTitle>
+                <CardDescription>{t("platformSettings.tenantCustomization.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-                {renderSettingRow("allowTenantCustomBranding", "Allow Tenant Custom Branding", 
+                {renderSettingRow("allowTenantCustomBranding", "platformSettings.tenantCustomization.allowTenantCustomBranding.label", 
                     <Controller name="allowTenantCustomBranding" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, 
-                    "Permit tenant admins to set custom logos and theme colors."
+                    "platformSettings.tenantCustomization.allowTenantCustomBranding.description"
                 )}
-                {renderSettingRow("allowTenantEmailCustomization", "Allow Tenant Email Customization (Mock)", 
+                {renderSettingRow("allowTenantEmailCustomization", "platformSettings.tenantCustomization.allowTenantEmailCustomization.label", 
                     <Controller name="allowTenantEmailCustomization" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, 
-                    "Permit tenant admins to customize automated email templates."
+                    "platformSettings.tenantCustomization.allowTenantEmailCustomization.description"
                 )}
             </CardContent>
         </Card>
@@ -205,7 +244,7 @@ export default function PlatformSettingsPage() {
 
         <div className="pt-6 text-right">
           <Button type="submit" size="lg" disabled={!isDirty} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            Save All Platform Settings
+            {t("platformSettings.saveButton")}
           </Button>
         </div>
       </form>
@@ -213,3 +252,5 @@ export default function PlatformSettingsPage() {
     </TooltipProvider>
   );
 }
+
+    

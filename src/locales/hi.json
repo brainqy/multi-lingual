@@ -322,7 +322,7 @@
         "description": "फ़ीड में सहभागिता"
       },
       "pendingApprovals": {
-        "title": "लंबित अनुमोदन",
+        "title": "प्रलंबित अनुमोदन",
         "description": "ईवेंट अनुरोध"
       }
     },
@@ -361,10 +361,196 @@
       "activeUsersStat": "सक्रिय उपयोगकर्ता (किरायेदार) स्टेट",
       "resumesAnalyzedStat": "विश्लेषित बायोडाटा (किरायेदार) स्टेट",
       "communityPostsStat": "सामुदायिक पोस्ट (किरायेदार) स्टेट",
-      "pendingApprovalsStat": "लंबित अनुमोदन स्टेट",
+      "pendingApprovalsStat": "प्रलंबित अनुमोदन स्टेट",
       "tenantEngagementOverview": "किरायेदार सहभागिता अवलोकन चार्ट",
       "tenantManagementActions": "किरायेदार प्रबंधन कार्रवाइयाँ"
     }
+  },
+  "errorPage": {
+    "title": "कुछ गलत हो गया!",
+    "description": "हमें एक अप्रत्याशित समस्या का सामना करना पड़ा। कृपया पुनः प्रयास करें, या यदि समस्या बनी रहती है तो समर्थन से संपर्क करें।",
+    "detailsPrefix": "त्रुटि विवरण:",
+    "retryButton": "पुनः प्रयास करें"
+  },
+  "accessDenied": {
+    "title": "पहुँच अस्वीकृत",
+    "message": "आपको यह पृष्ठ देखने की अनुमति नहीं है।",
+    "dashboardButton": "डैशबोर्ड पर जाएं"
+  },
+  "announcementBanner": {
+    "dismiss": "घोषणा खारिज करें"
+  },
+  "platformSettings": {
+    "title": "प्लेटफ़ॉर्म सेटिंग्स",
+    "description": "ResumeMatch AI प्लेटफ़ॉर्म के लिए वैश्विक सेटिंग्स और डिफ़ॉल्ट व्यवहार कॉन्फ़िगर करें।",
+    "general": {
+      "sectionTitle": "सामान्य प्लेटफ़ॉर्म",
+      "platformName": {
+        "label": "प्लेटफ़ॉर्म का नाम",
+        "description": "आपके प्लेटफ़ॉर्म का सार्वजनिक नाम।"
+      },
+      "maintenanceMode": {
+        "label": "रखरखाव मोड",
+        "description": "अपडेट करते समय उपयोगकर्ताओं के लिए अस्थायी रूप से पहुँच अक्षम करें।"
+      },
+      "defaultProfileVisibility": {
+        "label": "डिफ़ॉल्ट नई उपयोगकर्ता प्रोफ़ाइल दृश्यता",
+        "description": "नए उपयोगकर्ता प्रोफ़ाइल के लिए डिफ़ॉल्ट दृश्यता सेट करें।",
+        "options": {
+          "public": "सार्वजनिक",
+          "alumni_only": "केवल पूर्व छात्र",
+          "private": "निजी"
+        }
+      },
+      "maxResumesPerUser": {
+        "label": "प्रति उपयोगकर्ता अधिकतम बायोडाटा",
+        "description": "एक उपयोगकर्ता अधिकतम कितने बायोडाटा प्रोफ़ाइल बना सकता है।"
+      },
+      "defaultTheme": {
+        "label": "डिफ़ॉल्ट थीम",
+        "description": "नए उपयोगकर्ताओं के लिए डिफ़ॉल्ट थीम सेट करें।",
+        "options": {
+          "light": "लाइट",
+          "dark": "डार्क"
+        }
+      },
+      "enablePublicProfilePages": {
+        "label": "सार्वजनिक प्रोफ़ाइल पेज सक्षम करें",
+        "description": "उपयोगकर्ताओं को सार्वजनिक रूप से पहुँच योग्य प्रोफ़ाइल URL रखने की अनुमति दें।"
+      },
+      "sessionTimeoutMinutes": {
+        "label": "सत्र टाइमआउट (मिनट)",
+        "description": "उपयोगकर्ताओं को लॉग आउट करने से पहले निष्क्रियता की अवधि।"
+      },
+      "globalAnnouncement": {
+        "label": "वैश्विक घोषणा",
+        "description": "प्लेटफ़ॉर्म पर एक बैनर या संदेश प्रदर्शित करें।",
+        "placeholder": "सभी उपयोगकर्ताओं के लिए एक संक्षिप्त घोषणा दर्ज करें"
+      }
+    },
+    "community": {
+      "sectionTitle": "सामुदायिक सुविधाएँ",
+      "communityFeedEnabled": {
+        "label": "सामुदायिक फ़ीड सक्षम करें"
+      },
+      "autoModeratePosts": {
+        "label": "नई पोस्ट स्वतः-मध्यस्थ करें (मॉक)",
+        "description": "यदि सक्षम किया गया है, तो सामग्री फ़िल्टर के आधार पर समीक्षा लंबित होने तक नई पोस्ट छिपाई जा सकती हैं।"
+      }
+    },
+    "career": {
+      "sectionTitle": "नौकरी और करियर उपकरण",
+      "jobBoardEnabled": {
+        "label": "नौकरी बोर्ड सक्षम करें"
+      },
+      "maxJobPostingDays": {
+        "label": "अधिकतम नौकरी पोस्टिंग अवधि (दिन)",
+        "description": "एक नौकरी पोस्टिंग कितने दिनों तक सक्रिय रहती है, इसकी डिफ़ॉल्ट संख्या।"
+      },
+      "resumeAnalyzerEnabled": {
+        "label": "बायोडाटा विश्लेषक सक्षम करें"
+      },
+      "aiResumeWriterEnabled": {
+        "label": "AI बायोडाटा लेखक सक्षम करें"
+      },
+      "coverLetterGeneratorEnabled": {
+        "label": "कवर लेटर जेनरेटर सक्षम करें"
+      },
+      "mockInterviewEnabled": {
+        "label": "AI मॉक इंटरव्यू सक्षम करें"
+      }
+    },
+    "engagement": {
+      "sectionTitle": "सहभागिता सुविधाएँ",
+      "gamificationEnabled": {
+        "label": "गेमिफिकेशन सक्षम करें (XP, बैज)"
+      },
+      "xpForLogin": {
+        "label": "दैनिक लॉगिन के लिए XP",
+        "description": "दैनिक प्लेटफ़ॉर्म लॉगिन के लिए अंक।"
+      },
+      "xpForNewPost": {
+        "label": "नई सामुदायिक पोस्ट के लिए XP",
+        "description": "सामुदायिक फ़ीड में एक नई पोस्ट बनाने के लिए अंक।"
+      },
+      "referralsEnabled": {
+        "label": "रेफरल प्रोग्राम सक्षम करें"
+      },
+      "affiliateProgramEnabled": {
+        "label": "संबद्ध प्रोग्राम सक्षम करें"
+      },
+      "pointsForAffiliateSignup": {
+        "label": "संबद्ध साइनअप के लिए अंक",
+        "description": "सफल साइनअप पर रेफ़रर को दिए गए XP या सिक्के।"
+      },
+      "featureRequestsEnabled": {
+        "label": "सुविधा अनुरोध सबमिशन सक्षम करें"
+      }
+    },
+    "alumniConnect": {
+      "sectionTitle": "पूर्व छात्र कनेक्ट",
+      "alumniConnectEnabled": {
+        "label": "पूर्व छात्र कनेक्ट डायरेक्टरी सक्षम करें"
+      },
+      "defaultAppointmentCost": {
+        "label": "डिफ़ॉल्ट नियुक्ति लागत (सिक्के)",
+        "description": "पूर्व छात्रों के साथ नियुक्ति बुक करने के लिए डिफ़ॉल्ट सिक्का लागत।"
+      },
+      "maxEventRegistrationsPerUser": {
+        "label": "प्रति उपयोगकर्ता अधिकतम इवेंट पंजीकरण",
+        "description": "एक उपयोगकर्ता कितने इवेंट के लिए पंजीकरण कर सकता है, इसकी सीमा (वैकल्पिक)।"
+      }
+    },
+    "tenantCustomization": {
+      "sectionTitle": "किरायेदार अनुकूलन भत्ते",
+      "description": "नियंत्रित करें कि व्यक्तिगत किरायेदार कुछ पहलुओं को अनुकूलित कर सकते हैं या नहीं।",
+      "allowTenantCustomBranding": {
+        "label": "किरायेदार कस्टम ब्रांडिंग की अनुमति दें",
+        "description": "किरायेदार व्यवस्थापकों को कस्टम लोगो और थीम रंग सेट करने की अनुमति दें।"
+      },
+      "allowTenantEmailCustomization": {
+        "label": "किरायेदार ईमेल अनुकूलन की अनुमति दें (मॉक)",
+        "description": "किरायेदार व्यवस्थापकों को स्वचालित ईमेल टेम्पलेट्स को अनुकूलित करने की अनुमति दें।"
+      }
+    },
+    "saveButton": "सभी प्लेटफ़ॉर्म सेटिंग्स सहेजें",
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्स सहेजी गईं",
+        "description": "प्लेटफ़ॉर्म सेटिंग्स सफलतापूर्वक अपडेट की गई हैं।"
+      }
+    },
+    "validation": {
+        "platformNameMin": "प्लेटफ़ॉर्म का नाम कम से कम 3 अक्षर का होना चाहिए",
+        "maxJobPostingDaysMin": "अधिकतम नौकरी पोस्टिंग दिन कम से कम 1 होना चाहिए",
+        "maxJobPostingDaysMax": "अधिकतम नौकरी पोस्टिंग दिन 365 से अधिक नहीं हो सकते",
+        "xpMin": "XP ऋणात्मक नहीं होना चाहिए",
+        "appointmentCostMin": "नियुक्ति लागत ऋणात्मक नहीं होनी चाहिए",
+        "maxResumesMin": "अधिकतम बायोडाटा कम से कम 1 होना चाहिए",
+        "maxResumesMax": "अधिकतम बायोडाटा 50 से अधिक नहीं हो सकता",
+        "sessionTimeoutMin": "सत्र टाइमआउट कम से कम 5 मिनट होना चाहिए",
+        "sessionTimeoutMax": "सत्र टाइमआउट 1440 मिनट (24 घंटे) से अधिक नहीं हो सकता",
+        "maxEventRegistrationsMin": "अधिकतम इवेंट पंजीकरण कम से कम 1 होना चाहिए",
+        "maxEventRegistrationsMax": "अधिकतम इवेंट पंजीकरण 100 से अधिक नहीं हो सकता",
+        "globalAnnouncementMax": "वैश्विक घोषणा 500 अक्षरों से अधिक नहीं हो सकती",
+        "pointsForAffiliateMin": "संबद्ध साइनअप के लिए अंक ऋणात्मक नहीं होने चाहिए"
+    }
+  },
+  "tenantManagement": {
+    "title": "किरायेदार प्रबंधन",
+    "description": "प्लेटफ़ॉर्म के भीतर सभी किरायेदारों का निरीक्षण और प्रबंधन करें।",
+    "createNewButton": "नया किरायेदार बनाएँ",
+    "tenantListTitle": "किरायेदार सूची",
+    "noTenantsFound": "कोई किरायेदार नहीं मिला।",
+    "table": {
+      "name": "किरायेदार का नाम",
+      "id": "किरायेदार आईडी",
+      "createdAt": "बनाने की तिथि",
+      "publicSignup": "सार्वजनिक साइनअप",
+      "actions": "कार्रवाइयाँ"
+    },
+    "editActionMock": "किरायेदार {tenantId} का संपादन... (यह आमतौर पर एक विस्तृत किरायेदार सेटिंग्स पृष्ठ या एक अधिक जटिल संपादन संवाद पर नेविगेट करेगा)।",
+    "deleteActionToast": "किरायेदार {tenantId} हटा दिया गया।"
   }
 }
 

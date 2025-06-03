@@ -7,12 +7,14 @@ import type { Announcement } from '@/types';
 import { AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/hooks/use-i18n'; // Added for translation
 
 export default function AnnouncementBanner() {
   const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const currentUser = sampleUserProfile;
+  const { t } = useI18n(); // Added for translation
 
   useEffect(() => {
     const now = new Date();
@@ -87,7 +89,7 @@ export default function AnnouncementBanner() {
             size="icon"
             className="h-6 w-6 text-primary hover:bg-primary/20"
             onClick={() => setIsVisible(false)}
-            aria-label="Dismiss announcement"
+            aria-label={t("announcementBanner.dismiss")}
             >
             <X className="h-4 w-4" />
             </Button>
@@ -96,3 +98,5 @@ export default function AnnouncementBanner() {
     </div>
   );
 }
+
+    
