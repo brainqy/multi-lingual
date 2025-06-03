@@ -4,15 +4,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, 
-  Mic, FileText, Users2, CalendarDays, Rss, Mail, BookOpen, Calendar, 
+  LayoutDashboard, MessageSquareText, Settings, Users, Activity, ShieldCheck, UserCog,
+  Mic, FileText, Users2, CalendarDays, Rss, Mail, BookOpen, Calendar,
   Lightbulb, Image as ImageIcon, Gamepad2, ClipboardList, ListOrdered, 
   Briefcase, Target, Trophy, Video, Files, UserCircle, Gift, 
   FileSearch, FilePlus2, History, LayoutGrid, Wallet, Handshake, Megaphone,
-  Settings2, ShieldAlert, GalleryVerticalEnd, ListChecks as GamificationIcon, Bot, Server, UserPlus, Building2, UsersCog
+  Settings2, ShieldAlert, GalleryVerticalEnd, ListChecks as GamificationIcon, Bot, Server, UserPlus, Building2
 } from "lucide-react"; 
 import { useI18n } from "@/hooks/use-i18n";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth"; 
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -79,7 +79,7 @@ export function AppSidebar() {
 
   const adminMenuItems = [
     { href: "/admin/dashboard", label: "Admin Dashboard", icon: ShieldCheck },
-    { href: "/admin/user-management", label: "User Management", icon: UsersCog },
+    { href: "/admin/user-management", label: "User Management", icon: UserCog },
     { href: "/admin/tenants", label: "Tenant Management", icon: Building2 },
     { href: "/admin/tenant-onboarding", label: "Tenant Onboarding", icon: UserPlus },
     { href: "/admin/platform-settings", label: "Platform Settings", icon: Server },
