@@ -787,7 +787,186 @@
       "F": "शु",
       "Sa": "श"
     }
+  },
+  "featureRequests": {
+    "pageTitle": "वैशिष्ट्य विनंत्या",
+    "pageDescription": "ResumeMatch AI सुधारण्यासाठी आपल्या कल्पना सामायिक करा किंवा विद्यमान सूचनांवर मत द्या.",
+    "suggestButton": "नवीन वैशिष्ट्य सुचवा",
+    "dialogCreateTitle": "नवीन वैशिष्ट्य सुचवा",
+    "dialogEditTitle": "वैशिष्ट्य सूचना संपादित करा",
+    "dialogDescriptionCreate": "आम्ही तुमच्या इनपुटला महत्त्व देतो! तुम्हाला काय बघायला आवडेल ते आम्हाला सांगा.",
+    "dialogDescriptionEdit": "तुमची विद्यमान सूचना सुधारित करा.",
+    "formTitleLabel": "वैशिष्ट्य शीर्षक",
+    "formTitlePlaceholder": "उदा. डॅशबोर्डसाठी गडद मोड",
+    "formDescriptionLabel": "तपशीलवार वर्णन",
+    "formDescriptionPlaceholder": "तुमची वैशिष्ट्य कल्पना, त्याचे फायदे आणि ते कसे कार्य करू शकेल हे स्पष्ट करा.",
+    "submitButtonDialog": "सूचना सबमिट करा",
+    "saveChangesButtonDialog": "बदल जतन करा",
+    "cancelButtonDialog": "रद्द करा",
+    "noRequestsTitle": "अद्याप कोणतीही वैशिष्ट्य विनंती नाही",
+    "noRequestsDescription": "ResumeMatch AI सुधारण्यासाठी कल्पना आहे? ती सुचवणारे पहिले व्हा!",
+    "statusPending": "प्रलंबित",
+    "statusInProgress": "प्रगतीपथावर",
+    "statusCompleted": "पूर्ण झाले",
+    "statusRejected": "नाकारले",
+    "statusUnknown": "अज्ञात स्थिती",
+    "suggestedBy": "{name} द्वारे सुचवलेले",
+    "voteButton": "मत ({count})",
+    "viewDetailsButton": "तपशील आणि टिप्पण्या पहा",
+    "toastSuggestionUpdated": {
+      "title": "सूचना अद्यतनित केली",
+      "description": "तुमची वैशिष्ट्य विनंती अद्यतनित केली आहे."
+    },
+    "toastSuggestionSubmitted": {
+      "title": "सूचना सबमिट केली",
+      "description": "तुमच्या अभिप्रायाबद्दल धन्यवाद!"
+    },
+    "toastCannotEdit": {
+      "title": "संपादित करू शकत नाही",
+      "description": "तुम्ही फक्त तुमच्या स्वतःच्या प्रलंबित विनंत्या संपादित करू शकता, किंवा प्रशासक कोणतीही विनंती संपादित करू शकतात."
+    },
+    "toastUpvoted": {
+      "title": "मत दिले!",
+      "description": "तुमचे मत गणले गेले आहे."
+    },
+    "toastViewDetailsMock": {
+      "title": "तपशील पहा (मॉक)",
+      "description": "\"{title}\" साठी तपशील पहात आहात."
+    },
+    "validation": {
+      "titleMin": "शीर्षक किमान ५ अक्षरे असणे आवश्यक आहे",
+      "titleMax": "शीर्षक १०० अक्षरांपेक्षा जास्त असू शकत नाही",
+      "descriptionMin": "वर्णन किमान १० अक्षरे असणे आवश्यक आहे",
+      "descriptionMax": "वर्णन १००० अक्षरांपेक्षा जास्त असू शकत नाही"
+    }
+  },
+  "referrals": {
+    "pageTitle": "रेफरल्स",
+    "pageDescription": "ResumeMatch AI तुमच्या नेटवर्कसोबत शेअर करा आणि बक्षिसे मिळवा!",
+    "yourReferralCardTitle": "तुमचा रेफरल कोड आणि लिंक",
+    "yourReferralCardDescription": "हा कोड किंवा लिंक मित्र आणि सहकाऱ्यांसोबत शेअर करा.",
+    "referralCodeLabel": "रेफरल कोड",
+    "referralLinkLabel": "रेफरल लिंक",
+    "copyButton": "कॉपी करा",
+    "shareButton": "आता शेअर करा",
+    "statsCardTitle": "रेफरल आकडेवारी",
+    "statsCardDescription": "तुमच्या रेफरल्सच्या यशाचा मागोवा घ्या.",
+    "totalReferralsLabel": "एकूण पाठवलेले रेफरल्स",
+    "successfulSignupsLabel": "यशस्वी साइनअप",
+    "rewardsInfo": "पुरस्कार साधारणपणे रेफर केलेल्या वापरकर्त्याने प्रोफाइल सेटअप पूर्ण केल्यावर जमा केले जातात.",
+    "historyCardTitle": "रेफरल इतिहास",
+    "historyCardDescription": "तुम्ही रेफर केलेल्या वापरकर्त्यांचा तपशील.",
+    "noHistory": "तुम्ही अजून कोणालाही रेफर केलेले नाही.",
+    "tableReferredUser": "रेफर केलेला वापरकर्ता",
+    "tableDateReferred": "रेफर केल्याची तारीख",
+    "tableStatus": "स्थिती",
+    "tableReward": "बक्षीस",
+    "statusPending": "प्रलंबित",
+    "statusSignedUp": "साइन अप केले",
+    "statusRewardEarned": "बक्षीस मिळवले",
+    "statusExpired": "कालबाह्य झाले",
+    "howItWorksCardTitle": "रेफरल्स कसे कार्य करतात",
+    "howItWorksStep1": "1. तुमचा अद्वितीय रेफरल कोड किंवा लिंक शेअर करा.",
+    "howItWorksStep2": "2. तुमचा मित्र तुमचा कोड/लिंक वापरून साइन अप करतो.",
+    "howItWorksStep3": "3. त्यांनी महत्त्वाच्या क्रिया (जसे की प्रोफाइल सेटअप किंवा पहिले विश्लेषण) पूर्ण केल्यावर, तुम्हा दोघांना बक्षिसे मिळू शकतात (उदा. बोनस XP किंवा नाणी)!",
+    "howItWorksStep4": "4. तुमच्या रेफरलच्या यशाचा येथे मागोवा घ्या.",
+    "toastCopied": {
+      "title": "क्लिपबोर्डवर कॉपी केले",
+      "description": "रेफरल कोड/लिंक कॉपी केला!"
+    },
+    "toastCopyFailed": {
+      "title": "कॉपी अयशस्वी",
+      "description": "मजकूर कॉपी करता आला नाही."
+    },
+    "toastShareAPINotSupported": {
+      "title": "लिंक कॉपी केली",
+      "description": "शेअर API समर्थित नाही. त्याऐवजी रेफरल लिंक क्लिपबोर्डवर कॉपी केली."
+    }
+  },
+  "userSettings": {
+    "pageTitle": "सेटिंग्ज",
+    "appearanceCardTitle": "स्वरूप",
+    "appearanceCardDescription": "अनुप्रयोगाचे स्वरूप आणि अनुभव सानुकूलित करा.",
+    "darkModeLabel": "गडद मोड",
+    "tenantBrandingCardTitle": "भाडेकरू ब्रांडिंग सेटिंग्ज",
+    "tenantBrandingCardDescription": "तुमच्या भाडेकरूसाठी ब्रांडिंग सानुकूलित करा: {tenantName}.",
+    "tenantNameLabel": "भाडेकरूचे नाव",
+    "tenantNamePlaceholder": "तुमच्या संस्थेचे नाव",
+    "tenantLogoUrlLabel": "भाडेकरू लोगो URL",
+    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUploadLabel": "सानुकूल लोगो अपलोड करा",
+    "logoUploadHelpText": "वरील लोगो URL अपलोड केलेल्या प्रतिमेसह बदला (मॉक अपलोड).",
+    "tenantThemeColorsLabel": "भाडेकरू थीम रंग (मॉक)",
+    "primaryColorLabel": "प्राथमिक रंग",
+    "accentColorLabel": "उच्चार रंग",
+    "colorPlaceholder": "#RRGGBB",
+    "notificationsCardTitle": "सूचना",
+    "notificationsCardDescription": "तुमची सूचना प्राधान्ये व्यवस्थापित करा.",
+    "emailNotificationsLabel": "सामान्य ईमेल सूचना",
+    "appNotificationsLabel": "सामान्य अॅप-मधील सूचना",
+    "gamificationNotificationsLabel": "गेमिफिकेशन सूचना (बॅज, XP)",
+    "referralNotificationsLabel": "रेफरल प्रोग्राम अद्यतने",
+    "platformFeaturesAdminCardTitle": "प्लॅटफॉर्म वैशिष्ट्ये (प्रशासक)",
+    "platformFeaturesAdminCardDescription": "विशिष्ट अनुप्रयोग वैशिष्ट्ये जागतिक स्तरावर सक्षम किंवा अक्षम करा.",
+    "walletEnablePlatformLabel": "डिजिटल वॉलेट सिस्टम (प्लॅटफॉर्म-व्यापी)",
+    "accountSecurityCardTitle": "खाते सुरक्षा",
+    "accountSecurityCardDescription": "तुमची खाते सुरक्षा सेटिंग्ज व्यवस्थापित करा.",
+    "changePasswordButton": "पासवर्ड बदला",
+    "changePasswordDialogTitle": "तुमचा पासवर्ड बदला",
+    "changePasswordDialogDescription": "तुमचा वर्तमान पासवर्ड आणि नवीन पासवर्ड प्रविष्ट करा.",
+    "currentPasswordLabel": "वर्तमान पासवर्ड",
+    "newPasswordLabel": "नवीन पासवर्ड",
+    "confirmNewPasswordLabel": "नवीन पासवर्डची पुष्टी करा",
+    "updatePasswordButton": "पासवर्ड अद्यतनित करा",
+    "dataSharingLabel": "माजी विद्यार्थी नेटवर्कसह डेटा सामायिकरण",
+    "twoFactorAuthLabel": "द्वि-घटक प्रमाणीकरण लागू करा (प्लॅटफॉर्म प्रशासक)",
+    "requestDataDeletionButton": "डेटा हटविण्याची विनंती करा",
+    "confirmDataDeletionDialogTitle": "डेटा हटविण्याच्या विनंतीची पुष्टी करा",
+    "confirmDataDeletionDialogDescription": "पुष्टी करण्यासाठी, कृपया खालील बॉक्समध्ये \"{phrase}\" टाइप करा. ही क्रिया पूर्ववत केली जाऊ शकत नाही. हे तुमचे खाते आणि सर्व संबंधित डेटा कायमचा हटवेल. आम्ही आमच्या गोपनीयता धोरणानुसार तुमच्या विनंतीवर प्रक्रिया करू.",
+    "confirmDeletionInputPlaceholder": "येथे \"{phrase}\" टाइप करा",
+    "confirmDeletionButton": "हटविण्याच्या विनंतीची पुष्टी करा",
+    "saveAllSettingsButton": "सर्व सेटिंग्ज जतन करा",
+    "toastThemeChanged": {
+      "title": "थीम बदलली",
+      "description": "{themeMode} मोडवर स्विच केले."
+    },
+    "toastLogoSelectedMock": {
+      "title": "लोगो निवडला (मॉक)",
+      "description": "{fileName} निवडला. URL फील्ड प्लेसहोल्डरसह अद्यतनित केले. भाडेकरूसाठी अर्ज करण्यासाठी \"सर्व सेटिंग्ज जतन करा\" क्लिक करा."
+    },
+    "toastPlatformSettingsSaved": {
+      "title": "प्लॅटफॉर्म सेटिंग्ज जतन केल्या",
+      "description": "प्लॅटफॉर्म वैशिष्ट्य प्राधान्ये अद्यतनित केली आहेत."
+    },
+    "toastTenantBrandingSaved": {
+      "title": "भाडेकरू ब्रांडिंग जतन केले",
+      "description": "\"{tenantName}\" साठी ब्रांडिंग अद्यतनित केले."
+    },
+    "toastUserSettingsSaved": {
+      "title": "सेटिंग्ज जतन केल्या",
+      "description": "तुमची प्राधान्ये अद्यतनित केली आहेत."
+    },
+    "toastPasswordMismatch": {
+      "title": "पासवर्ड जुळत नाहीत",
+      "description": "नवीन पासवर्ड आणि पुष्टी पासवर्ड जुळत नाहीत."
+    },
+    "toastPasswordTooShort": {
+      "title": "पासवर्ड खूप लहान",
+      "description": "नवीन पासवर्ड किमान 8 अक्षरे असणे आवश्यक आहे."
+    },
+    "toastPasswordChangedMock": {
+      "title": "पासवर्ड बदलला (मॉक)",
+      "description": "तुमचा पासवर्ड यशस्वीरित्या अद्यतनित केला आहे."
+    },
+    "toastDataDeletionMock": {
+      "title": "डेटा हटविण्याची विनंती (मॉक)",
+      "description": "तुमची डेटा हटविण्याची विनंती सुरू केली आहे. ही एक मॉक क्रिया आहे."
+    },
+    "toastMockAction": {
+      "title": "मॉक क्रिया",
+      "description": "प्लॅटफॉर्म 2FA सेटिंग टॉगल केली."
+    },
+    "cancelButton": "रद्द करा"
   }
 }
-
     

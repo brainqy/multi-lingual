@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
+  const { t } = useI18n();
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = useState<UserProfile>(sampleUserProfile);
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
@@ -47,7 +48,9 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState(""); // New state for delete confirmation
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
+  const CONFIRMATION_PHRASE = "delete my account";
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -64,8 +67,8 @@ export default function SettingsPage() {
       if (currentTenant) {
         setTenantNameInput(currentTenant.name);
         setTenantLogoUrlInput(currentTenant.settings?.customLogoUrl || "");
-        setCurrentPrimaryColor(currentTenant.settings?.primaryColor || "hsl(180 100% 25%)"); // Default to theme if undefined
-        setCurrentAccentColor(currentTenant.settings?.accentColor || "hsl(180 100% 30%)");  // Default to theme if undefined
+        setCurrentPrimaryColor(currentTenant.settings?.primaryColor || "hsl(180 100% 25%)");
+        setCurrentAccentColor(currentTenant.settings?.accentColor || "hsl(180 100% 30%)");
       }
     }
     setWalletEnabled(platformSettings.walletEnabled);
@@ -77,16 +80,14 @@ export default function SettingsPage() {
     setIsDarkMode(newIsDarkMode);
     document.documentElement.classList.toggle('dark', newIsDarkMode);
     localStorage.setItem('theme', newIsDarkMode ? 'dark' : 'light');
-    toast({ title: "Theme Changed", description: `Switched to ${newIsDarkMode ? 'Dark' : 'Light'} Mode.` });
+    toast({ title: t("userSettings.toastThemeChanged.title"), description: t("userSettings.toastThemeChanged.description", { themeMode: newIsDarkMode ? 'Dark' : 'Light' }) });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      // Mock: In real app, upload file then set URL state.
-      // For now, we'll just use this to show a toast and let user paste URL.
       setTenantLogoUrlInput(`https://placehold.co/200x50?text=${file.name.substring(0,10)}`);
-      toast({ title: "Logo Selected (Mock)", description: `${file.name} selected. URL field updated with placeholder. Click "Save All Settings" to apply for tenant.` });
+      toast({ title: t("userSettings.toastLogoSelectedMock.title"), description: t("userSettings.toastLogoSelectedMock.description", { fileName: file.name }) });
     }
   };
 
@@ -103,7 +104,7 @@ export default function SettingsPage() {
 
     if(currentUser.role === 'admin'){
         Object.assign(samplePlatformSettings, { walletEnabled });
-        toast({ title: "Platform Settings Saved", description: "Platform feature preferences have been updated." });
+        toast({ title: t("userSettings.toastPlatformSettingsSaved.title"), description: t("userSettings.toastPlatformSettingsSaved.description") });
     }
 
     if (currentUser.role === 'manager' && currentUser.tenantId) {
@@ -111,31 +112,30 @@ export default function SettingsPage() {
       if (tenantIndex !== -1) {
         const updatedTenant = { ...sampleTenants[tenantIndex] };
         updatedTenant.name = tenantNameInput;
-        if (!updatedTenant.settings) updatedTenant.settings = { allowPublicSignup: true }; // Ensure settings object exists
+        if (!updatedTenant.settings) updatedTenant.settings = { allowPublicSignup: true };
         updatedTenant.settings.customLogoUrl = tenantLogoUrlInput;
         updatedTenant.settings.primaryColor = currentPrimaryColor;
         updatedTenant.settings.accentColor = currentAccentColor;
-
         sampleTenants[tenantIndex] = updatedTenant;
-        toast({ title: "Tenant Branding Saved", description: `Branding for "${tenantNameInput}" updated.` });
+        toast({ title: t("userSettings.toastTenantBrandingSaved.title"), description: t("userSettings.toastTenantBrandingSaved.description", { tenantName: tenantNameInput }) });
       }
     } else if (currentUser.role !== 'admin') {
-      toast({ title: "Settings Saved", description: "Your preferences have been updated." });
+      toast({ title: t("userSettings.toastUserSettingsSaved.title"), description: t("userSettings.toastUserSettingsSaved.description") });
     }
   };
 
   const handleChangePassword = (event: FormEvent) => {
     event.preventDefault();
     if (newPassword !== confirmNewPassword) {
-      toast({ title: "Password Mismatch", description: "New password and confirm password do not match.", variant: "destructive" });
+      toast({ title: t("userSettings.toastPasswordMismatch.title"), description: t("userSettings.toastPasswordMismatch.description"), variant: "destructive" });
       return;
     }
     if (newPassword.length < 8) {
-      toast({ title: "Password Too Short", description: "New password must be at least 8 characters.", variant: "destructive" });
+      toast({ title: t("userSettings.toastPasswordTooShort.title"), description: t("userSettings.toastPasswordTooShort.description"), variant: "destructive" });
       return;
     }
     console.log("Attempting to change password (mocked):", { currentPassword, newPassword });
-    toast({ title: "Password Changed (Mock)", description: "Your password has been successfully updated." });
+    toast({ title: t("userSettings.toastPasswordChangedMock.title"), description: t("userSettings.toastPasswordChangedMock.description") });
     setCurrentPassword("");
     setNewPassword("");
     setConfirmNewPassword("");
@@ -143,29 +143,26 @@ export default function SettingsPage() {
   };
 
   const handleDataDeletionRequest = () => {
-    // Reset confirm text for next time
     setDeleteConfirmText("");
-    toast({title: "Data Deletion Request (Mock)", description:"Your data deletion request has been initiated. This is a mock action."});
+    toast({title: t("userSettings.toastDataDeletionMock.title"), description:t("userSettings.toastDataDeletionMock.description")});
   };
-
-  const CONFIRMATION_PHRASE = "delete my account";
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Settings className="h-8 w-8" /> Settings
+        <Settings className="h-8 w-8" /> {t("userSettings.pageTitle")}
       </h1>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>Appearance</CardTitle>
-          <CardDescription>Customize the look and feel of the application.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary"/>{t("userSettings.appearanceCardTitle")}</CardTitle>
+          <CardDescription>{t("userSettings.appearanceCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
             <Label htmlFor="theme-switcher" className="flex items-center gap-2 text-sm font-medium">
               {isDarkMode ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5"/>}
-              Dark Mode
+              {t("userSettings.darkModeLabel")}
             </Label>
             <Switch id="theme-switcher" checked={isDarkMode} onCheckedChange={toggleTheme} />
           </div>
@@ -175,52 +172,52 @@ export default function SettingsPage() {
       {currentUser.role === 'manager' && (
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5 text-primary"/>Tenant Branding Settings</CardTitle>
-            <CardDescription>Customize the branding for your tenant: {tenantNameInput || currentUser.currentOrganization || currentUser.tenantId}.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Paintbrush className="h-5 w-5 text-primary"/>{t("userSettings.tenantBrandingCardTitle")}</CardTitle>
+            <CardDescription>{t("userSettings.tenantBrandingCardDescription", { tenantName: tenantNameInput || currentUser.currentOrganization || currentUser.tenantId })}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="tenant-name-input">Tenant Name</Label>
+              <Label htmlFor="tenant-name-input">{t("userSettings.tenantNameLabel")}</Label>
               <Input
                 id="tenant-name-input"
                 value={tenantNameInput}
                 onChange={(e) => setTenantNameInput(e.target.value)}
-                placeholder="Your Organization's Name"
+                placeholder={t("userSettings.tenantNamePlaceholder")}
               />
             </div>
             <div>
-              <Label htmlFor="tenant-logo-url-input">Tenant Logo URL</Label>
+              <Label htmlFor="tenant-logo-url-input">{t("userSettings.tenantLogoUrlLabel")}</Label>
               <Input
                 id="tenant-logo-url-input"
                 value={tenantLogoUrlInput}
                 onChange={(e) => setTenantLogoUrlInput(e.target.value)}
-                placeholder="https://example.com/logo.png"
+                placeholder={t("userSettings.tenantLogoUrlPlaceholder")}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="logo-upload" className="text-sm font-medium flex items-center gap-2">
-                  <UploadCloud className="h-5 w-5"/> Upload Custom Logo
+                  <UploadCloud className="h-5 w-5"/> {t("userSettings.logoUploadLabel")}
               </Label>
               <Input id="logo-upload" type="file" accept="image/png, image/jpeg" onChange={handleLogoUpload} className="text-sm"/>
-              <p className="text-xs text-muted-foreground">Replace the logo URL above with an uploaded image (mocked upload).</p>
+              <p className="text-xs text-muted-foreground">{t("userSettings.logoUploadHelpText")}</p>
             </div>
              <div className="space-y-3">
                 <Label className="text-sm font-medium flex items-center gap-2">
-                    Tenant Theme Colors (Mocked)
+                    {t("userSettings.tenantThemeColorsLabel")}
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <Label htmlFor="tenant-primary-color" className="text-xs">Primary Color</Label>
+                        <Label htmlFor="tenant-primary-color" className="text-xs">{t("userSettings.primaryColorLabel")}</Label>
                         <div className="flex items-center gap-2">
                             <Input type="color" id="tenant-primary-color" value={currentPrimaryColor} onChange={(e) => handleTenantColorChange('primary', e.target.value)} className="w-12 h-8 p-1"/>
-                            <Input type="text" value={currentPrimaryColor} onChange={(e) => handleTenantColorChange('primary', e.target.value)} placeholder="#RRGGBB"/>
+                            <Input type="text" value={currentPrimaryColor} onChange={(e) => handleTenantColorChange('primary', e.target.value)} placeholder={t("userSettings.colorPlaceholder")}/>
                         </div>
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="tenant-accent-color" className="text-xs">Accent Color</Label>
+                        <Label htmlFor="tenant-accent-color" className="text-xs">{t("userSettings.accentColorLabel")}</Label>
                         <div className="flex items-center gap-2">
                             <Input type="color" id="tenant-accent-color" value={currentAccentColor} onChange={(e) => handleTenantColorChange('accent', e.target.value)} className="w-12 h-8 p-1"/>
-                            <Input type="text" value={currentAccentColor} onChange={(e) => handleTenantColorChange('accent', e.target.value)} placeholder="#RRGGBB"/>
+                            <Input type="text" value={currentAccentColor} onChange={(e) => handleTenantColorChange('accent', e.target.value)} placeholder={t("userSettings.colorPlaceholder")}/>
                         </div>
                     </div>
                 </div>
@@ -231,27 +228,27 @@ export default function SettingsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5 text-primary"/>Notifications</CardTitle>
-          <CardDescription>Manage your notification preferences.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5 text-primary"/>{t("userSettings.notificationsCardTitle")}</CardTitle>
+          <CardDescription>{t("userSettings.notificationsCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
-            <Label htmlFor="email-notifications" className="text-sm font-medium">General Email Notifications</Label>
+            <Label htmlFor="email-notifications" className="text-sm font-medium">{t("userSettings.emailNotificationsLabel")}</Label>
             <Switch id="email-notifications" checked={emailNotificationsEnabled} onCheckedChange={setEmailNotificationsEnabled} />
           </div>
            <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
-            <Label htmlFor="app-notifications" className="text-sm font-medium">General In-App Notifications</Label>
+            <Label htmlFor="app-notifications" className="text-sm font-medium">{t("userSettings.appNotificationsLabel")}</Label>
             <Switch id="app-notifications" checked={appNotificationsEnabled} onCheckedChange={setAppNotificationsEnabled} />
           </div>
           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
             <Label htmlFor="gamification-notifications" className="flex items-center gap-2 text-sm font-medium">
-              <Award className="h-4 w-4" /> Gamification Notifications (Badges, XP)
+              <Award className="h-4 w-4" /> {t("userSettings.gamificationNotificationsLabel")}
             </Label>
             <Switch id="gamification-notifications" checked={gamificationNotificationsEnabled} onCheckedChange={setGamificationNotificationsEnabled} />
           </div>
            <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
             <Label htmlFor="referral-notifications" className="flex items-center gap-2 text-sm font-medium">
-              <Gift className="h-4 w-4" /> Referral Program Updates
+              <Gift className="h-4 w-4" /> {t("userSettings.referralNotificationsLabel")}
             </Label>
             <Switch id="referral-notifications" checked={referralNotificationsEnabled} onCheckedChange={setReferralNotificationsEnabled} />
           </div>
@@ -261,12 +258,12 @@ export default function SettingsPage() {
       {currentUser.role === 'admin' && (
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><WalletCards className="h-5 w-5 text-primary"/>Platform Features (Admin)</CardTitle>
-            <CardDescription>Enable or disable specific application features globally.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><WalletCards className="h-5 w-5 text-primary"/>{t("userSettings.platformFeaturesAdminCardTitle")}</CardTitle>
+            <CardDescription>{t("userSettings.platformFeaturesAdminCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
-              <Label htmlFor="wallet-enable-platform" className="text-sm font-medium">Digital Wallet System (Platform-wide)</Label>
+              <Label htmlFor="wallet-enable-platform" className="text-sm font-medium">{t("userSettings.walletEnablePlatformLabel")}</Label>
               <Switch
                 id="wallet-enable-platform"
                 checked={walletEnabled}
@@ -282,13 +279,13 @@ export default function SettingsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary"/>Account Security</CardTitle>
-          <CardDescription>Manage your account security settings.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary"/>{t("userSettings.accountSecurityCardTitle")}</CardTitle>
+          <CardDescription>{t("userSettings.accountSecurityCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Dialog open={isChangePasswordDialogOpen} onOpenChange={(isOpen) => {
             setIsChangePasswordDialogOpen(isOpen);
-            if (!isOpen) { // Reset fields when dialog closes
+            if (!isOpen) { 
               setCurrentPassword("");
               setNewPassword("");
               setConfirmNewPassword("");
@@ -296,19 +293,19 @@ export default function SettingsPage() {
           }}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <KeyRound className="mr-2 h-4 w-4" /> Change Password
+                <KeyRound className="mr-2 h-4 w-4" /> {t("userSettings.changePasswordButton")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Change Your Password</DialogTitle>
+                <DialogTitle>{t("userSettings.changePasswordDialogTitle")}</DialogTitle>
                 <DialogUIDescription>
-                  Enter your current password and a new password.
+                  {t("userSettings.changePasswordDialogDescription")}
                 </DialogUIDescription>
               </DialogHeader>
               <form onSubmit={handleChangePassword} className="space-y-4 py-4">
                 <div>
-                  <Label htmlFor="dialog-current-password">Current Password</Label>
+                  <Label htmlFor="dialog-current-password">{t("userSettings.currentPasswordLabel")}</Label>
                   <Input
                     id="dialog-current-password"
                     type="password"
@@ -318,7 +315,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dialog-new-password">New Password</Label>
+                  <Label htmlFor="dialog-new-password">{t("userSettings.newPasswordLabel")}</Label>
                   <Input
                     id="dialog-new-password"
                     type="password"
@@ -328,7 +325,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dialog-confirm-new-password">Confirm New Password</Label>
+                  <Label htmlFor="dialog-confirm-new-password">{t("userSettings.confirmNewPasswordLabel")}</Label>
                   <Input
                     id="dialog-confirm-new-password"
                     type="password"
@@ -339,10 +336,10 @@ export default function SettingsPage() {
                 </div>
                 <DialogUIFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
+                    <Button type="button" variant="outline">{t("userSettings.cancelButton")}</Button>
                   </DialogClose>
                   <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Update Password
+                    {t("userSettings.updatePasswordButton")}
                   </Button>
                 </DialogUIFooter>
               </form>
@@ -350,45 +347,43 @@ export default function SettingsPage() {
           </Dialog>
 
            <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30 mt-4">
-             <Label htmlFor="data-sharing" className="text-sm font-medium">Data Sharing with Alumni Network</Label>
+             <Label htmlFor="data-sharing" className="text-sm font-medium">{t("userSettings.dataSharingLabel")}</Label>
             <Switch id="data-sharing" defaultChecked />
           </div>
           {currentUser.role === 'admin' && (
              <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
-                <Label htmlFor="two-factor-auth" className="text-sm font-medium">Enforce Two-Factor Authentication (Platform Admin)</Label>
-                <Switch id="two-factor-auth" onCheckedChange={() => toast({ title: "Mock Action", description: "Platform 2FA setting toggled." })} />
+                <Label htmlFor="two-factor-auth" className="text-sm font-medium">{t("userSettings.twoFactorAuthLabel")}</Label>
+                <Switch id="two-factor-auth" onCheckedChange={() => toast({ title: t("userSettings.toastMockAction.title"), description: t("userSettings.toastMockAction.description") })} />
             </div>
           )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="mt-4">Request Data Deletion</Button>
+              <Button variant="destructive" className="mt-4">{t("userSettings.requestDataDeletionButton")}</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Data Deletion Request</AlertDialogTitle>
+                <AlertDialogTitle>{t("userSettings.confirmDataDeletionDialogTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  To confirm, please type "<strong className="text-destructive">{CONFIRMATION_PHRASE}</strong>" in the box below.
-                  This action cannot be undone. This will permanently delete your account and all associated data.
-                  We will process your request in accordance with our privacy policy.
+                  {t("userSettings.confirmDataDeletionDialogDescription", { phrase: CONFIRMATION_PHRASE })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="py-4">
-                <Label htmlFor="delete-confirm-input" className="sr-only">Confirm deletion phrase</Label>
+                <Label htmlFor="delete-confirm-input" className="sr-only">{t("userSettings.confirmDeletionInputPlaceholder", { phrase: CONFIRMATION_PHRASE })}</Label>
                 <Input
                   id="delete-confirm-input"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder={`Type "${CONFIRMATION_PHRASE}" here`}
+                  placeholder={t("userSettings.confirmDeletionInputPlaceholder", { phrase: CONFIRMATION_PHRASE })}
                 />
               </div>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDeleteConfirmText("")}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setDeleteConfirmText("")}>{t("userSettings.cancelButton")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDataDeletionRequest}
                   className="bg-destructive hover:bg-destructive/80 text-destructive-foreground"
                   disabled={deleteConfirmText !== CONFIRMATION_PHRASE}
                 >
-                  Confirm Deletion Request
+                  {t("userSettings.confirmDeletionButton")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -398,7 +393,7 @@ export default function SettingsPage() {
 
       <div className="pt-4 text-center">
         <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSaveSettings}>
-          Save All Settings
+          {t("userSettings.saveAllSettingsButton")}
         </Button>
       </div>
     </div>

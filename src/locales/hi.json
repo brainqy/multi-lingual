@@ -787,7 +787,186 @@
       "F": "शु",
       "Sa": "श"
     }
+  },
+  "featureRequests": {
+    "pageTitle": "सुविधा अनुरोध",
+    "pageDescription": "ResumeMatch AI को बेहतर बनाने के लिए अपने विचार साझा करें या मौजूदा सुझावों पर वोट करें।",
+    "suggestButton": "नई सुविधा सुझाएँ",
+    "dialogCreateTitle": "नई सुविधा सुझाएँ",
+    "dialogEditTitle": "सुविधा सुझाव संपादित करें",
+    "dialogDescriptionCreate": "हम आपके इनपुट को महत्व देते हैं! आप क्या देखना चाहेंगे हमें बताएं।",
+    "dialogDescriptionEdit": "अपना मौजूदा सुझाव संशोधित करें।",
+    "formTitleLabel": "सुविधा शीर्षक",
+    "formTitlePlaceholder": "उदा., डैशबोर्ड के लिए डार्क मोड",
+    "formDescriptionLabel": "विस्तृत विवरण",
+    "formDescriptionPlaceholder": "अपनी सुविधा का विचार, उसके लाभ, और यह कैसे काम कर सकता है, समझाएं।",
+    "submitButtonDialog": "सुझाव जमा करें",
+    "saveChangesButtonDialog": "बदलाव सहेजें",
+    "cancelButtonDialog": "रद्द करें",
+    "noRequestsTitle": "अभी तक कोई सुविधा अनुरोध नहीं",
+    "noRequestsDescription": "ResumeMatch AI को बेहतर बनाने का कोई विचार है? इसे सुझाने वाले पहले व्यक्ति बनें!",
+    "statusPending": "लंबित",
+    "statusInProgress": "प्रगति में",
+    "statusCompleted": "पूर्ण",
+    "statusRejected": "अस्वीकृत",
+    "statusUnknown": "अज्ञात स्थिति",
+    "suggestedBy": "{name} द्वारा सुझाया गया",
+    "voteButton": "वोट ({count})",
+    "viewDetailsButton": "विवरण और टिप्पणियाँ देखें",
+    "toastSuggestionUpdated": {
+      "title": "सुझाव अपडेट किया गया",
+      "description": "आपका सुविधा अनुरोध अपडेट किया गया है।"
+    },
+    "toastSuggestionSubmitted": {
+      "title": "सुझाव जमा किया गया",
+      "description": "आपके फ़ीडबैक के लिए धन्यवाद!"
+    },
+    "toastCannotEdit": {
+      "title": "संपादित नहीं कर सकते",
+      "description": "आप केवल अपने स्वयं के लंबित अनुरोधों को संपादित कर सकते हैं, या व्यवस्थापक किसी भी अनुरोध को संपादित कर सकते हैं।"
+    },
+    "toastUpvoted": {
+      "title": "वोट किया!",
+      "description": "आपका वोट गिना गया है।"
+    },
+    "toastViewDetailsMock": {
+      "title": "विवरण देखें (मॉक)",
+      "description": "\"{title}\" के लिए विवरण देख रहे हैं।"
+    },
+    "validation": {
+      "titleMin": "शीर्षक कम से कम 5 अक्षर का होना चाहिए",
+      "titleMax": "शीर्षक 100 अक्षरों से अधिक नहीं हो सकता",
+      "descriptionMin": "विवरण कम से कम 10 अक्षर का होना चाहिए",
+      "descriptionMax": "विवरण 1000 अक्षरों से अधिक नहीं हो सकता"
+    }
+  },
+  "referrals": {
+    "pageTitle": "रेफरल",
+    "pageDescription": "ResumeMatch AI को अपने नेटवर्क के साथ साझा करें और पुरस्कार अर्जित करें!",
+    "yourReferralCardTitle": "आपका रेफरल कोड और लिंक",
+    "yourReferralCardDescription": "यह कोड या लिंक दोस्तों और सहकर्मियों के साथ साझा करें।",
+    "referralCodeLabel": "रेफरल कोड",
+    "referralLinkLabel": "रेफरल लिंक",
+    "copyButton": "कॉपी करें",
+    "shareButton": "अभी साझा करें",
+    "statsCardTitle": "रेफरल सांख्यिकी",
+    "statsCardDescription": "अपने रेफरल की सफलता को ट्रैक करें।",
+    "totalReferralsLabel": "कुल भेजे गए रेफरल",
+    "successfulSignupsLabel": "सफल साइनअप",
+    "rewardsInfo": "पुरस्कार आमतौर पर तब जमा किए जाते हैं जब संदर्भित उपयोगकर्ता अपनी प्रोफ़ाइल सेटअप पूरी करता है।",
+    "historyCardTitle": "रेफरल इतिहास",
+    "historyCardDescription": "आपके द्वारा संदर्भित उपयोगकर्ताओं का विवरण।",
+    "noHistory": "आपने अभी तक किसी को संदर्भित नहीं किया है।",
+    "tableReferredUser": "संदर्भित उपयोगकर्ता",
+    "tableDateReferred": "संदर्भित तिथि",
+    "tableStatus": "स्थिति",
+    "tableReward": "पुरस्कार",
+    "statusPending": "लंबित",
+    "statusSignedUp": "साइन अप किया",
+    "statusRewardEarned": "पुरस्कार अर्जित किया",
+    "statusExpired": "समाप्त",
+    "howItWorksCardTitle": "रेफरल कैसे काम करते हैं",
+    "howItWorksStep1": "1. अपना अद्वितीय रेफरल कोड या लिंक साझा करें।",
+    "howItWorksStep2": "2. आपका मित्र आपके कोड/लिंक का उपयोग करके साइन अप करता है।",
+    "howItWorksStep3": "3. जब वे मुख्य क्रियाएं (जैसे प्रोफ़ाइल सेटअप या पहला विश्लेषण) पूरी करते हैं, तो आप दोनों को पुरस्कार मिल सकते हैं (जैसे, बोनस XP या सिक्के)!",
+    "howItWorksStep4": "4. यहां अपने रेफरल की सफलता को ट्रैक करें।",
+    "toastCopied": {
+      "title": "क्लिपबोर्ड पर कॉपी किया गया",
+      "description": "रेफरल कोड/लिंक कॉपी किया गया!"
+    },
+    "toastCopyFailed": {
+      "title": "कॉपी विफल",
+      "description": "पाठ कॉपी नहीं किया जा सका।"
+    },
+    "toastShareAPINotSupported": {
+      "title": "लिंक कॉपी किया गया",
+      "description": "शेयर एपीआई समर्थित नहीं है। इसके बजाय रेफरल लिंक क्लिपबोर्ड पर कॉपी किया गया।"
+    }
+  },
+  "userSettings": {
+    "pageTitle": "सेटिंग्स",
+    "appearanceCardTitle": "दिखावट",
+    "appearanceCardDescription": "एप्लिकेशन का रंगरूप अनुकूलित करें।",
+    "darkModeLabel": "डार्क मोड",
+    "tenantBrandingCardTitle": "किरायेदार ब्रांडिंग सेटिंग्स",
+    "tenantBrandingCardDescription": "अपने किरायेदार के लिए ब्रांडिंग अनुकूलित करें: {tenantName}।",
+    "tenantNameLabel": "किरायेदार का नाम",
+    "tenantNamePlaceholder": "आपके संगठन का नाम",
+    "tenantLogoUrlLabel": "किरायेदार लोगो यूआरएल",
+    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUploadLabel": "कस्टम लोगो अपलोड करें",
+    "logoUploadHelpText": "उपरोक्त लोगो यूआरएल को अपलोड की गई छवि से बदलें (मॉक अपलोड)।",
+    "tenantThemeColorsLabel": "किरायेदार थीम रंग (मॉक)",
+    "primaryColorLabel": "प्राथमिक रंग",
+    "accentColorLabel": "उच्चारण रंग",
+    "colorPlaceholder": "#RRGGBB",
+    "notificationsCardTitle": "सूचनाएं",
+    "notificationsCardDescription": "अपनी सूचना वरीयताएँ प्रबंधित करें।",
+    "emailNotificationsLabel": "सामान्य ईमेल सूचनाएं",
+    "appNotificationsLabel": "सामान्य इन-ऐप सूचनाएं",
+    "gamificationNotificationsLabel": "गेमिफिकेशन सूचनाएं (बैज, XP)",
+    "referralNotificationsLabel": "रेफरल प्रोग्राम अपडेट",
+    "platformFeaturesAdminCardTitle": "प्लेटफ़ॉर्म सुविधाएँ (व्यवस्थापक)",
+    "platformFeaturesAdminCardDescription": "वैश्विक रूप से विशिष्ट एप्लिकेशन सुविधाएँ सक्षम या अक्षम करें।",
+    "walletEnablePlatformLabel": "डिजिटल वॉलेट सिस्टम (प्लेटफ़ॉर्म-व्यापी)",
+    "accountSecurityCardTitle": "खाता सुरक्षा",
+    "accountSecurityCardDescription": "अपनी खाता सुरक्षा सेटिंग्स प्रबंधित करें।",
+    "changePasswordButton": "पासवर्ड बदलें",
+    "changePasswordDialogTitle": "अपना पासवर्ड बदलें",
+    "changePasswordDialogDescription": "अपना वर्तमान पासवर्ड और एक नया पासवर्ड दर्ज करें।",
+    "currentPasswordLabel": "वर्तमान पासवर्ड",
+    "newPasswordLabel": "नया पासवर्ड",
+    "confirmNewPasswordLabel": "नए पासवर्ड की पुष्टि करें",
+    "updatePasswordButton": "पासवर्ड अपडेट करें",
+    "dataSharingLabel": "पूर्व छात्र नेटवर्क के साथ डेटा साझा करना",
+    "twoFactorAuthLabel": "दो-कारक प्रमाणीकरण लागू करें (प्लेटफ़ॉर्म व्यवस्थापक)",
+    "requestDataDeletionButton": "डेटा हटाने का अनुरोध करें",
+    "confirmDataDeletionDialogTitle": "डेटा हटाने के अनुरोध की पुष्टि करें",
+    "confirmDataDeletionDialogDescription": "पुष्टि करने के लिए, कृपया नीचे दिए गए बॉक्स में \"{phrase}\" टाइप करें। यह कार्रवाई पूर्ववत नहीं की जा सकती। यह आपके खाते और सभी संबंधित डेटा को स्थायी रूप से हटा देगा। हम आपकी गोपनीयता नीति के अनुसार आपके अनुरोध पर कार्रवाई करेंगे।",
+    "confirmDeletionInputPlaceholder": "यहां \"{phrase}\" टाइप करें",
+    "confirmDeletionButton": "हटाने के अनुरोध की पुष्टि करें",
+    "saveAllSettingsButton": "सभी सेटिंग्स सहेजें",
+    "toastThemeChanged": {
+      "title": "थीम बदला गया",
+      "description": "{themeMode} मोड में स्विच किया गया।"
+    },
+    "toastLogoSelectedMock": {
+      "title": "लोगो चुना गया (मॉक)",
+      "description": "{fileName} चुना गया। यूआरएल फ़ील्ड प्लेसहोल्डर के साथ अपडेट किया गया। किरायेदार के लिए आवेदन करने के लिए \"सभी सेटिंग्स सहेजें\" पर क्लिक करें।"
+    },
+    "toastPlatformSettingsSaved": {
+      "title": "प्लेटफ़ॉर्म सेटिंग्स सहेजी गईं",
+      "description": "प्लेटफ़ॉर्म सुविधा वरीयताएँ अपडेट की गई हैं।"
+    },
+    "toastTenantBrandingSaved": {
+      "title": "किरायेदार ब्रांडिंग सहेजी गई",
+      "description": "\"{tenantName}\" के लिए ब्रांडिंग अपडेट की गई।"
+    },
+    "toastUserSettingsSaved": {
+      "title": "सेटिंग्स सहेजी गईं",
+      "description": "आपकी वरीयताएँ अपडेट की गई हैं।"
+    },
+    "toastPasswordMismatch": {
+      "title": "पासवर्ड मेल नहीं खाते",
+      "description": "नया पासवर्ड और पुष्टि पासवर्ड मेल नहीं खाते।"
+    },
+    "toastPasswordTooShort": {
+      "title": "पासवर्ड बहुत छोटा",
+      "description": "नया पासवर्ड कम से कम 8 अक्षर का होना चाहिए।"
+    },
+    "toastPasswordChangedMock": {
+      "title": "पासवर्ड बदला गया (मॉक)",
+      "description": "आपका पासवर्ड सफलतापूर्वक अपडेट किया गया है।"
+    },
+    "toastDataDeletionMock": {
+      "title": "डेटा हटाने का अनुरोध (मॉक)",
+      "description": "आपका डेटा हटाने का अनुरोध शुरू किया गया है। यह एक मॉक कार्रवाई है।"
+    },
+    "toastMockAction": {
+      "title": "मॉक कार्रवाई",
+      "description": "प्लेटफ़ॉर्म 2FA सेटिंग टॉगल की गई।"
+    },
+    "cancelButton": "रद्द करें"
   }
 }
-
     

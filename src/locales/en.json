@@ -787,7 +787,186 @@
       "F": "F",
       "Sa": "Sa"
     }
+  },
+  "featureRequests": {
+    "pageTitle": "Feature Requests",
+    "pageDescription": "Share your ideas for improving ResumeMatch AI or vote on existing suggestions.",
+    "suggestButton": "Suggest New Feature",
+    "dialogCreateTitle": "Suggest a New Feature",
+    "dialogEditTitle": "Edit Feature Suggestion",
+    "dialogDescriptionCreate": "We value your input! Let us know what you'd like to see.",
+    "dialogDescriptionEdit": "Modify your existing suggestion.",
+    "formTitleLabel": "Feature Title",
+    "formTitlePlaceholder": "e.g., Dark Mode for Dashboard",
+    "formDescriptionLabel": "Detailed Description",
+    "formDescriptionPlaceholder": "Explain your feature idea, its benefits, and how it might work.",
+    "submitButtonDialog": "Submit Suggestion",
+    "saveChangesButtonDialog": "Save Changes",
+    "cancelButtonDialog": "Cancel",
+    "noRequestsTitle": "No Feature Requests Yet",
+    "noRequestsDescription": "Have an idea to improve ResumeMatch AI? Be the first to suggest it!",
+    "statusPending": "Pending",
+    "statusInProgress": "In Progress",
+    "statusCompleted": "Completed",
+    "statusRejected": "Rejected",
+    "statusUnknown": "Unknown Status",
+    "suggestedBy": "Suggested by {name}",
+    "voteButton": "Vote ({count})",
+    "viewDetailsButton": "View Details & Comments",
+    "toastSuggestionUpdated": {
+      "title": "Suggestion Updated",
+      "description": "Your feature request has been updated."
+    },
+    "toastSuggestionSubmitted": {
+      "title": "Suggestion Submitted",
+      "description": "Thank you for your feedback!"
+    },
+    "toastCannotEdit": {
+      "title": "Cannot Edit",
+      "description": "You can only edit your own pending requests, or admins can edit any."
+    },
+    "toastUpvoted": {
+      "title": "Upvoted!",
+      "description": "Your vote has been counted."
+    },
+    "toastViewDetailsMock": {
+      "title": "View Details (Mock)",
+      "description": "Viewing details for \"{title}\"."
+    },
+    "validation": {
+      "titleMin": "Title must be at least 5 characters",
+      "titleMax": "Title cannot exceed 100 characters",
+      "descriptionMin": "Description must be at least 10 characters",
+      "descriptionMax": "Description cannot exceed 1000 characters"
+    }
+  },
+  "referrals": {
+    "pageTitle": "Referrals",
+    "pageDescription": "Share ResumeMatch AI with your network and earn rewards!",
+    "yourReferralCardTitle": "Your Referral Code & Link",
+    "yourReferralCardDescription": "Share this code or link with friends and colleagues.",
+    "referralCodeLabel": "Referral Code",
+    "referralLinkLabel": "Referral Link",
+    "copyButton": "Copy",
+    "shareButton": "Share Now",
+    "statsCardTitle": "Referral Statistics",
+    "statsCardDescription": "Track the success of your referrals.",
+    "totalReferralsLabel": "Total Referrals Sent",
+    "successfulSignupsLabel": "Successful Signups",
+    "rewardsInfo": "Rewards are typically credited once a referred user completes their profile setup.",
+    "historyCardTitle": "Referral History",
+    "historyCardDescription": "Details of users you have referred.",
+    "noHistory": "You haven't referred anyone yet.",
+    "tableReferredUser": "Referred User",
+    "tableDateReferred": "Date Referred",
+    "tableStatus": "Status",
+    "tableReward": "Reward",
+    "statusPending": "Pending",
+    "statusSignedUp": "Signed Up",
+    "statusRewardEarned": "Reward Earned",
+    "statusExpired": "Expired",
+    "howItWorksCardTitle": "How Referrals Work",
+    "howItWorksStep1": "1. Share your unique referral code or link.",
+    "howItWorksStep2": "2. Your friend signs up using your code/link.",
+    "howItWorksStep3": "3. Once they complete key actions (like profile setup or first analysis), you both might receive rewards (e.g., bonus XP or coins)!",
+    "howItWorksStep4": "4. Track your referral success here.",
+    "toastCopied": {
+      "title": "Copied to Clipboard",
+      "description": "Referral code/link copied!"
+    },
+    "toastCopyFailed": {
+      "title": "Copy Failed",
+      "description": "Could not copy text."
+    },
+    "toastShareAPINotSupported": {
+      "title": "Link Copied",
+      "description": "Share API not supported. Referral link copied to clipboard instead."
+    }
+  },
+  "userSettings": {
+    "pageTitle": "Settings",
+    "appearanceCardTitle": "Appearance",
+    "appearanceCardDescription": "Customize the look and feel of the application.",
+    "darkModeLabel": "Dark Mode",
+    "tenantBrandingCardTitle": "Tenant Branding Settings",
+    "tenantBrandingCardDescription": "Customize the branding for your tenant: {tenantName}.",
+    "tenantNameLabel": "Tenant Name",
+    "tenantNamePlaceholder": "Your Organization's Name",
+    "tenantLogoUrlLabel": "Tenant Logo URL",
+    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUploadLabel": "Upload Custom Logo",
+    "logoUploadHelpText": "Replace the logo URL above with an uploaded image (mocked upload).",
+    "tenantThemeColorsLabel": "Tenant Theme Colors (Mocked)",
+    "primaryColorLabel": "Primary Color",
+    "accentColorLabel": "Accent Color",
+    "colorPlaceholder": "#RRGGBB",
+    "notificationsCardTitle": "Notifications",
+    "notificationsCardDescription": "Manage your notification preferences.",
+    "emailNotificationsLabel": "General Email Notifications",
+    "appNotificationsLabel": "General In-App Notifications",
+    "gamificationNotificationsLabel": "Gamification Notifications (Badges, XP)",
+    "referralNotificationsLabel": "Referral Program Updates",
+    "platformFeaturesAdminCardTitle": "Platform Features (Admin)",
+    "platformFeaturesAdminCardDescription": "Enable or disable specific application features globally.",
+    "walletEnablePlatformLabel": "Digital Wallet System (Platform-wide)",
+    "accountSecurityCardTitle": "Account Security",
+    "accountSecurityCardDescription": "Manage your account security settings.",
+    "changePasswordButton": "Change Password",
+    "changePasswordDialogTitle": "Change Your Password",
+    "changePasswordDialogDescription": "Enter your current password and a new password.",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmNewPasswordLabel": "Confirm New Password",
+    "updatePasswordButton": "Update Password",
+    "dataSharingLabel": "Data Sharing with Alumni Network",
+    "twoFactorAuthLabel": "Enforce Two-Factor Authentication (Platform Admin)",
+    "requestDataDeletionButton": "Request Data Deletion",
+    "confirmDataDeletionDialogTitle": "Confirm Data Deletion Request",
+    "confirmDataDeletionDialogDescription": "To confirm, please type \"{phrase}\" in the box below. This action cannot be undone. This will permanently delete your account and all associated data. We will process your request in accordance with our privacy policy.",
+    "confirmDeletionInputPlaceholder": "Type \"{phrase}\" here",
+    "confirmDeletionButton": "Confirm Deletion Request",
+    "saveAllSettingsButton": "Save All Settings",
+    "toastThemeChanged": {
+      "title": "Theme Changed",
+      "description": "Switched to {themeMode} Mode."
+    },
+    "toastLogoSelectedMock": {
+      "title": "Logo Selected (Mock)",
+      "description": "{fileName} selected. URL field updated with placeholder. Click \"Save All Settings\" to apply for tenant."
+    },
+    "toastPlatformSettingsSaved": {
+      "title": "Platform Settings Saved",
+      "description": "Platform feature preferences have been updated."
+    },
+    "toastTenantBrandingSaved": {
+      "title": "Tenant Branding Saved",
+      "description": "Branding for \"{tenantName}\" updated."
+    },
+    "toastUserSettingsSaved": {
+      "title": "Settings Saved",
+      "description": "Your preferences have been updated."
+    },
+    "toastPasswordMismatch": {
+      "title": "Password Mismatch",
+      "description": "New password and confirm password do not match."
+    },
+    "toastPasswordTooShort": {
+      "title": "Password Too Short",
+      "description": "New password must be at least 8 characters."
+    },
+    "toastPasswordChangedMock": {
+      "title": "Password Changed (Mock)",
+      "description": "Your password has been successfully updated."
+    },
+    "toastDataDeletionMock": {
+      "title": "Data Deletion Request (Mock)",
+      "description": "Your data deletion request has been initiated. This is a mock action."
+    },
+    "toastMockAction": {
+      "title": "Mock Action",
+      "description": "Platform 2FA setting toggled."
+    },
+    "cancelButton": "Cancel"
   }
 }
-
     
