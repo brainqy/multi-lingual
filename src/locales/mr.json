@@ -303,5 +303,69 @@
         "description": "तुमची डॅशबोर्ड विजेट प्राधान्ये या सत्रासाठी जतन केली गेली आहेत."
       }
     }
+  },
+  "managerDashboard": {
+    "title": "व्यवस्थापक डॅशबोर्ड ({tenantName})",
+    "description": "तुमच्या भाडेकरूच्या सहभागाचे निरीक्षण करा, विशिष्ट वैशिष्ट्ये व्यवस्थापित करा आणि महत्त्वाचे मेट्रिक्स ट्रॅक करा.",
+    "customizeButton": "डॅशबोर्ड सानुकूलित करा",
+    "stats": {
+      "activeUsers": {
+        "title": "सक्रिय वापरकर्ते (भाडेकरू)",
+        "description": "एकूण {count} पैकी"
+      },
+      "resumesAnalyzed": {
+        "title": "विश्लेषित बायोडाटा (भाडेकरू)",
+        "description": "भाडेकरू अंतर्गत एकूण"
+      },
+      "communityPosts": {
+        "title": "समुदाय पोस्ट्स (भाडेकरू)",
+        "description": "फीडमधील सहभाग"
+      },
+      "pendingApprovals": {
+        "title": "प्रलंबित मंजुरी",
+        "description": "कार्यक्रम विनंत्या"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "भाडेकरू सहभाग अवलोकन",
+        "description": "तुमच्या भाडेकरू अंतर्गत क्रियाकलाप.",
+        "legendPosts": "पोस्ट्स",
+        "legendResumesAnalyzed": "विश्लेषित बायोडाटा",
+        "legendAppointments": "भेटी",
+        "activityCount": "क्रियाकलाप संख्या"
+      }
+    },
+    "quickActions": {
+      "title": "भाडेकरू व्यवस्थापन क्रिया",
+      "description": "तुमच्या भाडेकरूच्या विशिष्ट सेटिंग्ज आणि सामग्री व्यवस्थापित करण्यासाठी साधनांमध्ये प्रवेश करा.",
+      "manageTenantUsers": "भाडेकरू वापरकर्ते व्यवस्थापित करा",
+      "moderateTenantFeed": "भाडेकरू फीड नियंत्रित करा",
+      "manageEventGallery": "कार्यक्रम गॅलरी व्यवस्थापित करा",
+      "reviewEventSubmissions": "कार्यक्रम सबमिशनचे पुनरावलोकन करा",
+      "manageAnnouncements": "घोषणा व्यवस्थापित करा"
+    },
+    "customizeDialog": {
+      "title": "व्यवस्थापक डॅशबोर्ड सानुकूलित करा",
+      "description": "तुम्हाला तुमच्या डॅशबोर्डवर कोणती विजेट्स पहायची आहेत ते निवडा.",
+      "saveButton": "प्राधान्ये जतन करा",
+      "cancelButton": "रद्द करा"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "डॅशबोर्ड अद्यतनित केले",
+        "description": "तुमची डॅशबोर्ड विजेट प्राधान्ये या सत्रासाठी जतन केली गेली आहेत."
+      }
+    },
+    "widgets": {
+      "activeUsersStat": "सक्रिय वापरकर्ते (भाडेकरू) आकडेवारी",
+      "resumesAnalyzedStat": "विश्लेषित बायोडाटा (भाडेकरू) आकडेवारी",
+      "communityPostsStat": "समुदाय पोस्ट्स (भाडेकरू) आकडेवारी",
+      "pendingApprovalsStat": "प्रलंबित मंजुरी आकडेवारी",
+      "tenantEngagementOverview": "भाडेकरू सहभाग अवलोकन चार्ट",
+      "tenantManagementActions": "भाडेकरू व्यवस्थापन क्रिया"
+    }
   }
 }
+
+    

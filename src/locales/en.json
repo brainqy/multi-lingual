@@ -303,5 +303,69 @@
         "description": "Your dashboard widget preferences have been saved for this session."
       }
     }
+  },
+  "managerDashboard": {
+    "title": "Manager Dashboard ({tenantName})",
+    "description": "Oversee your tenant's engagement, manage specific features, and track key metrics.",
+    "customizeButton": "Customize Dashboard",
+    "stats": {
+      "activeUsers": {
+        "title": "Active Users (Tenant)",
+        "description": "Out of {count} total"
+      },
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed (Tenant)",
+        "description": "Total within tenant"
+      },
+      "communityPosts": {
+        "title": "Community Posts (Tenant)",
+        "description": "Engagement in feed"
+      },
+      "pendingApprovals": {
+        "title": "Pending Approvals",
+        "description": "Event requests"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "Tenant Engagement Overview",
+        "description": "Activity within your tenant.",
+        "legendPosts": "Posts",
+        "legendResumesAnalyzed": "Resumes Analyzed",
+        "legendAppointments": "Appointments",
+        "activityCount": "Activity Count"
+      }
+    },
+    "quickActions": {
+      "title": "Tenant Management Actions",
+      "description": "Access tools to manage your tenant's specific settings and content.",
+      "manageTenantUsers": "Manage Tenant Users",
+      "moderateTenantFeed": "Moderate Tenant Feed",
+      "manageEventGallery": "Manage Event Gallery",
+      "reviewEventSubmissions": "Review Event Submissions",
+      "manageAnnouncements": "Manage Announcements"
+    },
+    "customizeDialog": {
+      "title": "Customize Manager Dashboard",
+      "description": "Select the widgets you want to see on your dashboard.",
+      "saveButton": "Save Preferences",
+      "cancelButton": "Cancel"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widget preferences have been saved for this session."
+      }
+    },
+    "widgets": {
+      "activeUsersStat": "Active Users (Tenant) Stat",
+      "resumesAnalyzedStat": "Resumes Analyzed (Tenant) Stat",
+      "communityPostsStat": "Community Posts (Tenant) Stat",
+      "pendingApprovalsStat": "Pending Approvals Stat",
+      "tenantEngagementOverview": "Tenant Engagement Overview Chart",
+      "tenantManagementActions": "Tenant Management Actions"
+    }
   }
 }
+
+    

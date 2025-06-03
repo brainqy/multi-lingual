@@ -303,5 +303,69 @@
         "description": "आपकी डैशबोर्ड विजेट वरीयताएँ इस सत्र के लिए सहेजी गई हैं।"
       }
     }
+  },
+  "managerDashboard": {
+    "title": "प्रबंधक डैशबोर्ड ({tenantName})",
+    "description": "अपने किरायेदार की सहभागिता का निरीक्षण करें, विशिष्ट सुविधाओं का प्रबंधन करें, और प्रमुख मैट्रिक्स ट्रैक करें।",
+    "customizeButton": "डैशबोर्ड अनुकूलित करें",
+    "stats": {
+      "activeUsers": {
+        "title": "सक्रिय उपयोगकर्ता (किरायेदार)",
+        "description": "कुल {count} में से"
+      },
+      "resumesAnalyzed": {
+        "title": "विश्लेषित बायोडाटा (किरायेदार)",
+        "description": "किरायेदार के भीतर कुल"
+      },
+      "communityPosts": {
+        "title": "सामुदायिक पोस्ट (किरायेदार)",
+        "description": "फ़ीड में सहभागिता"
+      },
+      "pendingApprovals": {
+        "title": "लंबित अनुमोदन",
+        "description": "ईवेंट अनुरोध"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "किरायेदार सहभागिता अवलोकन",
+        "description": "आपके किरायेदार के भीतर गतिविधि।",
+        "legendPosts": "पोस्ट",
+        "legendResumesAnalyzed": "विश्लेषित बायोडाटा",
+        "legendAppointments": "नियुक्तियाँ",
+        "activityCount": "गतिविधि गणना"
+      }
+    },
+    "quickActions": {
+      "title": "किरायेदार प्रबंधन कार्रवाइयाँ",
+      "description": "अपने किरायेदार की विशिष्ट सेटिंग्स और सामग्री प्रबंधित करने के लिए टूल तक पहुँचें।",
+      "manageTenantUsers": "किरायेदार उपयोगकर्ता प्रबंधित करें",
+      "moderateTenantFeed": "किरायेदार फ़ीड संचालित करें",
+      "manageEventGallery": "ईवेंट गैलरी प्रबंधित करें",
+      "reviewEventSubmissions": "ईवेंट सबमिशन की समीक्षा करें",
+      "manageAnnouncements": "घोषणाएँ प्रबंधित करें"
+    },
+    "customizeDialog": {
+      "title": "प्रबंधक डैशबोर्ड अनुकूलित करें",
+      "description": "उन विजेट्स का चयन करें जिन्हें आप अपने डैशबोर्ड पर देखना चाहते हैं।",
+      "saveButton": "वरीयताएँ सहेजें",
+      "cancelButton": "रद्द करें"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "डैशबोर्ड अपडेट किया गया",
+        "description": "आपकी डैशबोर्ड विजेट वरीयताएँ इस सत्र के लिए सहेजी गई हैं।"
+      }
+    },
+    "widgets": {
+      "activeUsersStat": "सक्रिय उपयोगकर्ता (किरायेदार) स्टेट",
+      "resumesAnalyzedStat": "विश्लेषित बायोडाटा (किरायेदार) स्टेट",
+      "communityPostsStat": "सामुदायिक पोस्ट (किरायेदार) स्टेट",
+      "pendingApprovalsStat": "लंबित अनुमोदन स्टेट",
+      "tenantEngagementOverview": "किरायेदार सहभागिता अवलोकन चार्ट",
+      "tenantManagementActions": "किरायेदार प्रबंधन कार्रवाइयाँ"
+    }
   }
 }
+
+    
