@@ -162,6 +162,8 @@ export interface CommunityPost {
   content?: string;
   type: 'text' | 'poll' | 'event' | 'request';
   tags?: string[];
+  imageUrl?: string; 
+  imageAiHint?: string;
   pollOptions?: { option: string, votes: number }[];
   eventTitle?: string;
   eventDate?: string;
@@ -1099,5 +1101,3 @@ export interface SystemAlert {
   linkText?: string;
   isRead?: boolean;
 }
-
-    
