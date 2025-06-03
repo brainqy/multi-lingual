@@ -161,6 +161,147 @@
         "title": "भेटीची आठवण",
         "description": "तुमची \"{title}\" साठी {user} सोबत आज {time} वाजता भेट आहे."
       }
+    },
+    "widgets": {
+      "promotionCard": "प्रमोशनल स्पॉटलाइट",
+      "resumesAnalyzedStat": "विश्लेषित रेझ्युमे आकडेवारी",
+      "avgMatchScoreStat": "सरासरी जुळणी गुण आकडेवारी",
+      "jobApplicationsStat": "नोकरी अर्ज आकडेवारी",
+      "alumniConnectionsStat": "माजी विद्यार्थी कनेक्शन आकडेवारी",
+      "jobApplicationStatusChart": "नोकरी अर्ज स्थिती चार्ट",
+      "matchScoreOverTimeChart": "वेळेनुसार जुळणी गुण चार्ट",
+      "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
+      "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
+      "recentActivities": "अलीकडील क्रियाकलाप"
+    }
+  },
+  "adminDashboard": {
+    "title": "प्रशासक डॅशबोर्ड",
+    "description": "वापरकर्ते, सिस्टम सेटिंग्ज व्यवस्थापित करा आणि एकूण प्लॅटफॉर्म आकडेवारी पहा.",
+    "customizeButton": "डॅशबोर्ड सानुकूलित करा",
+    "promotionalSpotlight": {
+      "title": "प्रमोशनल स्पॉटलाइट",
+      "description": "येथे नवीन अद्यतने, ऑफर किंवा महत्त्वाच्या घोषणा वैशिष्ट्यीकृत करा.",
+      "content": "येथे प्रमोशनल सामग्री प्रदर्शित केली जाऊ शकते. हे क्षेत्र नवीन वैशिष्ट्ये, आगामी वेबिनार, भाडेकरूंसाठी विशेष ऑफर किंवा प्लॅटफॉर्म यश हायलाइट करू शकते.",
+      "learnMoreButton": "अधिक जाणून घ्या"
+    },
+    "stats": {
+      "totalUsers": {
+        "title": "एकूण वापरकर्ते",
+        "description": "या {period} मध्ये +{count} नवीन"
+      },
+      "totalTenants": {
+        "title": "एकूण भाडेकरू",
+        "description": "सक्रिय भाडेकरू"
+      },
+      "resumesAnalyzed": {
+        "title": "विश्लेषित बायोडाटा",
+        "description": "हा {period}"
+      },
+      "communityPosts": {
+        "title": "समुदाय पोस्ट्स",
+        "description": "या {period} मध्ये नवीन"
+      },
+      "platformActivity": {
+        "title": "प्लॅटफॉर्म क्रियाकलाप",
+        "description": "या {period} मध्ये सक्रिय वापरकर्ते"
+      },
+      "jobApplications": {
+        "title": "नोकरी अर्ज",
+        "description": "या {period} मध्ये ट्रॅक केले"
+      },
+      "alumniConnections": {
+        "title": "माजी विद्यार्थी कनेक्शन",
+        "description": "एकूण प्लॅटफॉर्म कनेक्शन"
+      },
+      "mockInterviews": {
+        "title": "मॉक मुलाखती",
+        "description": "पूर्ण झालेले AI सत्र"
+      }
+    },
+    "charts": {
+      "registrationTrends": {
+        "title": "वापरकर्ता नोंदणी ट्रेंड",
+        "description": "गेल्या ३० दिवसांतील दैनिक नवीन वापरकर्ता साइन-अप."
+      },
+      "aiUsage": {
+        "title": "AI वैशिष्ट्य वापर ब्रेकडाउन",
+        "description": "विविध AI-समर्थित साधनांची लोकप्रियता."
+      },
+      "contentModeration": {
+        "title": "सामग्री नियंत्रण रांग",
+        "description": "पुनरावलोकनाची आवश्यकता असलेले आयटम.",
+        "flaggedPosts": "ध्वजांकित समुदाय पोस्ट्स",
+        "reviewButton": "आता पुनरावलोकन करा"
+      },
+      "systemAlerts": {
+        "title": "सिस्टम अलर्ट",
+        "description": "अलीकडील महत्त्वाच्या सिस्टम सूचना.",
+        "noAlerts": "यावेळी कोणतीही सिस्टम सूचना नाही.",
+        "viewAllButton": "सर्व सिस्टम सूचना पहा",
+        "unreadAlertsCount": "{count} नवीन",
+        "markReadButton": "वाचल्याचे चिन्हांकित करा",
+        "alertReadToastTitle": "सूचना वाचल्याचे चिन्हांकित",
+        "alertReadToastDescription": "सूचना \"{title}\" वाचल्याचे चिन्हांकित केले."
+      },
+      "timeSpent": {
+        "title": "वेळेची आकडेवारी",
+        "description": "वापरकर्ता प्रतिबद्धता वेळेतील अंतर्दृष्टी.",
+        "avgSessionDuration": "सरासरी सत्र कालावधी",
+        "totalPlatformUsage": "एकूण प्लॅटफॉर्म वापर ({period})",
+        "topUsers": "शीर्ष वापरकर्ते ({period})",
+        "mostUsedFeatures": "सर्वाधिक वापरली जाणारी वैशिष्ट्ये (वेळेनुसार)",
+        "weekly": "साप्ताहिक",
+        "monthly": "मासिक"
+      },
+      "tenantActivity": {
+        "title": "भाडेकरू क्रियाकलाप अवलोकन ({period})",
+        "description": "निवडलेल्या कालावधीसाठी प्रति भाडेकरू मुख्य प्रतिबद्धता मेट्रिक्स.",
+        "legendNewUsers": "नवीन वापरकर्ते",
+        "legendResumesAnalyzed": "विश्लेषित बायोडाटा",
+        "legendCommunityPosts": "समुदाय पोस्ट्स"
+      }
+    },
+    "quickActions": {
+      "title": "प्रशासक द्रुत क्रिया",
+      "manageUsers": "वापरकर्ते व्यवस्थापित करा",
+      "platformSettings": "प्लॅटफॉर्म सेटिंग्ज",
+      "manageTenants": "भाडेकरू व्यवस्थापित करा",
+      "contentModeration": "सामग्री नियंत्रण",
+      "announcements": "घोषणा",
+      "gamificationRules": "गेमिफिकेशन नियम",
+      "blogSettings": "ब्लॉग सेटिंग्ज",
+      "userActivityAnalytics": "वापरकर्ता क्रियाकलाप विश्लेषण"
+    },
+    "customizeDialog": {
+      "title": "प्रशासक डॅशबोर्ड सानुकूलित करा",
+      "description": "तुम्हाला तुमच्या डॅशबोर्डवर कोणती विजेट्स पहायची आहेत ते निवडा.",
+      "saveButton": "प्राधान्ये जतन करा",
+      "cancelButton": "रद्द करा"
+    },
+    "widgets": {
+      "promotionalSpotlight": "प्रमोशनल स्पॉटलाइट",
+      "totalUsersStat": "एकूण वापरकर्ते आकडेवारी",
+      "totalTenantsStat": "एकूण भाडेकरू आकडेवारी",
+      "resumesAnalyzedStat": "विश्लेषित बायोडाटा आकडेवारी",
+      "communityPostsStat": "समुदाय पोस्ट्स आकडेवारी",
+      "platformActivityStat": "प्लॅटफॉर्म क्रियाकलाप आकडेवारी",
+      "jobApplicationsStat": "नोकरी अर्ज आकडेवारी",
+      "alumniConnectionsStat": "माजी विद्यार्थी कनेक्शन आकडेवारी",
+      "mockInterviewsStat": "मॉक मुलाखती आकडेवारी",
+      "timeSpentStats": "वेळेची आकडेवारी",
+      "tenantActivityOverview": "भाडेकरू क्रियाकलाप अवलोकन",
+      "registrationTrendsChart": "वापरकर्ता नोंदणी ट्रेंड चार्ट",
+      "aiUsageBreakdownChart": "AI वैशिष्ट्य वापर",
+      "contentModerationQueueSummary": "सामग्री नियंत्रण रांग",
+      "systemAlerts": "सिस्टम अलर्ट",
+      "adminQuickActions": "प्रशासक द्रुत क्रिया"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "डॅशबोर्ड अद्यतनित केले",
+        "description": "तुमची डॅशबोर्ड विजेट प्राधान्ये या सत्रासाठी जतन केली गेली आहेत."
+      }
     }
   }
 }

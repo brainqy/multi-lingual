@@ -161,6 +161,147 @@
         "title": "Appointment Reminder",
         "description": "You have an appointment for \"{title}\" with {user} today, {time}."
       }
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "resumesAnalyzedStat": "Resumes Analyzed Stat",
+      "avgMatchScoreStat": "Average Match Score Stat",
+      "jobApplicationsStat": "Job Applications Stat",
+      "alumniConnectionsStat": "Alumni Connections Stat",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities"
+    }
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "description": "Manage users, system settings, and view overall platform statistics.",
+    "customizeButton": "Customize Dashboard",
+    "promotionalSpotlight": {
+      "title": "Promotional Spotlight",
+      "description": "Feature new updates, offers, or important announcements here.",
+      "content": "Promotional content can be displayed here. This area can highlight new features, upcoming webinars, special offers for tenants, or platform achievements.",
+      "learnMoreButton": "Learn More"
+    },
+    "stats": {
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "+{count} new this {period}"
+      },
+      "totalTenants": {
+        "title": "Total Tenants",
+        "description": "Active Tenants"
+      },
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "This {period}"
+      },
+      "communityPosts": {
+        "title": "Community Posts",
+        "description": "New this {period}"
+      },
+      "platformActivity": {
+        "title": "Platform Activity",
+        "description": "Users active this {period}"
+      },
+      "jobApplications": {
+        "title": "Job Applications",
+        "description": "Tracked this {period}"
+      },
+      "alumniConnections": {
+        "title": "Alumni Connections Made",
+        "description": "Total platform connections"
+      },
+      "mockInterviews": {
+        "title": "Mock Interviews",
+        "description": "Completed AI sessions"
+      }
+    },
+    "charts": {
+      "registrationTrends": {
+        "title": "User Registration Trends",
+        "description": "Daily new user sign-ups over the last 30 days."
+      },
+      "aiUsage": {
+        "title": "AI Feature Usage Breakdown",
+        "description": "Popularity of different AI-powered tools."
+      },
+      "contentModeration": {
+        "title": "Content Moderation Queue",
+        "description": "Items requiring review.",
+        "flaggedPosts": "Flagged Community Posts",
+        "reviewButton": "Review Now"
+      },
+      "systemAlerts": {
+        "title": "System Alerts",
+        "description": "Recent important system notifications.",
+        "noAlerts": "No system alerts at this time.",
+        "viewAllButton": "View All System Alerts",
+        "unreadAlertsCount": "{count} NEW",
+        "markReadButton": "Mark Read",
+        "alertReadToastTitle": "Alert Marked as Read",
+        "alertReadToastDescription": "Alert \"{title}\" marked as read."
+      },
+      "timeSpent": {
+        "title": "Time Spent Statistics",
+        "description": "Insights into user engagement time.",
+        "avgSessionDuration": "Avg. Session Duration",
+        "totalPlatformUsage": "Total Platform Usage ({period})",
+        "topUsers": "Top Users ({period})",
+        "mostUsedFeatures": "Most Used Features (by time)",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "tenantActivity": {
+        "title": "Tenant Activity Overview ({period})",
+        "description": "Key engagement metrics per tenant for the selected period.",
+        "legendNewUsers": "New Users",
+        "legendResumesAnalyzed": "Resumes Analyzed",
+        "legendCommunityPosts": "Community Posts"
+      }
+    },
+    "quickActions": {
+      "title": "Admin Quick Actions",
+      "manageUsers": "Manage Users",
+      "platformSettings": "Platform Settings",
+      "manageTenants": "Manage Tenants",
+      "contentModeration": "Content Moderation",
+      "announcements": "Announcements",
+      "gamificationRules": "Gamification Rules",
+      "blogSettings": "Blog Settings",
+      "userActivityAnalytics": "User Activity Analytics"
+    },
+    "customizeDialog": {
+      "title": "Customize Admin Dashboard",
+      "description": "Select the widgets you want to see on your dashboard.",
+      "saveButton": "Save Preferences",
+      "cancelButton": "Cancel"
+    },
+    "widgets": {
+      "promotionalSpotlight": "Promotional Spotlight",
+      "totalUsersStat": "Total Users Stat",
+      "totalTenantsStat": "Total Tenants Stat",
+      "resumesAnalyzedStat": "Resumes Analyzed Stat",
+      "communityPostsStat": "Community Posts Stat",
+      "platformActivityStat": "Platform Activity Stat",
+      "jobApplicationsStat": "Job Applications Stat",
+      "alumniConnectionsStat": "Alumni Connections Stat",
+      "mockInterviewsStat": "Mock Interviews Stat",
+      "timeSpentStats": "Time Spent Statistics",
+      "tenantActivityOverview": "Tenant Activity Overview",
+      "registrationTrendsChart": "User Registration Trends",
+      "aiUsageBreakdownChart": "AI Feature Usage",
+      "contentModerationQueueSummary": "Content Moderation Queue",
+      "systemAlerts": "System Alerts",
+      "adminQuickActions": "Admin Quick Actions"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widget preferences have been saved for this session."
+      }
     }
   }
 }

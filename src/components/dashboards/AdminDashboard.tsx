@@ -15,11 +15,11 @@ import {
   sampleUserProfile,
   sampleResumeScanHistory,
   samplePlatformUsers,
-  sampleSystemAlerts, // Import sampleSystemAlerts
+  sampleSystemAlerts, 
 } from "@/lib/sample-data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Tenant, UserProfile, SystemAlert, SystemAlertType } from "@/types"; // Import SystemAlert types
+import type { Tenant, UserProfile, SystemAlert, SystemAlertType } from "@/types"; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
@@ -28,7 +28,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, parseISO } from "date-fns"; // For alert timestamps
+import { formatDistanceToNow, parseISO } from "date-fns"; 
+import { useI18n } from "@/hooks/use-i18n";
 
 interface TenantActivityStats extends Tenant {
   userCount: number;
@@ -100,36 +101,37 @@ type AdminDashboardWidgetId =
   | 'registrationTrendsChart'
   | 'aiUsageBreakdownChart'
   | 'contentModerationQueueSummary'
-  | 'systemAlerts' // New widget ID
+  | 'systemAlerts' 
   | 'adminQuickActions';
 
 interface WidgetConfig {
   id: AdminDashboardWidgetId;
-  title: string;
+  titleKey: string; // Changed from title to titleKey for i18n
   defaultVisible: boolean;
 }
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
-  { id: 'promotionalSpotlight', title: 'Promotional Spotlight', defaultVisible: true },
-  { id: 'totalUsersStat', title: 'Total Users Stat', defaultVisible: true },
-  { id: 'totalTenantsStat', title: 'Total Tenants Stat', defaultVisible: true },
-  { id: 'resumesAnalyzedStat', title: 'Resumes Analyzed Stat', defaultVisible: true },
-  { id: 'communityPostsStat', title: 'Community Posts Stat', defaultVisible: true },
-  { id: 'platformActivityStat', title: 'Platform Activity Stat', defaultVisible: true },
-  { id: 'jobApplicationsStat', title: 'Job Applications Stat', defaultVisible: true },
-  { id: 'alumniConnectionsStat', title: 'Alumni Connections Stat', defaultVisible: true },
-  { id: 'mockInterviewsStat', title: 'Mock Interviews Stat', defaultVisible: true },
-  { id: 'timeSpentStats', title: 'Time Spent Statistics', defaultVisible: true },
-  { id: 'tenantActivityOverview', title: 'Tenant Activity Overview', defaultVisible: true },
-  { id: 'registrationTrendsChart', title: 'User Registration Trends', defaultVisible: true },
-  { id: 'aiUsageBreakdownChart', title: 'AI Feature Usage', defaultVisible: true },
-  { id: 'contentModerationQueueSummary', title: 'Content Moderation Queue', defaultVisible: true },
-  { id: 'systemAlerts', title: 'System Alerts', defaultVisible: true }, // Added new widget config
-  { id: 'adminQuickActions', title: 'Admin Quick Actions', defaultVisible: true },
+  { id: 'promotionalSpotlight', titleKey: 'adminDashboard.widgets.promotionalSpotlight', defaultVisible: true },
+  { id: 'totalUsersStat', titleKey: 'adminDashboard.widgets.totalUsersStat', defaultVisible: true },
+  { id: 'totalTenantsStat', titleKey: 'adminDashboard.widgets.totalTenantsStat', defaultVisible: true },
+  { id: 'resumesAnalyzedStat', titleKey: 'adminDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
+  { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
+  { id: 'platformActivityStat', titleKey: 'adminDashboard.widgets.platformActivityStat', defaultVisible: true },
+  { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: true },
+  { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
+  { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
+  { id: 'timeSpentStats', titleKey: 'adminDashboard.widgets.timeSpentStats', defaultVisible: true },
+  { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
+  { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
+  { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
+  { id: 'contentModerationQueueSummary', titleKey: 'adminDashboard.widgets.contentModerationQueueSummary', defaultVisible: true },
+  { id: 'systemAlerts', titleKey: 'adminDashboard.widgets.systemAlerts', defaultVisible: true }, 
+  { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
 
 export default function AdminDashboard() {
+  const { t } = useI18n();
   const [showAdminTour, setShowAdminTour] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [currentTenantActivityData, setCurrentTenantActivityData] = useState<TenantActivityStats[]>([]);
@@ -231,7 +233,10 @@ export default function AdminDashboard() {
   const handleSaveCustomization = () => {
     setVisibleWidgetIds(tempVisibleWidgetIds);
     setIsCustomizeDialogOpen(false);
-    toast({ title: "Dashboard Updated", description: "Your dashboard widget preferences have been saved for this session." });
+    toast({ 
+      title: t("adminDashboard.toast.dashboardUpdated.title"), 
+      description: t("adminDashboard.toast.dashboardUpdated.description") 
+    });
   };
 
   const openCustomizeDialog = () => {
@@ -243,13 +248,15 @@ export default function AdminDashboard() {
     setAlerts(prevAlerts => prevAlerts.map(alert =>
       alert.id === alertId ? { ...alert, isRead: true } : alert
     ));
-    // In a real app, you'd also update the backend.
     const alertToMark = alerts.find(a => a.id === alertId);
     if(alertToMark) {
         const globalIndex = sampleSystemAlerts.findIndex(sa => sa.id === alertId);
         if (globalIndex !== -1) sampleSystemAlerts[globalIndex].isRead = true;
     }
-    toast({title: "Alert Marked as Read", description: `Alert "${alertToMark?.title}" marked as read.`});
+    toast({
+        title: t("adminDashboard.charts.systemAlerts.alertReadToastTitle"), 
+        description: t("adminDashboard.charts.systemAlerts.alertReadToastDescription", { title: alertToMark?.title || "Alert"})
+    });
   };
 
   const getAlertIcon = (type: SystemAlertType) => {
@@ -265,6 +272,7 @@ export default function AdminDashboard() {
   const unreadAlertsCount = useMemo(() => alerts.filter(a => !a.isRead).length, [alerts]);
   const recentUnreadAlerts = useMemo(() => alerts.filter(a => !a.isRead).slice(0, 3), [alerts]);
 
+  const translatedUsagePeriod = usagePeriod === 'weekly' ? t("adminDashboard.charts.timeSpent.weekly") : t("adminDashboard.charts.timeSpent.monthly");
 
   return (
     <>
@@ -278,11 +286,11 @@ export default function AdminDashboard() {
       <div className="space-y-8">
         <div className="flex justify-between items-center">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>
-                <p className="text-muted-foreground">Manage users, system settings, and view overall platform statistics.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("adminDashboard.title")}</h1>
+                <p className="text-muted-foreground">{t("adminDashboard.description")}</p>
             </div>
             <Button variant="outline" onClick={openCustomizeDialog}>
-                <CustomizeIcon className="mr-2 h-4 w-4" /> Customize Dashboard
+                <CustomizeIcon className="mr-2 h-4 w-4" /> {t("adminDashboard.customizeButton")}
             </Button>
         </div>
 
@@ -290,12 +298,12 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('promotionalSpotlight') && (
           <Card className="shadow-lg md:col-span-2 lg:col-span-4 bg-gradient-to-r from-primary/10 via-secondary/5 to-accent/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary"/>Promotional Spotlight</CardTitle>
-              <CardDescription>Feature new updates, offers, or important announcements here.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary"/>{t("adminDashboard.promotionalSpotlight.title")}</CardTitle>
+              <CardDescription>{t("adminDashboard.promotionalSpotlight.description")}</CardDescription>
             </CardHeader>
             <CardContent className="text-center py-10">
-              <p className="text-muted-foreground">Promotional content can be displayed here. This area can highlight new features, upcoming webinars, special offers for tenants, or platform achievements.</p>
-              <Button className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">Learn More</Button>
+              <p className="text-muted-foreground">{t("adminDashboard.promotionalSpotlight.content")}</p>
+              <Button className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">{t("adminDashboard.promotionalSpotlight.learnMoreButton")}</Button>
             </CardContent>
           </Card>
         )}
@@ -304,48 +312,48 @@ export default function AdminDashboard() {
           {visibleWidgetIds.has('totalUsersStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.totalUsers.title")}</CardTitle>
                 <Users className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalUsers}</div>
-                <p className="text-xs text-muted-foreground">+{platformStats.newSignupsThisPeriod} new this {usagePeriod}</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.totalUsers.description", { count: platformStats.newSignupsThisPeriod, period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('totalTenantsStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Tenants</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.totalTenants.title")}</CardTitle>
                 <Building2 className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{sampleTenants.length}</div>
-                <p className="text-xs text-muted-foreground">Active Tenants</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.totalTenants.description")}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('resumesAnalyzedStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Resumes Analyzed</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.resumesAnalyzed.title")}</CardTitle>
                 <FileText className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalResumesAnalyzedThisPeriod}</div>
-                <p className="text-xs text-muted-foreground">This {usagePeriod}</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.resumesAnalyzed.description", { period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('communityPostsStat') && (
              <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Community Posts</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.communityPosts.title")}</CardTitle>
                 <MessageSquare className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalCommunityPostsThisPeriod}</div>
-                <p className="text-xs text-muted-foreground">New this {usagePeriod}</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.communityPosts.description", { period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
           )}
@@ -355,48 +363,48 @@ export default function AdminDashboard() {
           {visibleWidgetIds.has('platformActivityStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Platform Activity</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.platformActivity.title")}</CardTitle>
                 <Activity className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.activeUsersThisPeriod} Active</div>
-                <p className="text-xs text-muted-foreground">Users active this {usagePeriod}</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.platformActivity.description", { period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('jobApplicationsStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Job Applications</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.jobApplications.title")}</CardTitle>
                 <Briefcase className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalJobApplicationsThisPeriod}</div>
-                <p className="text-xs text-muted-foreground">Tracked this {usagePeriod}</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.jobApplications.description", { period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('alumniConnectionsStat') && (
              <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Alumni Connections Made</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.alumniConnections.title")}</CardTitle>
                 <Handshake className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalAlumniConnections}</div>
-                <p className="text-xs text-muted-foreground">Total platform connections</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.alumniConnections.description")}</p>
               </CardContent>
             </Card>
           )}
           {visibleWidgetIds.has('mockInterviewsStat') && (
              <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Mock Interviews</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.mockInterviews.title")}</CardTitle>
                 <Mic className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalMockInterviews}</div>
-                <p className="text-xs text-muted-foreground">Completed AI sessions</p>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.mockInterviews.description")}</p>
               </CardContent>
             </Card>
           )}
@@ -405,8 +413,8 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('registrationTrendsChart') && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary"/>User Registration Trends</CardTitle>
-              <CardDescription>Daily new user sign-ups over the last 30 days.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.registrationTrends.title")}</CardTitle>
+              <CardDescription>{t("adminDashboard.charts.registrationTrends.description")}</CardDescription>
             </CardHeader>
             <CardContent className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -426,8 +434,8 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('aiUsageBreakdownChart') && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>AI Feature Usage Breakdown</CardTitle>
-              <CardDescription>Popularity of different AI-powered tools.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.aiUsage.title")}</CardTitle>
+              <CardDescription>{t("adminDashboard.charts.aiUsage.description")}</CardDescription>
             </CardHeader>
             <CardContent className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -448,14 +456,14 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('contentModerationQueueSummary') && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive"/>Content Moderation Queue</CardTitle>
-              <CardDescription>Items requiring review.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive"/>{t("adminDashboard.charts.contentModeration.title")}</CardTitle>
+              <CardDescription>{t("adminDashboard.charts.contentModeration.description")}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center text-center py-8">
                <div className="text-4xl font-bold text-destructive">{platformStats.flaggedPostsCount}</div>
-               <p className="text-muted-foreground mt-1 mb-4">Flagged Community Posts</p>
+               <p className="text-muted-foreground mt-1 mb-4">{t("adminDashboard.charts.contentModeration.flaggedPosts")}</p>
                <Button asChild>
-                   <Link href="/admin/content-moderation">Review Now</Link>
+                   <Link href="/admin/content-moderation">{t("adminDashboard.charts.contentModeration.reviewButton")}</Link>
                </Button>
             </CardContent>
           </Card>
@@ -465,18 +473,18 @@ export default function AdminDashboard() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ServerIcon className="h-5 w-5 text-primary"/>System Alerts
+                <ServerIcon className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.systemAlerts.title")}
                 {unreadAlertsCount > 0 && (
                     <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                        {unreadAlertsCount} NEW
+                        {t("adminDashboard.charts.systemAlerts.unreadAlertsCount", { count: unreadAlertsCount })}
                     </span>
                 )}
               </CardTitle>
-              <CardDescription>Recent important system notifications.</CardDescription>
+              <CardDescription>{t("adminDashboard.charts.systemAlerts.description")}</CardDescription>
             </CardHeader>
             <CardContent>
               {alerts.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No system alerts at this time.</p>
+                <p className="text-muted-foreground text-center py-4">{t("adminDashboard.charts.systemAlerts.noAlerts")}</p>
               ) : (
                 <ScrollArea className="h-[300px] pr-3">
                   <ul className="space-y-3">
@@ -490,7 +498,7 @@ export default function AdminDashboard() {
                            {alert.linkTo && <Button variant="link" size="xs" asChild className="p-0 h-auto mt-1"><Link href={alert.linkTo}>{alert.linkText || 'View Details'}</Link></Button>}
                         </div>
                         {!alert.isRead && (
-                          <Button variant="outline" size="xs" onClick={() => handleMarkAlertAsRead(alert.id)} className="text-xs h-6">Mark Read</Button>
+                          <Button variant="outline" size="xs" onClick={() => handleMarkAlertAsRead(alert.id)} className="text-xs h-6">{t("adminDashboard.charts.systemAlerts.markReadButton")}</Button>
                         )}
                       </li>
                     ))}
@@ -511,7 +519,7 @@ export default function AdminDashboard() {
             </CardContent>
              {alerts.length > 3 && (
                  <CardFooter>
-                    <Button variant="link" size="sm" className="mx-auto">View All System Alerts</Button>
+                    <Button variant="link" size="sm" className="mx-auto">{t("adminDashboard.charts.systemAlerts.viewAllButton")}</Button>
                  </CardFooter>
             )}
           </Card>
@@ -522,25 +530,25 @@ export default function AdminDashboard() {
           <Card className="shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary"/>Time Spent Statistics</CardTitle>
-                <CardDescription>Insights into user engagement time.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.timeSpent.title")}</CardTitle>
+                <CardDescription>{t("adminDashboard.charts.timeSpent.description")}</CardDescription>
               </div>
               <Tabs value={usagePeriod} onValueChange={(value) => setUsagePeriod(value as 'weekly' | 'monthly')} className="w-full sm:w-auto">
                   <TabsList className="grid w-full grid-cols-2 h-9 sm:w-auto">
-                      <TabsTrigger value="weekly" className="text-xs py-1 px-2">Weekly</TabsTrigger>
-                      <TabsTrigger value="monthly" className="text-xs py-1 px-2">Monthly</TabsTrigger>
+                      <TabsTrigger value="weekly" className="text-xs py-1 px-2">{t("adminDashboard.charts.timeSpent.weekly")}</TabsTrigger>
+                      <TabsTrigger value="monthly" className="text-xs py-1 px-2">{t("adminDashboard.charts.timeSpent.monthly")}</TabsTrigger>
                   </TabsList>
               </Tabs>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <Card className="bg-secondary/30">
-                      <CardHeader className="pb-2"><CardTitle className="text-base">Avg. Session Duration</CardTitle></CardHeader>
+                      <CardHeader className="pb-2"><CardTitle className="text-base">{t("adminDashboard.charts.timeSpent.avgSessionDuration")}</CardTitle></CardHeader>
                       <CardContent><p className="text-2xl font-bold text-primary">{mockTimeSpentData.averageSessionDuration} min</p></CardContent>
                   </Card>
                    <Card className="bg-secondary/30">
                       <CardHeader className="pb-2">
-                           <CardTitle className="text-base">Total Platform Usage ({usagePeriod.charAt(0).toUpperCase() + usagePeriod.slice(1)})</CardTitle>
+                           <CardTitle className="text-base">{t("adminDashboard.charts.timeSpent.totalPlatformUsage", { period: translatedUsagePeriod})}</CardTitle>
                       </CardHeader>
                       <CardContent className="h-[100px]">
                           <ResponsiveContainer width="100%" height="100%">
@@ -555,7 +563,7 @@ export default function AdminDashboard() {
                       </CardContent>
                   </Card>
                   <Card className="bg-secondary/30 md:col-span-2 lg:col-span-1">
-                      <CardHeader className="pb-2"><CardTitle className="text-base">Top Users ({usagePeriod.charAt(0).toUpperCase() + usagePeriod.slice(1)})</CardTitle></CardHeader>
+                      <CardHeader className="pb-2"><CardTitle className="text-base">{t("adminDashboard.charts.timeSpent.topUsers", { period: translatedUsagePeriod})}</CardTitle></CardHeader>
                       <CardContent>
                           <ul className="space-y-1 text-xs">
                               {mockTimeSpentData.topUsersByTime(usagePeriod).map(user => (
@@ -569,7 +577,7 @@ export default function AdminDashboard() {
                   </Card>
               </div>
               <div>
-                  <h4 className="font-semibold text-md mb-2">Most Used Features (by time)</h4>
+                  <h4 className="font-semibold text-md mb-2">{t("adminDashboard.charts.timeSpent.mostUsedFeatures")}</h4>
                   <div className="space-y-2">
                       {mockTimeSpentData.topFeaturesByTime.map(feature => (
                           <div key={feature.name} className="text-sm">
@@ -591,8 +599,8 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('tenantActivityOverview') && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Tenant Activity Overview ({usagePeriod.charAt(0).toUpperCase() + usagePeriod.slice(1)})</CardTitle>
-              <CardDescription>Key engagement metrics per tenant for the selected period.</CardDescription>
+              <CardTitle>{t("adminDashboard.charts.tenantActivity.title", {period: translatedUsagePeriod})}</CardTitle>
+              <CardDescription>{t("adminDashboard.charts.tenantActivity.description")}</CardDescription>
             </CardHeader>
             <CardContent className="h-[400px]">
                <ResponsiveContainer width="100%" height="100%">
@@ -602,9 +610,9 @@ export default function AdminDashboard() {
                     <YAxis allowDecimals={false}/>
                     <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
                     <Legend wrapperStyle={{fontSize: "12px"}}/>
-                    <RechartsBar dataKey="NewUsers" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} name="New Users" />
-                    <RechartsBar dataKey="ResumesAnalyzed" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name="Resumes Analyzed"/>
-                    <RechartsBar dataKey="CommunityPosts" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} name="Community Posts"/>
+                    <RechartsBar dataKey="NewUsers" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} name={t("adminDashboard.charts.tenantActivity.legendNewUsers")} />
+                    <RechartsBar dataKey="ResumesAnalyzed" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name={t("adminDashboard.charts.tenantActivity.legendResumesAnalyzed")}/>
+                    <RechartsBar dataKey="CommunityPosts" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} name={t("adminDashboard.charts.tenantActivity.legendCommunityPosts")}/>
                   </RechartsBarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -614,17 +622,17 @@ export default function AdminDashboard() {
         {visibleWidgetIds.has('adminQuickActions') && (
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Admin Quick Actions</CardTitle>
+              <CardTitle>{t("adminDashboard.quickActions.title")}</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/user-management"><Users className="mr-2 h-4 w-4 shrink-0"/>Manage Users</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/platform-settings"><Settings className="mr-2 h-4 w-4 shrink-0"/>Platform Settings</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/tenants"><Building2 className="mr-2 h-4 w-4 shrink-0"/>Manage Tenants</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/content-moderation"><MessageSquare className="mr-2 h-4 w-4 shrink-0"/>Content Moderation</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/announcements"><Megaphone className="mr-2 h-4 w-4 shrink-0"/>Announcements</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/gamification-rules"><ListChecks className="mr-2 h-4 w-4 shrink-0"/>Gamification Rules</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/blog-settings"><FileText className="mr-2 h-4 w-4 shrink-0"/>Blog Settings</Link></Button>
-              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/analytics/user-activity"><TrendingUp className="mr-2 h-4 w-4 shrink-0"/>User Activity Analytics</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/user-management"><Users className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.manageUsers")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/platform-settings"><Settings className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.platformSettings")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/tenants"><Building2 className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.manageTenants")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/content-moderation"><MessageSquare className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.contentModeration")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/announcements"><Megaphone className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.announcements")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/gamification-rules"><ListChecks className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.gamificationRules")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/blog-settings"><FileText className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.blogSettings")}</Link></Button>
+              <Button asChild variant="outline" className="justify-start text-left"><Link href="/admin/analytics/user-activity"><TrendingUp className="mr-2 h-4 w-4 shrink-0"/>{t("adminDashboard.quickActions.userActivityAnalytics")}</Link></Button>
             </CardContent>
           </Card>
         )}
@@ -633,9 +641,9 @@ export default function AdminDashboard() {
       <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Customize Admin Dashboard</DialogTitle>
+            <DialogTitle>{t("adminDashboard.customizeDialog.title")}</DialogTitle>
             <DialogUIDescription>
-              Select the widgets you want to see on your dashboard.
+              {t("adminDashboard.customizeDialog.description")}
             </DialogUIDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] p-1 -mx-1">
@@ -648,20 +656,18 @@ export default function AdminDashboard() {
                     onCheckedChange={(checked) => handleCustomizeToggle(widget.id, Boolean(checked))}
                   />
                   <Label htmlFor={`widget-toggle-${widget.id}`} className="font-normal text-sm flex-1 cursor-pointer">
-                    {widget.title}
+                    {t(widget.titleKey)}
                   </Label>
                 </div>
               ))}
             </div>
           </ScrollArea>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">Save Preferences</Button>
+            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>{t("adminDashboard.customizeDialog.cancelButton")}</Button>
+            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">{t("adminDashboard.customizeDialog.saveButton")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
 }
-
-    
