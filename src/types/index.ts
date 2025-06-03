@@ -162,8 +162,7 @@ export interface CommunityPost {
   content?: string;
   type: 'text' | 'poll' | 'event' | 'request';
   tags?: string[];
-  imageUrl?: string; 
-  imageAiHint?: string;
+  imageUrl?: string;
   pollOptions?: { option: string, votes: number }[];
   eventTitle?: string;
   eventDate?: string;
@@ -1100,4 +1099,64 @@ export interface SystemAlert {
   linkTo?: string;
   linkText?: string;
   isRead?: boolean;
+}
+
+// Utility function to ensure UserProfile has all fields, especially for sample data
+export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): UserProfile {
+  const defaultUser: UserProfile = {
+    id: `user-${Date.now()}`,
+    tenantId: SAMPLE_TENANT_ID,
+    role: 'user',
+    name: 'New User',
+    email: `user${Date.now()}@example.com`,
+    status: 'active',
+    lastLogin: new Date().toISOString(),
+    currentJobTitle: '',
+    company: '', // Ensure 'company' (from AlumniProfile) is present
+    currentOrganization: '', // Ensure 'currentOrganization' (from UserProfile) is present
+    skills: [],
+    bio: '',
+    profilePictureUrl: `https://avatar.vercel.sh/user${Date.now()}.png`,
+    xpPoints: 0,
+    dailyStreak: 0,
+    longestStreak: 0,
+    totalActiveDays: 0,
+    weeklyActivity: [false,false,false,false,false,false,false],
+    earnedBadges: [],
+    interviewCredits: 0,
+    createdAt: new Date().toISOString(),
+    // Ensure all other UserProfile fields have defaults
+    dateOfBirth: undefined,
+    gender: undefined,
+    mobileNumber: '',
+    currentAddress: '',
+    graduationYear: '',
+    degreeProgram: undefined,
+    department: '',
+    industry: undefined,
+    workLocation: '',
+    linkedInProfile: '',
+    yearsOfExperience: '',
+    areasOfSupport: [],
+    timeCommitment: undefined,
+    preferredEngagementMode: undefined,
+    otherComments: '',
+    lookingForSupportType: undefined,
+    helpNeededDescription: '',
+    shareProfileConsent: true,
+    featureInSpotlightConsent: false,
+    isDistinguished: false,
+    resumeText: '',
+    careerInterests: '',
+    interests: [],
+    offersHelpWith: [],
+    appointmentCoinCost: 10,
+    referralCode: `REF${Date.now().toString().slice(-6)}`,
+    affiliateCode: undefined,
+    pastInterviewSessions: [],
+    shortBio: '', // From AlumniProfile
+    university: '', // From AlumniProfile
+    // ... any other fields from UserProfile or AlumniProfile that need defaults
+  };
+  return { ...defaultUser, ...partialProfile };
 }

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, Image as ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
 import { sampleCommunityPosts, sampleUserProfile, samplePlatformUsers, sampleAppointments } from "@/lib/sample-data";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -31,7 +31,6 @@ const postSchema = z.object({
   tags: z.string().optional(),
   type: z.enum(['text', 'poll', 'event', 'request']),
   imageUrl: z.string().url("Invalid URL format").optional().or(z.literal('')),
-  imageAiHint: z.string().max(30, "AI hint too long (max 30 chars)").optional(),
   pollOptions: z.array(z.object({ option: z.string().min(1, "Option cannot be empty"), votes: z.number().default(0) })).optional()
     .refine(options => !options || options.length === 0 || options.length >= 2, {
       message: "Polls must have at least two options if options are provided.",
@@ -79,7 +78,6 @@ export default function CommunityFeedPage() {
       tags: '',
       type: 'text',
       imageUrl: '',
-      imageAiHint: '',
       pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }],
       attendees: 0,
       capacity: 0,
@@ -127,7 +125,6 @@ export default function CommunityFeedPage() {
           tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
           type: data.type as any,
           imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-          imageAiHint: data.type === 'text' ? (data.imageAiHint || undefined) : undefined,
           pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
           eventDate: data.type === 'event' ? data.eventDate : undefined,
           eventLocation: data.type === 'event' ? data.eventLocation : undefined,
@@ -149,7 +146,6 @@ export default function CommunityFeedPage() {
         content: data.content,
         type: data.type as any,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-        imageAiHint: data.type === 'text' ? (data.imageAiHint || undefined) : undefined,
         pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
         eventDate: data.type === 'event' ? data.eventDate : undefined,
         eventLocation: data.type === 'event' ? data.eventLocation : undefined,
@@ -167,7 +163,7 @@ export default function CommunityFeedPage() {
       toast({ title: "Post Created", description: "Your post has been added to the feed." });
     }
     setIsPostDialogOpen(false);
-    reset({ content: '', tags: '', type: 'text', imageUrl: '', imageAiHint: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
+    reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
   };
 
@@ -319,7 +315,7 @@ export default function CommunityFeedPage() {
 
   const openNewPostDialog = () => {
     setEditingPost(null);
-    reset({ content: '', tags: '', type: 'text', imageUrl: '', imageAiHint: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
+    reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setIsPostDialogOpen(true);
   };
 
@@ -330,7 +326,6 @@ export default function CommunityFeedPage() {
     setValue('type', post.type);
     if (post.type === 'text') {
         setValue('imageUrl', post.imageUrl || '');
-        setValue('imageAiHint', post.imageAiHint || '');
     }
     if (post.type === 'poll') setValue('pollOptions', post.pollOptions || [{ option: '', votes: 0 }, { option: '', votes: 0 }]);
     if (post.type === 'event') {
@@ -410,7 +405,7 @@ export default function CommunityFeedPage() {
       <Dialog open={isPostDialogOpen} onOpenChange={(isOpen) => {
         setIsPostDialogOpen(isOpen);
         if (!isOpen) {
-          reset({ content: '', tags: '', type: 'text', imageUrl: '', imageAiHint: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
+          reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
           setEditingPost(null);
         }
       }}>
@@ -479,11 +474,6 @@ export default function CommunityFeedPage() {
                         <Label htmlFor="post-imageUrl">Image URL (Optional)</Label>
                         <Controller name="imageUrl" control={control} render={({ field }) => <Input id="post-imageUrl" {...field} placeholder="https://example.com/image.png" />} />
                         {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
-                    </div>
-                    <div>
-                        <Label htmlFor="post-imageAiHint">Image AI Hint (Optional)</Label>
-                        <Controller name="imageAiHint" control={control} render={({ field }) => <Input id="post-imageAiHint" {...field} placeholder="e.g., team meeting, conference" />} />
-                        {errors.imageAiHint && <p className="text-sm text-destructive mt-1">{errors.imageAiHint.message}</p>}
                     </div>
                 </>
             )}
@@ -626,7 +616,7 @@ export default function CommunityFeedPage() {
                             {post.content && <p className="text-sm text-foreground whitespace-pre-line">{post.content}</p>}
                             {post.imageUrl && (
                                 <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
-                                    <Image src={post.imageUrl} alt={post.imageAiHint || "Community post image"} layout="fill" objectFit="cover" data-ai-hint={post.imageAiHint || "community image"} />
+                                    <Image src={post.imageUrl} alt={"Community post image"} layout="fill" objectFit="cover" data-ai-hint={"community image"} />
                                 </div>
                             )}
                           </>
