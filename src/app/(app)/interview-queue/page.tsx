@@ -1,6 +1,6 @@
 
 "use client";
-import { useI18n } from "@/hooks/use-i18n";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { ListChecks, Clock, UserCheck, Search } from "lucide-react";
 import { sampleLiveInterviewSessions } from "@/lib/sample-data"; // Assuming you have this

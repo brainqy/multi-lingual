@@ -1,6 +1,6 @@
 
 "use client";
-import { useI18n } from "@/hooks/use-i18n";
+
 import type React from 'react';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -970,7 +970,6 @@ export default function InterviewPracticeHubPage() {
                     <Accordion key={q.id} type="single" collapsible className="border rounded-md mb-2 bg-card shadow-sm hover:shadow-md transition-shadow">
                         <AccordionItem value={`item-${q.id}`} className="border-b-0">
                           <AccordionTrigger
-                            asChild={true}
                             className="px-4 py-3 text-left text-sm font-medium group hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-secondary/50 data-[state=open]:rounded-b-none rounded-t-md"
                           >
                             <div className="flex items-start flex-1 gap-3 w-full">
@@ -1010,7 +1009,7 @@ export default function InterviewPracticeHubPage() {
                                      <XCircleIcon className="h-4 w-4"/>
                                   </Button>
                                 )}
-                                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                {/* ChevronDown removed from here, AccordionTrigger provides its own */}
                               </div>
                             </div>
                           </AccordionTrigger>
@@ -1425,5 +1424,4 @@ export default function InterviewPracticeHubPage() {
     
 
     
-
 

@@ -1,6 +1,6 @@
 
 "use client";
-import { useI18n } from "@/hooks/use-i18n";
+
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
