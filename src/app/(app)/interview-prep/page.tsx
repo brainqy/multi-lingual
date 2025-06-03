@@ -28,8 +28,8 @@ import { Badge } from '@/components/ui/badge';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import PracticeTopicSelection from '@/components/features/interview-prep/PracticeTopicSelection';
-import PracticeDateTimeSelector from '@/components/features/interview-prep/PracticeDateTimeSelector';
+import PracticeTopicSelection from '@/components/features/interviewprep/PracticeTopicSelection';
+import PracticeDateTimeSelector from '@/components/features/interviewprep/PracticeDateTimeSelector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -1425,3 +1425,5 @@ export default function InterviewPracticeHubPage() {
     
 
     
+
+
