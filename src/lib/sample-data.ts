@@ -1,4 +1,3 @@
-
 import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert } from '@/types';
 import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industries, TimeCommitments, EngagementModes, SupportTypesSought, JOB_APPLICATION_STATUSES, KANBAN_COLUMNS_CONFIG, PREDEFINED_INTERVIEW_TOPICS, PRACTICE_FOCUS_AREAS, ALL_CATEGORIES, ALL_DIFFICULTIES, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS, PreferredTimeSlots, AnnouncementStatuses, AnnouncementAudiences, LiveInterviewSessionStatuses } from '@/types'; 
 
@@ -144,7 +143,7 @@ export let sampleCommunityPosts: CommunityPost[] = [
     content: 'Looking for a mentor in the Product Management space. Any alumni willing to connect?', 
     type: 'request', 
     tags: ['mentorship', 'productmanagement'], 
-    status: 'open', 
+    status: 'request', // <-- changed from 'open' to 'request'
     moderationStatus: 'visible', 
     flagCount: 0,
     comments: [] 
@@ -212,6 +211,7 @@ export let sampleCommunityPosts: CommunityPost[] = [
     flagCount: 0,
     comments: [],
     assignedTo: 'Bob The Builder', // Assigned to a user
+    status: 'in progress', // <-- add or update to 'in progress' when assigned
   },
   { 
     id: 'post7', 
@@ -227,6 +227,7 @@ export let sampleCommunityPosts: CommunityPost[] = [
     flagCount: 0,
     comments: [],
     assignedTo: 'Alice Wonderland', // Assigned to another user
+    status: 'in progress', // <-- add or update to 'in progress' when assigned
   },
   { 
     id: 'post', 
@@ -247,6 +248,7 @@ export let sampleCommunityPosts: CommunityPost[] = [
     flagCount: 0,
     comments: [],
     assignedTo: 'Diana Prince', // Assigned to another user
+    status: 'in progress', // <-- add or update to 'in progress' when assigned
   },
 ];
 

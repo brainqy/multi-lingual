@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -237,7 +236,7 @@ export default function CommunityFeedPage() {
             originalPostUserName = post.userName;
 
             appointmentCreated = true;
-            return { ...post, assignedTo: userName, status: 'assigned' as CommunityPost['status'] };
+            return { ...post, assignedTo: userName, status: 'in progress' as CommunityPost['status'] };
         }
         return post;
     });
@@ -267,7 +266,7 @@ export default function CommunityFeedPage() {
                  sampleCommunityPosts[globalPostIndex] = {
                     ...postToUpdate,
                     assignedTo: userName,
-                    status: 'assigned'
+                    status: 'in progress'
                 };
             }
         }
@@ -593,11 +592,25 @@ export default function CommunityFeedPage() {
                       <p className="font-semibold text-foreground">{post.userName}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(parseISO(post.timestamp), { addSuffix: true })}
-                        {post.type === 'poll' && <Badge variant="outline" className="ml-2 border-blue-500 text-blue-500">Poll</Badge>}
-                        {post.type === 'request' && <Badge variant="outline" className="ml-2 border-orange-500 text-orange-500">{post.status || 'Request'}</Badge>}
-                        {post.type === 'event' && <Badge variant="outline" className="ml-2 border-green-500 text-green-500">Event</Badge>}
-                        {post.moderationStatus === 'flagged' && <Badge variant="destructive" className="ml-2">Flagged ({post.flagCount})</Badge>}
-                        {post.moderationStatus === 'removed' && <Badge variant="secondary" className="ml-2">Removed</Badge>}
+
+                        {/* Post type badge */}
+                        {post.type === 'poll' && (
+                          <Badge variant="outline" className="ml-2 border-blue-500 text-blue-500">Poll</Badge>
+                        )}
+                        {post.type === 'request' && (
+                          <Badge variant="outline" className="ml-2 border-orange-500 text-orange-500">Request</Badge>
+                        )}
+                        {post.type === 'event' && (
+                          <Badge variant="outline" className="ml-2 border-green-500 text-green-500">Event</Badge>
+                        )}
+
+                        {/* Moderation badges */}
+                        {post.moderationStatus === 'flagged' && (
+                          <Badge variant="destructive" className="ml-2">Flagged ({post.flagCount})</Badge>
+                        )}
+                        {post.moderationStatus === 'removed' && (
+                          <Badge variant="secondary" className="ml-2">Removed</Badge>
+                        )}
                       </p>
                     </div>
                     {(post.userId === sampleUserProfile.id || currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) && post.moderationStatus !== 'removed' && (
@@ -669,7 +682,7 @@ export default function CommunityFeedPage() {
                               </Button>
                             )}
                           {post.assignedTo && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
-                          {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'assigned' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'assigned' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
+                          {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
                         </div>
                         )}
                         {post.tags && post.tags.length > 0 && (
