@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -14,7 +13,8 @@ import type { BlogPost } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "next/navigation"; // For redirecting after post creation
+import { useRouter } from "next/navigation";
+import { useI18n } from "@/hooks/use-i18n";
 
 const blogPostSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -35,6 +35,7 @@ export default function CreateBlogPage() {
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
   const router = useRouter();
+  const { t } = useI18n();
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<BlogPostFormData>({
     resolver: zodResolver(blogPostSchema),
@@ -42,7 +43,6 @@ export default function CreateBlogPage() {
 
   const onSubmit = (data: BlogPostFormData) => {
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       const newPost: BlogPost = {
         id: `blog-${Date.now()}`,
@@ -52,7 +52,7 @@ export default function CreateBlogPage() {
         userAvatar: currentUser.profilePictureUrl,
         title: data.title,
         slug: generateSlug(data.title),
-        author: currentUser.name, // User is the author
+        author: currentUser.name,
         date: new Date().toISOString(),
         imageUrl: data.imageUrl || undefined,
         content: data.content,
@@ -60,63 +60,61 @@ export default function CreateBlogPage() {
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
         comments: [],
       };
-      
-      sampleBlogPosts.unshift(newPost); // Add to the beginning of the array for demo
-
-      toast({ title: "Blog Post Created!", description: "Your post has been successfully submitted." });
+      sampleBlogPosts.unshift(newPost);
+      toast({ title: t("blog.toastCreatedTitle", "Blog Post Created!"), description: t("blog.toastCreatedDesc", "Your post has been successfully submitted.") });
       reset();
       setIsLoading(false);
-      router.push(`/blog/${newPost.slug}`); // Redirect to the new blog post
+      router.push(`/blog/${newPost.slug}`);
     }, 1500);
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <BookOpen className="h-8 w-8" /> Create New Blog Post
+        <BookOpen className="h-8 w-8" /> {t("blog.createNewPost", "Create New Post")}
       </h1>
-      <CardDescription>Share your insights, experiences, and knowledge with the community.</CardDescription>
+      <CardDescription>{t("blog.createPageDescription", "Share your insights, experiences, and knowledge with the community.")}</CardDescription>
 
       <Card className="shadow-xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle>New Post Details</CardTitle>
+            <CardTitle>{t("blog.newPostDetails", "New Post Details")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="blog-title">Title *</Label>
-              <Controller name="title" control={control} render={({ field }) => <Input id="blog-title" {...field} placeholder="Enter a catchy title" />} />
+              <Label htmlFor="blog-title">{t("blog.titleLabel", "Title")} *</Label>
+              <Controller name="title" control={control} render={({ field }) => <Input id="blog-title" {...field} placeholder={t("blog.titlePlaceholder", "Enter a catchy title")} />} />
               {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-excerpt">Excerpt / Short Summary *</Label>
-              <Controller name="excerpt" control={control} render={({ field }) => <Textarea id="blog-excerpt" {...field} rows={2} placeholder="A brief summary for previews (max 200 characters)" />} />
+              <Label htmlFor="blog-excerpt">{t("blog.excerptLabel", "Excerpt / Short Summary")} *</Label>
+              <Controller name="excerpt" control={control} render={({ field }) => <Textarea id="blog-excerpt" {...field} rows={2} placeholder={t("blog.excerptPlaceholder", "A brief summary for previews (max 200 characters)")} />} />
               {errors.excerpt && <p className="text-sm text-destructive mt-1">{errors.excerpt.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-content">Content *</Label>
+              <Label htmlFor="blog-content">{t("blog.contentLabel", "Content")} *</Label>
               <Controller name="content" control={control} render={({ field }) => (
-                <Textarea id="blog-content" {...field} rows={10} placeholder="Write your full blog post here... (Supports basic line breaks)" />
+                <Textarea id="blog-content" {...field} rows={10} placeholder={t("blog.contentPlaceholder", "Write your full blog post here... (Supports basic line breaks)")} />
               )} />
               {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-imageUrl" className="flex items-center gap-1"><ImageIcon className="h-4 w-4 text-muted-foreground"/>Featured Image URL (Optional)</Label>
+              <Label htmlFor="blog-imageUrl" className="flex items-center gap-1"><ImageIcon className="h-4 w-4 text-muted-foreground"/>{t("blog.imageUrlLabel", "Featured Image URL (Optional)")}</Label>
               <Controller name="imageUrl" control={control} render={({ field }) => <Input id="blog-imageUrl" type="url" {...field} placeholder="https://example.com/image.jpg" />} />
               {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-tags">Tags (comma-separated, Optional)</Label>
-              <Controller name="tags" control={control} render={({ field }) => <Input id="blog-tags" {...field} placeholder="e.g., career, tech, advice" />} />
+              <Label htmlFor="blog-tags">{t("blog.tagsLabel", "Tags (comma-separated, Optional)")}</Label>
+              <Controller name="tags" control={control} render={({ field }) => <Input id="blog-tags" {...field} placeholder={t("blog.tagsPlaceholder", "e.g., career, tech, advice")} />} />
               {errors.tags && <p className="text-sm text-destructive mt-1">{errors.tags.message}</p>}
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isLoading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("blog.submitting", "Submitting...")}</>
               ) : (
-                <><Send className="mr-2 h-4 w-4" /> Submit Post</>
+                <><Send className="mr-2 h-4 w-4" /> {t("blog.submitPost", "Submit Post")}</>
               )}
             </Button>
           </CardFooter>

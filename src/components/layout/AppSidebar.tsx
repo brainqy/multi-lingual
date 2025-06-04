@@ -1,112 +1,110 @@
-
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
 import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, Wallet, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2Icon, Puzzle as PuzzleIcon, Mic, Server, Megaphone, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { sampleUserProfile, samplePlatformSettings } from "@/lib/sample-data"; // Added samplePlatformSettings
+import { sampleUserProfile, samplePlatformSettings } from "@/lib/sample-data";
+import { useI18n } from "@/hooks/use-i18n"; // <-- Add this import
 
 const navItems = [
-  { href: "/community-feed", label: "Community Feed", icon: MessageSquare },
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/alumni-connect", label: "Alumni Network", icon: Handshake },
-  { href: "/job-board", label: "Job Board", icon: Aperture },
-  { href: "/job-tracker", label: "Job Tracker", icon: Briefcase },
-  { href: "/interview-prep", label: "Practice Hub", icon: Brain },
+  { href: "/community-feed", labelKey: "sideMenu.communityFeed", icon: MessageSquare },
+  { href: "/dashboard", labelKey: "sideMenu.dashboard", icon: Home },
+  { href: "/alumni-connect", labelKey: "sideMenu.alumniNetwork", icon: Handshake },
+  { href: "/job-board", labelKey: "sideMenu.jobBoard", icon: Aperture },
+  { href: "/job-tracker", labelKey: "sideMenu.jobTracker", icon: Briefcase },
+  { href: "/interview-prep", labelKey: "sideMenu.practiceHub", icon: Brain },
   {
-    label: "AI Tools",
+    labelKey: "sideMenu.aiTools",
     icon: Zap,
     subItems: [
-      { href: "/resume-analyzer", label: "Resume Analyzer", icon: Zap },
-      { href: "/ai-resume-writer", label: "AI Resume Writer", icon: Edit },
-      { href: "/cover-letter-generator", label: "Cover Letter Generator", icon: FileType },
+      { href: "/resume-analyzer", labelKey: "sideMenu.resumeAnalyzer", icon: Zap },
+      { href: "/ai-resume-writer", labelKey: "sideMenu.aiResumeWriter", icon: Edit },
+      { href: "/cover-letter-generator", labelKey: "sideMenu.coverLetterGenerator", icon: FileType },
     ]
   },
   {
-    label: "Resume Tools",
+    labelKey: "sideMenu.resumeTools",
     icon: FileText,
     subItems: [
-      { href: "/my-resumes", label: "My Resumes", icon: Layers3 },
-      { href: "/resume-builder", label: "Resume Builder", icon: FilePlus2 },
-      { href: "/resume-templates", label: "Resume Templates", icon: Layers3 },
+      { href: "/my-resumes", labelKey: "sideMenu.myResumes", icon: Layers3 },
+      { href: "/resume-builder", labelKey: "sideMenu.resumeBuilder", icon: FilePlus2 },
+      { href: "/resume-templates", labelKey: "sideMenu.resumeTemplates", icon: Layers3 },
     ]
   },
-  { href: "/gallery", label: "Event Gallery", icon: GalleryVerticalEnd },
-  { href: "/activity-log", label: "Activity Log", icon: BarChart2 },
-  { href: "/profile", label: "My Profile", icon: User },
+  { href: "/gallery", labelKey: "sideMenu.eventGallery", icon: GalleryVerticalEnd },
+  { href: "/activity-log", labelKey: "sideMenu.activityLog", icon: BarChart2 },
+  { href: "/profile", labelKey: "sideMenu.myProfile", icon: User },
 ];
 
 const utilityItems = [
-  { href: "/appointments", label: "Appointments", icon: CalendarDays },
-  { href: "/wallet", label: "Digital Wallet", icon: Wallet },
-  { href: "/feature-requests", label: "Feature Requests", icon: ShieldQuestion, adminOnly: true },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/documentation", label: "Documentation", icon: BookTextIcon, adminOnly: true },
-  { href: "/db-test", label: "DB Test", icon: GitFork, adminOnly: true}
+  { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
+  { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: Wallet },
+  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", icon: ShieldQuestion, adminOnly: true },
+  { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
+  { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
+  { href: "/db-test", labelKey: "sideMenu.dbTest", icon: GitFork, adminOnly: true}
 ];
 
 const gamificationItems = [
-  { href: "/gamification", label: "Rewards & Badges", icon: Award },
-  { href: "/referrals", label: "Referrals", icon: Gift },
-  { href: "/affiliates", label: "Affiliates Program", icon: Target, adminOnly: true },
+  { href: "/gamification", labelKey: "sideMenu.rewardsBadges", icon: Award },
+  { href: "/referrals", labelKey: "sideMenu.referrals", icon: Gift },
+  { href: "/affiliates", labelKey: "sideMenu.affiliatesProgram", icon: Target, adminOnly: true },
 ];
 
 const blogItems = [
-  { href: "/blog", label: "Blog", icon: BookOpen },
+  { href: "/blog", labelKey: "sideMenu.blog", icon: BookOpen },
 ];
 
 const adminItems = [
-   { href: "/admin/dashboard", label: "Admin Dashboard", icon: Activity },
-   { href: "/admin/tenants", label: "Tenant Management", icon: Building2 },
-   { href: "/admin/tenant-onboarding", label: "Tenant Onboarding", icon: Layers3 },
-   { href: "/admin/user-management", label: "User Management", icon: UserCog },
-   { href: "/admin/gamification-rules", label: "Gamification Rules", icon: ListChecks },
-   { href: "/admin/content-moderation", label: "Content Moderation", icon: ShieldAlert },
-   { href: "/admin/announcements", label: "Announcements Mgt.", icon: Megaphone },
-   { href: "/admin/messenger-management", label: "Messenger Mgt.", icon: BotMessageSquare },
-   { href: "/admin/affiliate-management", label: "Affiliate Mgt.", icon: Users2 },
-   { href: "/admin/gallery-management", label: "Gallery Mgt.", icon: GalleryVerticalEnd },
-   { href: "/admin/blog-settings", label: "Blog Settings", icon: Settings2Icon },
-   { href: "/admin/platform-settings", label: "Platform Settings", icon: Server },
+   { href: "/admin/dashboard", labelKey: "sideMenu.adminDashboard", icon: Activity },
+   { href: "/admin/tenants", labelKey: "sideMenu.tenantManagement", icon: Building2 },
+   { href: "/admin/tenant-onboarding", labelKey: "sideMenu.tenantOnboarding", icon: Layers3 },
+   { href: "/admin/user-management", labelKey: "sideMenu.userManagement", icon: UserCog },
+   { href: "/admin/gamification-rules", labelKey: "sideMenu.gamificationRules", icon: ListChecks },
+   { href: "/admin/content-moderation", labelKey: "sideMenu.contentModeration", icon: ShieldAlert },
+   { href: "/admin/announcements", labelKey: "sideMenu.announcementsMgt", icon: Megaphone },
+   { href: "/admin/messenger-management", labelKey: "sideMenu.messengerMgt", icon: BotMessageSquare },
+   { href: "/admin/affiliate-management", labelKey: "sideMenu.affiliateMgt", icon: Users2 },
+   { href: "/admin/gallery-management", labelKey: "sideMenu.galleryMgt", icon: GalleryVerticalEnd },
+   { href: "/admin/blog-settings", labelKey: "sideMenu.blogSettings", icon: Settings2Icon },
+   { href: "/admin/platform-settings", labelKey: "sideMenu.platformSettings", icon: Server },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const currentUser = sampleUserProfile;
-  const platformName = samplePlatformSettings.platformName || "ResumeMatch"; // Fallback if not set
+  const platformName = samplePlatformSettings.platformName || "ResumeMatch";
+  const { t } = useI18n(); // <-- Use the translation hook
 
   const renderMenuItem = (item: any, isSubItem = false) => {
     let isActive;
-    // Handle specific dashboard routes for active state
     if (item.href === "/dashboard" && currentUser.role !== 'admin' && currentUser.role !== 'manager') {
         isActive = pathname === item.href;
-    } else if (item.href === "/admin/dashboard" && (currentUser.role === 'admin' || currentUser.role === 'manager')) { // Managers might see admin dashboard too
+    } else if (item.href === "/admin/dashboard" && (currentUser.role === 'admin' || currentUser.role === 'manager')) {
         isActive = pathname === item.href;
     } else {
         isActive = item.href ? pathname.startsWith(item.href) : false;
     }
-    
     if (item.adminOnly && currentUser.role !== 'admin') {
       return null;
     }
     if (item.managerOnly && currentUser.role !== 'manager' && currentUser.role !== 'admin') {
         return null;
     }
-
     return (
-      <SidebarMenuItem key={item.href || item.label}>
+      <SidebarMenuItem key={item.href || item.labelKey}>
          {item.href ? (
            <Link href={item.href} passHref legacyBehavior>
             <SidebarMenuButton isActive={isActive} size={isSubItem ? "sm" : "default"} className="w-full justify-start">
               <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
-              <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{item.label}</span>
+              <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
             </SidebarMenuButton>
            </Link>
          ) : (
            <SidebarMenuButton size={isSubItem ? "sm" : "default"} className="w-full justify-start cursor-default hover:bg-transparent group-data-[collapsible=icon]:justify-center">
               <item.icon className="h-5 w-5 text-sidebar-foreground/80" />
-              <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+              <span className="group-data-[collapsible=icon]:hidden">{t(item.labelKey)}</span>
            </SidebarMenuButton>
          )}
       </SidebarMenuItem>
@@ -125,7 +123,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {navItems.map((item) =>
             item.subItems && item.subItems.length > 0 ? (
-              <SidebarGroup key={item.label} className="p-0">
+              <SidebarGroup key={item.labelKey} className="p-0">
                  {renderMenuItem(item, false)}
                 <div className="pl-4 group-data-[collapsible=icon]:hidden">
                   <SidebarMenu>
@@ -141,7 +139,7 @@ export function AppSidebar() {
 
         <SidebarSeparator className="my-4" />
          <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">Engagement</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">{t("sideMenu.engagement")}</SidebarGroupLabel>
           <SidebarMenu>
             {gamificationItems.map(item => renderMenuItem(item))}
             {blogItems.map(item => renderMenuItem(item))}
@@ -150,7 +148,7 @@ export function AppSidebar() {
 
         <SidebarSeparator className="my-4" />
          <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">Utilities</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">{t("sideMenu.utilities")}</SidebarGroupLabel>
           <SidebarMenu>
             {utilityItems.map(item => renderMenuItem(item))}
           </SidebarMenu>
@@ -161,15 +159,13 @@ export function AppSidebar() {
             <SidebarSeparator className="my-4" />
             <SidebarGroup className="p-0">
               <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">
-                {currentUser.role === 'admin' ? "Admin Panel" : "Manager Panel"}
+                {currentUser.role === 'admin' ? t("sideMenu.adminPanel") : t("sideMenu.managerPanel")}
               </SidebarGroupLabel>
               <SidebarMenu>
                 {adminItems.filter(item => {
                     if(currentUser.role === 'manager') {
-                        // For managers, ensure the admin dashboard link is also adjusted or handled
-                         // Assuming manager can see a version of admin dashboard
                         const managerAccessible = [
-                            "/admin/dashboard", // Managers should see their specific dashboard view via this link
+                            "/admin/dashboard",
                             "/admin/user-management", 
                             "/admin/content-moderation",
                             "/admin/gallery-management",
@@ -190,7 +186,7 @@ export function AppSidebar() {
           <div>
             <p className="text-sm font-medium text-sidebar-foreground">{currentUser.name}</p>
             <p className="text-xs text-sidebar-foreground/70 flex items-center gap-1">
-              <Building2 className="h-3 w-3"/> Tenant: {currentUser.tenantId}
+              <Building2 className="h-3 w-3"/> {t("sideMenu.tenant")}: {currentUser.tenantId}
             </p>
           </div>
         </div>

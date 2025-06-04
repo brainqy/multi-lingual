@@ -1,8 +1,6 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Activity } from "lucide-react";
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BarChart2, Clock } from "lucide-react";
@@ -10,18 +8,27 @@ import { sampleActivities } from "@/lib/sample-data";
 import { formatDistanceToNow } from 'date-fns';
 
 export default function ActivityLogPage() {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">Activity Log</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("activityLog.title", "Activity Log")}</h1>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BarChart2 className="h-6 w-6 text-primary"/>Recent Activities</CardTitle>
-          <CardDescription>A log of your recent actions and system events within ResumeMatch AI.</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart2 className="h-6 w-6 text-primary"/>
+            {t("activityLog.recentActivities", "Recent Activities")}
+          </CardTitle>
+          <CardDescription>
+            {t("activityLog.description", "A log of your recent actions and system events within ResumeMatch AI.")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {sampleActivities.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No activities recorded yet.</p>
+            <p className="text-center text-muted-foreground py-8">
+              {t("activityLog.noActivities", "No activities recorded yet.")}
+            </p>
           ) : (
             <ScrollArea className="h-[500px] pr-4">
               <ul className="space-y-4">

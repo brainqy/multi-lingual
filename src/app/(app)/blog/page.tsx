@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import type { BlogPost } from "@/types";
 import { format, parseISO } from 'date-fns';
 
 export default function BlogPage() {
+  const { t } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('all');
   const allPosts = sampleBlogPosts; 
@@ -35,14 +36,14 @@ export default function BlogPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <BookOpen className="h-8 w-8" /> Blog & Insights
+          <BookOpen className="h-8 w-8" /> {t("blog.title", "Blog & Insights")}
         </h1>
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
            <div className="relative flex-1 sm:flex-grow-0 sm:w-48">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search articles..."
+              placeholder={t("blog.searchPlaceholder", "Search articles...")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -50,10 +51,10 @@ export default function BlogPage() {
           </div>
           <Select value={selectedTag} onValueChange={setSelectedTag}>
             <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by tag" />
+              <SelectValue placeholder={t("blog.filterByTag", "Filter by tag")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Tags</SelectItem>
+              <SelectItem value="all">{t("blog.allTags", "All Tags")}</SelectItem>
               {allTags.map(tag => (
                 <SelectItem key={tag} value={tag}>{tag}</SelectItem>
               ))}
@@ -61,20 +62,20 @@ export default function BlogPage() {
           </Select>
           <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href="/blog/create">
-              <PlusCircle className="mr-2 h-5 w-5" /> Create New Post
+              <PlusCircle className="mr-2 h-5 w-5" /> {t("blog.createNewPost", "Create New Post")}
             </Link>
           </Button>
         </div>
       </div>
-      <CardDescription>Stay updated with the latest news, tips, and success stories from the ResumeMatch AI community.</CardDescription>
+      <CardDescription>{t("blog.pageDescription", "Stay updated with the latest news, tips, and success stories from the ResumeMatch AI community.")}</CardDescription>
 
       {filteredPosts.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <CardTitle className="text-2xl">No Articles Found</CardTitle>
+            <CardTitle className="text-2xl">{t("blog.noArticlesFound", "No Articles Found")}</CardTitle>
             <CardDescription>
-              Try adjusting your search or filter criteria, or check back later for new content.
+              {t("blog.noArticlesHint", "Try adjusting your search or filter criteria, or check back later for new content.")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -117,7 +118,7 @@ export default function BlogPage() {
                  </div>
                  <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
                    <Link href={`/blog/${post.slug}`}>
-                    Read More <ArrowRight className="ml-1 h-4 w-4"/>
+                    {t("blog.readMore", "Read More")} <ArrowRight className="ml-1 h-4 w-4"/>
                    </Link>
                  </Button>
               </CardFooter>
