@@ -6,7 +6,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, LogOut, UserCircle, Settings as SettingsIcon, Briefcase, Award, WalletCards, Layers3, BookOpen, Activity as ActivityIcon, Flame, Star, Coins, PanelLeft, History as HistoryIcon, Globe } from "lucide-react"; 
+import { Bell, LogOut, UserCircle, Settings as SettingsIcon, Briefcase, Award, WalletCards, Layers3, BookOpen, Activity as ActivityIcon, Flame, Star, Coins, PanelLeft, History as HistoryIcon, Globe, Bookmark } from "lucide-react"; 
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -28,15 +28,15 @@ import { getRecentPages } from '@/lib/recent-pages';
 import type { RecentPageItem } from '@/types'; 
 import { usePathname, useRouter } from "next/navigation"; 
 import AnnouncementBanner from '@/components/features/AnnouncementBanner';
-// Removed next-intl imports
 
 export function AppHeader() {
   const { toast } = useToast();
+  const { t } = useI18n();
   const user = sampleUserProfile;
   const wallet = sampleWalletBalance;
   const [recentPages, setRecentPages] = useState<RecentPageItem[]>([]);
   const pathname = usePathname(); 
-  const router = useRouter(); // Added useRouter
+  const router = useRouter();
 
   const handleLogout = () => {
     toast({ title: "Logged Out", description: "You have been logged out." });
@@ -65,12 +65,11 @@ export function AppHeader() {
             {/* Optional search bar or breadcrumbs */}
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Language Switcher (Placeholder - actual switching logic removed) */}
             <LanguageSwitcher />
 
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell className="h-5 w-5 text-muted-foreground" />
-              <span className="sr-only">Notifications</span>
+              <span className="sr-only">{t("appHeader.notifications", "Notifications")}</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -87,15 +86,20 @@ export function AppHeader() {
                 <Link href="/profile" passHref>
                   <DropdownMenuItem>
                     <UserCircle className="mr-2 h-4 w-4" />
-                    Profile
+                    {t("appHeader.profile", "Profile")}
                   </DropdownMenuItem>
                 </Link>
-
+                <Link href="/bookmarks" passHref>
+                  <DropdownMenuItem>
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    {t("appHeader.myBookmarks", "My Bookmarks")}
+                  </DropdownMenuItem>
+                </Link>
                 {recentPages.length > 0 && (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
                       <HistoryIcon className="mr-2 h-4 w-4" />
-                      Recent Pages
+                      {t("appHeader.recentPages", "Recent Pages")}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
@@ -111,17 +115,17 @@ export function AppHeader() {
                   </DropdownMenuSub>
                 )}
                 <DropdownMenuSeparator /> 
-                <Link href="/job-tracker" passHref><DropdownMenuItem><Briefcase className="mr-2 h-4 w-4" />Job Tracker</DropdownMenuItem></Link>
-                <Link href="/gamification" passHref><DropdownMenuItem><Award className="mr-2 h-4 w-4" />Rewards & Badges</DropdownMenuItem></Link>
-                <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />Wallet</DropdownMenuItem></Link>
-                <Link href="/my-resumes" passHref><DropdownMenuItem><Layers3 className="mr-2 h-4 w-4" />Resume Manager</DropdownMenuItem></Link>
-                <Link href="/settings" passHref><DropdownMenuItem><SettingsIcon className="mr-2 h-4 w-4" />Settings</DropdownMenuItem></Link>
-                <Link href="/blog" passHref><DropdownMenuItem><BookOpen className="mr-2 h-4 w-4" />Blog</DropdownMenuItem></Link>
-                <Link href="/activity-log" passHref><DropdownMenuItem><ActivityIcon className="mr-2 h-4 w-4" />Activity</DropdownMenuItem></Link>
+                <Link href="/job-tracker" passHref><DropdownMenuItem><Briefcase className="mr-2 h-4 w-4" />{t("appHeader.jobTracker", "Job Tracker")}</DropdownMenuItem></Link>
+                <Link href="/gamification" passHref><DropdownMenuItem><Award className="mr-2 h-4 w-4" />{t("appHeader.rewardsBadges", "Rewards & Badges")}</DropdownMenuItem></Link>
+                <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />{t("appHeader.wallet", "Wallet")}</DropdownMenuItem></Link>
+                <Link href="/my-resumes" passHref><DropdownMenuItem><Layers3 className="mr-2 h-4 w-4" />{t("appHeader.resumeManager", "Resume Manager")}</DropdownMenuItem></Link>
+                <Link href="/settings" passHref><DropdownMenuItem><SettingsIcon className="mr-2 h-4 w-4" />{t("appHeader.settings", "Settings")}</DropdownMenuItem></Link>
+                <Link href="/blog" passHref><DropdownMenuItem><BookOpen className="mr-2 h-4 w-4" />{t("appHeader.blog", "Blog")}</DropdownMenuItem></Link>
+                <Link href="/activity-log" passHref><DropdownMenuItem><ActivityIcon className="mr-2 h-4 w-4" />{t("appHeader.activity", "Activity")}</DropdownMenuItem></Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {t("appHeader.logout", "Logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -136,7 +140,7 @@ export function AppHeader() {
                 <span>{user.dailyStreak || 0}</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent><p>Daily Login Streak</p></TooltipContent>
+            <TooltipContent><p>{t("appHeader.dailyStreak", "Daily Login Streak")}</p></TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -145,7 +149,7 @@ export function AppHeader() {
                 <span>{user.xpPoints || 0} XP</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent><p>Total Experience Points</p></TooltipContent>
+            <TooltipContent><p>{t("appHeader.totalXP", "Total Experience Points")}</p></TooltipContent>
           </Tooltip>
           <Tooltip>
              <TooltipTrigger asChild>
@@ -156,7 +160,7 @@ export function AppHeader() {
                   </div>
                  </Link>
             </TooltipTrigger>
-             <TooltipContent><p>Coin Balance</p></TooltipContent>
+             <TooltipContent><p>{t("appHeader.coinBalance", "Coin Balance")}</p></TooltipContent>
           </Tooltip>
         </div>
       </header>

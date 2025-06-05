@@ -1332,5 +1332,22 @@
     "topContributors": "समुदाय के शीर्ष योगदानकर्ता।",
     "noActiveUsers": "अभी तक कोई सक्रिय उपयोगकर्ता नहीं।",
     "viewLeaderboard": "पूरा लीडरबोर्ड देखें"
+  },
+    "appHeader": {
+    "notifications": "सूचनाएँ",
+    "profile": "प्रोफाइल",
+    "myBookmarks": "मेरे बुकमार्क्स",
+    "recentPages": "हाल के पृष्ठ",
+    "jobTracker": "नौकरी ट्रैकर",
+    "rewardsBadges": "इनाम और बैज",
+    "wallet": "वॉलेट",
+    "resumeManager": "रिज़्यूमे प्रबंधक",
+    "settings": "सेटिंग्स",
+    "blog": "ब्लॉग",
+    "activity": "गतिविधि",
+    "logout": "लॉगआउट",
+    "dailyStreak": "दैनिक लॉगिन स्ट्रीक",
+    "totalXP": "कुल अनुभव अंक",
+    "coinBalance": "सिक्का शेष"
   }
 }

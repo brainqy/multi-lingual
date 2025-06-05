@@ -1335,6 +1335,23 @@
           "topContributors": "समुदायातील टॉप योगदानकर्ते.",
           "noActiveUsers": "अजून कोणतेही सक्रिय वापरकर्ते नाहीत.",
           "viewLeaderboard": "पूर्ण लीडरबोर्ड पहा"
+        },
+                "appHeader": {
+          "notifications": "सूचना",
+          "profile": "प्रोफाइल",
+          "myBookmarks": "माझी बुकमार्क्स",
+          "recentPages": "अलीकडील पृष्ठे",
+          "jobTracker": "नोकरी ट्रॅकर",
+          "rewardsBadges": "बक्षिसे आणि बॅजेस",
+          "wallet": "वॉलेट",
+          "resumeManager": "रेझ्युमे व्यवस्थापक",
+          "settings": "सेटिंग्ज",
+          "blog": "ब्लॉग",
+          "activity": "क्रियाकलाप",
+          "logout": "बाहेर पडा",
+          "dailyStreak": "दैनंदिन लॉगिन साखळी",
+          "totalXP": "एकूण XP गुण",
+          "coinBalance": "नाणे शिल्लक"
         }
   
 }

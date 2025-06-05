@@ -1331,5 +1331,31 @@
     "topContributors": "Top contributors in the community.",
     "noActiveUsers": "No active users to display yet.",
     "viewLeaderboard": "View Full Leaderboard"
+  },  "bookmarks": {
+    "title": "My Bookmarks",
+    "posts": "Bookmarked Community Posts",
+    "noPosts": "No bookmarked posts yet.",
+    "blogs": "Bookmarked Blog Posts",
+    "noBlogs": "No bookmarked blogs yet.",
+    "questions": "Bookmarked Interview Questions",
+    "noQuestions": "No bookmarked questions yet.",
+    "resumeScans": "Bookmarked Resume Scans",
+    "noResumeScans": "No bookmarked resume scans yet."
+  },  "appHeader": {
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "myBookmarks": "My Bookmarks",
+    "recentPages": "Recent Pages",
+    "jobTracker": "Job Tracker",
+    "rewardsBadges": "Rewards & Badges",
+    "wallet": "Wallet",
+    "resumeManager": "Resume Manager",
+    "settings": "Settings",
+    "blog": "Blog",
+    "activity": "Activity",
+    "logout": "Logout",
+    "dailyStreak": "Daily Login Streak",
+    "totalXP": "Total Experience Points",
+    "coinBalance": "Coin Balance"
   }
 }
