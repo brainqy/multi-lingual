@@ -1,7 +1,20 @@
+
 {
   "appName": "Bhasha Setu",
+  "dashboard": {
+    "navigation": {
+      "overview": "Overview",
+      "translate": "Translate",
+      "settings": "Settings",
+      "admin": "Admin Panel"
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "logout": "Logout"
+    }
+  },
   "login": {
-    "title": "Login",
+    "title": "Welcome Back",
     "emailLabel": "Email",
     "passwordLabel": "Password",
     "submitButton": "Login",
@@ -10,123 +23,888 @@
   },
   "signup": {
     "title": "Create Account",
-    "nameLabel": "Name",
+    "nameLabel": "Full Name",
     "emailLabel": "Email",
     "passwordLabel": "Password",
     "roleLabel": "Role",
     "roleUser": "User",
-    "roleAdmin": "Admin",
+    "roleAdmin": "Admin (for demo)",
     "submitButton": "Sign Up",
     "loginPrompt": "Already have an account?",
     "loginLink": "Login"
   },
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome, {name}!",
-    "navigation": {
-      "overview": "Overview",
-      "translate": "Translate",
-      "settings": "Settings"
+  "validation": {
+    "email": "Please enter a valid email address.",
+    "required": "This field is required."
+  },
+  "platformSettings": {
+    "title": "Platform Settings",
+    "description": "Manage global settings for the ResumeMatch AI platform.",
+    "saveButton": "Save All Settings",
+    "validation": {
+        "platformNameMin": "Platform name must be at least 3 characters.",
+        "maxJobPostingDaysMin": "Max job posting days must be at least 1.",
+        "maxJobPostingDaysMax": "Max job posting days cannot exceed 365.",
+        "xpMin": "XP points must be non-negative.",
+        "appointmentCostMin": "Appointment cost must be non-negative.",
+        "maxResumesMin": "Max resume uploads must be at least 1.",
+        "maxResumesMax": "Max resume uploads cannot exceed 50.",
+        "sessionTimeoutMin": "Session timeout must be at least 5 minutes.",
+        "sessionTimeoutMax": "Session timeout cannot exceed 1440 minutes (24 hours).",
+        "maxEventRegistrationsMin": "Max event registrations must be at least 1.",
+        "maxEventRegistrationsMax": "Max event registrations cannot exceed 100.",
+        "globalAnnouncementMax": "Global announcement cannot exceed 500 characters.",
+        "pointsForAffiliateMin": "Points for affiliate signup must be non-negative."
     },
-    "metrics": {
-      "totalWords": "Total Words",
-      "englishWords": "English Words",
-      "marathiWords": "Marathi Words",
-      "hindiWords": "Hindi Words"
+    "toast": {
+        "settingsSaved": {
+            "title": "Settings Saved",
+            "description": "Platform settings have been successfully updated."
+        }
     },
-    "userMenu": {
-      "profile": "Profile",
-      "logout": "Logout"
+    "general": {
+        "sectionTitle": "General Settings",
+        "platformName": {
+            "label": "Platform Name",
+            "description": "The name displayed across the platform."
+        },
+        "maintenanceMode": {
+            "label": "Maintenance Mode",
+            "description": "Enable to take the platform offline for users."
+        },
+        "defaultProfileVisibility": {
+            "label": "Default Profile Visibility",
+            "description": "Set the default visibility for new user profiles.",
+            "options": {
+                "public": "Public",
+                "alumni_only": "Alumni Only",
+                "private": "Private"
+            }
+        },
+        "maxResumesPerUser": {
+            "label": "Max Resume Uploads per User",
+            "description": "Limit for resume profiles a user can create/upload."
+        },
+        "defaultTheme": {
+            "label": "Default Theme",
+            "description": "Set the default theme for new users.",
+            "options": {
+                "light": "Light",
+                "dark": "Dark"
+            }
+        },
+        "enablePublicProfilePages": {
+            "label": "Enable Public Profile Pages",
+            "description": "Allow users to have publicly accessible profile URLs."
+        },
+        "sessionTimeoutMinutes": {
+            "label": "Session Timeout (Minutes)",
+            "description": "Inactive user sessions will expire after this duration."
+        },
+        "globalAnnouncement": {
+            "label": "Global Announcement Bar Text",
+            "description": "Text displayed in a banner across the platform (leave empty to hide).",
+            "placeholder": "e.g., New features launched! Check out..."
+        }
+    },
+    "community": {
+        "sectionTitle": "Community & Feed",
+        "communityFeedEnabled": {
+            "label": "Enable Community Feed"
+        },
+        "autoModeratePosts": {
+            "label": "Enable AI Auto-Moderation for Posts",
+            "description": "If enabled, AI will attempt to flag potentially inappropriate content."
+        }
+    },
+    "career": {
+        "sectionTitle": "Career Tools",
+        "jobBoardEnabled": {
+            "label": "Enable Job Board"
+        },
+        "maxJobPostingDays": {
+            "label": "Max Job Posting Duration (Days)",
+            "description": "How long job posts remain active by default."
+        },
+        "resumeAnalyzerEnabled": {
+            "label": "Enable Resume Analyzer"
+        },
+        "aiResumeWriterEnabled": {
+            "label": "Enable AI Resume Writer"
+        },
+        "coverLetterGeneratorEnabled": {
+            "label": "Enable Cover Letter Generator"
+        },
+        "mockInterviewEnabled": {
+            "label": "Enable Mock Interview Features"
+        }
+    },
+    "engagement": {
+        "sectionTitle": "Engagement & Rewards",
+        "gamificationEnabled": {
+            "label": "Enable Gamification (XP, Badges)"
+        },
+        "xpForLogin": {
+            "label": "XP for Daily Login",
+            "description": "Points awarded for daily active use."
+        },
+        "xpForNewPost": {
+            "label": "XP for New Community Post",
+            "description": "Points awarded for creating a post."
+        },
+        "referralsEnabled": {
+            "label": "Enable User Referrals"
+        },
+        "affiliateProgramEnabled": {
+            "label": "Enable Affiliate Program"
+        },
+        "pointsForAffiliateSignup": {
+          "label": "Points for Successful Affiliate Signup",
+          "description": "Points awarded to referrer when an affiliate signup is completed."
+        },
+        "featureRequestsEnabled": {
+            "label": "Enable Feature Request System"
+        }
+    },
+    "alumniConnect": {
+        "sectionTitle": "Alumni Connect & Events",
+        "alumniConnectEnabled": {
+            "label": "Enable Alumni Connect (Directory, Appointments)"
+        },
+        "defaultAppointmentCost": {
+            "label": "Default Cost for Booking Alumni Appointment (Coins)",
+            "description": "Coins deducted from requester's wallet."
+        },
+        "maxEventRegistrationsPerUser": {
+          "label": "Max Event Registrations per User",
+          "description": "Limit for active event registrations per user."
+        }
+    },
+    "tenantCustomization": {
+      "sectionTitle": "Tenant Customization Options",
+      "description": "Control what aspects tenants can customize for their instance.",
+      "allowTenantCustomBranding": {
+        "label": "Allow Tenants to Customize Branding",
+        "description": "If enabled, tenant managers can upload logos and set theme colors."
+      },
+      "allowTenantEmailCustomization": {
+        "label": "Allow Tenants to Customize Email Templates",
+        "description": "If enabled, tenant managers can modify certain outgoing email templates."
+      }
     }
   },
-  "translateTool": {
-    "title": "Translation Tool",
-    "enterTextLabel": "Enter text to translate",
-    "enterTextPlaceholder": "Type a word or sentence...",
-    "submitButton": "Suggest Translations",
-    "originalText": "Original Text",
-    "suggestedTranslations": "Suggested Translations",
-    "marathi": "Marathi",
-    "hindi": "Hindi",
-    "english": "English",
-    "qualityScore": "Quality Score",
-    "errorTranslating": "Error suggesting translations. Please try again."
+  "tenantManagement": {
+    "title": "Tenant Management",
+    "description": "Oversee and manage all organizational tenants on the platform.",
+    "createNewButton": "Create New Tenant",
+    "tenantListTitle": "Current Tenants",
+    "noTenantsFound": "No tenants have been onboarded yet. Click 'Create New Tenant' to get started.",
+    "editActionMock": "Edit action for tenant {tenantId} is a mock.",
+    "deleteActionToast": "Tenant {tenantId} and associated data would be removed (mock).",
+    "table": {
+      "name": "Tenant Name",
+      "id": "Tenant ID",
+      "createdAt": "Created On",
+      "publicSignup": "Public Signup",
+      "actions": "Actions"
+    }
   },
-  "settings": {
-    "title": "Settings",
-    "languageManagement": "Language Management",
-    "comingSoon": "More settings coming soon."
+  "errorPage": {
+    "title": "Something Went Wrong",
+    "description": "We're sorry, but an unexpected error occurred. Please try again or contact support if the issue persists.",
+    "detailsPrefix": "Error Details:",
+    "retryButton": "Try Again"
   },
-  "languages": {
-    "en": "English",
-    "mr": "Marathi",
-    "hi": "Hindi"
+  "accessDenied": {
+    "title": "Access Denied",
+    "message": "You do not have permission to view this page or perform this action.",
+    "dashboardButton": "Go to Dashboard"
   },
-  "validation": {
-    "required": "This field is required.",
-    "email": "Invalid email address."
+  "announcementBanner": {
+    "dismiss": "Dismiss announcement"
   },
-  "landingPage": {
-    "subtitle": "Your Gateway to Multilingual Communication",
-    "description": "Experience seamless translation and content management across multiple languages. Join our community and bridge language barriers.",
-    "exploreDashboard": "Explore Dashboard",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service"
+  "tenantOnboarding": {
+    "title": "Tenant Onboarding Wizard",
+    "steps": {
+        "basicInfo": "Basic Information",
+        "branding": "Branding & Appearance",
+        "features": "Feature Configuration",
+        "adminUser": "Initial Admin User",
+        "review": "Review & Create"
+    },
+    "currentStep": "Step {current} of {total}",
+    "formLabels": {
+        "tenantName": "Tenant Name / Organization Name",
+        "tenantDomain": "Subdomain (Optional, e.g., yourorg.resumematch.ai)",
+        "tenantDomainPlaceholder": "yourorg (alphanumeric only)",
+        "customLogoUrl": "Custom Logo URL (Optional)",
+        "customLogoUrlPlaceholder": "https://example.com/logo.png",
+        "primaryColor": "Primary Color (HEX or HSL)",
+        "primaryColorPlaceholder": "e.g., #3F51B5 or hsl(221, 83%, 53%)",
+        "accentColor": "Accent Color (HEX or HSL)",
+        "accentColorPlaceholder": "e.g., #FF9800 or hsl(36, 100%, 50%)",
+        "coreFeaturesTitle": "Core Features",
+        "featureCommunityFeed": "Enable Community Feed",
+        "featureJobBoard": "Enable Job Board",
+        "featureGamification": "Enable Gamification (XP, Badges)",
+        "featureWallet": "Enable Digital Wallet (Coins)",
+        "featureEventRegistration": "Enable Event Registration (via Community Feed)",
+        "signupTitle": "Signup Options",
+        "allowPublicSignup": "Allow Public Signup to this Tenant",
+        "adminFullName": "Admin User Full Name",
+        "adminEmail": "Admin User Email",
+        "adminPassword": "Admin User Initial Password"
+    },
+    "validation": {
+        "tenantNameMin": "Tenant name must be at least 3 characters.",
+        "invalidUrl": "Please enter a valid URL (e.g., https://example.com/image.png).",
+        "invalidColor": "Invalid color format. Use HEX (e.g., #RRGGBB) or HSL (e.g., hsl(H S% L%)).",
+        "adminEmailInvalid": "Please enter a valid email for the admin user.",
+        "adminNameRequired": "Admin user's full name is required.",
+        "adminPasswordMin": "Admin password must be at least 8 characters."
+    },
+    "reviewSection": {
+        "title": "Review Tenant Details",
+        "nameLabel": "Tenant Name:",
+        "domainLabel": "Domain:",
+        "logoUrlLabel": "Logo URL:",
+        "primaryColorLabel": "Primary Color:",
+        "accentColorLabel": "Accent Color:",
+        "publicSignupLabel": "Public Signup:",
+        "featuresLabel": "Enabled Features:",
+        "initialAdminUserTitle": "Initial Admin User",
+        "emailLabel": "Email:"
+    },
+    "buttons": {
+        "previous": "Previous",
+        "next": "Next",
+        "createTenant": "Create Tenant"
+    },
+    "toast": {
+        "tenantCreated": {
+            "title": "Tenant Created!",
+            "description": "Tenant '{tenantName}' has been successfully onboarded."
+        }
+    }
   },
-  "localizedPage": {
-    "title": "Localized Content Area",
-    "greeting": "Welcome to the page for locale:",
-    "description": "This page demonstrates content that could be specific to the selected language path. The actual language displayed depends on the i18n context, which can be changed via the language switcher.",
-    "backHome": "Back to Main Home"
+  "announcementsAdmin": {
+    "title": "Announcements Management",
+    "createNewButton": "Create New Announcement",
+    "manageTenant": "Managing for: {tenantId}",
+    "managePlatform": "Manage platform-wide and tenant-specific announcements.",
+    "dialog": {
+        "createTitle": "Create New Announcement",
+        "editTitle": "Edit Announcement",
+        "titleLabel": "Title",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Enter announcement details here...",
+        "startDateLabel": "Start Date",
+        "endDateLabel": "End Date (Optional)",
+        "audienceLabel": "Audience",
+        "audienceAllUsers": "All Users (Platform-wide)",
+        "audienceSpecificTenant": "Specific Tenant",
+        "audienceSpecificRole": "Specific Role (within their tenant)",
+        "targetTenantLabel": "Target Tenant",
+        "selectTenantPlaceholder": "Select a tenant",
+        "targetRoleLabel": "Target Role",
+        "selectRolePlaceholder": "Select a role",
+        "roleUser": "User",
+        "roleManager": "Manager",
+        "roleAdmin": "Admin",
+        "statusLabel": "Status",
+        "statusDraft": "Draft",
+        "statusPublished": "Published",
+        "statusArchived": "Archived",
+        "cancelButton": "Cancel",
+        "saveChangesButton": "Save Changes",
+        "createButton": "Create Announcement"
+    },
+    "currentAnnouncementsTitle": "Current Announcements",
+    "noAnnouncementsTenant": "No announcements found for your tenant.",
+    "noAnnouncementsPlatform": "No announcements found.",
+    "audienceTargetDisplay": "({target})",
+    "audiencePlatformWide": "(Platform-wide)",
+    "endDateOngoing": "Ongoing",
+    "table": {
+        "title": "Title",
+        "status": "Status",
+        "audience": "Audience",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "actions": "Actions"
+    },
+    "toast": {
+        "permissionDeniedEdit": {
+            "title": "Permission Denied",
+            "description": "You can only edit announcements you created for your tenant or platform-wide announcements if you are an admin."
+        },
+        "permissionDeniedDelete": {
+            "title": "Permission Denied",
+            "description": "You can only delete announcements you created for your tenant or platform-wide announcements if you are an admin."
+        },
+        "announcementUpdated": {
+            "title": "Announcement Updated",
+            "description": "The announcement '{title}' has been updated."
+        },
+        "announcementCreated": {
+            "title": "Announcement Created",
+            "description": "The announcement '{title}' has been created."
+        },
+        "announcementDeleted": {
+            "title": "Announcement Deleted",
+            "description": "The announcement has been deleted."
+        }
+    },
+    "validation": {
+      "titleMin": "Title must be at least 5 characters.",
+      "contentMin": "Content must be at least 10 characters.",
+      "startDateRequired": "Start date is required."
+    }
+  },
+  "contentModeration": {
+    "title": "Content Moderation",
+    "descriptionPlatform": "Review and manage flagged content from the community feed across all tenants.",
+    "descriptionTenant": "Review and manage flagged content from your tenant's ({tenantId}) community feed.",
+    "flaggedPostsTitle": "Flagged Posts for Review",
+    "noFlaggedPostsPlatform": "No posts are currently flagged across the platform.",
+    "noFlaggedPostsTenant": "No posts are currently flagged for your tenant.",
+    "viewOnFeedTitle": "View on Feed",
+    "table": {
+        "author": "Author",
+        "contentSnippet": "Content Snippet",
+        "flagCount": "Flags",
+        "dateFlagged": "Date Flagged",
+        "actions": "Actions"
+    },
+    "toast": {
+        "postApproved": {
+            "title": "Post Approved",
+            "description": "The post is now visible on the feed."
+        },
+        "postRemoved": {
+            "title": "Post Removed",
+            "description": "The post has been removed from the feed."
+        }
+    }
+  },
+  "blogSettingsAdmin": {
+    "title": "AI Blog Settings",
+    "description": "Configure automated blog post generation and manage content settings.",
+    "automationSettingsTitle": "Automation Settings",
+    "generationIntervalLabel": "Generation Interval (Hours)",
+    "generationIntervalHelp": "How often the AI should attempt to generate a new blog post.",
+    "topicsLabel": "Blog Post Topics (Comma-separated)",
+    "topicsPlaceholder": "e.g., Career Development, Job Search Tips, Resume Writing, Networking",
+    "topicsHelp": "The AI will pick from these topics when generating posts.",
+    "styleLabel": "Default Writing Style",
+    "stylePlaceholder": "Select default writing style",
+    "styleInformative": "Informative",
+    "styleCasual": "Casual",
+    "styleFormal": "Formal",
+    "styleTechnical": "Technical",
+    "styleStorytelling": "Storytelling",
+    "saveAutomationButton": "Save Automation Settings",
+    "manualGenerationTitle": "Manual Generation",
+    "lastGeneratedPrefix": "Last post generated:",
+    "lastGeneratedNever": "Never",
+    "selectTopicManualLabel": "Select Topic (or type custom)",
+    "selectTopicManualPlaceholder": "Choose a topic from your list",
+    "customTopicPlaceholder": "Or enter a custom topic here",
+    "generatingButton": "Generating...",
+    "generateNowButton": "Generate Blog Post Now",
+    "importantNoteTitle": "Important Note",
+    "importantNoteContent": "AI-generated content should always be reviewed and edited by a human before publishing to ensure quality, accuracy, and alignment with your brand voice. Generated posts are added to the main blog and can be managed there.",
+    "toast": {
+        "settingsSaved": {
+            "title": "Settings Saved",
+            "description": "AI blog generation settings have been updated."
+        },
+        "noTopicSelected": {
+            "title": "No Topic Selected",
+            "description": "Please select or enter a topic to generate a blog post."
+        },
+        "postGenerated": {
+            "title": "Blog Post Generated!",
+            "description": "New post '{title}' created. Please review and publish from the main blog page."
+        },
+        "generationFailed": {
+            "title": "Generation Failed",
+            "description": "Could not generate blog post. Please try again or check AI service status."
+        }
+    },
+    "validation": {
+        "intervalMin": "Interval must be at least 1 hour.",
+        "intervalMax": "Interval cannot exceed 720 hours (30 days).",
+        "topicsRequired": "At least one topic is required."
+    }
+  },
+  "welcomeTour": {
+    "previousButton": "Previous",
+    "nextButton": "Next",
+    "finishButton": "Got it!"
+  },
+  "dailyStreakPopup": {
+    "title": "Daily Streak!",
+    "currentStreakLabel": "Current Streak",
+    "longestStreakLabel": "Longest Streak",
+    "totalActiveDaysLabel": "Total Active Days:",
+    "keepItUpButton": "Keep it Up!",
+    "dayLabels": {
+      "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa"
+    }
+  },
+  "featureRequests": {
+    "pageTitle": "Feature Requests & Suggestions",
+    "pageDescription": "Share your ideas for new features or improvements. Vote on existing suggestions.",
+    "suggestButton": "Suggest New Feature",
+    "dialogCreateTitle": "Suggest a New Feature",
+    "dialogEditTitle": "Edit Suggestion",
+    "dialogDescriptionCreate": "We'd love to hear your ideas! Clearly describe the feature or improvement you'd like to see.",
+    "dialogDescriptionEdit": "Update the details of your suggestion.",
+    "formTitleLabel": "Suggestion Title / Headline",
+    "formTitlePlaceholder": "e.g., Add dark mode for dashboard",
+    "formDescriptionLabel": "Detailed Description",
+    "formDescriptionPlaceholder": "Explain the problem this feature solves, how it might work, and its benefits.",
+    "cancelButtonDialog": "Cancel",
+    "submitButtonDialog": "Submit Suggestion",
+    "saveChangesButtonDialog": "Save Changes",
+    "noRequestsTitle": "No Suggestions Yet",
+    "noRequestsDescription": "Be the first to suggest a feature or improvement for ResumeMatch AI!",
+    "statusPending": "Pending",
+    "statusInProgress": "In Progress",
+    "statusCompleted": "Completed",
+    "statusRejected": "Rejected",
+    "statusUnknown": "Unknown",
+    "suggestedBy": "Suggested by {name}",
+    "voteButton": "Upvote ({count})",
+    "viewDetailsButton": "View Details",
+    "validation": {
+        "titleMin": "Title must be at least 5 characters.",
+        "titleMax": "Title cannot exceed 100 characters.",
+        "descriptionMin": "Description must be at least 10 characters.",
+        "descriptionMax": "Description cannot exceed 1000 characters."
+    },
+    "toastSuggestionSubmitted": {
+        "title": "Suggestion Submitted!",
+        "description": "Thank you for your feedback. Your suggestion has been recorded."
+    },
+    "toastSuggestionUpdated": {
+        "title": "Suggestion Updated",
+        "description": "Your suggestion has been successfully updated."
+    },
+    "toastCannotEdit": {
+        "title": "Cannot Edit Suggestion",
+        "description": "You can only edit your own pending suggestions. Admins can edit any."
+    },
+    "toastUpvoted": {
+        "title": "Upvoted!",
+        "description": "Your vote has been counted."
+    },
+    "toastViewDetailsMock": {
+        "title": "View Details (Mock)",
+        "description": "Viewing details for '{title}'. Full detail page not yet implemented."
+    }
+  },
+  "referrals": {
+    "pageTitle": "Referral Program",
+    "pageDescription": "Share ResumeMatch AI with your friends and earn rewards!",
+    "yourReferralCardTitle": "Your Referral Details",
+    "yourReferralCardDescription": "Use this code or link to invite friends. Earn rewards when they sign up and engage!",
+    "referralCodeLabel": "Your Unique Referral Code",
+    "referralLinkLabel": "Your Referral Link",
+    "copyButton": "Copy",
+    "shareButton": "Share Your Link",
+    "statsCardTitle": "Your Referral Stats",
+    "statsCardDescription": "Track how many friends you've invited and your rewards.",
+    "totalReferralsLabel": "Total Referrals",
+    "successfulSignupsLabel": "Successful Signups",
+    "rewardsInfo": "Rewards are typically X Coins or Y XP per successful signup. Terms apply.",
+    "historyCardTitle": "Referral History",
+    "historyCardDescription": "See a log of your past referrals and their status.",
+    "noHistory": "You haven't referred anyone yet. Start sharing to earn rewards!",
+    "tableReferredUser": "Referred User/Email",
+    "tableDateReferred": "Date Referred",
+    "tableStatus": "Status",
+    "tableReward": "Reward",
+    "statusSignedUp": "Signed Up",
+    "statusRewardEarned": "Reward Earned",
+    "statusPending": "Pending",
+    "statusExpired": "Expired",
+    "howItWorksCardTitle": "How It Works",
+    "howItWorksStep1": "1. Share your unique referral code or link with friends and colleagues.",
+    "howItWorksStep2": "2. When they sign up using your code/link, their registration is attributed to you.",
+    "howItWorksStep3": "3. Once they complete certain actions (e.g., verify email, complete profile), you earn rewards!",
+    "howItWorksStep4": "4. Track your referrals and rewards here. Payouts (if applicable) are processed monthly.",
+    "toastCopied": {
+        "title": "Copied to Clipboard",
+        "description": "Referral code/link copied!"
+    },
+    "toastCopyFailed": {
+        "title": "Copy Failed",
+        "description": "Could not copy text."
+    },
+    "toastShareAPINotSupported": {
+        "title": "Link Copied",
+        "description": "Share API not supported. Referral link copied to clipboard instead."
+    }
+  },
+  "userSettings": {
+    "pageTitle": "Settings",
+    "appearanceCardTitle": "Appearance",
+    "appearanceCardDescription": "Customize the look and feel of the application.",
+    "darkModeLabel": "Dark Mode",
+    "tenantBrandingCardTitle": "Tenant Customization",
+    "tenantBrandingCardDescription": "Manage branding settings for your organization: {tenantName}.",
+    "tenantNameLabel": "Tenant Display Name",
+    "tenantNamePlaceholder": "Your Organization's Name",
+    "tenantLogoUrlLabel": "Tenant Logo URL",
+    "tenantLogoUrlPlaceholder": "https://example.com/your-logo.png",
+    "logoUploadLabel": "Upload Logo",
+    "logoUploadHelpText": "Recommended size: 200x50px. PNG or JPG.",
+    "tenantThemeColorsLabel": "Tenant Theme Colors",
+    "primaryColorLabel": "Primary Color",
+    "accentColorLabel": "Accent Color",
+    "colorPlaceholder": "HEX or HSL value",
+    "notificationsCardTitle": "Notifications",
+    "notificationsCardDescription": "Manage your notification preferences.",
+    "emailNotificationsLabel": "Email Notifications",
+    "appNotificationsLabel": "In-App Notifications",
+    "gamificationNotificationsLabel": "Gamification Notifications (Badges, XP)",
+    "referralNotificationsLabel": "Referral Program Updates",
+    "platformFeaturesAdminCardTitle": "Platform Features (Admin Only)",
+    "platformFeaturesAdminCardDescription": "Enable or disable platform-wide features.",
+    "walletEnablePlatformLabel": "Enable Digital Wallet System (Platform-wide)",
+    "accountSecurityCardTitle": "Account Security",
+    "accountSecurityCardDescription": "Manage your account security settings.",
+    "changePasswordButton": "Change Password",
+    "changePasswordDialogTitle": "Change Your Password",
+    "changePasswordDialogDescription": "Enter your current password and a new password.",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmNewPasswordLabel": "Confirm New Password",
+    "updatePasswordButton": "Update Password",
+    "dataSharingLabel": "Data Sharing for AI Features",
+    "twoFactorAuthLabel": "Two-Factor Authentication (Admin Mock)",
+    "requestDataDeletionButton": "Request Account Deletion",
+    "confirmDataDeletionDialogTitle": "Are you absolutely sure?",
+    "confirmDataDeletionDialogDescription": "This action cannot be undone. This will permanently delete your account and all associated data. To confirm, please type '{phrase}' below.",
+    "confirmDeletionInputPlaceholder": "Type '{phrase}' to confirm",
+    "confirmDeletionButton": "Yes, Delete My Account",
+    "cancelButton": "Cancel",
+    "saveAllSettingsButton": "Save All Settings",
+    "toastThemeChanged": {
+        "title": "Theme Changed",
+        "description": "Theme switched to {themeMode} mode."
+    },
+    "toastLogoSelectedMock": {
+        "title": "Logo Selected (Mock)",
+        "description": "Selected: {fileName}. In a real app, this would upload."
+    },
+    "toastPlatformSettingsSaved": {
+        "title": "Platform Settings Saved",
+        "description": "Platform-wide feature settings updated."
+    },
+    "toastTenantBrandingSaved": {
+        "title": "Tenant Settings Saved",
+        "description": "Branding for '{tenantName}' has been updated."
+    },
+    "toastUserSettingsSaved": {
+        "title": "Settings Saved",
+        "description": "Your preferences have been updated."
+    },
+    "toastPasswordMismatch": {
+        "title": "Password Mismatch",
+        "description": "The new passwords do not match. Please try again."
+    },
+    "toastPasswordTooShort": {
+        "title": "Password Too Short",
+        "description": "New password must be at least 8 characters long."
+    },
+    "toastPasswordChangedMock": {
+        "title": "Password Changed (Mock)",
+        "description": "Your password would be updated in a real application."
+    },
+    "toastMockAction": {
+        "title": "Action Mocked",
+        "description": "This is a placeholder for a future feature."
+    },
+    "toastDataDeletionMock": {
+      "title": "Account Deletion Requested (Mock)",
+      "description": "Your request has been submitted. In a real system, this would start the deletion process."
+    }
+  },
+  "interviewPrep": {
+    "pageTitle": "Interview Preparation Hub",
+    "startPracticeButton": "Start New Practice Session",
+    "creditsLeft": "Credits left: {count} AI interviews",
+    "tabs": {
+        "upcoming": "Upcoming",
+        "all": "All Interviews",
+        "cancelled": "Cancelled"
+    },
+    "upcomingTitle": "UPCOMING PRACTICE INTERVIEWS",
+    "allTitle": "ALL PRACTICE INTERVIEWS",
+    "cancelledTitle": "CANCELLED INTERVIEWS",
+    "noUpcoming": "No upcoming practice sessions scheduled.",
+    "noAll": "No practice sessions found.",
+    "noCancelled": "No cancelled interviews found.",
+    "sessionCard": {
+        "statusScheduled": "SCHEDULED",
+        "statusCompleted": "COMPLETED",
+        "statusCancelled": "CANCELLED",
+        "focusLabel": "Focus:",
+        "aiCategory": "Practice with AI",
+        "expertsCategory": "Practice with Experts",
+        "friendsCategory": "Practice with Friends",
+        "aiDetails": {
+            "questions": "Questions: {count}",
+            "difficulty": "Difficulty: {level}",
+            "timer": "Timer: {seconds}s/question"
+        },
+        "joinAIButton": "Start AI Interview",
+        "joinInterviewButton": "Join Interview",
+        "editQuestionsButton": "Edit Questions",
+        "cancelButton": "Cancel",
+        "rescheduleButton": "Reschedule",
+        "viewReportButton": "View Report",
+        "passedMessage": "Session time passed"
+    },
+    "createdQuizzes": {
+        "title": "Created Quizzes",
+        "description": "Manage your custom quizzes or start one.",
+        "noQuizzes": "No quizzes created yet. Create one from the Question Bank below!",
+        "startButton": "Start Quiz",
+        "editButton": "Edit"
+    },
+    "questionBank": {
+        "title": "Question Bank ({count})",
+        "description": "Browse, filter, and select questions for your practice quizzes.",
+        "addNewButton": "Add New Question",
+        "searchPlaceholder": "Search questions or tags...",
+        "filterByLabel": "Filter by:",
+        "sort": {
+            "placeholder": "Sort by...",
+            "default": "Default",
+            "highestRated": "Highest Rated",
+            "mostRecent": "Most Recent"
+        },
+        "view": {
+            "all": "All Questions",
+            "myBookmarks": "My Bookmarks",
+            "needsApproval": "Needs Approval"
+        },
+        "accordion": {
+            "idLabel": "ID: {id}",
+            "suggestedAnswerLabel": "Suggested Answer/Tip:",
+            "mcqOptionsLabel": "MCQ Options:",
+            "approveButton": "Approve",
+            "awaitingApprovalBadge": "Awaiting Approval",
+            "rateButton": "Rate",
+            "commentsButton": "Comments ({count})",
+            "yourCommentLabel": "Your Comment:",
+            "addCommentPlaceholder": "Add a public comment...",
+            "rateLabel": "Rate (1-5):",
+            "submitRatingButton": "Submit Rating"
+        },
+        "noQuestionsFound": "No questions found matching your criteria.",
+        "pagination": {
+            "previous": "Previous",
+            "pageInfo": "Page {currentPage} of {totalPages}",
+            "next": "Next"
+        },
+        "createQuizButton": "Create Quiz from Selected ({count})"
+    },
+    "addQuestionDialog": {
+        "createTitle": "Add New Question",
+        "editTitle": "Edit Question",
+        "questionTextLabel": "Question Text *",
+        "categoryLabel": "Category *",
+        "selectCategoryPlaceholder": "Select category",
+        "difficultyLabel": "Difficulty",
+        "selectDifficultyPlaceholder": "Select difficulty",
+        "tagsLabel": "Tags (comma-separated)",
+        "tagsPlaceholder": "e.g., java, oop, behavioral",
+        "isMCQLabel": "Is this a Multiple Choice Question?",
+        "mcqOptionsLabel": "MCQ Options (at least 2 required, max 4 shown)",
+        "mcqOptionPlaceholder": "Option {letter}",
+        "correctAnswerLabel": "Correct Answer (exact text of one option)",
+        "correctAnswerPlaceholder": "Paste the correct option text here",
+        "answerTipLabel": "Suggested Answer / Explanation / Tip *",
+        "saveButton": "Save Changes",
+        "addButton": "Add Question"
+    },
+    "editQuestionsDialog": {
+        "title": "Edit Pre-selected Questions",
+        "currentQuestionsLabel": "Current Questions ({count}):",
+        "noCurrentQuestions": "No questions currently selected.",
+        "newQuestionIdsLabel": "Add New Question IDs (comma-separated from Question Bank):",
+        "newQuestionIdsPlaceholder": "e.g., iq1, mcq5, coding3",
+        "saveButton": "Save Question Changes"
+    },
+    "setupDialog": {
+        "selectTypeTitle": "Select Interview Type",
+        "selectTopicsTitleExperts": "Select Practice Topics for Expert Session",
+        "selectTopicsTitleAI": "Select Practice Topics for AI Interview",
+        "selectTimeSlotTitle": "Choose Date & Time",
+        "aiSetupBasicTitle": "AI Interview: Basic Setup",
+        "aiSetupAdvancedTitle": "AI Interview: Advanced Options",
+        "aiSetupCategoriesTitle": "AI Interview: Question Categories",
+        "selectTypeDescription": "How would you like to practice?",
+        "selectTopicsDescription": "For your {type} interview.",
+        "selectTimeSlotDescription": "For your {type} interview on {topics}.",
+        "aiSetupBasicDescription": "Tell us about the role or topic for your AI mock interview.",
+        "aiSetupAdvancedDescription": "Configure the number of questions, difficulty, and timer.",
+        "aiSetupCategoriesDescription": "Optionally, select specific question categories for your AI interview.",
+        "practiceWith": {
+            "friends": "Practice with Friends",
+            "experts": "Practice with Experts",
+            "ai": "Practice with AI"
+        },
+        "friendEmailLabel": "Friend's Email",
+        "friendEmailPlaceholder": "Enter friend's email",
+        "aiTopicRoleLabel": "Interview Topic / Role *",
+        "aiTopicRolePlaceholder": "e.g., Frontend Developer",
+        "aiJobDescriptionLabel": "Job Description (Optional)",
+        "aiJobDescriptionPlaceholder": "Paste job description for tailored questions...",
+        "aiNumQuestionsLabel": "Number of Questions (1-50)",
+        "aiDifficultyLabel": "Difficulty",
+        "aiTimerLabel": "Time per Question (seconds)",
+        "aiTimerOptionNoTimer": "No Timer",
+        "aiTimerOptionSeconds": "{seconds} seconds",
+        "aiTimerOptionMinutes": "{minutes} min{plural}",
+        "aiCategoriesLabel": "Question Categories (Optional)",
+        "aiCategoriesDescription": "Select specific question types or leave blank for a general mix."
+    },
+    "toast": {
+        "selectInterviewType": "Please select an interview type.",
+        "enterFriendEmail": "Please enter a friend's email.",
+        "invitationSentMock": "Invitation would be sent to {email}. This is a mock feature.",
+        "selectTopic": "Please select at least one topic.",
+        "specifyAITopic": "Please specify the AI interview topic/role.",
+        "bookingErrorType": "Interview type not selected.",
+        "bookingErrorExpertDetails": "Missing expert session details (topics or date/time).",
+        "bookingErrorAITopic": "Missing AI interview topic/role.",
+        "expertSessionBookedMock": "Session for {type} on {date} scheduled.",
+        "aiInterviewSetupComplete": "Redirecting to start your AI mock interview for \"{topic}\".",
+        "sessionCancelled": "The practice session has been cancelled.",
+        "rescheduleMocked": "Rescheduling functionality for this session is not yet implemented.",
+        "permissionDeniedEdit": "You can only edit questions you created.",
+        "permissionDeniedDelete": "You can only delete questions you created.",
+        "questionUpdated": "The interview question has been updated.",
+        "questionAdded": "New question added{status}.",
+        "questionAddedAdmin": "",
+        "questionAddedAwaitingApproval": " and awaiting approval",
+        "questionDeleted": "Question removed from the bank.",
+        "noQuestionsSelected": "Please select questions to include in the quiz.",
+        "noValidMCQQuestions": "Please select valid Multiple Choice Questions with options and a correct answer to create a quiz.",
+        "someQuestionsInvalid": "Only {count} valid MCQ questions were used for the quiz. Others were excluded.",
+        "commentAdded": "Your comment has been posted.",
+        "ratingSubmitted": "You rated this question {rating} stars.",
+        "questionBookmarked": "Question Bookmarked",
+        "bookmarkRemoved": "Bookmark Removed",
+        "questionsUpdated": "Pre-selected questions for the session have been updated.",
+        "errorFindSession": "Could not find the live interview session to edit questions."
+    },
+    "common": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "back": "Back"
+    }
+  },
+  "sideMenu": {
+    "dashboard": "Dashboard",
+    "alumniNetwork": "Alumni Network",
+    "jobBoard": "Job Board",
+    "jobTracker": "Job Tracker",
+    "resumeAnalyzer": "Resume Analyzer",
+    "myResumes": "My Resumes",
+    "practiceHub": "Practice Hub",
+    "settings": "Settings",
+    "communityFeed": "Community Feed",
+    "aiTools": "AI Tools",
+    "aiResumeWriter": "AI Resume Writer",
+    "coverLetterGenerator": "Cover Letter Generator",
+    "resumeTools": "Resume Tools",
+    "resumeBuilder": "Resume Builder",
+    "resumeTemplates": "Resume Templates",
+    "eventGallery": "Event Gallery",
+    "activityLog": "Activity Log",
+    "myProfile": "My Profile",
+    "appointments": "Appointments",
+    "digitalWallet": "Digital Wallet",
+    "featureRequests": "Feature Requests",
+    "documentation": "Documentation",
+    "dbTest": "DB Test",
+    "engagement": "Engagement",
+    "rewardsBadges": "Rewards & Badges",
+    "referrals": "Referrals",
+    "affiliatesProgram": "Affiliates Program",
+    "blog": "Blog",
+    "utilities": "Utilities",
+    "adminPanel": "Admin Panel",
+    "managerPanel": "Manager Panel",
+    "adminDashboard": "Admin Dashboard",
+    "tenantManagement": "Tenant Management",
+    "tenantOnboarding": "Tenant Onboarding",
+    "userManagement": "User Management",
+    "gamificationRules": "Gamification Rules",
+    "contentModeration": "Content Moderation",
+    "announcementsMgt": "Announcements",
+    "messengerMgt": "Messenger Settings",
+    "affiliateMgt": "Affiliate Management",
+    "galleryMgt": "Gallery Management",
+    "blogSettings": "Blog Settings",
+    "platformSettings": "Platform Settings",
+    "tenant": "Tenant"
   },
   "userDashboard": {
-    "title": "User Dashboard",
-    "customizeButton": "Customize Dashboard",
+    "title": "My Dashboard",
+    "customizeButton": "Customize",
     "promotionalSpotlight": {
       "title": "Unlock Premium Features!",
-      "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
-      "learnMoreButton": "Learn More"
+      "description": "Upgrade to Premium today for unlimited resume scans, advanced AI mock interviews, and exclusive access to expert career coaching sessions.",
+      "learnMoreButton": "Learn More & Upgrade"
     },
     "stats": {
       "resumesAnalyzed": {
         "title": "Resumes Analyzed",
-        "description": "+{count}% from last month"
+        "description": "+{count} This Month"
       },
       "avgMatchScore": {
-        "title": "Avg. Match Score",
+        "title": "Average Match Score",
         "description": "+{score}% from last month"
       },
       "jobApplications": {
-        "title": "Job Applications",
-        "description": "{count} interviewing"
+        "title": "Job Applications Tracked",
+        "description": "{count} in Interview Stage"
       },
       "alumniConnections": {
         "title": "Alumni Connections",
-        "description": "+{count} new connections this week"
+        "description": "{count} new connections this week"
       }
     },
     "charts": {
       "jobApplicationStatus": {
         "title": "Job Application Status",
-        "description": "Overview of your current application statuses."
+        "description": "Overview of your current job application pipeline."
       },
       "matchScoreOverTime": {
-        "title": "Average Match Score Over Time",
-        "description": "Track your resume match score improvement."
+        "title": "Match Score Over Time",
+        "description": "Track your resume match score improvements."
       }
     },
     "reminders": {
       "jobApp": {
-        "title": "Upcoming Job App Reminders",
-        "description": "Follow-ups and deadlines for your job applications.",
-        "noReminders": "No upcoming reminders set.",
+        "title": "Job Application Reminders",
+        "description": "Upcoming follow-ups and deadlines.",
+        "noReminders": "No upcoming reminders for job applications.",
         "viewButton": "View"
       }
     },
     "upcomingSessions": {
       "title": "Upcoming Appointments & Interviews",
-      "description": "Your scheduled mentorship and practice sessions.",
-      "noSessions": "No upcoming sessions.",
+      "description": "Your scheduled meetings and practice sessions.",
+      "noSessions": "No upcoming appointments or practice sessions.",
       "typeLabel": "Type",
       "withLabel": "With",
       "dateLabel": "Date",
@@ -134,32 +912,26 @@
     },
     "recentActivities": {
       "title": "Recent Activities",
-      "description": "Your latest actions on the platform.",
-      "noActivities": "No recent activities to show.",
+      "description": "A quick look at your latest actions on the platform.",
+      "noActivities": "No recent activities to display.",
       "viewAllButton": "View All Activities"
-    },
-    "welcomeTour": {
-      "title": "Welcome to Your Dashboard!"
-    },
-    "customizeDialog": {
-      "title": "Customize Your Dashboard",
-      "description": "Select the widgets you want to see on your dashboard.",
-      "saveButton": "Save Preferences",
-      "cancelButton": "Cancel"
     },
     "toast": {
       "upgradeMock": {
-        "title": "Upgrade Mock",
-        "description": "Premium feature page would open."
+        "title": "Upgrade (Mock)",
+        "description": "This would lead to the subscription page."
+      },
+      "appointmentReminder": {
+        "title": "Appointment Reminder!",
+        "description": "You have an appointment: \"{title}\" with {user} today at {time}."
       },
       "dashboardUpdated": {
         "title": "Dashboard Updated",
-        "description": "Your dashboard widget preferences have been saved for this session."
-      },
-      "appointmentReminder": {
-        "title": "Appointment Reminder",
-        "description": "You have an appointment for \"{title}\" with {user} today, {time}."
+        "description": "Your dashboard widget preferences have been saved."
       }
+    },
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard!"
     },
     "widgets": {
       "promotionCard": "Promotional Spotlight",
@@ -172,90 +944,96 @@
       "jobAppReminders": "Job App Reminders",
       "upcomingAppointments": "Upcoming Appointments & Interviews",
       "recentActivities": "Recent Activities"
+    },
+    "customizeDialog": {
+      "title": "Customize Dashboard Widgets",
+      "description": "Select the widgets you want to see on your dashboard.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Preferences"
     }
   },
   "adminDashboard": {
-    "title": "Admin Dashboard",
-    "description": "Manage users, system settings, and view overall platform statistics.",
+    "title": "Administrator Dashboard",
+    "description": "Overview of platform activity and management tools.",
     "customizeButton": "Customize Dashboard",
     "promotionalSpotlight": {
-      "title": "Promotional Spotlight",
-      "description": "Feature new updates, offers, or important announcements here.",
-      "content": "Promotional content can be displayed here. This area can highlight new features, upcoming webinars, special offers for tenants, or platform achievements.",
-      "learnMoreButton": "Learn More"
+      "title": "Admin Tools & Platform Health",
+      "description": "Access key administrative functions and monitor overall system status.",
+      "content": "Use the quick action links below or navigate via the sidebar for detailed management.",
+      "learnMoreButton": "System Health Details"
     },
     "stats": {
       "totalUsers": {
         "title": "Total Users",
-        "description": "+{count} new this {period}"
+        "description": "+{count} new signups ({period})"
       },
       "totalTenants": {
         "title": "Total Tenants",
-        "description": "Active Tenants"
+        "description": "Active organizational accounts"
       },
       "resumesAnalyzed": {
         "title": "Resumes Analyzed",
-        "description": "This {period}"
+        "description": "{period}"
       },
       "communityPosts": {
         "title": "Community Posts",
-        "description": "New this {period}"
+        "description": "{period}"
       },
       "platformActivity": {
         "title": "Platform Activity",
-        "description": "Users active this {period}"
+        "description": "Active users {period}"
       },
       "jobApplications": {
-        "title": "Job Applications",
-        "description": "Tracked this {period}"
+        "title": "Job Applications Tracked",
+        "description": "{period}"
       },
       "alumniConnections": {
         "title": "Alumni Connections Made",
-        "description": "Total platform connections"
+        "description": "Total connections facilitated"
       },
       "mockInterviews": {
-        "title": "Mock Interviews",
-        "description": "Completed AI sessions"
+        "title": "Mock Interviews Conducted",
+        "description": "Total AI and expert sessions"
       }
     },
     "charts": {
       "registrationTrends": {
         "title": "User Registration Trends",
-        "description": "Daily new user sign-ups over the last 30 days."
+        "description": "New user signups over the last 30 days."
       },
       "aiUsage": {
         "title": "AI Feature Usage Breakdown",
-        "description": "Popularity of different AI-powered tools."
+        "description": "Popularity of various AI-powered tools."
       },
       "contentModeration": {
         "title": "Content Moderation Queue",
-        "description": "Items requiring review.",
-        "flaggedPosts": "Flagged Community Posts",
-        "reviewButton": "Review Now"
+        "description": "Posts flagged for review by users or AI.",
+        "flaggedPosts": "Flagged Posts",
+        "reviewButton": "Review Queue"
       },
       "systemAlerts": {
-        "title": "System Alerts",
-        "description": "Recent important system notifications.",
-        "noAlerts": "No system alerts at this time.",
-        "viewAllButton": "View All System Alerts",
-        "unreadAlertsCount": "{count} NEW",
-        "markReadButton": "Mark Read",
+        "title": "System Alerts & Notifications",
+        "description": "Important system status updates and critical events.",
+        "noAlerts": "No system alerts at this time. All systems normal.",
+        "markReadButton": "Mark as Read",
+        "viewAllButton": "View All Alerts",
         "alertReadToastTitle": "Alert Marked as Read",
-        "alertReadToastDescription": "Alert \"{title}\" marked as read."
+        "alertReadToastDescription": "'{title}' marked as read.",
+        "unreadAlertsCount": "{count} Unread"
       },
       "timeSpent": {
-        "title": "Time Spent Statistics",
-        "description": "Insights into user engagement time.",
+        "title": "User Engagement - Time Spent",
+        "description": "Analyze how users are spending time on the platform.",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
         "avgSessionDuration": "Avg. Session Duration",
         "totalPlatformUsage": "Total Platform Usage ({period})",
-        "topUsers": "Top Users ({period})",
-        "mostUsedFeatures": "Most Used Features (by time)",
-        "weekly": "Weekly",
-        "monthly": "Monthly"
+        "topUsers": "Top Users by Time ({period})",
+        "mostUsedFeatures": "Most Used Features (Overall)"
       },
       "tenantActivity": {
         "title": "Tenant Activity Overview ({period})",
-        "description": "Key engagement metrics per tenant for the selected period.",
+        "description": "Key metrics for each tenant.",
         "legendNewUsers": "New Users",
         "legendResumesAnalyzed": "Resumes Analyzed",
         "legendCommunityPosts": "Community Posts"
@@ -274,9 +1052,9 @@
     },
     "customizeDialog": {
       "title": "Customize Admin Dashboard",
-      "description": "Select the widgets you want to see on your dashboard.",
-      "saveButton": "Save Preferences",
-      "cancelButton": "Cancel"
+      "description": "Select which widgets to display on your admin dashboard.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Customization"
     },
     "widgets": {
       "promotionalSpotlight": "Promotional Spotlight",
@@ -288,1048 +1066,86 @@
       "jobApplicationsStat": "Job Applications Stat",
       "alumniConnectionsStat": "Alumni Connections Stat",
       "mockInterviewsStat": "Mock Interviews Stat",
-      "timeSpentStats": "Time Spent Statistics",
+      "timeSpentStats": "Time Spent Stats",
       "tenantActivityOverview": "Tenant Activity Overview",
-      "registrationTrendsChart": "User Registration Trends",
-      "aiUsageBreakdownChart": "AI Feature Usage",
-      "contentModerationQueueSummary": "Content Moderation Queue",
+      "registrationTrendsChart": "Registration Trends Chart",
+      "aiUsageBreakdownChart": "AI Usage Breakdown Chart",
+      "contentModerationQueueSummary": "Content Moderation Queue Summary",
       "systemAlerts": "System Alerts",
       "adminQuickActions": "Admin Quick Actions"
     },
     "toast": {
-      "dashboardUpdated": {
-        "title": "Dashboard Updated",
-        "description": "Your dashboard widget preferences have been saved for this session."
-      }
+        "dashboardUpdated": {
+            "title": "Dashboard Updated",
+            "description": "Your admin dashboard widget preferences have been saved."
+        }
     }
   },
   "managerDashboard": {
-    "title": "Manager Dashboard ({tenantName})",
-    "description": "Oversee your tenant's engagement, manage specific features, and track key metrics.",
+    "title": "Manager Dashboard: {tenantName}",
+    "description": "Manage your tenant's users, content, and engagement.",
     "customizeButton": "Customize Dashboard",
     "stats": {
-      "activeUsers": {
-        "title": "Active Users (Tenant)",
-        "description": "Out of {count} total"
-      },
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed (Tenant)",
-        "description": "Total within tenant"
-      },
-      "communityPosts": {
-        "title": "Community Posts (Tenant)",
-        "description": "Engagement in feed"
-      },
-      "pendingApprovals": {
-        "title": "Pending Approvals",
-        "description": "Event requests"
-      }
+        "activeUsers": {
+            "title": "Active Users (Tenant)",
+            "description": "{count} total users in tenant"
+        },
+        "resumesAnalyzed": {
+            "title": "Resumes Analyzed (Tenant)",
+            "description": "Total scans by your tenant's users"
+        },
+        "communityPosts": {
+            "title": "Community Posts (Tenant)",
+            "description": "Posts within your tenant's feed"
+        },
+        "pendingApprovals": {
+            "title": "Pending Event Approvals",
+            "description": "Events awaiting your review"
+        }
     },
     "charts": {
-      "tenantEngagement": {
-        "title": "Tenant Engagement Overview",
-        "description": "Activity within your tenant.",
-        "legendPosts": "Posts",
-        "legendResumesAnalyzed": "Resumes Analyzed",
-        "legendAppointments": "Appointments",
-        "activityCount": "Activity Count"
-      }
+        "tenantEngagement": {
+            "title": "Tenant Engagement Overview",
+            "description": "Key activity metrics within your tenant.",
+            "legendPosts": "Posts",
+            "legendResumesAnalyzed": "Resumes Analyzed",
+            "legendAppointments": "Appointments",
+            "activityCount": "Activity Count"
+        }
     },
     "quickActions": {
-      "title": "Tenant Management Actions",
-      "description": "Access tools to manage your tenant's specific settings and content.",
-      "manageTenantUsers": "Manage Tenant Users",
-      "moderateTenantFeed": "Moderate Tenant Feed",
-      "manageEventGallery": "Manage Event Gallery",
-      "reviewEventSubmissions": "Review Event Submissions",
-      "manageAnnouncements": "Manage Announcements"
-    },
-    "customizeDialog": {
-      "title": "Customize Manager Dashboard",
-      "description": "Select the widgets you want to see on your dashboard.",
-      "saveButton": "Save Preferences",
-      "cancelButton": "Cancel"
+        "title": "Tenant Management Actions",
+        "description": "Quick links to manage your tenant.",
+        "manageTenantUsers": "Manage Tenant Users",
+        "moderateTenantFeed": "Moderate Tenant Feed",
+        "manageEventGallery": "Manage Event Gallery",
+        "reviewEventSubmissions": "Review Event Submissions",
+        "manageAnnouncements": "Manage Announcements"
     },
     "toast": {
       "dashboardUpdated": {
-        "title": "Dashboard Updated",
-        "description": "Your dashboard widget preferences have been saved for this session."
+          "title": "Dashboard Updated",
+          "description": "Your manager dashboard widget preferences have been saved."
       }
     },
     "widgets": {
-      "activeUsersStat": "Active Users (Tenant) Stat",
-      "resumesAnalyzedStat": "Resumes Analyzed (Tenant) Stat",
-      "communityPostsStat": "Community Posts (Tenant) Stat",
-      "pendingApprovalsStat": "Pending Approvals Stat",
+      "activeUsersStat": "Active Users (Tenant)",
+      "resumesAnalyzedStat": "Resumes Analyzed (Tenant)",
+      "communityPostsStat": "Community Posts (Tenant)",
+      "pendingApprovalsStat": "Pending Event Approvals",
       "tenantEngagementOverview": "Tenant Engagement Overview Chart",
-      "tenantManagementActions": "Tenant Management Actions"
-    }
-  },
-  "errorPage": {
-    "title": "Something went wrong!",
-    "description": "We encountered an unexpected issue. Please try again, or contact support if the problem persists.",
-    "detailsPrefix": "Error details:",
-    "retryButton": "Try Again"
-  },
-  "accessDenied": {
-    "title": "Access Denied",
-    "message": "You do not have permission to view this page.",
-    "dashboardButton": "Go to Dashboard"
-  },
-  "announcementBanner": {
-    "dismiss": "Dismiss announcement"
-  },
-  "platformSettings": {
-    "title": "Platform Settings",
-    "description": "Configure global settings and default behaviors for the ResumeMatch AI platform.",
-    "general": {
-      "sectionTitle": "General Platform",
-      "platformName": {
-        "label": "Platform Name",
-        "description": "The public name of your platform."
-      },
-      "maintenanceMode": {
-        "label": "Maintenance Mode",
-        "description": "Temporarily disable access for users while performing updates."
-      },
-      "defaultProfileVisibility": {
-        "label": "Default New User Profile Visibility",
-        "description": "Set the default visibility for new user profiles.",
-        "options": {
-          "public": "Public",
-          "alumni_only": "Alumni Only",
-          "private": "Private"
-        }
-      },
-      "maxResumesPerUser": {
-        "label": "Max Resumes per User",
-        "description": "Max number of resume profiles a user can create."
-      },
-      "defaultTheme": {
-        "label": "Default Theme",
-        "description": "Set the default theme for new users.",
-        "options": {
-          "light": "Light",
-          "dark": "Dark"
-        }
-      },
-      "enablePublicProfilePages": {
-        "label": "Enable Public Profile Pages",
-        "description": "Allow users to have publicly accessible profile URLs."
-      },
-      "sessionTimeoutMinutes": {
-        "label": "Session Timeout (Minutes)",
-        "description": "Duration of inactivity before users are logged out."
-      },
-      "globalAnnouncement": {
-        "label": "Global Announcement",
-        "description": "Display a banner or message across the platform.",
-        "placeholder": "Enter a brief announcement for all users"
-      }
+      "tenantManagementActions": "Tenant Quick Actions"
     },
-    "community": {
-      "sectionTitle": "Community Features",
-      "communityFeedEnabled": {
-        "label": "Enable Community Feed"
-      },
-      "autoModeratePosts": {
-        "label": "Auto-Moderate New Posts (Mock)",
-        "description": "If enabled, new posts might be hidden pending review based on content filters."
-      }
-    },
-    "career": {
-      "sectionTitle": "Job & Career Tools",
-      "jobBoardEnabled": {
-        "label": "Enable Job Board"
-      },
-      "maxJobPostingDays": {
-        "label": "Max Job Posting Duration (Days)",
-        "description": "Default number of days a job posting stays active."
-      },
-      "resumeAnalyzerEnabled": {
-        "label": "Enable Resume Analyzer"
-      },
-      "aiResumeWriterEnabled": {
-        "label": "Enable AI Resume Writer"
-      },
-      "coverLetterGeneratorEnabled": {
-        "label": "Enable Cover Letter Generator"
-      },
-      "mockInterviewEnabled": {
-        "label": "Enable AI Mock Interviews"
-      }
-    },
-    "engagement": {
-      "sectionTitle": "Engagement Features",
-      "gamificationEnabled": {
-        "label": "Enable Gamification (XP, Badges)"
-      },
-      "xpForLogin": {
-        "label": "XP Awarded for Daily Login",
-        "description": "Points for daily platform login."
-      },
-      "xpForNewPost": {
-        "label": "XP Awarded for New Community Post",
-        "description": "Points for creating a new post in community feed."
-      },
-      "referralsEnabled": {
-        "label": "Enable Referral Program"
-      },
-      "affiliateProgramEnabled": {
-        "label": "Enable Affiliate Program"
-      },
-      "pointsForAffiliateSignup": {
-        "label": "Points for Affiliate Signup",
-        "description": "XP or Coins awarded to referrer on successful signup."
-      },
-      "featureRequestsEnabled": {
-        "label": "Enable Feature Request Submissions"
-      }
-    },
-    "alumniConnect": {
-      "sectionTitle": "Alumni Connect",
-      "alumniConnectEnabled": {
-        "label": "Enable Alumni Connect Directory"
-      },
-      "defaultAppointmentCost": {
-        "label": "Default Appointment Cost (Coins)",
-        "description": "Default coin cost for booking an appointment with alumni."
-      },
-      "maxEventRegistrationsPerUser": {
-        "label": "Max Event Registrations per User",
-        "description": "Limit how many events a user can register for (optional)."
-      }
-    },
-    "tenantCustomization": {
-      "sectionTitle": "Tenant Customization Allowances",
-      "description": "Control whether individual tenants can customize certain aspects.",
-      "allowTenantCustomBranding": {
-        "label": "Allow Tenant Custom Branding",
-        "description": "Permit tenant admins to set custom logos and theme colors."
-      },
-      "allowTenantEmailCustomization": {
-        "label": "Allow Tenant Email Customization (Mock)",
-        "description": "Permit tenant admins to customize automated email templates."
-      }
-    },
-    "saveButton": "Save All Platform Settings",
-    "toast": {
-      "settingsSaved": {
-        "title": "Settings Saved",
-        "description": "Platform settings have been updated successfully."
-      }
-    },
-    "validation": {
-        "platformNameMin": "Platform name must be at least 3 characters",
-        "maxJobPostingDaysMin": "Max job posting days must be at least 1",
-        "maxJobPostingDaysMax": "Max job posting days cannot exceed 365",
-        "xpMin": "XP must be non-negative",
-        "appointmentCostMin": "Appointment cost must be non-negative",
-        "maxResumesMin": "Max resumes must be at least 1",
-        "maxResumesMax": "Max resumes cannot exceed 50",
-        "sessionTimeoutMin": "Session timeout must be at least 5 minutes",
-        "sessionTimeoutMax": "Session timeout cannot exceed 1440 minutes (24 hours)",
-        "maxEventRegistrationsMin": "Max event registrations must be at least 1",
-        "maxEventRegistrationsMax": "Max event registrations cannot exceed 100",
-        "globalAnnouncementMax": "Global announcement cannot exceed 500 characters",
-        "pointsForAffiliateMin": "Points for affiliate signup must be non-negative"
-    }
-  },
-  "tenantManagement": {
-    "title": "Tenant Management",
-    "description": "Oversee and manage all tenants within the platform.",
-    "createNewButton": "Create New Tenant",
-    "tenantListTitle": "Tenant List",
-    "noTenantsFound": "No tenants found.",
-    "table": {
-      "name": "Tenant Name",
-      "id": "Tenant ID",
-      "createdAt": "Created At",
-      "publicSignup": "Public Signup",
-      "actions": "Actions"
-    },
-    "editActionMock": "Editing tenant {tenantId}... (This would typically navigate to a detailed tenant settings page or a more complex edit dialog).",
-    "deleteActionToast": "Tenant {tenantId} deleted."
-  },
-  "tenantOnboarding": {
-    "title": "Tenant Onboarding",
-    "steps": {
-      "basicInfo": "Basic Information",
-      "branding": "Branding",
-      "features": "Feature Configuration",
-      "adminUser": "Initial Admin User",
-      "review": "Review & Create"
-    },
-    "currentStep": "Step {current} of {total}",
-    "formLabels": {
-      "tenantName": "Tenant Name",
-      "tenantDomain": "Tenant Domain (Optional)",
-      "tenantDomainPlaceholder": "e.g., myuniversity.resumematch.ai",
-      "customLogoUrl": "Custom Logo URL (Optional)",
-      "customLogoUrlPlaceholder": "https://example.com/logo.png",
-      "primaryColor": "Primary Color (HSL or HEX)",
-      "primaryColorPlaceholder": "e.g., hsl(180 100% 25%) or #008080",
-      "accentColor": "Accent Color (HSL or HEX)",
-      "accentColorPlaceholder": "e.g., hsl(180 100% 30%) or #009688",
-      "coreFeaturesTitle": "Core Features:",
-      "featureCommunityFeed": "Community Feed",
-      "featureJobBoard": "Job Board",
-      "featureGamification": "Gamification (XP, Badges)",
-      "featureWallet": "Digital Wallet (Coins)",
-      "featureEventRegistration": "Event Registration",
-      "signupTitle": "Signup:",
-      "allowPublicSignup": "Allow Public Signup for this Tenant",
-      "adminFullName": "Admin Full Name",
-      "adminEmail": "Admin Email Address",
-      "adminPassword": "Admin Password"
-    },
-    "reviewSection": {
-      "title": "Review Tenant Configuration:",
-      "nameLabel": "Name:",
-      "domainLabel": "Domain:",
-      "logoUrlLabel": "Logo URL:",
-      "primaryColorLabel": "Primary Color:",
-      "accentColorLabel": "Accent Color:",
-      "publicSignupLabel": "Public Signup:",
-      "featuresLabel": "Features:",
-      "initialAdminUserTitle": "Initial Admin User:",
-      "emailLabel": "Email:"
-    },
-    "buttons": {
-      "previous": "Previous",
-      "next": "Next",
-      "createTenant": "Create Tenant"
-    },
-    "toast": {
-      "tenantCreated": {
-        "title": "Tenant Created Successfully!",
-        "description": "Tenant \"{tenantName}\" has been onboarded."
-      }
-    },
-    "validation": {
-      "tenantNameMin": "Tenant name must be at least 3 characters",
-      "invalidUrl": "Invalid URL format",
-      "invalidColor": "Invalid color format (HSL or HEX)",
-      "adminEmailInvalid": "Invalid email for admin",
-      "adminNameRequired": "Admin name is required",
-      "adminPasswordMin": "Password must be at least 8 characters"
-    }
-  },
-  "announcementsAdmin": {
-    "title": "Announcement Management",
-    "manageTenant": "Manage platform-wide or targeted announcements for {tenantId}.",
-    "managePlatform": "Manage platform-wide or targeted announcements.",
-    "createNewButton": "Create New Announcement",
-    "dialog": {
-      "createTitle": "Create New Announcement",
-      "editTitle": "Edit Announcement",
-      "titleLabel": "Title",
-      "contentLabel": "Content",
-      "contentPlaceholder": "Enter announcement details. Supports Markdown.",
-      "startDateLabel": "Start Date",
-      "endDateLabel": "End Date (Optional)",
-      "audienceLabel": "Audience",
-      "audienceAllUsers": "All Users",
-      "audienceSpecificTenant": "Specific Tenant",
-      "audienceSpecificRole": "Specific Role (mocked)",
-      "targetTenantLabel": "Target Tenant",
-      "selectTenantPlaceholder": "Select Tenant",
-      "targetRoleLabel": "Target Role",
-      "selectRolePlaceholder": "Select Role",
-      "roleUser": "User",
-      "roleManager": "Manager",
-      "roleAdmin": "Admin",
-      "statusLabel": "Status",
-      "statusDraft": "Draft",
-      "statusPublished": "Published",
-      "statusArchived": "Archived",
+    "customizeDialog": {
+      "title": "Customize Manager Dashboard",
+      "description": "Select which widgets to display on your manager dashboard.",
       "cancelButton": "Cancel",
-      "saveChangesButton": "Save Changes",
-      "createButton": "Create Announcement"
-    },
-    "currentAnnouncementsTitle": "Current Announcements",
-    "noAnnouncementsTenant": "No announcements found for your tenant or globally.",
-    "noAnnouncementsPlatform": "No announcements found.",
-    "table": {
-      "title": "Title",
-      "status": "Status",
-      "audience": "Audience",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "actions": "Actions"
-    },
-    "audienceTargetDisplay": "({target})",
-    "audiencePlatformWide": "(Platform-wide)",
-    "endDateOngoing": "Ongoing",
-    "toast": {
-      "permissionDeniedEdit": {
-        "title": "Permission Denied",
-        "description": "You can only edit announcements you created for your tenant, or platform-wide announcements if applicable."
-      },
-      "permissionDeniedDelete": {
-        "title": "Permission Denied",
-        "description": "You can only delete announcements you created for your tenant."
-      },
-      "announcementUpdated": {
-        "title": "Announcement Updated",
-        "description": "Announcement \"{title}\" has been updated."
-      },
-      "announcementCreated": {
-        "title": "Announcement Created",
-        "description": "Announcement \"{title}\" has been added."
-      },
-      "announcementDeleted": {
-        "title": "Announcement Deleted",
-        "description": "Announcement removed."
-      }
-    },
-    "validation": {
-      "titleMin": "Title must be at least 5 characters",
-      "contentMin": "Content must be at least 10 characters",
-      "startDateRequired": "Start date is required."
+      "saveButton": "Save Customization"
     }
   },
-  "contentModeration": {
-    "title": "Content Moderation",
-    "descriptionTenant": "Review and manage posts flagged by users or AI within your tenant: {tenantId}.",
-    "descriptionPlatform": "Review and manage posts flagged by users or AI.",
-    "flaggedPostsTitle": "Flagged Posts for Review",
-    "noFlaggedPostsTenant": "No posts are currently flagged for review in your tenant.",
-    "noFlaggedPostsPlatform": "No posts are currently flagged for review.",
-    "table": {
-      "author": "Author",
-      "contentSnippet": "Content Snippet",
-      "flagCount": "Flag Count",
-      "dateFlagged": "Date Flagged",
-      "actions": "Actions"
-    },
-    "viewOnFeedTitle": "View on Feed (feature in development)",
-    "toast": {
-      "postApproved": {
-        "title": "Post Approved",
-        "description": "Post marked as visible. Refresh Community Feed to see changes."
-      },
-      "postRemoved": {
-        "title": "Post Removed",
-        "description": "Post marked as removed. Refresh Community Feed to see changes."
-      }
-    }
-  },
-  "blogSettingsAdmin": {
-    "title": "AI Blog Generation Settings",
-    "description": "Configure automated blog post generation and manually trigger posts.",
-    "automationSettingsTitle": "Automation Settings",
-    "generationIntervalLabel": "Generation Interval (Hours)",
-    "generationIntervalHelp": "How often should a new blog post be generated? (e.g., 24 for daily)",
-    "topicsLabel": "Topics (Comma-separated)",
-    "topicsPlaceholder": "e.g., Resume Tips, Interview Skills, Career Growth",
-    "topicsHelp": "AI will pick from these topics for scheduled posts.",
-    "styleLabel": "Writing Style (Optional)",
-    "stylePlaceholder": "Select style (default: Informative)",
-    "styleInformative": "Informative",
-    "styleCasual": "Casual",
-    "styleFormal": "Formal",
-    "styleTechnical": "Technical",
-    "styleStorytelling": "Storytelling",
-    "saveAutomationButton": "Save Automation Settings",
-    "manualGenerationTitle": "Manual Blog Post Generation",
-    "lastGeneratedPrefix": "Last AI post generated:",
-    "lastGeneratedNever": "Never",
-    "selectTopicManualLabel": "Select Topic for Manual Generation",
-    "selectTopicManualPlaceholder": "Select a topic or enter custom",
-    "customTopicPlaceholder": "Or type a custom topic here",
-    "generateNowButton": "Generate Blog Post Now",
-    "generatingButton": "Generating...",
-    "importantNoteTitle": "Important Note on Automation",
-    "importantNoteContent": "Actual automated scheduling of blog posts (e.g., every X hours) requires a background task runner or cron job on a server. This UI configures the parameters for such a system. The \"Generate Now\" button allows manual triggering for testing and content creation.",
-    "toast": {
-      "settingsSaved": {
-        "title": "Settings Saved",
-        "description": "AI blog generation settings have been updated."
-      },
-      "noTopicSelected": {
-        "title": "No Topic Selected",
-        "description": "Please select or enter a topic to generate a blog post."
-      },
-      "postGenerated": {
-        "title": "AI Blog Post Generated!",
-        "description": "Post titled \"{title}\" has been created. You can view it on the blog page."
-      },
-      "generationFailed": {
-        "title": "Generation Failed",
-        "description": "An error occurred while generating the blog post."
-      }
-    },
-    "validation": {
-      "intervalMin": "Interval must be at least 1 hour",
-      "intervalMax": "Interval too long (max 30 days)",
-      "topicsRequired": "At least one topic is required"
-    }
-  },
-  "welcomeTour": {
-    "previousButton": "Previous",
-    "nextButton": "Next",
-    "finishButton": "Got it!"
-  },
-  "dailyStreakPopup": {
-    "title": "Your Activity Streak!",
-    "currentStreakLabel": "Current streak",
-    "longestStreakLabel": "Longest streak",
-    "totalActiveDaysLabel": "Total active days:",
-    "keepItUpButton": "Keep it up!",
-    "dayLabels": {
-      "S": "S",
-      "M": "M",
-      "T": "T",
-      "W": "W",
-      "Th": "Th",
-      "F": "F",
-      "Sa": "Sa"
-    }
-  },
-  "featureRequests": {
-    "pageTitle": "Feature Requests",
-    "pageDescription": "Share your ideas for improving ResumeMatch AI or vote on existing suggestions.",
-    "suggestButton": "Suggest New Feature",
-    "dialogCreateTitle": "Suggest a New Feature",
-    "dialogEditTitle": "Edit Feature Suggestion",
-    "dialogDescriptionCreate": "We value your input! Let us know what you'd like to see.",
-    "dialogDescriptionEdit": "Modify your existing suggestion.",
-    "formTitleLabel": "Feature Title",
-    "formTitlePlaceholder": "e.g., Dark Mode for Dashboard",
-    "formDescriptionLabel": "Detailed Description",
-    "formDescriptionPlaceholder": "Explain your feature idea, its benefits, and how it might work.",
-    "submitButtonDialog": "Submit Suggestion",
-    "saveChangesButtonDialog": "Save Changes",
-    "cancelButtonDialog": "Cancel",
-    "noRequestsTitle": "No Feature Requests Yet",
-    "noRequestsDescription": "Have an idea to improve ResumeMatch AI? Be the first to suggest it!",
-    "statusPending": "Pending",
-    "statusInProgress": "In Progress",
-    "statusCompleted": "Completed",
-    "statusRejected": "Rejected",
-    "statusUnknown": "Unknown Status",
-    "suggestedBy": "Suggested by {name}",
-    "voteButton": "Vote ({count})",
-    "viewDetailsButton": "View Details & Comments",
-    "toastSuggestionUpdated": {
-      "title": "Suggestion Updated",
-      "description": "Your feature request has been updated."
-    },
-    "toastSuggestionSubmitted": {
-      "title": "Suggestion Submitted",
-      "description": "Thank you for your feedback!"
-    },
-    "toastCannotEdit": {
-      "title": "Cannot Edit",
-      "description": "You can only edit your own pending requests, or admins can edit any."
-    },
-    "toastUpvoted": {
-      "title": "Upvoted!",
-      "description": "Your vote has been counted."
-    },
-    "toastViewDetailsMock": {
-      "title": "View Details (Mock)",
-      "description": "Viewing details for \"{title}\"."
-    },
-    "validation": {
-      "titleMin": "Title must be at least 5 characters",
-      "titleMax": "Title cannot exceed 100 characters",
-      "descriptionMin": "Description must be at least 10 characters",
-      "descriptionMax": "Description cannot exceed 1000 characters"
-    }
-  },
-  "referrals": {
-    "pageTitle": "Referrals",
-    "pageDescription": "Share ResumeMatch AI with your network and earn rewards!",
-    "yourReferralCardTitle": "Your Referral Code & Link",
-    "yourReferralCardDescription": "Share this code or link with friends and colleagues.",
-    "referralCodeLabel": "Referral Code",
-    "referralLinkLabel": "Referral Link",
-    "copyButton": "Copy",
-    "shareButton": "Share Now",
-    "statsCardTitle": "Referral Statistics",
-    "statsCardDescription": "Track the success of your referrals.",
-    "totalReferralsLabel": "Total Referrals Sent",
-    "successfulSignupsLabel": "Successful Signups",
-    "rewardsInfo": "Rewards are typically credited once a referred user completes their profile setup.",
-    "historyCardTitle": "Referral History",
-    "historyCardDescription": "Details of users you have referred.",
-    "noHistory": "You haven't referred anyone yet.",
-    "tableReferredUser": "Referred User",
-    "tableDateReferred": "Date Referred",
-    "tableStatus": "Status",
-    "tableReward": "Reward",
-    "statusPending": "Pending",
-    "statusSignedUp": "Signed Up",
-    "statusRewardEarned": "Reward Earned",
-    "statusExpired": "Expired",
-    "howItWorksCardTitle": "How Referrals Work",
-    "howItWorksStep1": "1. Share your unique referral code or link.",
-    "howItWorksStep2": "2. Your friend signs up using your code/link.",
-    "howItWorksStep3": "3. Once they complete key actions (like profile setup or first analysis), you both might receive rewards (e.g., bonus XP or coins)!",
-    "howItWorksStep4": "4. Track your referral success here.",
-    "toastCopied": {
-      "title": "Copied to Clipboard",
-      "description": "Referral code/link copied!"
-    },
-    "toastCopyFailed": {
-      "title": "Copy Failed",
-      "description": "Could not copy text."
-    },
-    "toastShareAPINotSupported": {
-      "title": "Link Copied",
-      "description": "Share API not supported. Referral link copied to clipboard instead."
-    }
-  },
-  "userSettings": {
-    "pageTitle": "Settings",
-    "appearanceCardTitle": "Appearance",
-    "appearanceCardDescription": "Customize the look and feel of the application.",
-    "darkModeLabel": "Dark Mode",
-    "tenantBrandingCardTitle": "Tenant Branding Settings",
-    "tenantBrandingCardDescription": "Customize the branding for your tenant: {tenantName}.",
-    "tenantNameLabel": "Tenant Name",
-    "tenantNamePlaceholder": "Your Organization's Name",
-    "tenantLogoUrlLabel": "Tenant Logo URL",
-    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
-    "logoUploadLabel": "Upload Custom Logo",
-    "logoUploadHelpText": "Replace the logo URL above with an uploaded image (mocked upload).",
-    "tenantThemeColorsLabel": "Tenant Theme Colors (Mocked)",
-    "primaryColorLabel": "Primary Color",
-    "accentColorLabel": "Accent Color",
-    "colorPlaceholder": "#RRGGBB",
-    "notificationsCardTitle": "Notifications",
-    "notificationsCardDescription": "Manage your notification preferences.",
-    "emailNotificationsLabel": "General Email Notifications",
-    "appNotificationsLabel": "General In-App Notifications",
-    "gamificationNotificationsLabel": "Gamification Notifications (Badges, XP)",
-    "referralNotificationsLabel": "Referral Program Updates",
-    "platformFeaturesAdminCardTitle": "Platform Features (Admin)",
-    "platformFeaturesAdminCardDescription": "Enable or disable specific application features globally.",
-    "walletEnablePlatformLabel": "Digital Wallet System (Platform-wide)",
-    "accountSecurityCardTitle": "Account Security",
-    "accountSecurityCardDescription": "Manage your account security settings.",
-    "changePasswordButton": "Change Password",
-    "changePasswordDialogTitle": "Change Your Password",
-    "changePasswordDialogDescription": "Enter your current password and a new password.",
-    "currentPasswordLabel": "Current Password",
-    "newPasswordLabel": "New Password",
-    "confirmNewPasswordLabel": "Confirm New Password",
-    "updatePasswordButton": "Update Password",
-    "dataSharingLabel": "Data Sharing with Alumni Network",
-    "twoFactorAuthLabel": "Enforce Two-Factor Authentication (Platform Admin)",
-    "requestDataDeletionButton": "Request Data Deletion",
-    "confirmDataDeletionDialogTitle": "Confirm Data Deletion Request",
-    "confirmDataDeletionDialogDescription": "To confirm, please type \"{phrase}\" in the box below. This action cannot be undone. This will permanently delete your account and all associated data. We will process your request in accordance with our privacy policy.",
-    "confirmDeletionInputPlaceholder": "Type \"{phrase}\" here",
-    "confirmDeletionButton": "Confirm Deletion Request",
-    "saveAllSettingsButton": "Save All Settings",
-    "toastThemeChanged": {
-      "title": "Theme Changed",
-      "description": "Switched to {themeMode} Mode."
-    },
-    "toastLogoSelectedMock": {
-      "title": "Logo Selected (Mock)",
-      "description": "{fileName} selected. URL field updated with placeholder. Click \"Save All Settings\" to apply for tenant."
-    },
-    "toastPlatformSettingsSaved": {
-      "title": "Platform Settings Saved",
-      "description": "Platform feature preferences have been updated."
-    },
-    "toastTenantBrandingSaved": {
-      "title": "Tenant Branding Saved",
-      "description": "Branding for \"{tenantName}\" updated."
-    },
-    "toastUserSettingsSaved": {
-      "title": "Settings Saved",
-      "description": "Your preferences have been updated."
-    },
-    "toastPasswordMismatch": {
-      "title": "Password Mismatch",
-      "description": "New password and confirm password do not match."
-    },
-    "toastPasswordTooShort": {
-      "title": "Password Too Short",
-      "description": "New password must be at least 8 characters."
-    },
-    "toastPasswordChangedMock": {
-      "title": "Password Changed (Mock)",
-      "description": "Your password has been successfully updated."
-    },
-    "toastDataDeletionMock": {
-      "title": "Data Deletion Request (Mock)",
-      "description": "Your data deletion request has been initiated. This is a mock action."
-    },
-    "toastMockAction": {
-      "title": "Mock Action",
-      "description": "Platform 2FA setting toggled."
-    },
-    "cancelButton": "Cancel"
-  },
-  "activityLog": {
-    "title": "Activity Log",
-    "recentActivities": "Recent Activities",
-    "description": "A log of your recent actions and system events within ResumeMatch AI.",
-    "noActivities": "No activities recorded yet."
-  },
-
-    "sideMenu": {
-      "dashboard": "Dashboard",
-      "communityFeed": "Community Feed",
-      "alumniNetwork": "Alumni Network",
-      "jobBoard": "Job Board",
-      "jobTracker": "Job Tracker",
-      "practiceHub": "Practice Hub",
-      "aiTools": "AI Tools",
-      "resumeAnalyzer": "Resume Analyzer",
-      "aiResumeWriter": "AI Resume Writer",
-      "coverLetterGenerator": "Cover Letter Generator",
-      "resumeTools": "Resume Tools",
-      "myResumes": "My Resumes",
-      "resumeBuilder": "Resume Builder",
-      "resumeTemplates": "Resume Templates",
-      "eventGallery": "Event Gallery",
-      "activityLog": "Activity Log",
-      "myProfile": "My Profile",
-      "appointments": "Appointments",
-      "digitalWallet": "Digital Wallet",
-      "featureRequests": "Feature Requests",
-      "settings": "Settings",
-      "documentation": "Documentation",
-      "dbTest": "DB Test",
-      "rewardsBadges": "Rewards & Badges",
-      "referrals": "Referrals",
-      "affiliatesProgram": "Affiliates Program",
-      "blog": "Blog",
-      "adminDashboard": "Admin Dashboard",
-      "tenantManagement": "Tenant Management",
-      "tenantOnboarding": "Tenant Onboarding",
-      "userManagement": "User Management",
-      "gamificationRules": "Gamification Rules",
-      "contentModeration": "Content Moderation",
-      "announcementsMgt": "Announcements Mgt.",
-      "messengerMgt": "Messenger Mgt.",
-      "affiliateMgt": "Affiliate Mgt.",
-      "galleryMgt": "Gallery Mgt.",
-      "blogSettings": "Blog Settings",
-      "platformSettings": "Platform Settings",
-      "engagement": "Engagement",
-      "utilities": "Utilities",
-      "adminPanel": "Admin Panel",
-      "managerPanel": "Manager Panel",
-      "tenant": "Tenant"
-    },
-  "practiceHub": {
-    "breadcrumb": "Home / Practice Hub",
-    "title": "INTERVIEW PREPARATION HUB",
-    "startNewSession": "Start New Practice Session",
-    "creditsLeft": "Credits left:",
-    "aiInterviews": "AI interviews",
-    "upcomingTab": "Upcoming Interviews",
-    "allTab": "All Interviews",
-    "cancelledTab": "Canceled Interviews",
-    "upcomingTitle": "UPCOMING PRACTICE INTERVIEWS",
-    "allTitle": "ALL PRACTICE INTERVIEWS",
-    "cancelledTitle": "CANCELLED INTERVIEWS",
-    "noUpcoming": "No upcoming practice sessions scheduled.",
-    "noSessions": "No practice sessions found.",
-    "noCancelled": "No cancelled interviews found.",
-    "createdQuizzes": "Created Quizzes",
-    "manageQuizzes": "Manage your custom quizzes or start one.",
-    "noQuizzes": "No quizzes created yet. Create one from the Question Bank below!",
-    "noDescription": "No description",
-    "questions": "Questions",
-    "difficulty": "Difficulty",
-    "na": "N/A",
-    "startQuiz": "Start Quiz",
-    "edit": "Edit",
-    "questionBank": "Question Bank",
-    "questionBankDesc": "Browse, filter, and select questions for your practice quizzes.",
-    "addNewQuestion": "Add New Question",
-    "searchPlaceholder": "Search questions or tags...",
-    "sortBy": "Sort by...",
-    "sortDefault": "Default",
-    "sortHighestRated": "Highest Rated",
-    "sortMostRecent": "Most Recent",
-    "filterBy": "Filter by:",
-    "createQuiz": "Create Quiz from Selected"
-  },
-    "blog": {
-    "title": "Blog & Insights",
-    "searchPlaceholder": "Search articles...",
-    "filterByTag": "Filter by tag",
-    "allTags": "All Tags",
-    "createNewPost": "Create New Post",
-    "pageDescription": "Stay updated with the latest news, tips, and success stories from the ResumeMatch AI community.",
-    "noArticlesFound": "No Articles Found",
-    "noArticlesHint": "Try adjusting your search or filter criteria, or check back later for new content.",
-    "readMore": "Read More"
-  },  "blog": {
-    "createNewPost": "Create New Post",
-    "createPageDescription": "Share your insights, experiences, and knowledge with the community.",
-    "newPostDetails": "New Post Details",
-    "titleLabel": "Title",
-    "titlePlaceholder": "Enter a catchy title",
-    "excerptLabel": "Excerpt / Short Summary",
-    "excerptPlaceholder": "A brief summary for previews (max 200 characters)",
-    "contentLabel": "Content",
-    "contentPlaceholder": "Write your full blog post here... (Supports basic line breaks)",
-    "imageUrlLabel": "Featured Image URL (Optional)",
-    "tagsLabel": "Tags (comma-separated, Optional)",
-    "tagsPlaceholder": "e.g., career, tech, advice",
-    "submitPost": "Submit Post",
-    "submitting": "Submitting...",
-    "toastCreatedTitle": "Blog Post Created!",
-    "toastCreatedDesc": "Your post has been successfully submitted."
-  },
-    "wallet": {
-    "title": "Digital Wallet",
-    "addCoins": "Add Coins",
-    "addFundsToastTitle": "Add Funds (Mock)",
-    "addFundsToastDesc": "This feature is for demonstration.",
-    "currentBalance": "Current Balance",
-    "coins": "Coins",
-    "usageHint": "Use coins for premium features and services.",
-    "transactionHistory": "Transaction History",
-    "recentActivity": "Recent activity in your wallet.",
-    "noTransactions": "No transactions yet.",
-    "date": "Date",
-    "description": "Description",
-    "amount": "Amount"
-  },
-    "appointments": {
-    "title": "My Appointments",
-    "scheduleNew": "Schedule New",
-    "toastScheduleNew": "Schedule New (Mock)",
-    "toastScheduleNewDesc": "Navigate to Alumni Connect to book.",
-    "pageDescription": "View and manage your scheduled meetings with alumni and community requests.",
-    "assignedPosts": "Assigned Posts",
-    "assignedTo": "Assigned to:",
-    "noTags": "No tags",
-    "filters": "Filters",
-    "status": "Status",
-    "statuses": {
-      "Confirmed": "Confirmed",
-      "Pending": "Pending",
-      "Cancelled": "Cancelled",
-      "Completed": "Completed"
-    },
-    "alumniName": "Alumni Name",
-    "searchByName": "Search by name...",
-    "dateRange": "Date Range",
-    "startDate": "Start Date",
-    "endDate": "End Date",
-    "noAppointments": "No Appointments or Assigned Requests",
-    "tryAdjustingFilters": "Try adjusting your filters.",
-    "noScheduled": "You have no scheduled appointments or assigned community requests.",
-    "withUser": "With {name} {incoming}",
-    "incomingRequest": "(Incoming Request)",
-    "dateTime": "Date & Time",
-    "reminder": "Reminder {when}",
-    "today": "Today!",
-    "inDays": "in {days} day{plural}",
-    "notes": "Notes",
-    "toastConfirmed": "Appointment Confirmed",
-    "toastConfirmedDesc": "The appointment has been marked as confirmed.",
-    "toastDeclined": "Appointment Declined",
-    "toastDeclinedDesc": "The appointment has been marked as cancelled.",
-    "toastCompleted": "Appointment Completed",
-    "toastCompletedDesc": "The appointment has been marked as completed.",
-    "toastJoinMeeting": "Join Meeting (Mock)",
-    "toastJoinMeetingDesc": "This would typically open a video call link.",
-    "joinMeeting": "Join Meeting",
-    "markCompleted": "Mark as Completed",
-    "manageReschedule": "Manage/Reschedule",
-    "accept": "Accept",
-    "decline": "Decline",
-    "provideFeedback": "Provide Feedback",
-    "cancelledMsg": "This appointment was cancelled.",
-    "assignedCommunityRequests": "Assigned Community Requests",
-    "request": "Request",
-    "untitledRequest": "Untitled Request",
-    "from": "From",
-    "communityFeed": "Community Feed",
-    "assignedToYou": "Assigned to you",
-    "tags": "Tags",
-    "viewOnFeed": "View on Feed",
-    "rescheduleTitle": "Reschedule Appointment",
-    "rescheduleDesc": "Request a new time for your appointment with {user}.",
-    "newPreferredDate": "New Preferred Date",
-    "newPreferredTimeSlot": "New Preferred Time Slot",
-    "selectTimeSlot": "Select a time slot",
-    "messageOptional": "Message (Optional)",
-    "rescheduleReason": "Reason for rescheduling or additional details.",
+  "common": {
     "cancel": "Cancel",
-    "requestReschedule": "Request Reschedule",
-    "toastReschedule": "Reschedule Request Sent (Mock)",
-    "toastRescheduleDesc": "Reschedule request sent for appointment with {user}.",
-    "provideFeedbackTitle": "Provide Feedback",
-    "provideFeedbackDesc": "Share your experience for the session with {user}.",
-    "overallRating": "Overall Rating (1-5 Stars)",
-    "selectRating": "Select rating",
-    "star": "Star",
-    "commentsOptional": "Comments (Optional)",
-    "feedbackPlaceholder": "What went well? Any suggestions?",
-    "submitFeedback": "Submit Feedback",
-    "toastFeedback": "Feedback Submitted (Mock)",
-    "toastFeedbackDesc": "Thank you for your feedback on the session with {user}."
-  },
-    "affiliates": {
-    "title": "Affiliates Program",
-    "pageDescription": "Partner with ResumeMatch AI, share with your network, and earn commissions!",
-    "yourDetails": "Your Affiliate Details",
-    "detailsDesc": "Use this code or link to promote ResumeMatch AI.",
-    "codeLabel": "Your Unique Affiliate Code",
-    "linkLabel": "Your Affiliate Link",
-    "commissionRate": "Commission Rate",
-    "shareLink": "Share Affiliate Link",
-    "performance": "Affiliate Performance",
-    "performanceDesc": "Track your clicks, signups, and earnings.",
-    "totalClicks": "Total Clicks",
-    "successfulSignups": "Successful Signups",
-    "totalEarned": "Total Earned",
-    "recentSignups": "Recent Signups via Your Link",
-    "noSignups": "No signups through your affiliate link yet.",
-    "userIdMasked": "User ID (Masked)",
-    "signupDate": "Signup Date",
-    "commissionEarned": "Commission Earned",
-    "userMasked": "User...{last4}",
-    "pending": "Pending",
-    "commissionProcessNote": "Commissions are typically processed at the end of each month.",
-    "howItWorks": "How the Affiliate Program Works",
-    "step1": "1. Share your unique affiliate code or link.",
-    "step2": "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.",
-    "step3": "3. Track your performance and earnings in this dashboard.",
-    "step4": "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal]."
-  },
-    "profile": {
-    "title": "My Profile",
-    "editProfile": "Edit Profile",
-    "completion": "Profile Completion",
-    "completionTooltip": "Complete your profile to unlock more features and get better recommendations.",
-    "completionPercent": "Your profile is {percent}% complete.",
-    "aiSkillSuggestions": "AI Skill Suggestions",
-    "aiSkillDesc": "Get AI-powered skill suggestions based on your profile.",
-    "aiAnalyzing": "AI is analyzing your profile for skill suggestions...",
-    "noSkillSuggestions": "No new skill suggestions at this time. Ensure your bio and career interests are filled out!",
-    "relevance": "Relevance",
-    "addSkill": "Add Skill",
-    "reasoning": "Reasoning",
-    "getSkillSuggestions": "Get Skill Suggestions",
-    "editToGetSuggestions": "Edit Profile to Get Suggestions",
-    "savedTitle": "Profile Saved Successfully!",
-    "savedDesc": "Your profile information has been updated.",
-    "ok": "OK"
-  },    "gamification": {
-    "title": "Rewards & Progress",
-    "pageDescription": "Track your achievements and engagement within the platform.",
-    "yourBadges": "Your Badges",
-    "badgesDescription": "Collect badges by engaging with the platform and community.",
-    "leaderboard": "Leaderboard",
-    "leaderboardDescription": "See how you rank among fellow alumni based on XP points (Top 10 shown)."
-  },
-    "gallery": {
-    "title": "Event Gallery",
-    "pageDescription": "A glimpse into past events and memorable moments from our community.",
-    "noEvents": "No Events in Gallery",
-    "noEventsHint": "Check back later for photos from our past events.",
-    "participantsFor": "Participants for: {title}",
-    "participantListDesc": "List of users who attended this event.",
-    "noParticipants": "No participant data available for this event.",
-    "close": "Close",
-    "noImages": "No images available for this event."
-  },
-    "jobTracker": {
-    "title": "Job Application Tracker",
-    "addJob": "Add Job",
-    "jobs": "Jobs",
-    "searchJob": "Search job",
-    "keywordsPlaceholder": "Keywords, title...",
-    "location": "Location",
-    "locationPlaceholder": "City, state, or remote",
-    "search": "Search",
-    "noJobsFound": "No jobs found.",
-    "searchHint": "Search jobs from various platforms and drag them here to track or add to your saved list.",
-    "addToSaved": "Add to Saved",
-    "findMoreJobs": "Find more jobs",
-    "kanban": {
-      "Saved": { "title": "Saved", "description": "Jobs saved from job boards or your resume scans." },
-      "Applied": { "title": "Applied", "description": "Application completed. Awaiting response." },
-      "Interviewing": { "title": "Interview", "description": "Record interview details and notes here." },
-      "Offer": { "title": "Offer", "description": "Interviews completed. Negotiating offer." }
-    },
-    "editJob": "Edit Job Application",
-    "addNewJob": "Add New Job Application",
-    "jobTitle": "Job Title",
-    "companyName": "Company Name",
-    "status": "Status",
-    "selectStatus": "Select status",
-    "dateApplied": "Date Applied / Saved",
-    "reminderDate": "Reminder Date (Optional)",
-    "setReminder": "Set a reminder",
-    "jobDescription": "Job Description (Optional)",
-    "jobDescriptionPlaceholder": "Paste job description here...",
-    "notes": "Notes (Optional)",
-    "notesPlaceholder": "Any relevant notes...",
-    "cancel": "Cancel",
-    "saveChanges": "Save Changes",
-    "addApplication": "Add Application",
-    "statuses": {
-      "Saved": "Saved",
-      "Applied": "Applied",
-      "Interviewing": "Interview",
-      "Offer": "Offer",
-      "Rejected": "Rejected"
-    }
-  },  "jobBoard": {
-    "title": "Job Board",
-    "pageDescription": "Find job opportunities shared within the alumni network.",
-    "searchPlaceholder": "Search jobs...",
-    "postOpportunity": "Post Opportunity"
-  },  "alumniConnect": {
-    "title": "Alumni Directory",
-    "pageDescription": "Connect with fellow alumni. Discover skills, interests, and potential collaborators.",
-    "distinguishedTitle": "Most Distinguished Alumni",
-    "distinguishedDesc": "Spotlight on our accomplished alumni making an impact.",
-    "filters": "Filters",
-    "nameOrJobTitle": "Name or Job Title",
-    "namePlaceholder": "e.g., Alice Wonderland",
-    "company": "Company",
-    "skills": "Skills",
-    "university": "University",
-    "noAlumniFound": "No Alumni Found",
-    "tryAdjusting": "Try adjusting your search or filter criteria.",
-    "bookTitle": "Book Appointment with {name}",
-    "bookDesc": "Complete the form below to request a meeting.",
-    "purposeLabel": "Purpose of Meeting",
-    "purposePlaceholder": "e.g., Career advice, Mock interview...",
-    "preferredDate": "Preferred Date",
-    "preferredTimeSlot": "Preferred Time Slot",
-    "selectTimeSlot": "Select a time slot",
-    "messageOptional": "Brief Message (Optional)",
-    "messagePlaceholder": "Any additional details for your request.",
-    "feeNotice": "A fee of <strong className=\"text-primary\">{coins} coins</strong> will be deducted upon confirmation.",
-    "cancel": "Cancel",
-    "requestAppointment": "Request Appointment"
-  },  "communityFeed": {
-    "title": "Community Feed",
-    "createNewPost": "Create New Post",
-    "recentPosts": "Recent Posts",
-    "filterPosts": "Filter posts",
-    "allPosts": "All Posts",
-    "textPosts": "Text Posts",
-    "polls": "Polls",
-    "events": "Events",
-    "requests": "Requests",
-    "myPosts": "My Posts",
-    "flaggedPosts": "Flagged Posts",
-    "noPostsYet": "No Posts Yet",
-    "beFirstToPost": "Be the first to post!",
-    "noPostsMatch": "No posts match your current filter.",
-    "mostActiveUsers": "Most Active Users",
-    "topContributors": "Top contributors in the community.",
-    "noActiveUsers": "No active users to display yet.",
-    "viewLeaderboard": "View Full Leaderboard"
+    "submit": "Submit"
   }
 }
+    
