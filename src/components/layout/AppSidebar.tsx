@@ -47,6 +47,7 @@ const utilityItems = [
 ];
 
 const gamificationItems = [
+  { href: "/daily-interview-challenge", labelKey: "sideMenu.dailyChallenge", icon: PuzzleIcon },
   { href: "/gamification", labelKey: "sideMenu.rewardsBadges", icon: Award },
   { href: "/referrals", labelKey: "sideMenu.referrals", icon: Gift },
   { href: "/affiliates", labelKey: "sideMenu.affiliatesProgram", icon: Target, adminOnly: true },
