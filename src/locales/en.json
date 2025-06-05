@@ -1172,6 +1172,15 @@
     "dailyStreak": "Daily Login Streak",
     "totalXP": "Total Experience Points",
     "coinBalance": "Coin Balance"
+  },  "dailyChallenge": {
+    "title": "Daily Interview Challenge",
+    "refresh": "Get New Challenge",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "yourAnswer": "Type your answer here...",
+    "showHint": "Show Hint",
+    "submit": "Submit (Coming Soon)",
+    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
   }
 }
     
