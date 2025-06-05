@@ -1,4 +1,5 @@
 "use client";
+import { suggestDynamicSkills, type SuggestDynamicSkillsInput, type SuggestDynamicSkillsOutput } from '@/ai/flows/suggest-dynamic-skills';
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { suggestDynamicSkills, type SuggestDynamicSkillsInput, type SuggestDynamicSkillsOutput } from '@/ai/flows/suggest-dynamic-skills';
+
 // Removed useTranslations and useLocale
 
 const profileSchema = z.object({
@@ -68,6 +69,7 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 type SuggestedSkill = SuggestDynamicSkillsOutput['suggestedSkills'][0];
 
 export default function ProfilePage() {
+  const { t } = useI18n();
   const [userProfile, setUserProfile] = useState<UserProfile>(sampleUserProfile);
   const [isEditing, setIsEditing] = useState(false); 
   const [suggestedSkills, setSuggestedSkills] = useState<SuggestedSkill[] | null>(null);
@@ -230,32 +232,31 @@ export default function ProfilePage() {
     <div className="space-y-8">
     <TooltipProvider>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">My Profile</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("profile.title", "My Profile")}</h1>
         {!isEditing && (
           <Button onClick={() => setIsEditing(true)} variant="outline">
-            <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
+            <Edit3 className="mr-2 h-4 w-4" /> {t("profile.editProfile", "Edit Profile")}
           </Button>
         )}
       </div>
 
-
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary"/>Profile Completion
+            <Sparkles className="h-6 w-6 text-primary"/>{t("profile.completion", "Profile Completion")}
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Complete your profile to unlock more features and get better recommendations.</p>
+                <p>{t("profile.completionTooltip", "Complete your profile to unlock more features and get better recommendations.")}</p>
               </TooltipContent>
             </Tooltip>
             </CardTitle>
         </CardHeader>
         <CardContent>
           <Progress value={profileCompletion} className="w-full h-3 [&>div]:bg-primary" />
-          <p className="text-sm text-muted-foreground mt-2 text-center">Your profile is {profileCompletion}% complete.</p>
+          <p className="text-sm text-muted-foreground mt-2 text-center">{t("profile.completionPercent", { percent: profileCompletion }, "Your profile is {percent}% complete.")}</p>
         </CardContent>
       </Card>
 
@@ -542,19 +543,19 @@ export default function ProfilePage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" /> AI Skill Suggestions
+            <Sparkles className="h-6 w-6 text-primary" /> {t("profile.aiSkillSuggestions", "AI Skill Suggestions")}
           </CardTitle>
-          <CardDescription>Get AI-powered skill suggestions based on your profile.</CardDescription>
+          <CardDescription>{t("profile.aiSkillDesc", "Get AI-powered skill suggestions based on your profile.")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isSkillsLoading && (
             <div className="text-center py-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-              <p className="mt-2 text-muted-foreground">AI is analyzing your profile for skill suggestions...</p>
+              <p className="mt-2 text-muted-foreground">{t("profile.aiAnalyzing", "AI is analyzing your profile for skill suggestions...")}</p>
             </div>
           )}
           {!isSkillsLoading && suggestedSkills && suggestedSkills.length === 0 && (
-            <p className="text-muted-foreground text-center py-4">No new skill suggestions at this time. Ensure your bio and career interests are filled out!</p>
+            <p className="text-muted-foreground text-center py-4">{t("profile.noSkillSuggestions", "No new skill suggestions at this time. Ensure your bio and career interests are filled out!")}</p>
           )}
           {!isSkillsLoading && suggestedSkills && suggestedSkills.length > 0 && (
             <div className="space-y-3">
@@ -563,15 +564,15 @@ export default function ProfilePage() {
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <h4 className="font-semibold text-foreground">{skillRec.skill}</h4>
-                      <p className="text-xs text-muted-foreground">Relevance: <span className="text-primary font-bold">{skillRec.relevanceScore}%</span></p>
+                      <p className="text-xs text-muted-foreground">{t("profile.relevance", "Relevance")}: <span className="text-primary font-bold">{skillRec.relevanceScore}%</span></p>
                     </div>
                     {isEditing && (
                        <Button size="sm" variant="outline" onClick={() => handleAddSuggestedSkill(skillRec.skill)}>
-                        <PlusCircleIcon className="mr-1 h-4 w-4" /> Add Skill
+                        <PlusCircleIcon className="mr-1 h-4 w-4" /> {t("profile.addSkill", "Add Skill")}
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1 italic">Reasoning: {skillRec.reasoning}</p>
+                  <p className="text-sm text-muted-foreground mt-1 italic">{t("profile.reasoning", "Reasoning")}: {skillRec.reasoning}</p>
                 </Card>
               ))}
             </div>
@@ -580,7 +581,7 @@ export default function ProfilePage() {
         <CardFooter>
           <Button onClick={handleGetSkillSuggestions} disabled={isSkillsLoading || !isEditing} className="w-full md:w-auto">
             {isSkillsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ThumbsUp className="mr-2 h-4 w-4" />}
-            {isEditing ? "Get Skill Suggestions" : "Edit Profile to Get Suggestions"}
+            {isEditing ? t("profile.getSkillSuggestions", "Get Skill Suggestions") : t("profile.editToGetSuggestions", "Edit Profile to Get Suggestions")}
           </Button>
         </CardFooter>
       </Card>
@@ -592,15 +593,15 @@ export default function ProfilePage() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircleIcon className="h-6 w-6 text-green-500" />
-            Profile Saved Successfully!
+            {t("profile.savedTitle", "Profile Saved Successfully!")}
           </DialogTitle>
           <DialogUIDescription>
-            Your profile information has been updated.
+            {t("profile.savedDesc", "Your profile information has been updated.")}
           </DialogUIDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
-            <Button onClick={() => setIsProfileSavedDialogOpen(false)}>OK</Button>
+            <Button onClick={() => setIsProfileSavedDialogOpen(false)}>{t("profile.ok", "OK")}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

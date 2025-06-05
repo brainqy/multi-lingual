@@ -1,4 +1,3 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,6 +27,7 @@ function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.Lucide
 
 
 export default function GamificationPage() {
+  const { t } = useI18n();
   const user = sampleUserProfile;
   const badges = sampleBadges;
 
@@ -48,17 +48,17 @@ export default function GamificationPage() {
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
-    if (rank === 2) return <Award className="h-5 w-5 text-gray-400" />; 
-    if (rank === 3) return <Star className="h-5 w-5 text-orange-400" />; 
+    if (rank === 2) return <Award className="h-5 w-5 text-gray-400" />;
+    if (rank === 3) return <Star className="h-5 w-5 text-orange-400" />;
     return <span className="text-sm font-medium w-5 text-center">{rank}</span>;
   };
 
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Award className="h-8 w-8" /> Rewards & Progress
+        <Award className="h-8 w-8" /> {t("gamification.title", "Rewards & Progress")}
       </h1>
-      <CardDescription>Track your achievements and engagement within the platform.</CardDescription>
+      <CardDescription>{t("gamification.pageDescription", "Track your achievements and engagement within the platform.")}</CardDescription>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-lg">
@@ -102,8 +102,10 @@ export default function GamificationPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Your Badges</CardTitle>
-          <CardDescription>Collect badges by engaging with the platform and community.</CardDescription>
+          <CardTitle>{t("gamification.yourBadges", "Your Badges")}</CardTitle>
+          <CardDescription>
+            {t("gamification.badgesDescription", "Collect badges by engaging with the platform and community.")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <TooltipProvider>
@@ -145,52 +147,52 @@ export default function GamificationPage() {
         </CardContent>
       </Card>
 
-       <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary"/>Leaderboard</CardTitle>
-                <CardDescription>See how you rank among fellow alumni based on XP points (Top 10 shown).</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {leaderboardUsers.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Leaderboard data is currently being calculated. Check back soon!</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px] text-center">Rank</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead className="text-right">XP Points</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leaderboardUsers.map((lbUser, index) => (
-                      <TableRow key={lbUser.id} className={cn(index < 3 && "bg-secondary/50 font-semibold", lbUser.id === user.id && "bg-primary/10 border-l-2 border-primary")}>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center h-full">
-                            {getRankIcon(index + 1)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/>
-                              <AvatarFallback>
-                                {lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserCircle />}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className={cn("font-medium", index < 3 && "text-primary")}>{lbUser.name} {lbUser.id === user.id && "(You)"}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-lg">
-                          {lbUser.xpPoints?.toLocaleString() || 0}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-        </Card>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary"/>{t("gamification.leaderboard", "Leaderboard")}</CardTitle>
+          <CardDescription>{t("gamification.leaderboardDescription", "See how you rank among fellow alumni based on XP points (Top 10 shown).")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {leaderboardUsers.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Leaderboard data is currently being calculated. Check back soon!</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px] text-center">Rank</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead className="text-right">XP Points</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {leaderboardUsers.map((lbUser, index) => (
+                  <TableRow key={lbUser.id} className={cn(index < 3 && "bg-secondary/50 font-semibold", lbUser.id === user.id && "bg-primary/10 border-l-2 border-primary")}>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center h-full">
+                        {getRankIcon(index + 1)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/>
+                          <AvatarFallback>
+                            {lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserCircle />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className={cn("font-medium", index < 3 && "text-primary")}>{lbUser.name} {lbUser.id === user.id && "(You)"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-lg">
+                      {lbUser.xpPoints?.toLocaleString() || 0}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

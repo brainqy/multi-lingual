@@ -1,4 +1,3 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useMemo, type FormEvent } from "react";
@@ -41,6 +40,7 @@ type RecommendedJob = PersonalizedJobRecommendationsOutput['recommendedJobs'][0]
 const JOB_TYPES: JobOpening['type'][] = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Mentorship'];
 
 export default function JobBoardPage() {
+  const { t } = useI18n();
   const [openings, setOpenings] = useState<JobOpening[]>([]);
   const [isLoadingOpenings, setIsLoadingOpenings] = useState(true);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
@@ -263,22 +263,24 @@ export default function JobBoardPage() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Briefcase className="h-8 w-8" /> Job Board
+            <Briefcase className="h-8 w-8" /> {t("jobBoard.title", "Job Board")}
           </h1>
-          <CardDescription>Find job opportunities shared within the alumni network.</CardDescription>
+          <CardDescription>
+            {t("jobBoard.pageDescription", "Find job opportunities shared within the alumni network.")}
+          </CardDescription>
         </div>
         <div className="relative w-full md:w-auto md:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input 
             type="search" 
-            placeholder="Search jobs..." 
+            placeholder={t("jobBoard.searchPlaceholder", "Search jobs...")}
             className="pl-10 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
-          <PlusCircle className="mr-2 h-5 w-5" /> Post Opportunity
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobBoard.postOpportunity", "Post Opportunity")}
         </Button>
       </div>
 

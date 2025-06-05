@@ -132,6 +132,7 @@ function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { colu
 
 
 export default function JobTrackerPage() {
+  const { t } = useI18n();
   const [applications, setApplications] = useState<JobApplication[]>(sampleJobApplications.filter(app => app.userId === sampleUserProfile.id));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState<JobApplication | null>(null);
@@ -248,9 +249,9 @@ export default function JobTrackerPage() {
   return (
     <div className="flex flex-col h-full space-y-4 p-0 -m-4 sm:-m-6 lg:-m-8"> 
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Job Application Tracker</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("jobTracker.title", "Job Application Tracker")}</h1>
         <Button onClick={openNewApplicationDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> Add Job
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobTracker.addJob", "Add Job")}
         </Button>
       </div>
 
@@ -258,56 +259,56 @@ export default function JobTrackerPage() {
         {/* Job Search Sidebar */}
         <Card className="w-full md:w-72 flex-shrink-0 shadow-lg h-full flex flex-col">
           <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-md font-semibold">Jobs</CardTitle>
+            <CardTitle className="text-md font-semibold">{t("jobTracker.jobs", "Jobs")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 flex-grow flex flex-col">
             <div>
-              <Label htmlFor="search-job-keywords">Search job</Label>
+              <Label htmlFor="search-job-keywords">{t("jobTracker.searchJob", "Search job")}</Label>
               <Input 
                 id="search-job-keywords" 
-                placeholder="Keywords, title..." 
+                placeholder={t("jobTracker.keywordsPlaceholder", "Keywords, title...")}
                 value={searchKeywords}
                 onChange={(e) => setSearchKeywords(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="search-job-location">Location</Label>
+              <Label htmlFor="search-job-location">{t("jobTracker.location", "Location")}</Label>
               <Input 
                 id="search-job-location" 
-                placeholder="City, state, or remote" 
+                placeholder={t("jobTracker.locationPlaceholder", "City, state, or remote")}
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
               />
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleJobSearch}>
-              <Search className="mr-2 h-4 w-4" /> Search
+              <Search className="mr-2 h-4 w-4" /> {t("jobTracker.search", "Search")}
             </Button>
             
-            <ScrollArea className="flex-grow mt-3 border-2 border-dashed border-border rounded-md p-2 min-h-[200px]"> {/* Increased min-h */}
+            <ScrollArea className="flex-grow mt-3 border-2 border-dashed border-border rounded-md p-2 min-h-[200px]">
               {hasSearched && jobSearchResults.length === 0 && (
                 <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-                  No jobs found.
+                  {t("jobTracker.noJobsFound", "No jobs found.")}
                 </div>
               )}
               {!hasSearched && jobSearchResults.length === 0 && (
                  <div className="h-full flex items-center justify-center text-muted-foreground text-center text-sm p-4">
-                  Search jobs from various platforms and drag them here to track or add to your saved list.
+                  {t("jobTracker.searchHint", "Search jobs from various platforms and drag them here to track or add to your saved list.")}
                 </div>
               )}
               {jobSearchResults.length > 0 && (
                 <div className="space-y-2">
                   {jobSearchResults.map(job => (
-                    <Card key={job.id} className="p-2.5 bg-card shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"> {/* Added cursor style */}
+                    <Card key={job.id} className="p-2.5 bg-card shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing">
                       <h5 className="text-xs font-semibold text-foreground truncate" title={job.title}>{job.title}</h5>
                       <p className="text-[10px] text-muted-foreground truncate" title={job.company}>{job.company}</p>
                       <p className="text-[10px] text-muted-foreground truncate" title={job.location}>{job.location}</p>
                       <Button 
                         size="sm"
                         variant="outline" 
-                        className="mt-1.5 w-full h-7 text-[10px] py-0.5" // Smaller button
+                        className="mt-1.5 w-full h-7 text-[10px] py-0.5"
                         onClick={() => handleAddSearchedJobToTracker(job)}
                       >
-                        Add to Saved
+                        {t("jobTracker.addToSaved", "Add to Saved")}
                       </Button>
                     </Card>
                   ))}
@@ -317,7 +318,7 @@ export default function JobTrackerPage() {
           </CardContent>
           <CardFooter className="p-4 border-t">
             <Button variant="outline" className="w-full" asChild>
-              <Link href="/job-board">Find more jobs</Link>
+              <Link href="/job-board">{t("jobTracker.findMoreJobs", "Find more jobs")}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -327,7 +328,11 @@ export default function JobTrackerPage() {
           {KANBAN_COLUMNS_CONFIG.map((colConfig) => (
             <KanbanColumn
               key={colConfig.id}
-              column={colConfig}
+              column={{
+                ...colConfig,
+                title: t(`jobTracker.kanban.${colConfig.id}.title`, colConfig.title),
+                description: t(`jobTracker.kanban.${colConfig.id}.description`, colConfig.description)
+              }}
               applications={getAppsForColumn(colConfig)}
               onEdit={handleEdit}
               onDelete={handleDelete}
@@ -347,34 +352,34 @@ export default function JobTrackerPage() {
       }}>
         <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{editingApplication ? "Edit" : "Add New"} Job Application</DialogTitle>
+            <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", "Edit Job Application") : t("jobTracker.addNewJob", "Add New Job Application")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="jobTitle">Job Title</Label>
+              <Label htmlFor="jobTitle">{t("jobTracker.jobTitle", "Job Title")}</Label>
               <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
               {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
             </div>
             <div>
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="companyName">{t("jobTracker.companyName", "Company Name")}</Label>
               <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
               {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
             </div>
             <div>
-              <Label htmlFor="location">Location</Label>
-              <Controller name="location" control={control} render={({ field }) => <Input id="location" placeholder="e.g., Remote, New York, NY" {...field} />} />
+              <Label htmlFor="location">{t("jobTracker.location", "Location")}</Label>
+              <Controller name="location" control={control} render={({ field }) => <Input id="location" placeholder={t("jobTracker.locationPlaceholder", "e.g., Remote, New York, NY")} {...field} />} />
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t("jobTracker.status", "Status")}</Label>
               <Controller
                 name="status"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("jobTracker.selectStatus", "Select status")} /></SelectTrigger>
                     <SelectContent>
                       {JOB_APPLICATION_STATUSES.map(s => (
-                        <SelectItem key={s} value={s}>{s === 'Interviewing' ? 'Interview' : s}</SelectItem>
+                        <SelectItem key={s} value={s}>{t(`jobTracker.statuses.${s}`, s === 'Interviewing' ? 'Interview' : s)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -383,27 +388,27 @@ export default function JobTrackerPage() {
                {errors.status && <p className="text-sm text-destructive mt-1">{errors.status.message}</p>}
             </div>
             <div>
-              <Label htmlFor="dateApplied">Date Applied / Saved</Label>
+              <Label htmlFor="dateApplied">{t("jobTracker.dateApplied", "Date Applied / Saved")}</Label>
               <Controller name="dateApplied" control={control} render={({ field }) => <Input id="dateApplied" type="date" {...field} />} />
               {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
             </div>
             <div>
               <Label htmlFor="reminderDate" className="flex items-center gap-1">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" /> Reminder Date (Optional)
+                <CalendarDays className="h-4 w-4 text-muted-foreground" /> {t("jobTracker.reminderDate", "Reminder Date (Optional)")}
               </Label>
-              <Controller name="reminderDate" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder="Set a reminder" />} />
+              <Controller name="reminderDate" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder={t("jobTracker.setReminder", "Set a reminder")} />} />
             </div>
             <div>
-              <Label htmlFor="jobDescription">Job Description (Optional)</Label>
-              <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" placeholder="Paste job description here..." rows={4} {...field} />} />
+              <Label htmlFor="jobDescription">{t("jobTracker.jobDescription", "Job Description (Optional)")}</Label>
+              <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" placeholder={t("jobTracker.jobDescriptionPlaceholder", "Paste job description here...")} rows={4} {...field} />} />
             </div>
             <div>
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder="Any relevant notes..." rows={3} {...field} />} />
+              <Label htmlFor="notes">{t("jobTracker.notes", "Notes (Optional)")}</Label>
+              <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder={t("jobTracker.notesPlaceholder", "Any relevant notes...")} rows={3} {...field} />} />
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingApplication ? "Save Changes" : "Add Application"}</Button>
+              <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.cancel", "Cancel")}</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingApplication ? t("jobTracker.saveChanges", "Save Changes") : t("jobTracker.addApplication", "Add Application")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

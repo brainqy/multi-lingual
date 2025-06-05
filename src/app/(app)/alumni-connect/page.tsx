@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -26,6 +25,7 @@ import * as z from "zod";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
+import { useI18n } from "@/hooks/use-i18n";
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
@@ -36,6 +36,7 @@ const bookingSchema = z.object({
 type BookingFormData = z.infer<typeof bookingSchema>;
 
 export default function AlumniConnectPage() {
+  const { t } = useI18n();
   const [allAlumniData, setAllAlumniData] = useState<AlumniProfile[]>(sampleAlumni);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
@@ -175,17 +176,19 @@ export default function AlumniConnectPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Alumni Directory</h1>
-        <p className="text-muted-foreground mt-1">Connect with fellow alumni. Discover skills, interests, and potential collaborators.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("alumniConnect.title", "Alumni Directory")}</h1>
+        <p className="text-muted-foreground mt-1">
+          {t("alumniConnect.pageDescription", "Connect with fellow alumni. Discover skills, interests, and potential collaborators.")}
+        </p>
       </div>
 
       {distinguishedAlumni.length > 0 && (
         <Card className="shadow-lg bg-primary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
-              <Star className="h-6 w-6" /> Most Distinguished Alumni
+              <Star className="h-6 w-6" /> {t("alumniConnect.distinguishedTitle", "Most Distinguished Alumni")}
             </CardTitle>
-            <CardDescription>Spotlight on our accomplished alumni making an impact.</CardDescription>
+            <CardDescription>{t("alumniConnect.distinguishedDesc", "Spotlight on our accomplished alumni making an impact.")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Carousel
@@ -233,17 +236,17 @@ export default function AlumniConnectPage() {
         <AccordionItem value="filters">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">
             <div className="flex items-center gap-2 text-lg font-semibold">
-              <FilterIcon className="h-5 w-5" /> Filters
+              <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", "Filters")}
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
               <div className="space-y-1">
-                <Label htmlFor="search-term">Name or Job Title</Label>
-                <Input id="search-term" placeholder="e.g., Alice Wonderland" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Label htmlFor="search-term">{t("alumniConnect.nameOrJobTitle", "Name or Job Title")}</Label>
+                <Input id="search-term" placeholder={t("alumniConnect.namePlaceholder", "e.g., Alice Wonderland")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
               <div>
-                <h4 className="font-medium mb-2">Company</h4>
+                <h4 className="font-medium mb-2">{t("alumniConnect.company", "Company")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {uniqueCompanies.map(company => (
@@ -260,7 +263,7 @@ export default function AlumniConnectPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Skills</h4>
+                <h4 className="font-medium mb-2">{t("alumniConnect.skills", "Skills")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {uniqueSkills.map(skill => (
@@ -277,7 +280,7 @@ export default function AlumniConnectPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">University</h4>
+                <h4 className="font-medium mb-2">{t("alumniConnect.university", "University")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {uniqueUniversities.map(uni => (
@@ -302,9 +305,9 @@ export default function AlumniConnectPage() {
         <Card className="text-center py-12 shadow-md col-span-1 md:col-span-2 lg:col-span-3">
             <CardHeader>
                 <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <CardTitle className="text-2xl">No Alumni Found</CardTitle>
+                <CardTitle className="text-2xl">{t("alumniConnect.noAlumniFound", "No Alumni Found")}</CardTitle>
                 <CardDescription>
-                Try adjusting your search or filter criteria.
+                  {t("alumniConnect.tryAdjusting", "Try adjusting your search or filter criteria.")}
                 </CardDescription>
             </CardHeader>
         </Card>
@@ -385,23 +388,27 @@ export default function AlumniConnectPage() {
       }}>
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Book Appointment with {alumniToBook?.name}</DialogTitle>
-            <CardDescription>Complete the form below to request a meeting.</CardDescription>
+            <DialogTitle className="text-2xl">
+              {t("alumniConnect.bookTitle", "Book Appointment with {name}", { name: alumniToBook?.name })}
+            </DialogTitle>
+            <CardDescription>
+              {t("alumniConnect.bookDesc", "Complete the form below to request a meeting.")}
+            </CardDescription>
           </DialogHeader>
           {alumniToBook && (
             <form onSubmit={handleBookingSubmit(onBookAppointmentSubmit)} className="space-y-4 py-4">
               <div>
-                <Label htmlFor="purpose">Purpose of Meeting</Label>
+                <Label htmlFor="purpose">{t("alumniConnect.purposeLabel", "Purpose of Meeting")}</Label>
                 <Controller
                   name="purpose"
                   control={control}
-                  render={({ field }) => <Textarea id="purpose" placeholder="e.g., Career advice, Mock interview..." {...field} />}
+                  render={({ field }) => <Textarea id="purpose" placeholder={t("alumniConnect.purposePlaceholder", "e.g., Career advice, Mock interview...")} {...field} />}
                 />
                 {bookingErrors.purpose && <p className="text-sm text-destructive mt-1">{bookingErrors.purpose.message}</p>}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="preferredDate">Preferred Date</Label>
+                  <Label htmlFor="preferredDate">{t("alumniConnect.preferredDate", "Preferred Date")}</Label>
                   <Controller
                     name="preferredDate"
                     control={control}
@@ -410,13 +417,13 @@ export default function AlumniConnectPage() {
                   {bookingErrors.preferredDate && <p className="text-sm text-destructive mt-1">{bookingErrors.preferredDate.message}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="preferredTimeSlot">Preferred Time Slot</Label>
+                  <Label htmlFor="preferredTimeSlot">{t("alumniConnect.preferredTimeSlot", "Preferred Time Slot")}</Label>
                   <Controller
                     name="preferredTimeSlot"
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger id="preferredTimeSlot"><SelectValue placeholder="Select a time slot" /></SelectTrigger>
+                        <SelectTrigger id="preferredTimeSlot"><SelectValue placeholder={t("alumniConnect.selectTimeSlot", "Select a time slot")} /></SelectTrigger>
                         <SelectContent>
                           {PreferredTimeSlots.map(slot => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
                         </SelectContent>
@@ -427,20 +434,20 @@ export default function AlumniConnectPage() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="message">Brief Message (Optional)</Label>
+                <Label htmlFor="message">{t("alumniConnect.messageOptional", "Brief Message (Optional)")}</Label>
                 <Controller
                   name="message"
                   control={control}
-                  render={({ field }) => <Textarea id="message" placeholder="Any additional details for your request." rows={3} {...field} />}
+                  render={({ field }) => <Textarea id="message" placeholder={t("alumniConnect.messagePlaceholder", "Any additional details for your request.")} rows={3} {...field} />}
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                A fee of <strong className="text-primary">{alumniToBook.appointmentCoinCost || 10} coins</strong> will be deducted upon confirmation.
+                {t("alumniConnect.feeNotice", "A fee of <strong className=\"text-primary\">{coins} coins</strong> will be deducted upon confirmation.", { coins: alumniToBook.appointmentCoinCost || 10 })}
               </p>
               <DialogFooter>
-                <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                <DialogClose asChild><Button type="button" variant="outline">{t("alumniConnect.cancel", "Cancel")}</Button></DialogClose>
                 <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <CalendarPlus className="mr-2 h-4 w-4"/> Request Appointment
+                  <CalendarPlus className="mr-2 h-4 w-4"/> {t("alumniConnect.requestAppointment", "Request Appointment")}
                 </Button>
               </DialogFooter>
             </form>
