@@ -131,7 +131,8 @@ export let sampleCommunityPosts: CommunityPost[] = [
     comments: [
       { id: 'comment1-1', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString(), text: 'Focus on clean code and clear documentation for your solution. Good luck!' },
       { id: 'comment1-2', userId: 'alumni4', userName: 'Diana Prince', userAvatar: 'https://picsum.photos/seed/diana/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), text: 'Great question! I usually allocate specific time blocks for each part of the assignment.' },
-    ]
+    ],
+     bookmarkedBy: ['managerUser1'] 
   },
   { 
     id: 'post2', 
@@ -740,6 +741,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Learn how to leverage our AI analysis tool to its full potential. Understand match scores, keyword analysis...',
     tags: ['resume', 'ai', 'jobsearch'],
     comments: [],
+     bookmarkedBy: ['managerUser1'] ,
   },
   {
     id: 'blog2',
