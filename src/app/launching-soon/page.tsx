@@ -20,8 +20,36 @@ export default function LaunchingSoonPage() {
     seconds: 0,
   });
 
+  // Effect for real-time social proof toasts
   useEffect(() => {
-    // Set a target launch date (e.g., 30 days from now for demonstration)
+    const sampleNames = ['Ram', 'Jyoti', 'Aarav', 'Priya', 'Vikram', 'Anika', 'Rohan', 'Sneha', 'Arjun'];
+    const intervals = [7000, 12000, 9000, 15000, 10000]; // Random intervals in ms
+
+    const showRandomToast = () => {
+      const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+      toast({
+        title: "🎉 New Waitlist Signup!",
+        description: `${randomName} just joined the waitlist.`,
+      });
+    };
+
+    // Show one immediately after a short delay to start the effect
+    const initialTimeout = setTimeout(showRandomToast, 4000);
+
+    // Then set up the interval for subsequent toasts
+    const intervalId = setInterval(() => {
+      showRandomToast();
+    }, intervals[Math.floor(Math.random() * intervals.length)]);
+
+    // Cleanup on component unmount
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(intervalId);
+    };
+  }, [toast]); // Dependency array includes toast to ensure it's available
+
+  // Effect for the countdown timer
+  useEffect(() => {
     const launchDate = new Date();
     launchDate.setDate(launchDate.getDate() + 30);
 
@@ -41,7 +69,6 @@ export default function LaunchingSoonPage() {
       }
     }, 1000);
 
-    // Cleanup interval on component unmount
     return () => clearInterval(timer);
   }, []);
 
