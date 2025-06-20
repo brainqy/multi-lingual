@@ -31,6 +31,30 @@ export default function BookmarksPage() {
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState(() => sampleInterviewQuestions.filter(q => q.bookmarkedBy?.includes(userId)));
   const [bookmarkedResumeScans, setBookmarkedResumeScans] = useState(() => sampleResumeScanHistory.filter(scan => scan.bookmarked));
 
+  const handleUnbookmarkPost = (postId: string) => {
+    setBookmarkedPosts(prev => prev.filter(p => p.id !== postId));
+    const postIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
+    if (postIndex !== -1) {
+      const userIndex = sampleCommunityPosts[postIndex].bookmarkedBy?.indexOf(userId);
+      if (userIndex !== undefined && userIndex > -1) {
+        sampleCommunityPosts[postIndex].bookmarkedBy?.splice(userIndex, 1);
+      }
+    }
+    toast({ title: "Bookmark Removed", description: "Post has been removed from your bookmarks." });
+  };
+  
+  const handleUnbookmarkBlog = (blogId: string) => {
+    setBookmarkedBlogs(prev => prev.filter(b => b.id !== blogId));
+    const blogIndex = sampleBlogPosts.findIndex(b => b.id === blogId);
+    if (blogIndex !== -1) {
+      const userIndex = sampleBlogPosts[blogIndex].bookmarkedBy?.indexOf(userId);
+      if (userIndex !== undefined && userIndex > -1) {
+        sampleBlogPosts[blogIndex].bookmarkedBy?.splice(userIndex, 1);
+      }
+    }
+    toast({ title: "Bookmark Removed", description: "Blog post has been removed from your bookmarks." });
+  };
+
   const handleUnbookmarkQuestion = (questionId: string) => {
     setBookmarkedQuestions(prev => prev.filter(q => q.id !== questionId));
     const questionIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
@@ -51,7 +75,6 @@ export default function BookmarksPage() {
     }
     toast({ title: "Bookmark Removed", description: "Resume scan has been removed from your bookmarks." });
   };
-
 
   const getCategoryIcon = (category: InterviewQuestionCategory) => {
     switch(category) {
@@ -98,10 +121,13 @@ export default function BookmarksPage() {
             ) : (
               <ul className="space-y-2">
                 {bookmarkedPosts.map(post => (
-                  <li key={post.id}>
-                    <Link href={`/community-feed#post-${post.id}`} className="text-sm text-primary hover:underline">
+                  <li key={post.id} className="flex justify-between items-center p-2 hover:bg-secondary/30 rounded-md">
+                    <Link href={`/community-feed#post-${post.id}`} className="text-sm text-primary hover:underline flex-1 truncate pr-2">
                       {post.content ? post.content.slice(0, 80) : "Post"}...
                     </Link>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleUnbookmarkPost(post.id)} title="Remove bookmark">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -121,10 +147,13 @@ export default function BookmarksPage() {
             ) : (
               <ul className="space-y-2">
                 {bookmarkedBlogs.map(blog => (
-                  <li key={blog.id}>
-                    <Link href={`/blog/${blog.slug}`} className="text-sm text-primary hover:underline">
+                  <li key={blog.id} className="flex justify-between items-center p-2 hover:bg-secondary/30 rounded-md">
+                    <Link href={`/blog/${blog.slug}`} className="text-sm text-primary hover:underline flex-1 truncate pr-2">
                       {blog.title}
                     </Link>
+                     <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleUnbookmarkBlog(blog.id)} title="Remove bookmark">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -226,4 +255,5 @@ export default function BookmarksPage() {
       )}
     </div>
   );
-}
+
+    
