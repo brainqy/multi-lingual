@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { InterviewQuestion, InterviewQuestionCategory } from "@/types";
+import { format, parseISO } from "date-fns";
+import ScoreCircle from '@/components/ui/score-circle';
 
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -31,7 +33,6 @@ export default function BookmarksPage() {
 
   const handleUnbookmarkQuestion = (questionId: string) => {
     setBookmarkedQuestions(prev => prev.filter(q => q.id !== questionId));
-    // In a real app, this would be an API call. For demo, we update global sample data.
     const questionIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
     if (questionIndex !== -1) {
       const userIndex = sampleInterviewQuestions[questionIndex].bookmarkedBy?.indexOf(userId);
@@ -41,6 +42,16 @@ export default function BookmarksPage() {
     }
     toast({ title: "Bookmark Removed", description: "Question has been removed from your bookmarks." });
   };
+  
+  const handleUnbookmarkScan = (scanId: string) => {
+    setBookmarkedResumeScans(prev => prev.filter(s => s.id !== scanId));
+    const scanIndex = sampleResumeScanHistory.findIndex(s => s.id === scanId);
+    if (scanIndex !== -1) {
+        sampleResumeScanHistory[scanIndex].bookmarked = false;
+    }
+    toast({ title: "Bookmark Removed", description: "Resume scan has been removed from your bookmarks." });
+  };
+
 
   const getCategoryIcon = (category: InterviewQuestionCategory) => {
     switch(category) {
@@ -187,15 +198,28 @@ export default function BookmarksPage() {
             {bookmarkedResumeScans.length === 0 ? (
               <CardDescription>{t("bookmarks.noResumeScans", "No bookmarked resume scans yet.")}</CardDescription>
             ) : (
-              <ul className="space-y-2">
+              <div className="space-y-3">
                 {bookmarkedResumeScans.map(scan => (
-                  <li key={scan.id}>
-                    <Link href={`/resume-analyzer?scanId=${scan.id}`} className="text-sm text-primary hover:underline">
-                      Scan: {scan.resumeName} vs {scan.jobTitle}
-                    </Link>
-                  </li>
+                   <Card key={scan.id} className="p-3 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
+                        <ScoreCircle score={scan.matchScore || 0} size="sm" />
+                        <div className="flex-1">
+                            <h4 className="font-semibold text-foreground">{scan.jobTitle} at {scan.companyName}</h4>
+                            <p className="text-sm text-muted-foreground">Scanned with: {scan.resumeName}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {format(parseISO(scan.scanDate), 'MMM dd, yyyy - p')}
+                            </p>
+                        </div>
+                        <div className="flex gap-2 self-start sm:self-center">
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={`/resume-analyzer?scanId=${scan.id}`}>View Report</Link>
+                            </Button>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 h-9 w-9" onClick={() => handleUnbookmarkScan(scan.id)} title="Remove Bookmark">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </Card>
                 ))}
-              </ul>
+              </div>
             )}
           </CardContent>
         </Card>
