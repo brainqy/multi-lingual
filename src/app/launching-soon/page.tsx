@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { Rocket, Mail } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,38 @@ import { useToast } from '@/hooks/use-toast';
 export default function LaunchingSoonPage() {
   const [email, setEmail] = useState('');
   const { toast } = useToast();
+
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    // Set a target launch date (e.g., 30 days from now for demonstration)
+    const launchDate = new Date();
+    launchDate.setDate(launchDate.getDate() + 30);
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = launchDate.getTime() - now;
+
+      if (distance < 0) {
+        clearInterval(timer);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        setTimeLeft({ days, hours, minutes, seconds });
+      }
+    }, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
 
   const handleJoinWaitlist = (e: FormEvent) => {
     e.preventDefault();
@@ -32,16 +63,32 @@ export default function LaunchingSoonPage() {
     }
   };
 
+  const TimeUnit = ({ value, label }: { value: number, label: string }) => (
+    <div className="flex flex-col items-center justify-center bg-primary/10 p-4 rounded-lg shadow-inner min-w-[70px]">
+      <span className="text-4xl font-bold text-primary">{String(value).padStart(2, '0')}</span>
+      <span className="text-xs text-muted-foreground uppercase">{label}</span>
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
       <Rocket className="h-24 w-24 text-primary mb-8 animate-pulse" />
       <h1 className="text-5xl font-headline font-bold text-primary mb-4">
         Launching Soon!
       </h1>
-      <p className="text-xl text-foreground/80 mb-2 max-w-lg">
+      <p className="text-xl text-foreground/80 mb-6 max-w-lg">
         We are working hard to bring you something amazing.
       </p>
-      <p className="text-muted-foreground mb-10">
+
+      {/* Countdown Timer */}
+      <div className="flex items-center space-x-2 sm:space-x-4 mb-10">
+        <TimeUnit value={timeLeft.days} label="Days" />
+        <TimeUnit value={timeLeft.hours} label="Hours" />
+        <TimeUnit value={timeLeft.minutes} label="Minutes" />
+        <TimeUnit value={timeLeft.seconds} label="Seconds" />
+      </div>
+
+      <p className="text-muted-foreground mb-6">
         Be the first to know when we launch. Join our waiting list!
       </p>
 
