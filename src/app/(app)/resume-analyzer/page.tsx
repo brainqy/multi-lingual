@@ -957,4 +957,3 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
-
