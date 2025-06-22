@@ -14,9 +14,10 @@ import {
     Search, UploadCloud, ArrowRight, Loader2, Download, CheckCircle, BarChart, Edit3, 
     Wrench, AlignLeft, SlidersHorizontal, Wand2, Lightbulb, Brain, SearchCheck, 
     ChevronsUpDown, ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, MessageSquare, ThumbsUp, Users, FileText, FileCheck2, EyeOff, Columns, Palette, CalendarDays,
-    Target, ListX // Added Target and ListX for the new section
-} from "lucide-react"; // Consolidated imports
+    Target, ListX, Sparkles // Added Target, ListX, and Sparkles
+} from "lucide-react"; 
 import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
+import { powerEditResume, type PowerEditResumeInput } from '@/ai/flows/power-edit-resume';
 import { useToast } from '@/hooks/use-toast';
 import { sampleResumeScanHistory as initialScanHistory, sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
 import type { ResumeScanHistoryItem, ResumeProfile, AtsFormattingIssue } from '@/types';
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
 interface AnalysisResults {
   detailedReport: AnalyzeResumeAndJobDescriptionOutput | null;
@@ -40,6 +42,12 @@ export default function ResumeAnalyzerPage() {
   const [resumes, setResumes] = useState<ResumeProfile[]>(sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id));
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
+
+  const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
+  const [powerEditBaseText, setPowerEditBaseText] = useState('');
+  const [powerEditInstructions, setPowerEditInstructions] = useState('');
+  const [powerEditResultText, setPowerEditResultText] = useState('');
+  const [isPowerEditing, setIsPowerEditing] = useState(false);
 
   const { toast } = useToast();
 
@@ -149,8 +157,6 @@ export default function ResumeAnalyzerPage() {
   
   const handleUploadAndRescan = () => {
     setResumeFile(null);
-    // Do not clear resumeText if user might want to rescan pasted text with new JD
-    // setSelectedResumeId(null); // Do not clear if they want to rescan a selected resume
     setResults(null); 
     toast({ title: "Ready for Rescan", description: "Modify resume/JD and click Analyze, or upload/select a new resume to analyze against the current job description."});
     const resumeInputSection = document.getElementById('resume-input-section');
@@ -158,7 +164,44 @@ export default function ResumeAnalyzerPage() {
   };
 
   const handlePowerEdit = () => {
-    toast({ title: "Power Edit (Mock)", description: "This feature would open an advanced resume editor with AI suggestions."});
+    setPowerEditBaseText(resumeText);
+    setPowerEditInstructions('');
+    setPowerEditResultText('');
+    setIsPowerEditDialogOpen(true);
+  };
+  
+  const handleRewriteWithAI = async () => {
+    if (!powerEditBaseText.trim() || !jobDescription.trim()) {
+        toast({ title: "Missing Information", description: "Please ensure both resume text and a job description are present to use Power Edit.", variant: "destructive" });
+        return;
+    }
+    setIsPowerEditing(true);
+    setPowerEditResultText('');
+    try {
+        const input: PowerEditResumeInput = {
+            baseResumeText: powerEditBaseText,
+            jobDescriptionText: jobDescription,
+            userInstructions: powerEditInstructions,
+        };
+        const result = await powerEditResume(input);
+        setPowerEditResultText(result.editedResumeText);
+        toast({ title: "Rewrite Complete!", description: "AI has generated a new version of your resume." });
+    } catch (error) {
+        console.error("Power Edit AI error:", error);
+        toast({ title: "Rewrite Failed", description: "Could not rewrite the resume. Please try again.", variant: "destructive" });
+    } finally {
+        setIsPowerEditing(false);
+    }
+  };
+
+  const applyPowerEditChanges = () => {
+    if (!powerEditResultText.trim()) {
+        toast({ title: "No Rewritten Text", description: "There is no AI-rewritten text to apply.", variant: "destructive" });
+        return;
+    }
+    setResumeText(powerEditResultText);
+    toast({ title: "Resume Updated", description: "The AI-edited version has been applied. You can now re-analyze it." });
+    setIsPowerEditDialogOpen(false);
   };
 
   const handleViewReport = async (item: ResumeScanHistoryItem) => {
@@ -696,6 +739,63 @@ export default function ResumeAnalyzerPage() {
              </div>
         </CardContent>
       </Card>
+      <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
+        <DialogContent className="max-w-6xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Wand2 className="h-6 w-6 text-primary"/> Power Edit with AI
+            </DialogTitle>
+            <DialogUIDescription>
+              Make manual edits, provide instructions, and let the AI rewrite your resume to better match the job description.
+            </DialogUIDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-hidden h-[calc(90vh-180px)]">
+            {/* Left side: User input */}
+            <div className="flex flex-col space-y-3">
+              <h3 className="text-lg font-semibold">Your Version</h3>
+              <Textarea 
+                value={powerEditBaseText}
+                onChange={(e) => setPowerEditBaseText(e.target.value)}
+                className="h-full flex-grow resize-none"
+                placeholder="Your resume text..."
+              />
+              <Label htmlFor="power-edit-instructions">Specific Instructions for AI (Optional)</Label>
+              <Textarea
+                id="power-edit-instructions"
+                value={powerEditInstructions}
+                onChange={(e) => setPowerEditInstructions(e.target.value)}
+                placeholder="e.g., Emphasize leadership skills, make tone more formal..."
+                rows={3}
+              />
+            </div>
+            {/* Right side: AI output */}
+            <div className="flex flex-col space-y-3">
+              <h3 className="text-lg font-semibold">AI-Rewritten Version</h3>
+              {isPowerEditing ? (
+                <div className="h-full flex-grow border rounded-md flex items-center justify-center bg-secondary/50">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <Textarea
+                  value={powerEditResultText}
+                  readOnly
+                  className="h-full flex-grow resize-none bg-muted"
+                  placeholder="AI will generate the rewritten resume here..."
+                />
+              )}
+            </div>
+          </div>
+          <DialogFooter className="pt-4">
+            <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
+            <Button onClick={handleRewriteWithAI} disabled={isPowerEditing}>
+              {isPowerEditing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Rewriting...</> : <><Sparkles className="mr-2 h-4 w-4"/>Rewrite with AI</>}
+            </Button>
+            <Button onClick={applyPowerEditChanges} disabled={!powerEditResultText.trim()}>
+              Apply This Version
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
     </div>
   );
