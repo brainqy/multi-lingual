@@ -28,6 +28,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
   const [editableResumeText, setEditableResumeText] = useState(resumeText);
   const [fixes, setFixes] = useState<string[]>([]);
   const [rewrittenResume, setRewrittenResume] = useState<string | null>(null);
+  const [userInstructions, setUserInstructions] = useState(''); // New state for user instructions
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -56,7 +57,9 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       const result = await rewriteResumeWithFixes({
         resumeText: editableResumeText,
         jobDescription,
-        userInstructions: 'Incorporate the fixes identified, focusing on aligning the resume with the job description. Correct grammar and improve action verbs.',
+        // Pass the identified AI fixes and any user instructions to the rewrite flow.
+        fixableByAi: issues?.fixableByAi || [],
+        userInstructions: userInstructions,
       });
       setRewrittenResume(result.rewrittenResume);
       setFixes(result.fixesApplied);
@@ -180,6 +183,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                   </AlertDescription>
                 </Alert>
               )}
+              
               <div className="space-y-2 pt-2 flex-grow flex flex-col">
                 <Label htmlFor="editable-resume" className="shrink-0">Edit your resume below:</Label>
                 <Textarea
@@ -189,6 +193,20 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                     className="flex-grow w-full h-full font-body text-sm"
                 />
               </div>
+
+              {/* New User Instructions Textarea */}
+              <div className="space-y-2 pt-2">
+                  <Label htmlFor="user-instructions">Additional Instructions for AI (Optional)</Label>
+                  <Textarea
+                      id="user-instructions"
+                      value={userInstructions}
+                      onChange={(e) => setUserInstructions(e.target.value)}
+                      placeholder="e.g., 'Emphasize my project management skills more.' or 'Make the tone more suitable for a startup.'"
+                      className="font-body text-sm"
+                      rows={2}
+                  />
+              </div>
+
             </div>
             <div className="pt-4 border-t mt-4 shrink-0">
               <Button onClick={handleRewrite} className="w-full">
@@ -211,35 +229,35 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
         return (
           <div className="flex flex-col flex-grow min-h-0">
             <div className="grid md:grid-cols-2 gap-6 flex-grow min-h-0">
-              <div className="space-y-3 flex flex-col">
-                <h3 className="text-lg font-semibold flex items-center gap-2"><FileCheck2 className="h-5 w-5 text-green-600" /> Rewritten Resume</h3>
-                <div className="relative flex-grow flex flex-col">
-                  <Button
-                    onClick={handleCopy}
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 z-10"
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
-                    <span className="ml-2">{copied ? 'Copied!' : 'Copy'}</span>
-                  </Button>
-                  <Textarea
-                    value={rewrittenResume || ""}
-                    readOnly
-                    className="bg-muted/40 font-body text-sm flex-grow w-full h-full"
-                  />
+                <div className="space-y-3 flex flex-col">
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><FileCheck2 className="h-5 w-5 text-green-600" /> Rewritten Resume</h3>
+                  <div className="relative flex-grow flex flex-col">
+                    <Button
+                        onClick={handleCopy}
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 z-10"
+                    >
+                        {copied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
+                        <span className="ml-2">{copied ? 'Copied!' : 'Copy'}</span>
+                    </Button>
+                    <Textarea
+                      value={rewrittenResume || ""}
+                      readOnly
+                      className="bg-muted/40 font-body text-sm flex-grow w-full h-full"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-3 flex flex-col">
-                <h3 className="text-lg font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary" /> Fixes Applied</h3>
-                <Card className="flex-grow bg-muted/40 overflow-y-auto">
-                  <CardContent className="p-4">
-                    <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
-                      {fixes.map((fix, index) => <li key={index}>{fix}</li>)}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
+                <div className="space-y-3 flex flex-col">
+                  <h3 className="text-lg font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary" /> Fixes Applied</h3>
+                  <Card className="flex-grow bg-muted/40 overflow-y-auto">
+                    <CardContent className="p-4">
+                      <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
+                        {fixes.map((fix, index) => <li key={index}>{fix}</li>)}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
             </div>
             <DialogFooter className="flex justify-end pt-4 gap-2 border-t mt-4 shrink-0">
               <DialogClose asChild>
@@ -247,7 +265,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
               </DialogClose>
               <Button onClick={handleUseAndReanalyze}>
                 <Wand2 className="mr-2 h-4 w-4" />
-                Use & Re-analyze
+                Use &amp; Re-analyze
               </Button>
             </DialogFooter>
           </div>

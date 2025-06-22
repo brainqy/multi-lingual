@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 
 export type Translations = {
@@ -1109,6 +1110,7 @@ export const RewriteResumeInputSchema = z.object({
   resumeText: z.string().describe('The original (or user-edited) resume text to be rewritten.'),
   jobDescription: z.string().describe('The target job description.'),
   userInstructions: z.string().optional().describe("Specific instructions from the user on what to add, change, or emphasize. E.g., 'Add that my team at XYZ was 5 people. Emphasize my experience with TypeScript.'"),
+  fixableByAi: z.array(z.string()).optional().describe("A list of general improvements the AI should perform."),
 });
 export type RewriteResumeInput = z.infer<typeof RewriteResumeInputSchema>;
 
