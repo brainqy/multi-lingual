@@ -17,7 +17,6 @@ import {
     Target, ListX, Sparkles, RefreshCcw
 } from "lucide-react"; 
 import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
-import { powerEditResume, type PowerEditResumeInput } from '@/ai/flows/power-edit-resume';
 import { useToast } from '@/hooks/use-toast';
 import { sampleResumeScanHistory as initialScanHistory, sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
 import type { ResumeScanHistoryItem, ResumeProfile, AtsFormattingIssue } from '@/types';
@@ -26,7 +25,8 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
+import { PowerEditDialog } from "@/components/features/resume-analyzer/PowerEditDialog";
 
 export default function ResumeAnalyzerPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -40,8 +40,6 @@ export default function ResumeAnalyzerPage() {
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
 
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
-  const [isPowerEditing, setIsPowerEditing] = useState(false);
-  const [editableResumeText, setEditableResumeText] = useState('');
 
   const { toast } = useToast();
 
@@ -52,24 +50,6 @@ export default function ResumeAnalyzerPage() {
       toast({ title: "Resume Loaded", description: `Loaded content for ${selectedResume.name}.`});
     }
    }, [selectedResumeId, resumes, toast]);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setResumeFile(file);
-      setSelectedResumeId(null); 
-      setResumeText(''); 
-      if (file.type === "text/plain" || file.type === "text/markdown") {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setResumeText(e.target?.result as string ?? '');
-        };
-        reader.readAsText(file);
-      } else {
-        toast({ title: "File Selected", description: `Selected ${file.name}. Content will be extracted upon analysis (simulated for non-txt/md).` });
-      }
-    }
-  };
 
   const handleSubmit = async (event?: FormEvent) => {
     if(event) event.preventDefault();
@@ -153,36 +133,17 @@ export default function ResumeAnalyzerPage() {
   };
 
   const handlePowerEdit = () => {
-    setEditableResumeText(resumeText);
+    if (!resumeText.trim() || !jobDescription.trim()) {
+      toast({ title: "Cannot Power Edit", description: "Please ensure both a resume and a job description are provided before using Power Edit.", variant: "destructive" });
+      return;
+    }
     setIsPowerEditDialogOpen(true);
   };
   
-  const handleRewrite = async () => {
-    if (!editableResumeText.trim() || !jobDescription.trim()) {
-      toast({ title: "Missing Information", description: "Both resume text and job description are needed for the rewrite.", variant: "destructive" });
-      return;
-    }
-    setIsPowerEditing(true);
-    try {
-      const result = await powerEditResume({
-        baseResumeText: editableResumeText,
-        jobDescriptionText: jobDescription,
-      });
-      setEditableResumeText(result.editedResumeText);
-      toast({ title: "Rewrite Complete!", description: "The AI has updated the text in the editor. You can make more changes or apply it." });
-    } catch (error) {
-      console.error("Power Edit error:", error);
-      toast({ title: "Rewrite Failed", description: "An error occurred while rewriting the resume.", variant: "destructive" });
-    } finally {
-      setIsPowerEditing(false);
-    }
-  };
-  
-  const handleApplyAndReanalyze = () => {
-    setResumeText(editableResumeText);
+  const handleRewriteComplete = (newResume: string) => {
+    setResumeText(newResume);
     setIsPowerEditDialogOpen(false);
-    toast({ title: "Resume Updated & Re-analyzing...", description: "Please wait for the new report." });
-    // Use timeout to ensure state update propagates before re-running analysis
+    toast({ title: "Resume Updated!", description: "Re-analyzing with the new content..." });
     setTimeout(() => {
         handleSubmit(); 
     }, 100);
@@ -329,7 +290,7 @@ export default function ResumeAnalyzerPage() {
                     <label htmlFor="resume-file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary/50 transition-colors">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                            <p className="mb-1 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag &amp; drop</p>
+                            <p className="mb-1 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag & drop</p>
                             <p className="text-xs text-muted-foreground">PDF, DOCX, TXT, MD</p>
                         </div>
                         <Input id="resume-file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.docx,.doc,.txt,.md"/>
@@ -672,40 +633,15 @@ export default function ResumeAnalyzerPage() {
         </CardContent>
       </Card>
       
-      <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Wand2 className="h-6 w-6 text-primary"/> Power Edit with AI
-            </DialogTitle>
-            <DialogUIDescription>
-              Review the AI's suggestions, make manual edits, and let the AI rewrite your resume to better match the job description.
-            </DialogUIDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-             <Textarea
-              value={editableResumeText}
-              onChange={(e) => setEditableResumeText(e.target.value)}
-              placeholder="Your resume text will appear here..."
-              rows={15}
-              disabled={isPowerEditing}
+      {isPowerEditDialogOpen && (
+        <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
+            <PowerEditDialog
+                resumeText={resumeText}
+                jobDescription={jobDescription}
+                onRewriteComplete={handleRewriteComplete}
             />
-            <Button onClick={handleRewrite} disabled={isPowerEditing} className="w-full">
-              {isPowerEditing ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Applying AI fixes...</>
-              ) : (
-                <><Sparkles className="mr-2 h-4 w-4" /> Rewrite & Fix Issues</>
-              )}
-            </Button>
-          </div>
-          <DialogFooter className="pt-4">
-            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-            <Button onClick={handleApplyAndReanalyze} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Use & Re-analyze
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </Dialog>
+      )}
     </TooltipProvider>
     </div>
   );
