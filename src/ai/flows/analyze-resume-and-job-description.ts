@@ -133,9 +133,18 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
     ],
   },
   prompt: `You are an expert resume and job description analyst. Your task is to provide a comprehensive analysis of the given resume against the provided job description.
-Evaluate the resume based on the following categories and provide detailed feedback and scores as per the output schema. 
-**For the 'searchabilityDetails' section, you MUST explicitly check for a phone number, an email, and a physical address (city and state are sufficient).**
-If information is insufficient for a specific field or sub-section, you MUST provide default values (e.g., 0 for scores, empty arrays [] for lists, "N/A" or a concise "Could not assess" for strings, or a default empty object structure for optional nested objects like 'searchabilityDetails: {}') to ensure a valid JSON output according to the schema. DO NOT OMIT optional fields; provide their default state if data is insufficient.
+
+**Primary Analysis Task:**
+Evaluate the resume based on all categories defined in the output schema, providing detailed feedback and scores.
+
+**CRITICAL INSTRUCTION FOR 'searchabilityDetails':**
+You MUST perform a specific, mandatory check for the following contact information within the resume text:
+1.  **Phone Number**: Look for a phone number. Set \`hasPhoneNumber\` to \`true\` if found, \`false\` otherwise.
+2.  **Email Address**: Look for an email address. Set \`hasEmail\` to \`true\` if found, \`false\` otherwise.
+3.  **Physical Address**: Look for a physical address. City and State (e.g., "San Francisco, CA") are sufficient. Set \`hasAddress\` to \`true\` if found, \`false\` otherwise.
+If any of these three are not found, you MUST set their corresponding boolean field to \`false\`. Do not omit this check.
+
+If information is insufficient for any other field, you MUST provide default values (e.g., 0 for scores, empty arrays [] for lists, "N/A" for strings) to ensure a valid JSON output.
 
 Resume Text:
 {{{resumeText}}}
@@ -143,6 +152,5 @@ Resume Text:
 Job Description Text:
 {{{jobDescriptionText}}}
 
-**CRITICAL FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default (0 for numbers, "N/A" for strings, [] for arrays, and fully structured default objects for nested schemas). DO NOT OMIT ANY FIELD OR SUB-FIELD from the defined schema.
-`,
+**FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default.`,
 });
