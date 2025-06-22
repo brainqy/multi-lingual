@@ -43,7 +43,6 @@ const AtsFormattingIssueSchema = z.object({
 
 const AtsParsingConfidenceSchema = z.object({
     overall: z.number().min(0).max(100).optional().describe("Overall confidence score (0-100) for ATS parsing."),
-    // sections field was removed due to API schema error with z.record for properties
     warnings: z.array(z.string()).optional().describe("Specific warnings or potential issues for ATS parsing."),
 });
 
@@ -103,145 +102,22 @@ const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
   actionVerbDetails: ActionVerbDetailsSchema.optional().describe("Details on action verb usage."),
   impactStatementDetails: ImpactStatementDetailsSchema.optional().describe("Analysis of impact statement clarity and effectiveness."),
   readabilityDetails: ReadabilityDetailsSchema.optional().describe("Assessment of the resume's readability."),
-
-  clarificationPrompts: z.array(z.string()).optional().describe("A list of specific questions for the user to clarify parts of their resume that are ambiguous or could be improved with more detail. For example, 'Can you quantify the result of leading the project team?' or 'What specific technologies were used in the e-commerce platform project?'"),
 });
 
 export type AnalyzeResumeAndJobDescriptionOutput = z.infer<typeof AnalyzeResumeAndJobDescriptionOutputSchema>;
 
-function getDefaultOutput(errorMessage?: string): AnalyzeResumeAndJobDescriptionOutput {
-  const errorMsg = errorMessage || "AI analysis could not be completed or some parts are missing.";
-  logger.warn(`[AI FLOW] getDefaultOutput called. Error message: "${errorMsg}"`);
-  return {
-    hardSkillsScore: 0,
-    matchingSkills: [],
-    missingSkills: [],
-    resumeKeyStrengths: "N/A",
-    jobDescriptionKeyRequirements: "N/A",
-    overallQualityScore: 0,
-    recruiterTips: [{ category: "General", finding: errorMsg, status: 'negative', suggestion: "Please ensure resume and job description are sufficiently detailed, or try again." }],
-    overallFeedback: errorMsg,
-    searchabilityScore: 0,
-    recruiterTipsScore: 0,
-    formattingScore: 0,
-    highlightsScore: 0,
-    softSkillsScore: 0,
-    identifiedSoftSkills: [],
-    searchabilityDetails: {
-      hasPhoneNumber: false,
-      hasEmail: false,
-      hasAddress: false,
-      jobTitleMatchesJD: false,
-      hasWorkExperienceSection: false,
-      hasEducationSection: false,
-      hasProfessionalSummary: false,
-      keywordDensityFeedback: "N/A",
-    },
-    formattingDetails: [{issue: "General Formatting", recommendation: "Could not assess due to an error or missing data."}],
-    atsParsingConfidence: { overall: 0, warnings: ["Could not assess ATS parsing confidence."] },
-    atsStandardFormattingComplianceScore: 0,
-    standardFormattingIssues: [{ issue: "Standard Formatting", recommendation: "Could not assess standard formatting compliance." }],
-    undefinedAcronyms: [],
-    quantifiableAchievementDetails: {
-      score: 0,
-      examplesFound: [],
-      areasLackingQuantification: ["Could not assess quantifiable achievements."]
-    },
-    actionVerbDetails: {
-      score: 0,
-      strongVerbsUsed: [],
-      weakVerbsUsed: ["Could not assess action verbs."],
-      overusedVerbs: [],
-      suggestedStrongerVerbs: []
-    },
-    impactStatementDetails: {
-      clarityScore: 0,
-      unclearImpactStatements: ["Could not assess impact statements."],
-      exampleWellWrittenImpactStatements: []
-    },
-    readabilityDetails: {
-      readabilityFeedback: "Could not assess readability."
-    },
-    clarificationPrompts: ["Could not generate clarification prompts due to an error."],
-  };
-}
-
-
-const logger = { // Simple logger for server-side visibility
-  info: (message: string, ...args: any[]) => console.log(`[AI FLOW INFO] ${message}`, ...args),
-  warn: (message: string, ...args: any[]) => console.warn(`[AI FLOW WARN] ${message}`, ...args),
-  error: (message: string, ...args: any[]) => console.error(`[AI FLOW ERROR] ${message}`, ...args),
-};
-
-
 export async function analyzeResumeAndJobDescription(
   input: AnalyzeResumeAndJobDescriptionInput
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
-  logger.info("Starting analyzeResumeAndJobDescription with input lengths:", { resume: input.resumeText?.length, jd: input.jobDescriptionText?.length });
-  
   if (!input.resumeText?.trim() || !input.jobDescriptionText?.trim()) {
-    logger.error("Error: Resume text or Job Description text is empty or whitespace only.");
-    return getDefaultOutput("Resume text or Job Description text cannot be empty.");
+    throw new Error("Resume text or Job Description text cannot be empty.");
   }
   
-  let aiResponse;
-  try {
-    logger.info("Calling analyzeResumeAndJobDescriptionPrompt...");
-    aiResponse = await analyzeResumeAndJobDescriptionPrompt(input);
-    logger.info("AI prompt call completed.");
-  } catch (error: any) {
-    logger.error("CRITICAL ERROR during AI prompt execution:", error);
-    // Log the full error object, which might contain more details from Google AI
-    console.error("[AI FLOW CRITICAL ERROR STACK] ", error.stack);
-    if (error.details) console.error("[AI FLOW CRITICAL ERROR DETAILS] ", error.details);
-    return getDefaultOutput(`An error occurred during AI analysis: ${error.message || String(error)}`);
+  const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
+  if (!output) {
+      throw new Error("AI analysis did not return any parsable output.");
   }
-
-  logger.info("Raw AI model output object:", aiResponse); // Log the entire response object
-  // Using JSON.stringify for potentially large objects if the above doesn't show well in logs.
-  // Be cautious with this in production if outputs are huge.
-  // console.log("[AI FLOW] Raw AI model output (JSON stringified):", JSON.stringify(aiResponse?.output, null, 2));
-
-
-  if (!aiResponse?.output) {
-    logger.error("AI prompt did not return any parsable output for input lengths:", { resume: input.resumeText.length, jd: input.jobDescriptionText.length });
-    return getDefaultOutput("AI analysis did not return any parsable output.");
-  }
-
-  const output = aiResponse.output;
-
-  // Enhanced mapping with defaults for all fields, including nested optional objects
-  return {
-    hardSkillsScore: output.hardSkillsScore ?? 0,
-    matchingSkills: output.matchingSkills ?? [],
-    missingSkills: output.missingSkills ?? [],
-    resumeKeyStrengths: output.resumeKeyStrengths ?? "N/A",
-    jobDescriptionKeyRequirements: output.jobDescriptionKeyRequirements ?? "N/A",
-    overallQualityScore: output.overallQualityScore ?? 0,
-    recruiterTips: output.recruiterTips ?? [{ category: "General", finding: "Recruiter tips not generated.", status: 'neutral' }],
-    overallFeedback: output.overallFeedback ?? "Overall feedback not generated.",
-    
-    searchabilityScore: output.searchabilityScore ?? 0,
-    recruiterTipsScore: output.recruiterTipsScore ?? 0,
-    formattingScore: output.formattingScore ?? 0,
-    highlightsScore: output.highlightsScore ?? 0,
-    softSkillsScore: output.softSkillsScore ?? 0,
-    identifiedSoftSkills: output.identifiedSoftSkills ?? [],
-    
-    searchabilityDetails: output.searchabilityDetails ?? getDefaultOutput().searchabilityDetails!,
-    formattingDetails: output.formattingDetails ?? getDefaultOutput().formattingDetails!,
-    
-    atsParsingConfidence: output.atsParsingConfidence ?? getDefaultOutput().atsParsingConfidence!,
-    atsStandardFormattingComplianceScore: output.atsStandardFormattingComplianceScore ?? 0,
-    standardFormattingIssues: output.standardFormattingIssues ?? getDefaultOutput().standardFormattingIssues!,
-    undefinedAcronyms: output.undefinedAcronyms ?? [],
-
-    quantifiableAchievementDetails: output.quantifiableAchievementDetails ?? getDefaultOutput().quantifiableAchievementDetails!,
-    actionVerbDetails: output.actionVerbDetails ?? getDefaultOutput().actionVerbDetails!,
-    impactStatementDetails: output.impactStatementDetails ?? getDefaultOutput().impactStatementDetails!,
-    readabilityDetails: output.readabilityDetails ?? getDefaultOutput().readabilityDetails!,
-    clarificationPrompts: output.clarificationPrompts ?? [],
-  };
+  return output;
 }
 
 const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
@@ -266,43 +142,6 @@ Resume Text:
 Job Description Text:
 {{{jobDescriptionText}}}
 
-Analysis Categories and Instructions for JSON Output Fields:
-
-1.  **Core Skill Match & Quality:**
-    *   hardSkillsScore: Number (0-100). If not assessable, default to 0.
-    *   matchingSkills: Array of strings. Default to [].
-    *   missingSkills: Array of strings. Default to [].
-    *   resumeKeyStrengths: String. Default to "N/A".
-    *   jobDescriptionKeyRequirements: String. Default to "N/A".
-    *   overallQualityScore: Number (0-100). Default to 0.
-    *   overallFeedback: String. Default to "N/A".
-
-2.  **Category Scores (0-100 for each):**
-    *   searchabilityScore: Default to 0.
-    *   recruiterTipsScore: Default to 0.
-    *   formattingScore: Default to 0.
-    *   highlightsScore: Default to 0.
-    *   softSkillsScore: Default to 0.
-    *   identifiedSoftSkills: Array of strings. Default to [].
-    *   atsStandardFormattingComplianceScore: Default to 0.
-
-3.  **Detailed Breakdowns (Ensure valid empty/default structures if AI cannot populate fully):**
-    *   searchabilityDetails (SearchabilityDetailsSchema): Object with booleans (default false) and keywordDensityFeedback (default "N/A"). Example if not assessable: { "hasPhoneNumber": false, "hasEmail": false, "hasAddress": false, "jobTitleMatchesJD": false, "hasWorkExperienceSection": false, "hasEducationSection": false, "hasProfessionalSummary": false, "keywordDensityFeedback": "N/A" }.
-    *   recruiterTips (Array of RecruiterTipItemSchema): If no specific tips, return an empty array [] or a single generic tip like [{ "category": "General", "finding": "No specific recruiter tips generated.", "status": "neutral" }].
-    *   formattingDetails (Array of AtsFormattingIssueSchema): General formatting issues. Default to [].
-    *   standardFormattingIssues (Array of AtsFormattingIssueSchema): Specific ATS formatting issues. Default to [].
-    *   atsParsingConfidence (AtsParsingConfidenceSchema): Object with optional overall score (default 0) and optional warnings array (default []). Example if not assessable: { "overall": 0, "warnings": ["ATS parsing confidence could not be determined."] }. Do NOT include a 'sections' sub-object.
-    *   undefinedAcronyms: Array of strings. Default to [].
-
-4.  **Content Quality Details (Ensure valid empty/default structures if AI cannot populate fully):**
-    *   quantifiableAchievementDetails (QuantifiableAchievementDetailsSchema): Object with score (default 0), examplesFound (default []), areasLackingQuantification (default []). Example: { "score": 0, "examplesFound": [], "areasLackingQuantification": ["Could not assess quantifiable achievements."] }.
-    *   actionVerbDetails (ActionVerbDetailsSchema): Object with score (default 0), strongVerbsUsed (default []), weakVerbsUsed (default []), overusedVerbs (default []), suggestedStrongerVerbs (default []). Example: { "score": 0, "strongVerbsUsed": [], "weakVerbsUsed": ["Could not assess action verbs."], "overusedVerbs": [], "suggestedStrongerVerbs": [] }.
-    *   impactStatementDetails (ImpactStatementDetailsSchema): Object with clarityScore (default 0), unclearImpactStatements (default []), exampleWellWrittenImpactStatements (default []). Example: { "clarityScore": 0, "unclearImpactStatements": ["Could not assess impact statements."], "exampleWellWrittenImpactStatements": [] }.
-    *   readabilityDetails (ReadabilityDetailsSchema): Object with optional numbers and readabilityFeedback (default "N/A"). Example: { "readabilityFeedback": "Could not assess readability." }.
-
-5.  **Clarification Prompts:**
-    *   clarificationPrompts: Array of strings. Identify 2-3 of the most critical areas in the resume that are vague, lack quantifiable results, or could be better aligned with the job description if more specific information were provided. Formulate direct, actionable questions to the user to elicit this information. These prompts will be shown to the user so they can provide input for an AI-powered rewrite. Do not ask for information already present. Focus on extracting *new*, clarifying details. If the resume is excellent and clear, return an empty array [].
-
-**CRITICAL FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default (0 for numbers, null for optional numbers if appropriate but 0 is safer here, "N/A" or "Could not assess" for strings, [] for arrays, and fully structured default objects for nested schemas as shown in the examples above). DO NOT OMIT ANY FIELD OR SUB-FIELD from the defined schema.
+**CRITICAL FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default (0 for numbers, "N/A" for strings, [] for arrays, and fully structured default objects for nested schemas). DO NOT OMIT ANY FIELD OR SUB-FIELD from the defined schema.
 `,
 });

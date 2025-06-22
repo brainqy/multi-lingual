@@ -14,7 +14,7 @@ import {
     Search, UploadCloud, ArrowRight, Loader2, Download, CheckCircle, BarChart, Edit3, 
     Wrench, AlignLeft, SlidersHorizontal, Wand2, Lightbulb, Brain, SearchCheck, 
     ChevronsUpDown, ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, MessageSquare, ThumbsUp, Users, FileText, FileCheck2, EyeOff, Columns, Palette, CalendarDays,
-    Target, ListX, Sparkles, RefreshCcw // Added RefreshCcw
+    Target, ListX, Sparkles, RefreshCcw
 } from "lucide-react"; 
 import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
 import { powerEditResume, type PowerEditResumeInput } from '@/ai/flows/power-edit-resume';
@@ -40,8 +40,8 @@ export default function ResumeAnalyzerPage() {
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
 
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
-  const [powerEditInstructions, setPowerEditInstructions] = useState('');
   const [isPowerEditing, setIsPowerEditing] = useState(false);
+  const [editableResumeText, setEditableResumeText] = useState('');
 
   const { toast } = useToast();
 
@@ -59,7 +59,7 @@ export default function ResumeAnalyzerPage() {
       setResumeFile(file);
       setSelectedResumeId(null); 
       setResumeText(''); 
-      if (file.type === "text/plain" || file.type === "text/markdown") { // Allow MD
+      if (file.type === "text/plain" || file.type === "text/markdown") {
         const reader = new FileReader();
         reader.onload = (e) => {
           setResumeText(e.target?.result as string ?? '');
@@ -86,7 +86,6 @@ export default function ResumeAnalyzerPage() {
     setAnalysisReport(null);
     let currentResumeText = resumeText;
 
-    // Basic simulation for non-text file content extraction
     if (resumeFile && (!resumeText.trim() || (resumeFile.type !== "text/plain" && resumeFile.type !== "text/markdown"))) {
         currentResumeText = `Simulated content for ${resumeFile.name}.\n\nSkills: React, Node.js, Python, Java, SQL.\nExperience: Led a team of 5 developers at Tech Solutions Inc from 2020-2023, increased project efficiency by 15%. Developed a full-stack web application using Next.js and Spring Boot.\nEducation: Master's in Computer Science, State University.`;
         if (resumeFile.name.toLowerCase().includes("product")) {
@@ -104,10 +103,7 @@ export default function ResumeAnalyzerPage() {
     const companyMatch = jdLines.find(line => typeof line === 'string' && line.toLowerCase().includes('company:'))?.split(/:(.*)/s)[1]?.trim() || "Company Placeholder";
 
     try {
-      logger.info("Calling analyzeResumeAndJobDescription with input lengths:", { resume: currentResumeText.length, jd: jobDescription.length });
       const detailedReportRes = await analyzeResumeAndJobDescription({ resumeText: currentResumeText, jobDescriptionText: jobDescription });
-      logger.info("Received AI response from analyzeResumeAndJobDescription", detailedReportRes);
-      
       setAnalysisReport(detailedReportRes);
 
       const newScanEntry: ResumeScanHistoryItem = {
@@ -135,9 +131,8 @@ export default function ResumeAnalyzerPage() {
       }
       toast({ title: "Analysis Complete", description: "Resume analysis results are ready." });
     } catch (error: any) {
-      logger.error("CRITICAL ERROR during AI Analysis on Frontend:", error);
       toast({ title: "Analysis Failed", description: `An error occurred during analysis: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
-      setAnalysisReport((analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null);
+      setAnalysisReport(null);
     } finally {
       setIsLoading(false);
       const reportSection = document.getElementById('analysis-report-section');
@@ -158,32 +153,39 @@ export default function ResumeAnalyzerPage() {
   };
 
   const handlePowerEdit = () => {
-    setPowerEditInstructions('');
+    setEditableResumeText(resumeText);
     setIsPowerEditDialogOpen(true);
   };
   
-  const handleRewriteWithAI = async () => {
-    if (!resumeText.trim() || !jobDescription.trim()) {
-        toast({ title: "Missing Information", description: "Please ensure both resume text and a job description are present to use Power Edit.", variant: "destructive" });
-        return;
+  const handleRewrite = async () => {
+    if (!editableResumeText.trim() || !jobDescription.trim()) {
+      toast({ title: "Missing Information", description: "Both resume text and job description are needed for the rewrite.", variant: "destructive" });
+      return;
     }
     setIsPowerEditing(true);
     try {
-        const input: PowerEditResumeInput = {
-            baseResumeText: resumeText,
-            jobDescriptionText: jobDescription,
-            userInstructions: powerEditInstructions,
-        };
-        const result = await powerEditResume(input);
-        setResumeText(result.editedResumeText);
-        toast({ title: "Resume Updated!", description: "The AI-edited version has been applied. Click 'Re-Analyze' to see your new score." });
-        setIsPowerEditDialogOpen(false);
+      const result = await powerEditResume({
+        baseResumeText: editableResumeText,
+        jobDescriptionText: jobDescription,
+      });
+      setEditableResumeText(result.editedResumeText);
+      toast({ title: "Rewrite Complete!", description: "The AI has updated the text in the editor. You can make more changes or apply it." });
     } catch (error) {
-        console.error("Power Edit AI error:", error);
-        toast({ title: "Rewrite Failed", description: "Could not rewrite the resume. Please try again.", variant: "destructive" });
+      console.error("Power Edit error:", error);
+      toast({ title: "Rewrite Failed", description: "An error occurred while rewriting the resume.", variant: "destructive" });
     } finally {
-        setIsPowerEditing(false);
+      setIsPowerEditing(false);
     }
+  };
+  
+  const handleApplyAndReanalyze = () => {
+    setResumeText(editableResumeText);
+    setIsPowerEditDialogOpen(false);
+    toast({ title: "Resume Updated & Re-analyzing...", description: "Please wait for the new report." });
+    // Use timeout to ensure state update propagates before re-running analysis
+    setTimeout(() => {
+        handleSubmit(); 
+    }, 100);
   };
 
   const handleViewReport = async (item: ResumeScanHistoryItem) => {
@@ -203,9 +205,8 @@ export default function ResumeAnalyzerPage() {
       setAnalysisReport(detailedReportRes);
       toast({ title: "Historical Report Loaded", description: "The analysis report for the selected scan has been re-generated." });
     } catch (error: any) {
-      logger.error("CRITICAL ERROR during Historical AI Analysis on Frontend:", error);
       toast({ title: "Report Load Failed", description: `An error occurred while re-generating the historical report: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
-      setAnalysisReport((analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null);
+      setAnalysisReport(null);
     } finally {
       setIsLoading(false);
       const reportSection = document.getElementById('analysis-report-section');
@@ -219,7 +220,6 @@ export default function ResumeAnalyzerPage() {
         item.id === scanId ? { ...item, bookmarked: !item.bookmarked } : item
       );
       const bookmarkedItem = updatedHistory.find(item => item.id === scanId);
-      // Update global sample data
       const globalIndex = initialScanHistory.findIndex(item => item.id === scanId);
       if (globalIndex !== -1) initialScanHistory[globalIndex].bookmarked = bookmarkedItem?.bookmarked;
 
@@ -239,7 +239,7 @@ export default function ResumeAnalyzerPage() {
   };
 
   const filteredScanHistory = useMemo(() => {
-    let filtered = [...scanHistory]; // Use local state which can be modified
+    let filtered = [...scanHistory];
     if (historyFilter === 'highest') {
       filtered.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
     } else if (historyFilter === 'starred') {
@@ -263,7 +263,7 @@ export default function ResumeAnalyzerPage() {
       let issues = 0;
       if (!details.hasPhoneNumber) issues++;
       if (!details.hasEmail) issues++;
-      if (!details.hasAddress) issues++; // Count if address is missing
+      if (!details.hasAddress) issues++;
       if (!details.jobTitleMatchesJD) issues++;
       if (!details.hasWorkExperienceSection) issues++;
       if (!details.hasEducationSection) issues++;
@@ -273,22 +273,15 @@ export default function ResumeAnalyzerPage() {
 
   const getGenericIssueCount = (score?: number, items?: any[], negativeItems?: any[]): number => {
     if (negativeItems && negativeItems.length > 0) return negativeItems.length;
-    if (items && items.length > 0 && score === undefined) return items.length; // If score is N/A but items exist
-    if (score === undefined || score === null) return 0; // Treat N/A score as 0 issues for this heuristic unless items say otherwise
+    if (items && items.length > 0 && score === undefined) return items.length;
+    if (score === undefined || score === null) return 0;
     if (score >= 90) return 0;
     if (score >= 75) return 1;
     if (score >= 60) return 2;
     if (score >= 40) return 3;
     if (score >= 20) return 4;
-    return 5; // Max 5 issues for heuristic
+    return 5;
   };
-
-  const logger = { // Simple logger for client-side visibility during dev
-    info: (message: string, ...args: any[]) => console.log(`[CLIENT INFO] ${message}`, ...args),
-    warn: (message: string, ...args: any[]) => console.warn(`[CLIENT WARN] ${message}`, ...args),
-    error: (message: string, ...args: any[]) => console.error(`[CLIENT ERROR] ${message}`, ...args),
-  };
-
 
   return (
     <div className="space-y-8">
@@ -377,7 +370,7 @@ export default function ResumeAnalyzerPage() {
                   placeholder="Paste the job description here... For better results, include 'Title: <Job Title>' and 'Company: <Company Name>' on separate lines if possible."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  rows={resumes.length > 0 || resumeFile || resumeText.length > 0 ? 10 + 14 + 4 : 10} // Dynamic rows
+                  rows={resumes.length > 0 || resumeFile || resumeText.length > 0 ? 10 + 14 + 4 : 10}
                   className="border-input focus:ring-primary"
                 />
               </div>
@@ -434,7 +427,7 @@ export default function ResumeAnalyzerPage() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Start New Analysis
                     </Button>
                     <Button onClick={handlePowerEdit} variant="outline" className="w-full">
-                        <Wand2 className="mr-2 h-4 w-4" /> Power Edit
+                        <Wand2 className="mr-2 h-4 w-4" /> Power Edit with AI
                     </Button>
 
                     <div className="space-y-3 pt-4 border-t">
@@ -605,52 +598,6 @@ export default function ResumeAnalyzerPage() {
                 </div>
             </CardContent>
         </Card>
-
-        <Card className="shadow-xl mt-8">
-            <CardHeader>
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <Target className="h-6 w-6 text-primary" /> Resume Score & Keyword Insights
-                </CardTitle>
-                <CardDescription>A summary of your resume's match score and keyword alignment with the job description.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="flex flex-col items-center">
-                     <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="lg" label="Overall Match" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="bg-secondary/30">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-md font-semibold flex items-center gap-2"><ListX className="h-5 w-5 text-destructive"/>Missing Keywords</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {analysisReport.missingSkills && analysisReport.missingSkills.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {analysisReport.missingSkills.slice(0,10).map((skill, index) => <li key={`missing-${index}`}>{skill}</li>)}
-                                    {analysisReport.missingSkills.length > 10 && <li>...and {analysisReport.missingSkills.length - 10} more</li>}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No critical missing keywords identified by AI, or none provided.</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-secondary/30">
-                        <CardHeader className="pb-2">
-                             <CardTitle className="text-md font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-green-500"/>Matching Keywords</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {analysisReport.matchingSkills && analysisReport.matchingSkills.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {analysisReport.matchingSkills.slice(0,10).map((skill, index) => <li key={`matching-${index}`}>{skill}</li>)}
-                                     {analysisReport.matchingSkills.length > 10 && <li>...and {analysisReport.matchingSkills.length - 10} more</li>}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No specific matching keywords highlighted by AI, or none provided.</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            </CardContent>
-        </Card>
         </>
       )}
 
@@ -724,6 +671,7 @@ export default function ResumeAnalyzerPage() {
              </div>
         </CardContent>
       </Card>
+      
       <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -731,35 +679,29 @@ export default function ResumeAnalyzerPage() {
               <Wand2 className="h-6 w-6 text-primary"/> Power Edit with AI
             </DialogTitle>
             <DialogUIDescription>
-              The AI has identified areas needing more detail. Provide the information below to help it rewrite your resume.
+              Review the AI's suggestions, make manual edits, and let the AI rewrite your resume to better match the job description.
             </DialogUIDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            {analysisReport?.clarificationPrompts && analysisReport.clarificationPrompts.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-semibold text-muted-foreground">AI Clarification Prompts:</h4>
-                <ul className="list-disc list-inside space-y-1 text-sm p-3 bg-secondary/50 rounded-md">
-                  {analysisReport.clarificationPrompts.map((prompt, index) => (
-                    <li key={index}>{prompt}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div>
-              <Label htmlFor="power-edit-instructions">Your Instructions & Clarifications</Label>
-              <Textarea
-                id="power-edit-instructions"
-                value={powerEditInstructions}
-                onChange={(e) => setPowerEditInstructions(e.target.value)}
-                placeholder="Based on the prompts above, provide specific details. For example: 'For the project team, I led 5 developers. We increased efficiency by 25% by implementing CI/CD pipelines.' or 'I used TypeScript in the e-commerce project to build type-safe components.'"
-                rows={6}
-              />
-            </div>
+          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+             <Textarea
+              value={editableResumeText}
+              onChange={(e) => setEditableResumeText(e.target.value)}
+              placeholder="Your resume text will appear here..."
+              rows={15}
+              disabled={isPowerEditing}
+            />
+            <Button onClick={handleRewrite} disabled={isPowerEditing} className="w-full">
+              {isPowerEditing ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Applying AI fixes...</>
+              ) : (
+                <><Sparkles className="mr-2 h-4 w-4" /> Rewrite & Fix Issues</>
+              )}
+            </Button>
           </div>
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-            <Button onClick={handleRewriteWithAI} disabled={isPowerEditing}>
-              {isPowerEditing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Rewriting...</> : <><Sparkles className="mr-2 h-4 w-4"/>Rewrite with AI</>}
+            <Button onClick={handleApplyAndReanalyze} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              Use & Re-analyze
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -768,4 +710,3 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
-
