@@ -7,7 +7,7 @@ import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
 import type { IdentifyResumeIssuesOutput } from '@/types';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check } from 'lucide-react';
+import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,7 +28,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
   const [editableResumeText, setEditableResumeText] = useState(resumeText);
   const [fixes, setFixes] = useState<string[]>([]);
   const [rewrittenResume, setRewrittenResume] = useState<string | null>(null);
-  const [userInstructions, setUserInstructions] = useState(''); // New state for user instructions
+  const [userInstructions, setUserInstructions] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -264,9 +264,14 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                   <h3 className="text-lg font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary" /> Fixes Applied</h3>
                   <Card className="flex-grow bg-muted/40 overflow-y-auto">
                     <CardContent className="p-4">
-                      <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
-                        {fixes.map((fix, index) => <li key={index}>{fix}</li>)}
-                      </ul>
+                      <div className="space-y-3 text-sm text-foreground">
+                        {fixes.map((fix, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                            <span>{fix}</span>
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
