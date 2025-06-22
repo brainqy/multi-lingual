@@ -1,4 +1,6 @@
 
+import * as z from "zod";
+
 export type Translations = {
   [key: string]: string | NestedTranslations;
 };
@@ -174,6 +176,7 @@ export interface CommunityPost {
   moderationStatus: CommunityPostModerationStatus;
   flagCount: number;
   comments?: CommunityComment[];
+  bookmarkedBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -243,6 +246,7 @@ export interface BlogPost {
   excerpt: string;
   tags?: string[];
   comments?: CommunityComment[];
+  bookmarkedBy?: string[];
 }
 
 export interface UserProfile extends AlumniProfile {
@@ -292,6 +296,7 @@ export interface UserProfile extends AlumniProfile {
 
   offersHelpWith?: SupportArea[];
 
+  appointmentCoinCost?: number;
   xpPoints?: number;
   dailyStreak?: number;
   longestStreak?: number;
@@ -585,7 +590,6 @@ export interface InterviewQuestion {
   approved?: boolean;
   createdAt?: string;
   bookmarkedBy?: string[];
-  baseScore?: number;
 }
 
 
@@ -605,18 +609,15 @@ export interface MockInterviewQuestion {
   questionText: string;
   category?: InterviewQuestionCategory;
   difficulty?: InterviewQuestionDifficulty;
-  baseScore?: number;
 }
 
 export interface MockInterviewAnswer {
   questionId: string;
-  questionText: string;
   userAnswer: string;
   aiFeedback?: string;
   aiScore?: number;
   strengths?: string[];
   areasForImprovement?: string[];
-  suggestedImprovements?: string[];
   isRecording?: boolean;
 }
 
@@ -642,15 +643,6 @@ export interface MockInterviewSession {
   timerPerQuestion?: number;
   questionCategories?: InterviewQuestionCategory[];
   difficulty?: InterviewQuestionDifficulty;
-
-  userQuizAnswers?: Record<string, string>;
-  quizScore?: number;
-  quizPercentage?: number;
-  quizTimeTaken?: number;
-  quizTotalTime?: number;
-  quizCategoryStats?: Record<string, { correct: number; total: number; accuracy: number }>;
-  quizAnsweredCount?: number;
-  quizMarkedForReviewCount?: number;
 }
 
 
@@ -704,11 +696,6 @@ export interface QuizSession {
   endTime?: string;
   status: 'in-progress' | 'completed';
   title?: string;
-  categoryStats?: Record<string, { correct: number; total: number; accuracy: number }>;
-  timeTaken?: number;
-  totalQuizTime?: number;
-  answeredCount?: number;
-  markedForReviewCount?: number;
 }
 
 export type PracticeSessionStatus = 'SCHEDULED' | 'CANCELLED' | 'COMPLETED';
@@ -1030,11 +1017,10 @@ export type LiveInterviewParticipant = {
   userId: string;
   name: string;
   role: 'interviewer' | 'candidate';
-  profilePictureUrl?: string;
 };
 
-export type LiveInterviewSessionStatus = 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled';
-export const LiveInterviewSessionStatuses = ['Scheduled', 'InProgress', 'Completed', 'Cancelled'] as const;
+export type LiveInterviewSessionStatus = 'Scheduled' | 'In-Progress' | 'Completed' | 'Cancelled';
+export const LiveInterviewSessionStatuses = ['Scheduled', 'In-Progress', 'Completed', 'Cancelled'] as const;
 
 
 export interface RecordingReference {
@@ -1045,8 +1031,6 @@ export interface RecordingReference {
   localStorageKey?: string; // Key for local storage if saved there initially
   cloudStorageUrl?: string; // URL if uploaded to cloud
   type: 'audio' | 'video'; // Type of recording
-  fileName?: string;
-  blobUrl?: string; // For temporary local playback
 }
 
 export interface InterviewerScore {
@@ -1100,6 +1084,40 @@ export interface SystemAlert {
   linkText?: string;
   isRead?: boolean;
 }
+
+export const UserInputActionSchema = z.object({
+  type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'other']),
+  detail: z.string().describe("A clear, user-facing prompt explaining what information is needed. E.g., 'Your experience leading a team at XYZ is mentioned, but lacks specifics. How large was the team?'"),
+  suggestion: z.string().optional().describe("A specific skill or keyword the user might want to add. E.g., 'TypeScript'"),
+});
+export type UserInputAction = z.infer<typeof UserInputActionSchema>;
+
+export const IdentifyResumeIssuesInputSchema = z.object({
+  resumeText: z.string().describe('The text content of the resume.'),
+  jobDescription: z.string().describe('The text content of the job description.'),
+});
+export type IdentifyResumeIssuesInput = z.infer<typeof IdentifyResumeIssuesInputSchema>;
+
+export const IdentifyResumeIssuesOutputSchema = z.object({
+  fixableByAi: z.array(z.string()).describe("A list of issues the AI can likely fix automatically. E.g., 'Rephrase passive voice to active voice', 'Correct grammatical errors', 'Improve conciseness in the summary section'"),
+  requiresUserInput: z.array(UserInputActionSchema).describe("A list of issues that require the user to provide more information before the AI can effectively rewrite the resume."),
+});
+export type IdentifyResumeIssuesOutput = z.infer<typeof IdentifyResumeIssuesOutputSchema>;
+
+
+export const RewriteResumeInputSchema = z.object({
+  resumeText: z.string().describe('The original (or user-edited) resume text to be rewritten.'),
+  jobDescription: z.string().describe('The target job description.'),
+  userInstructions: z.string().optional().describe("Specific instructions from the user on what to add, change, or emphasize. E.g., 'Add that my team at XYZ was 5 people. Emphasize my experience with TypeScript.'"),
+});
+export type RewriteResumeInput = z.infer<typeof RewriteResumeInputSchema>;
+
+export const RewriteResumeOutputSchema = z.object({
+  rewrittenResume: z.string().describe('The full text of the newly rewritten resume.'),
+  fixesApplied: z.array(z.string()).describe("A bulleted list of the key changes the AI made. E.g., 'Quantified achievement in the XYZ role.', 'Strengthened action verbs in the summary.'"),
+});
+export type RewriteResumeOutput = z.infer<typeof RewriteResumeOutputSchema>;
+
 
 // Utility function to ensure UserProfile has all fields, especially for sample data
 export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): UserProfile {

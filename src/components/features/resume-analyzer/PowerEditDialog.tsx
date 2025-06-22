@@ -2,8 +2,9 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { identifyResumeIssues, type IdentifyResumeIssuesOutput } from '@/ai/flows/identify-resume-issues';
-import { rewriteResumeWithFixes, type RewriteResumeInput } from '@/ai/flows/rewrite-resume-with-fixes';
+import { identifyResumeIssues } from '@/ai/flows/identify-resume-issues';
+import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
+import type { IdentifyResumeIssuesOutput } from '@/types';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check } from 'lucide-react';
@@ -17,7 +18,6 @@ type PowerEditDialogProps = {
   resumeText: string;
   jobDescription: string;
   onRewriteComplete: (newResume: string) => void;
-  // `open` and `onOpenChange` will be handled by the parent Dialog component
 };
 
 type DialogState = 'identifying' | 'identified' | 'rewriting' | 'rewritten' | 'error';
@@ -111,7 +111,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       case 'identified':
         return (
           <div className="flex flex-col flex-grow min-h-0">
-            <div className="space-y-4 p-1 overflow-y-auto flex-grow">
+            <div className="space-y-4 p-1 overflow-y-auto flex-grow flex flex-col">
               <Alert>
                 <UserRoundCog className="h-4 w-4" />
                 <AlertTitle>Action Required by You</AlertTitle>

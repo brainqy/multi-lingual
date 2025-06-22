@@ -11,24 +11,12 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-export const IdentifyResumeIssuesInputSchema = z.object({
-  resumeText: z.string().describe('The text content of the resume.'),
-  jobDescription: z.string().describe('The text content of the job description.'),
-});
-export type IdentifyResumeIssuesInput = z.infer<typeof IdentifyResumeIssuesInputSchema>;
-
-const UserInputActionSchema = z.object({
-    type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'other']),
-    detail: z.string().describe("A clear, user-facing prompt explaining what information is needed. E.g., 'Your experience leading a team at XYZ is mentioned, but lacks specifics. How large was the team?'"),
-    suggestion: z.string().optional().describe("A specific skill or keyword the user might want to add. E.g., 'TypeScript'"),
-});
-
-export const IdentifyResumeIssuesOutputSchema = z.object({
-  fixableByAi: z.array(z.string()).describe("A list of issues the AI can likely fix automatically. E.g., 'Rephrase passive voice to active voice', 'Correct grammatical errors', 'Improve conciseness in the summary section'"),
-  requiresUserInput: z.array(UserInputActionSchema).describe("A list of issues that require the user to provide more information before the AI can effectively rewrite the resume."),
-});
-export type IdentifyResumeIssuesOutput = z.infer<typeof IdentifyResumeIssuesOutputSchema>;
+import { 
+  IdentifyResumeIssuesInputSchema,
+  IdentifyResumeIssuesOutputSchema,
+  type IdentifyResumeIssuesInput, 
+  type IdentifyResumeIssuesOutput,
+} from '@/types';
 
 export async function identifyResumeIssues(input: IdentifyResumeIssuesInput): Promise<IdentifyResumeIssuesOutput> {
   const result = await identifyIssuesFlow(input);
