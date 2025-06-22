@@ -309,6 +309,7 @@ export interface UserProfile extends AlumniProfile {
   pastInterviewSessions?: string[];
   interviewCredits?: number;
   createdAt?: string;
+  isDistinguished?: boolean;
 }
 
 export interface ResumeProfile {
@@ -1090,8 +1091,8 @@ export interface SystemAlert {
 }
 
 export const UserInputActionSchema = z.object({
-  type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'missingSection', 'other']),
-  detail: z.string().describe("A clear, user-facing prompt explaining what information is needed. E.g., 'Your experience leading a team at XYZ is mentioned, but lacks specifics. How large was the team?'"),
+  type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'missingSection', 'missingContactInfo', 'other']),
+  detail: z.string().describe("A clear, user-facing prompt explaining what information is needed. E.g., 'Your experience leading a team at XYZ is lacks specifics. How large was the team?'"),
   suggestion: z.string().optional().describe("A specific skill or keyword the user might want to add, or the name of the section to generate. E.g., 'TypeScript', 'Summary'"),
 });
 export type UserInputAction = z.infer<typeof UserInputActionSchema>;
