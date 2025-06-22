@@ -25,9 +25,9 @@ type DialogState = 'identifying' | 'identified' | 'rewriting' | 'rewritten' | 'e
 export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete }: PowerEditDialogProps) {
   const [dialogState, setDialogState] = useState<DialogState>('identifying');
   const [issues, setIssues] = useState<IdentifyResumeIssuesOutput | null>(null);
-  const [userInstructions, setUserInstructions] = useState('');
-  const [rewrittenResume, setRewrittenResume] = useState<string | null>(null);
+  const [editableResumeText, setEditableResumeText] = useState(resumeText);
   const [fixes, setFixes] = useState<string[]>([]);
+  const [rewrittenResume, setRewrittenResume] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -54,9 +54,9 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
 
     try {
       const result = await rewriteResumeWithFixes({
-        resumeText: resumeText, // Always use the original resume text as the base for the rewrite
+        resumeText: editableResumeText,
         jobDescription,
-        userInstructions: userInstructions,
+        userInstructions: 'Incorporate the fixes identified, focusing on aligning the resume with the job description. Correct grammar and improve action verbs.',
       });
       setRewrittenResume(result.rewrittenResume);
       setFixes(result.fixesApplied);
@@ -83,6 +83,41 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
     if (rewrittenResume) {
       onRewriteComplete(rewrittenResume);
     }
+  };
+  
+  const handleAddSkill = (skill?: string) => {
+    if (!skill) return;
+
+    const currentText = editableResumeText;
+    const skillsHeaderRegex = /(^\s*(skills|technical skills|proficiencies)[\s:]*\n)/im;
+    const match = currentText.match(skillsHeaderRegex);
+
+    if (currentText.toLowerCase().includes(skill.toLowerCase())) {
+        toast({
+            title: "Skill already present",
+            description: `The skill "${skill}" seems to be in your resume already.`
+        });
+        return;
+    }
+
+    let newText;
+    if (match && match.index !== undefined) {
+        const header = match[0];
+        const insertionPoint = match.index + header.length;
+        newText = `${currentText.slice(0, insertionPoint)}- ${skill}\n${currentText.slice(insertionPoint)}`;
+        toast({
+            title: "Skill Added",
+            description: `"${skill}" was added to your skills section. You can now edit it further if needed.`
+        });
+    } else {
+        newText = `${currentText.trim()}\n\nSkills:\n- ${skill}\n`;
+        toast({
+            title: "Skill Added",
+            description: `A new "Skills" section was created with "${skill}".`
+        });
+    }
+    
+    setEditableResumeText(newText);
   };
 
   const renderContent = () => {
@@ -112,33 +147,46 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
         return (
           <div className="flex flex-col flex-grow min-h-0">
             <div className="space-y-4 p-1 overflow-y-auto flex-grow flex flex-col">
-              <Alert>
-                <UserRoundCog className="h-4 w-4" />
-                <AlertTitle>Action Required by You</AlertTitle>
-                <AlertDescription>
-                  <p className="mb-2">Address these points in the instructions below for the best AI rewrite:</p>
-                  <ul className="list-disc list-inside text-sm font-normal">
-                    {issues?.requiresUserInput.map((issue, index) => <li key={`user-${index}`}>{issue.detail}</li>)}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-              <Alert variant="default" className="bg-blue-50 border-blue-200">
-                <ListChecks className="h-4 w-4 text-primary" />
-                <AlertTitle>AI Will Automatically Fix:</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc list-inside text-sm font-normal">
-                    {issues?.fixableByAi.map((issue, index) => <li key={`fixable-${index}`}>{issue}</li>)}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="user-instructions">Instructions for AI:</Label>
+              {issues?.requiresUserInput && issues.requiresUserInput.length > 0 && (
+                <Alert>
+                  <UserRoundCog className="h-4 w-4" />
+                  <AlertTitle>Action Required by You</AlertTitle>
+                  <AlertDescription>
+                    <p className="mb-2">Address these points by editing your resume below for the best AI rewrite:</p>
+                    <div className="space-y-3 mt-3">
+                      {issues.requiresUserInput.map((issue, index) => (
+                          <div key={`user-${index}`} className="flex items-center justify-between p-2 rounded-md bg-background border gap-2">
+                              <p className="text-sm text-foreground flex-1">{issue.detail}</p>
+                              {issue.type === 'missingSkill' && issue.suggestion && (
+                                  <Button size="sm" variant="outline" onClick={() => handleAddSkill(issue.suggestion)}>
+                                      <WandSparkles className="mr-2 h-4 w-4" />
+                                      Add Skill
+                                  </Button>
+                              )}
+                          </div>
+                      ))}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {issues?.fixableByAi && issues.fixableByAi.length > 0 && (
+                <Alert variant="default" className="bg-blue-50 border-blue-200">
+                  <ListChecks className="h-4 w-4 text-primary" />
+                  <AlertTitle>AI Will Automatically Fix:</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc list-inside text-sm font-normal">
+                      {issues.fixableByAi.map((issue, index) => <li key={`fixable-${index}`}>{issue}</li>)}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className="space-y-2 pt-2 flex-grow flex flex-col">
+                <Label htmlFor="editable-resume" className="shrink-0">Edit your resume below:</Label>
                 <Textarea
-                  id="user-instructions"
-                  value={userInstructions}
-                  onChange={(e) => setUserInstructions(e.target.value)}
-                  placeholder="e.g., 'For my experience at Acme, add that I increased sales by 20%. Also, I have 3 years of TypeScript experience.'"
-                  rows={4}
+                    id="editable-resume"
+                    value={editableResumeText}
+                    onChange={(e) => setEditableResumeText(e.target.value)}
+                    className="flex-grow w-full h-full font-body text-sm"
                 />
               </div>
             </div>
@@ -153,11 +201,9 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
 
       case 'rewriting':
         return (
-          <div className="flex-grow flex items-center justify-center">
-            <div className="text-center p-8 space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="mt-4 text-muted-foreground">Applying AI fixes...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg flex-grow">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Applying AI fixes...</p>
           </div>
         );
 
@@ -195,7 +241,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                 </Card>
               </div>
             </div>
-            <div className="flex justify-end pt-4 gap-2 border-t mt-4 shrink-0">
+            <DialogFooter className="flex justify-end pt-4 gap-2 border-t mt-4 shrink-0">
               <DialogClose asChild>
                 <Button variant="outline">Close</Button>
               </DialogClose>
@@ -203,7 +249,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                 <Wand2 className="mr-2 h-4 w-4" />
                 Use & Re-analyze
               </Button>
-            </div>
+            </DialogFooter>
           </div>
         );
     }
@@ -217,7 +263,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
           Power Edit with AI
         </DialogTitle>
         <DialogUIDescription>
-          Provide targeted instructions to the AI based on its analysis to get the best possible rewrite.
+          Review the AI's suggestions, make manual edits, and let the AI rewrite your resume to better match the job description.
         </DialogUIDescription>
       </DialogHeader>
       <div className="py-4 space-y-4 flex-grow flex flex-col min-h-0">
