@@ -827,12 +827,12 @@ export interface AnalyzeResumeAndJobDescriptionInput {
 }
 
 export interface SearchabilityDetails {
-  hasPhoneNumber: boolean;
-  hasEmail: boolean;
+  hasPhoneNumber?: boolean;
+  hasEmail?: boolean;
   hasAddress?: boolean;
-  jobTitleMatchesJD: boolean;
-  hasWorkExperienceSection: boolean;
-  hasEducationSection: boolean;
+  jobTitleMatchesJD?: boolean;
+  hasWorkExperienceSection?: boolean;
+  hasEducationSection?: boolean;
   hasProfessionalSummary?: boolean;
   keywordDensityFeedback?: string;
 }
@@ -877,13 +877,13 @@ export interface ReadabilityDetails {
 
 
 export interface AnalyzeResumeAndJobDescriptionOutput {
-  hardSkillsScore: number;
-  matchingSkills: string[];
-  missingSkills: string[];
-  resumeKeyStrengths: string;
-  jobDescriptionKeyRequirements: string;
+  hardSkillsScore?: number;
+  matchingSkills?: string[];
+  missingSkills?: string[];
+  resumeKeyStrengths?: string;
+  jobDescriptionKeyRequirements?: string;
   overallQualityScore?: number;
-  recruiterTips: RecruiterTipItem[];
+  recruiterTips?: RecruiterTipItem[];
   overallFeedback?: string;
 
   searchabilityScore?: number;
@@ -1018,6 +1018,7 @@ export type LiveInterviewParticipant = {
   userId: string;
   name: string;
   role: 'interviewer' | 'candidate';
+  profilePictureUrl?: string;
 };
 
 export type LiveInterviewSessionStatus = 'Scheduled' | 'In-Progress' | 'Completed' | 'Cancelled';
@@ -1032,6 +1033,8 @@ export interface RecordingReference {
   localStorageKey?: string; // Key for local storage if saved there initially
   cloudStorageUrl?: string; // URL if uploaded to cloud
   type: 'audio' | 'video'; // Type of recording
+  blobUrl?: string;
+  fileName?: string;
 }
 
 export interface InterviewerScore {
@@ -1087,9 +1090,9 @@ export interface SystemAlert {
 }
 
 export const UserInputActionSchema = z.object({
-  type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'other']),
+  type: z.enum(['missingQuantification', 'missingSkill', 'unclearExperience', 'missingSection', 'other']),
   detail: z.string().describe("A clear, user-facing prompt explaining what information is needed. E.g., 'Your experience leading a team at XYZ is mentioned, but lacks specifics. How large was the team?'"),
-  suggestion: z.string().optional().describe("A specific skill or keyword the user might want to add. E.g., 'TypeScript'"),
+  suggestion: z.string().optional().describe("A specific skill or keyword the user might want to add, or the name of the section to generate. E.g., 'TypeScript', 'Summary'"),
 });
 export type UserInputAction = z.infer<typeof UserInputActionSchema>;
 

@@ -1,4 +1,5 @@
 
+
 'use server';
 /**
  * @fileOverview Identifies actionable issues in a resume compared to a job description.
@@ -43,6 +44,7 @@ const prompt = ai.definePrompt({
     - **missingQuantification**: The user mentioned an achievement but did not include numbers. Prompt: "In your role at [Company], you mentioned 'increased efficiency'. By how much? (e.g., 15%, 2 hours/week)"
     - **unclearExperience**: A role or project is vague. Prompt: "Your 'Special Project' at [Company] is mentioned. Can you provide more details on what the project was and what your specific responsibilities were?"
     - **missingSkill**: A key skill from the job description is missing from the resume. Prompt: "The job description emphasizes 'TypeScript'. Do you have experience with this? If so, where in your resume can it be added?" Include the missing skill in the 'suggestion' field.
+    - **missingSection**: A key section like a Professional Summary is missing. The prompt ('detail') should state this clearly. E.g., "The resume is missing a Professional Summary section." The 'suggestion' field should contain the name of the missing section, like "Summary".
     - **other**: Any other prompt that requires user input.
 
 Analyze the following resume and job description. Provide a concise list for both categories.

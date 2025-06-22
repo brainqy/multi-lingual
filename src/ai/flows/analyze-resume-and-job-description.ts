@@ -134,6 +134,7 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
   },
   prompt: `You are an expert resume and job description analyst. Your task is to provide a comprehensive analysis of the given resume against the provided job description.
 Evaluate the resume based on the following categories and provide detailed feedback and scores as per the output schema. 
+**For the 'searchabilityDetails' section, you MUST explicitly check for a phone number, an email, and a physical address (city and state are sufficient).**
 If information is insufficient for a specific field or sub-section, you MUST provide default values (e.g., 0 for scores, empty arrays [] for lists, "N/A" or a concise "Could not assess" for strings, or a default empty object structure for optional nested objects like 'searchabilityDetails: {}') to ensure a valid JSON output according to the schema. DO NOT OMIT optional fields; provide their default state if data is insufficient.
 
 Resume Text:

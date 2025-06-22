@@ -57,7 +57,6 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       const result = await rewriteResumeWithFixes({
         resumeText: editableResumeText,
         jobDescription,
-        // Pass the identified AI fixes and any user instructions to the rewrite flow.
         fixableByAi: issues?.fixableByAi || [],
         userInstructions: userInstructions,
       });
@@ -123,6 +122,13 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
     setEditableResumeText(newText);
   };
 
+  const handleWriteSection = (sectionName?: string) => {
+    if (!sectionName) return;
+    const instruction = `Please write a new "${sectionName}" section for this resume, tailored for the job description.`;
+    setUserInstructions(prev => prev ? `${prev}\n${instruction}` : instruction);
+    toast({ title: "Instruction Added", description: `Added instruction to write the ${sectionName} section.`});
+  };
+
   const renderContent = () => {
     switch (dialogState) {
       case 'identifying':
@@ -155,7 +161,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                   <UserRoundCog className="h-4 w-4" />
                   <AlertTitle>Action Required by You</AlertTitle>
                   <AlertDescription>
-                    <p className="mb-2">Address these points by editing your resume below for the best AI rewrite:</p>
+                    <p className="mb-2">Address these points by editing your resume below or providing instructions for the AI:</p>
                     <div className="space-y-3 mt-3">
                       {issues.requiresUserInput.map((issue, index) => (
                           <div key={`user-${index}`} className="flex items-center justify-between p-2 rounded-md bg-background border gap-2">
@@ -165,6 +171,12 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                                       <WandSparkles className="mr-2 h-4 w-4" />
                                       Add Skill
                                   </Button>
+                              )}
+                              {issue.type === 'missingSection' && issue.suggestion && (
+                                <Button size="sm" variant="outline" onClick={() => handleWriteSection(issue.suggestion)}>
+                                  <WandSparkles className="mr-2 h-4 w-4" />
+                                  Write {issue.suggestion}
+                                </Button>
                               )}
                           </div>
                       ))}
