@@ -14,19 +14,283 @@ import {
     Search, UploadCloud, ArrowRight, Loader2, Download, CheckCircle, BarChart, Edit3, 
     Wrench, AlignLeft, SlidersHorizontal, Wand2, Lightbulb, Brain, SearchCheck, 
     ChevronsUpDown, ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, MessageSquare, ThumbsUp, Users, FileText, FileCheck2, EyeOff, Columns, Palette, CalendarDays,
-    Target, ListX, Sparkles, RefreshCcw
+    Target, ListX, Sparkles, RefreshCcw, UserRoundCog, WandSparkles, ClipboardCopy, Check, Save
 } from "lucide-react"; 
 import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
 import { useToast } from '@/hooks/use-toast';
 import { sampleResumeScanHistory as initialScanHistory, sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
-import type { ResumeScanHistoryItem, ResumeProfile, AtsFormattingIssue } from '@/types';
+import type { ResumeScanHistoryItem, ResumeProfile, AtsFormattingIssue, IdentifyResumeIssuesOutput } from '@/types';
 import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
-import { Dialog } from "@/components/ui/dialog";
-import { PowerEditDialog } from "@/components/features/resume-analyzer/PowerEditDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { identifyResumeIssues } from '@/ai/flows/identify-resume-issues';
+import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
+
+type PowerEditDialogState = 'identifying' | 'identified' | 'rewriting' | 'rewritten' | 'error';
+
+function PowerEditDialog({ 
+  resumeText: initialResumeText, 
+  jobDescription, 
+  onRewriteComplete 
+}: {
+  resumeText: string;
+  jobDescription: string;
+  onRewriteComplete: (newResume: string) => void;
+}) {
+  const [dialogState, setDialogState] = useState<PowerEditDialogState>('identifying');
+  const [issues, setIssues] = useState<IdentifyResumeIssuesOutput | null>(null);
+  const [editableResumeText, setEditableResumeText] = useState(initialResumeText);
+  const [fixes, setFixes] = useState<string[]>([]);
+  const [rewrittenResume, setRewrittenResume] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const getIssues = async () => {
+      setDialogState('identifying');
+      setError(null);
+      try {
+        const result = await identifyResumeIssues({ resumeText: initialResumeText, jobDescription });
+        setIssues(result);
+        setDialogState('identified');
+      } catch (e: any) {
+        setError(e.message || 'Failed to identify issues.');
+        setDialogState('error');
+      }
+    };
+    getIssues();
+  }, [initialResumeText, jobDescription]);
+
+  const handleAddSkill = (skill?: string) => {
+    if (!skill) return;
+
+    const currentText = editableResumeText;
+    const skillsHeaderRegex = /(^\s*(skills|technical skills|proficiencies)[\s:]*\n)/im;
+    const match = currentText.match(skillsHeaderRegex);
+
+    if (currentText.toLowerCase().includes(skill.toLowerCase())) {
+        toast({
+            title: "Skill already present",
+            description: `The skill "${skill}" seems to be in your resume already.`
+        });
+        return;
+    }
+
+    let newText;
+    if (match && match.index !== undefined) {
+        const header = match[0];
+        const insertionPoint = match.index + header.length;
+        newText = `${currentText.slice(0, insertionPoint)}- ${skill}\n${currentText.slice(insertionPoint)}`;
+        toast({
+            title: "Skill Added",
+            description: `"${skill}" was added to your skills section. You can now edit it further if needed.`
+        });
+    } else {
+        newText = `${currentText.trim()}\n\nSkills:\n- ${skill}\n`;
+        toast({
+            title: "Skill Added",
+            description: `A new "Skills" section was created with "${skill}".`
+        });
+    }
+    
+    setEditableResumeText(newText);
+  };
+
+
+  const handleRewrite = async () => {
+    setDialogState('rewriting');
+    setError(null);
+
+    try {
+      const result = await rewriteResumeWithFixes({
+        resumeText: editableResumeText,
+        jobDescription,
+        userInstructions: 'Incorporate the fixes identified, focusing on aligning the resume with the job description. Correct grammar and improve action verbs.',
+      });
+      setRewrittenResume(result.rewrittenResume);
+      setFixes(result.fixesApplied);
+      setDialogState('rewritten');
+    } catch (e: any) {
+      setError(e.message || 'Failed to rewrite resume.');
+      setDialogState('error');
+    }
+  };
+
+  const handleCopy = () => {
+    if (rewrittenResume) {
+      navigator.clipboard.writeText(rewrittenResume);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({
+        title: "Copied!",
+        description: "The rewritten resume has been copied to your clipboard.",
+      });
+    }
+  };
+
+  const handleUseAndReanalyze = () => {
+    if (rewrittenResume) {
+      onRewriteComplete(rewrittenResume);
+    }
+  };
+
+  const renderContent = () => {
+    switch (dialogState) {
+      case 'identifying':
+        return (
+          <div className="flex-grow flex items-center justify-center">
+            <div className="text-center p-8 space-y-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+              <h3 className="text-lg font-semibold">Identifying Improvements...</h3>
+              <p className="text-sm text-muted-foreground">The AI is analyzing your resume to find the best areas to enhance.</p>
+            </div>
+          </div>
+        );
+
+      case 'error':
+        return (
+          <div className="flex-grow flex items-center justify-center">
+            <Alert variant="destructive">
+              <AlertTitle>An Error Occurred</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        );
+
+      case 'identified':
+        return (
+          <div className="flex flex-col flex-grow min-h-0">
+            <div className="space-y-4 p-1 overflow-y-auto flex-grow flex flex-col">
+              {issues?.requiresUserInput && issues.requiresUserInput.length > 0 && (
+                <Alert>
+                  <UserRoundCog className="h-4 w-4" />
+                  <AlertTitle>Action Required by You</AlertTitle>
+                  <AlertDescription>
+                    <p className="mb-2">Address these points by editing your resume below for the best AI rewrite:</p>
+                    <div className="space-y-3 mt-3">
+                      {issues.requiresUserInput.map((issue, index) => (
+                          <div key={`user-${index}`} className="flex items-center justify-between p-2 rounded-md bg-background border gap-2">
+                              <p className="text-sm text-foreground flex-1">{issue.detail}</p>
+                              {issue.type === 'missingSkill' && issue.suggestion && (
+                                  <Button size="sm" variant="outline" onClick={() => handleAddSkill(issue.suggestion)}>
+                                      <WandSparkles className="mr-2 h-4 w-4" />
+                                      Add Skill
+                                  </Button>
+                              )}
+                          </div>
+                      ))}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {issues?.fixableByAi && issues.fixableByAi.length > 0 && (
+                <Alert variant="default" className="bg-blue-50 border-blue-200">
+                  <ListChecks className="h-4 w-4 text-primary" />
+                  <AlertTitle>AI Will Automatically Fix:</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc list-inside text-sm font-normal">
+                      {issues.fixableByAi.map((issue, index) => <li key={`fixable-${index}`}>{issue}</li>)}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className="space-y-2 pt-2 flex-grow flex flex-col">
+                <Label htmlFor="editable-resume" className="shrink-0">Edit your resume below:</Label>
+                <Textarea
+                    id="editable-resume"
+                    value={editableResumeText}
+                    onChange={(e) => setEditableResumeText(e.target.value)}
+                    className="flex-grow w-full h-full font-body text-sm"
+                />
+              </div>
+            </div>
+            <div className="pt-4 border-t mt-4 shrink-0">
+              <Button onClick={handleRewrite} className="w-full">
+                <Wand2 className="mr-2 h-4 w-4" />
+                Rewrite & Fix Issues
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'rewriting':
+        return (
+          <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg flex-grow">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Applying AI fixes...</p>
+          </div>
+        );
+
+      case 'rewritten':
+        return (
+          <div className="flex flex-col flex-grow min-h-0">
+            <div className="grid md:grid-cols-2 gap-6 flex-grow min-h-0">
+              <div className="space-y-3 flex flex-col">
+                <h3 className="text-lg font-semibold flex items-center gap-2"><FileCheck2 className="h-5 w-5 text-green-600" /> Rewritten Resume</h3>
+                <div className="relative flex-grow flex flex-col">
+                  <Button
+                    onClick={handleCopy}
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 z-10"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
+                    <span className="ml-2">{copied ? 'Copied!' : 'Copy'}</span>
+                  </Button>
+                  <Textarea
+                    value={rewrittenResume || ""}
+                    readOnly
+                    className="bg-muted/40 font-body text-sm flex-grow w-full h-full"
+                  />
+                </div>
+              </div>
+              <div className="space-y-3 flex flex-col">
+                <h3 className="text-lg font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary" /> Fixes Applied</h3>
+                <Card className="flex-grow bg-muted/40 overflow-y-auto">
+                  <CardContent className="p-4">
+                    <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
+                      {fixes.map((fix, index) => <li key={index}>{fix}</li>)}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+            <DialogFooter className="flex justify-end pt-4 gap-2 border-t mt-4 shrink-0">
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+              <Button onClick={handleUseAndReanalyze}>
+                <Wand2 className="mr-2 h-4 w-4" />
+                Use & Re-analyze
+              </Button>
+            </DialogFooter>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Wand2 className="h-6 w-6 text-primary" />
+          Power Edit with AI
+        </DialogTitle>
+        <DialogUIDescription>
+          Make direct edits or use AI suggestions, then let the AI rewrite your resume to better match the job description.
+        </DialogUIDescription>
+      </DialogHeader>
+      <div className="py-4 space-y-4 flex-grow flex flex-col min-h-0">
+        {renderContent()}
+      </div>
+    </DialogContent>
+  );
+}
+
 
 export default function ResumeAnalyzerPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -49,12 +313,29 @@ export default function ResumeAnalyzerPage() {
       setResumeFile(file);
       setSelectedResumeId(null);
       setResumeText('');
-      toast({
-        title: "File Selected",
-        description: `Using file: ${file.name}. Its content will be simulated for analysis.`,
-      });
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setResumeText(text);
+         toast({
+          title: "File Content Loaded",
+          description: `Loaded content from ${file.name}.`,
+        });
+      };
+      reader.onerror = () => {
+         toast({
+          title: "File Read Error",
+          description: `Could not read content from ${file.name}. Simulating content instead.`,
+           variant: "destructive"
+        });
+        // Fallback simulation
+        setResumeText(`Simulated content for ${file.name}.\n\nSkills: React, Node.js, Python.\nExperience: Led a team of 5 developers.`);
+      };
+      reader.readAsText(file);
     }
   };
+
 
    useEffect(() => {
     const selectedResume = resumes.find(r => r.id === selectedResumeId);
@@ -66,8 +347,8 @@ export default function ResumeAnalyzerPage() {
 
   const handleSubmit = async (event?: FormEvent) => {
     if(event) event.preventDefault();
-    if (!resumeText.trim() && !resumeFile) {
-      toast({ title: "Error", description: "Please upload or select a resume, or paste resume text.", variant: "destructive" });
+    if (!resumeText.trim()) {
+      toast({ title: "Error", description: "Please select or provide resume text.", variant: "destructive" });
       return;
     }
     if (!jobDescription.trim()) {
@@ -78,16 +359,6 @@ export default function ResumeAnalyzerPage() {
     setIsLoading(true);
     setAnalysisReport(null);
     let currentResumeText = resumeText;
-
-    if (resumeFile && (!resumeText.trim() || (resumeFile.type !== "text/plain" && resumeFile.type !== "text/markdown"))) {
-        currentResumeText = `Simulated content for ${resumeFile.name}.\n\nSkills: React, Node.js, Python, Java, SQL.\nExperience: Led a team of 5 developers at Tech Solutions Inc from 2020-2023, increased project efficiency by 15%. Developed a full-stack web application using Next.js and Spring Boot.`;
-        if (resumeFile.name.toLowerCase().includes("product")) {
-            currentResumeText += "\nAlso proficient in product strategy, user research, agile methodologies, and market analysis. Launched 3 successful products.";
-        } else if (resumeFile.name.toLowerCase().includes("data")) {
-            currentResumeText += "\nExpertise in data analysis, machine learning model development (TensorFlow, PyTorch), and data visualization using Python (Pandas, Scikit-learn) and Tableau.";
-        }
-        setResumeText(currentResumeText); 
-    }
     
     const currentResumeProfile = selectedResumeId ? resumes.find(r => r.id === selectedResumeId) : null;
 
@@ -210,6 +481,25 @@ export default function ResumeAnalyzerPage() {
       const globalIndex = initialScanHistory.findIndex(item => item.id === scanId);
       if (globalIndex !== -1) initialScanHistory.splice(globalIndex, 1);
       toast({ title: "Scan Deleted", description: "Scan history entry removed." });
+  };
+  
+  const handleSaveResume = () => {
+    if (!analysisReport || !resumeText) {
+        toast({ title: "Cannot Save", description: "No resume text or report to save.", variant: "destructive"});
+        return;
+    }
+    const currentScanDetails = scanHistory[0]; // The latest scan
+    const newResume: ResumeProfile = {
+        id: `resume-${Date.now()}`,
+        tenantId: sampleUserProfile.tenantId,
+        userId: sampleUserProfile.id,
+        name: `Resume for ${currentScanDetails?.jobTitle || 'Job'} (${new Date().toLocaleDateString()})`,
+        resumeText: resumeText,
+        lastAnalyzed: new Date().toISOString().split('T')[0]
+    };
+    sampleResumeProfiles.unshift(newResume);
+    setResumes(prev => [newResume, ...prev]);
+    toast({ title: "Resume Saved", description: `"${newResume.name}" has been saved to My Resumes.`});
   };
 
   const filteredScanHistory = useMemo(() => {
@@ -405,6 +695,17 @@ export default function ResumeAnalyzerPage() {
                     </Button>
 
                     <div className="space-y-3 pt-4 border-t">
+                      {(analysisReport.overallQualityScore && analysisReport.overallQualityScore >= 80) ? (
+                          <Button onClick={handleSaveResume} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                            <Save className="mr-2 h-4 w-4" /> Save This Version
+                          </Button>
+                        ) : (
+                          <p className="text-xs text-center text-muted-foreground">Improve your score to 80%+ to unlock the save option!</p>
+                        )
+                      }
+                    </div>
+
+                    <div className="space-y-3 pt-4 border-t">
                         {[
                             {label: "Searchability", score: analysisReport.searchabilityScore, issues: getSearchabilityIssueCount(analysisReport.searchabilityDetails)},
                             {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: getGenericIssueCount(analysisReport.recruiterTipsScore, undefined, analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length)},
@@ -424,9 +725,6 @@ export default function ResumeAnalyzerPage() {
                             </div>
                         ))}
                     </div>
-                     <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
-                        <Lightbulb className="mr-2 h-4 w-4" /> Guide me
-                    </Button>
                 </div>
 
                 {/* Right Column - Detailed Breakdown (Simplified Focus) */}
@@ -646,10 +944,10 @@ export default function ResumeAnalyzerPage() {
         </CardContent>
       </Card>
       
-      {isPowerEditDialogOpen && (
+      {isPowerEditDialogOpen && resumeText && jobDescription && (
         <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
             <PowerEditDialog
-                resumeText={resumeText}
+                initialResumeText={resumeText}
                 jobDescription={jobDescription}
                 onRewriteComplete={handleRewriteComplete}
             />
