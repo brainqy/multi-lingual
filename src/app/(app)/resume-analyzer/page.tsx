@@ -281,7 +281,7 @@ function PowerEditDialog({
           Power Edit with AI
         </DialogTitle>
         <DialogUIDescription>
-          Make direct edits or use AI suggestions, then let the AI rewrite your resume to better match the job description.
+          Review the AI's suggestions, make manual edits, and let the AI rewrite your resume to better match the job description.
         </DialogUIDescription>
       </DialogHeader>
       <div className="py-4 space-y-4 flex-grow flex flex-col min-h-0">
@@ -947,7 +947,7 @@ export default function ResumeAnalyzerPage() {
       {isPowerEditDialogOpen && resumeText && jobDescription && (
         <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
             <PowerEditDialog
-                initialResumeText={resumeText}
+                resumeText={resumeText}
                 jobDescription={jobDescription}
                 onRewriteComplete={handleRewriteComplete}
             />
@@ -957,3 +957,4 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
+
