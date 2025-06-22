@@ -1,6 +1,6 @@
 
 "use client";
-import { useI18n } from "@/hooks/use-i18n";
+
 import React, { useState, type FormEvent, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,19 @@ export default function ResumeAnalyzerPage() {
 
   const { toast } = useToast();
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      setResumeFile(file);
+      setSelectedResumeId(null);
+      setResumeText('');
+      toast({
+        title: "File Selected",
+        description: `Using file: ${file.name}. Its content will be simulated for analysis.`,
+      });
+    }
+  };
+
    useEffect(() => {
     const selectedResume = resumes.find(r => r.id === selectedResumeId);
     if (selectedResume) {
@@ -67,7 +80,7 @@ export default function ResumeAnalyzerPage() {
     let currentResumeText = resumeText;
 
     if (resumeFile && (!resumeText.trim() || (resumeFile.type !== "text/plain" && resumeFile.type !== "text/markdown"))) {
-        currentResumeText = `Simulated content for ${resumeFile.name}.\n\nSkills: React, Node.js, Python, Java, SQL.\nExperience: Led a team of 5 developers at Tech Solutions Inc from 2020-2023, increased project efficiency by 15%. Developed a full-stack web application using Next.js and Spring Boot.\nEducation: Master's in Computer Science, State University.`;
+        currentResumeText = `Simulated content for ${resumeFile.name}.\n\nSkills: React, Node.js, Python, Java, SQL.\nExperience: Led a team of 5 developers at Tech Solutions Inc from 2020-2023, increased project efficiency by 15%. Developed a full-stack web application using Next.js and Spring Boot.`;
         if (resumeFile.name.toLowerCase().includes("product")) {
             currentResumeText += "\nAlso proficient in product strategy, user research, agile methodologies, and market analysis. Launched 3 successful products.";
         } else if (resumeFile.name.toLowerCase().includes("data")) {
