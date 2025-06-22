@@ -14,7 +14,7 @@ import {
     Search, UploadCloud, ArrowRight, Loader2, Download, CheckCircle, BarChart, Edit3, 
     Wrench, AlignLeft, SlidersHorizontal, Wand2, Lightbulb, Brain, SearchCheck, 
     ChevronsUpDown, ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, MessageSquare, ThumbsUp, Users, FileText, FileCheck2, EyeOff, Columns, Palette, CalendarDays,
-    Target, ListX, Sparkles // Added Target, ListX, and Sparkles
+    Target, ListX, Sparkles, RefreshCcw // Added RefreshCcw
 } from "lucide-react"; 
 import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
 import { powerEditResume, type PowerEditResumeInput } from '@/ai/flows/power-edit-resume';
@@ -28,25 +28,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ScoreCircle from '@/components/ui/score-circle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
-interface AnalysisResults {
-  detailedReport: AnalyzeResumeAndJobDescriptionOutput | null;
-}
-
 export default function ResumeAnalyzerPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<AnalysisResults | null>(null);
+  const [analysisReport, setAnalysisReport] = useState<AnalyzeResumeAndJobDescriptionOutput | null>(null);
   const [scanHistory, setScanHistory] = useState<ResumeScanHistoryItem[]>(initialScanHistory.filter(item => item.userId === sampleUserProfile.id));
   const [resumes, setResumes] = useState<ResumeProfile[]>(sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id));
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
 
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
-  const [powerEditBaseText, setPowerEditBaseText] = useState('');
   const [powerEditInstructions, setPowerEditInstructions] = useState('');
-  const [powerEditResultText, setPowerEditResultText] = useState('');
   const [isPowerEditing, setIsPowerEditing] = useState(false);
 
   const { toast } = useToast();
@@ -89,7 +83,7 @@ export default function ResumeAnalyzerPage() {
     }
 
     setIsLoading(true);
-    setResults(null);
+    setAnalysisReport(null);
     let currentResumeText = resumeText;
 
     // Basic simulation for non-text file content extraction
@@ -114,7 +108,7 @@ export default function ResumeAnalyzerPage() {
       const detailedReportRes = await analyzeResumeAndJobDescription({ resumeText: currentResumeText, jobDescriptionText: jobDescription });
       logger.info("Received AI response from analyzeResumeAndJobDescription", detailedReportRes);
       
-      setResults({ detailedReport: detailedReportRes });
+      setAnalysisReport(detailedReportRes);
 
       const newScanEntry: ResumeScanHistoryItem = {
         id: `scan-${Date.now()}`,
@@ -143,7 +137,7 @@ export default function ResumeAnalyzerPage() {
     } catch (error: any) {
       logger.error("CRITICAL ERROR during AI Analysis on Frontend:", error);
       toast({ title: "Analysis Failed", description: `An error occurred during analysis: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
-      setResults({ detailedReport: (analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null });
+      setAnalysisReport((analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null);
     } finally {
       setIsLoading(false);
       const reportSection = document.getElementById('analysis-report-section');
@@ -155,53 +149,41 @@ export default function ResumeAnalyzerPage() {
     toast({ title: "Download Report (Mock)", description: "PDF report generation is mocked. Printing the page to PDF can be an alternative."});
   };
   
-  const handleUploadAndRescan = () => {
+  const handleStartNewAnalysis = () => {
     setResumeFile(null);
-    setResults(null); 
-    toast({ title: "Ready for Rescan", description: "Modify resume/JD and click Analyze, or upload/select a new resume to analyze against the current job description."});
+    setAnalysisReport(null); 
+    toast({ title: "Ready for New Analysis", description: "Modify resume/JD and click Analyze, or upload/select a new resume."});
     const resumeInputSection = document.getElementById('resume-input-section');
     if (resumeInputSection) resumeInputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handlePowerEdit = () => {
-    setPowerEditBaseText(resumeText);
     setPowerEditInstructions('');
-    setPowerEditResultText('');
     setIsPowerEditDialogOpen(true);
   };
   
   const handleRewriteWithAI = async () => {
-    if (!powerEditBaseText.trim() || !jobDescription.trim()) {
+    if (!resumeText.trim() || !jobDescription.trim()) {
         toast({ title: "Missing Information", description: "Please ensure both resume text and a job description are present to use Power Edit.", variant: "destructive" });
         return;
     }
     setIsPowerEditing(true);
-    setPowerEditResultText('');
     try {
         const input: PowerEditResumeInput = {
-            baseResumeText: powerEditBaseText,
+            baseResumeText: resumeText,
             jobDescriptionText: jobDescription,
             userInstructions: powerEditInstructions,
         };
         const result = await powerEditResume(input);
-        setPowerEditResultText(result.editedResumeText);
-        toast({ title: "Rewrite Complete!", description: "AI has generated a new version of your resume." });
+        setResumeText(result.editedResumeText);
+        toast({ title: "Resume Updated!", description: "The AI-edited version has been applied. Click 'Re-Analyze' to see your new score." });
+        setIsPowerEditDialogOpen(false);
     } catch (error) {
         console.error("Power Edit AI error:", error);
         toast({ title: "Rewrite Failed", description: "Could not rewrite the resume. Please try again.", variant: "destructive" });
     } finally {
         setIsPowerEditing(false);
     }
-  };
-
-  const applyPowerEditChanges = () => {
-    if (!powerEditResultText.trim()) {
-        toast({ title: "No Rewritten Text", description: "There is no AI-rewritten text to apply.", variant: "destructive" });
-        return;
-    }
-    setResumeText(powerEditResultText);
-    toast({ title: "Resume Updated", description: "The AI-edited version has been applied. You can now re-analyze it." });
-    setIsPowerEditDialogOpen(false);
   };
 
   const handleViewReport = async (item: ResumeScanHistoryItem) => {
@@ -218,12 +200,12 @@ export default function ResumeAnalyzerPage() {
     setIsLoading(true);
     try {
       const detailedReportRes = await analyzeResumeAndJobDescription({ resumeText: item.resumeTextSnapshot, jobDescriptionText: item.jobDescriptionText });
-      setResults({ detailedReport: detailedReportRes });
+      setAnalysisReport(detailedReportRes);
       toast({ title: "Historical Report Loaded", description: "The analysis report for the selected scan has been re-generated." });
     } catch (error: any) {
       logger.error("CRITICAL ERROR during Historical AI Analysis on Frontend:", error);
       toast({ title: "Report Load Failed", description: `An error occurred while re-generating the historical report: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
-      setResults({ detailedReport: (analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null });
+      setAnalysisReport((analyzeResumeAndJobDescription as any).getDefaultOutput ? (analyzeResumeAndJobDescription as any).getDefaultOutput(error.message || String(error)) : null);
     } finally {
       setIsLoading(false);
       const reportSection = document.getElementById('analysis-report-section');
@@ -424,29 +406,32 @@ export default function ResumeAnalyzerPage() {
         </div>
       )}
       
-      {results && results.detailedReport && (
+      {analysisReport && (
         <>
         <Card className="shadow-xl mt-8" id="analysis-report-section">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div>
                 <CardTitle className="text-2xl font-bold flex items-center gap-2">
                     <FileCheck2 className="h-7 w-7 text-primary" /> Analysis Report
                 </CardTitle>
                 <CardDescription>Detailed breakdown of your resume against the job description.</CardDescription>
                 </div>
-                <div className="flex gap-2">
-                    <Button onClick={handleDownloadReport} variant="outline">
-                        <Download className="mr-2 h-4 w-4" /> Download PDF
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button onClick={() => handleSubmit()} variant="outline" className="flex-1 sm:flex-none">
+                        <RefreshCcw className="mr-2 h-4 w-4" /> Re-Analyze
+                    </Button>
+                    <Button onClick={handleDownloadReport} variant="outline" className="flex-1 sm:flex-none">
+                        <Download className="mr-2 h-4 w-4" /> Download
                     </Button>
                 </div>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left Column - Scores & Actions */}
                 <div className="md:col-span-1 space-y-6 p-4 border-r border-border rounded-l-lg bg-secondary/30">
-                    <ScoreCircle score={results.detailedReport.overallQualityScore ?? results.detailedReport.hardSkillsScore ?? 0} size="xl" label="Match Rate" />
+                    <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="xl" label="Match Rate" />
                     
-                    <Button onClick={handleUploadAndRescan} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                        <UploadCloud className="mr-2 h-4 w-4" /> Upload & Rescan
+                    <Button onClick={handleStartNewAnalysis} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Start New Analysis
                     </Button>
                     <Button onClick={handlePowerEdit} variant="outline" className="w-full">
                         <Wand2 className="mr-2 h-4 w-4" /> Power Edit
@@ -454,13 +439,13 @@ export default function ResumeAnalyzerPage() {
 
                     <div className="space-y-3 pt-4 border-t">
                         {[
-                            {label: "Searchability", score: results.detailedReport.searchabilityScore, issues: getSearchabilityIssueCount(results.detailedReport.searchabilityDetails)},
-                            {label: "Recruiter Tips", score: results.detailedReport.recruiterTipsScore, issues: getGenericIssueCount(results.detailedReport.recruiterTipsScore, undefined, results.detailedReport.recruiterTips?.filter(tip => tip.status === 'negative').length)},
-                            {label: "Formatting", score: results.detailedReport.formattingScore, issues: getGenericIssueCount(results.detailedReport.formattingScore, undefined, results.detailedReport.formattingDetails?.length)},
-                            {label: "Highlights", score: results.detailedReport.highlightsScore, issues: getGenericIssueCount(results.detailedReport.highlightsScore)},
-                            {label: "Hard Skills", score: results.detailedReport.hardSkillsScore, issues: getGenericIssueCount(results.detailedReport.hardSkillsScore, undefined, results.detailedReport.missingSkills?.length)},
-                            {label: "Soft Skills", score: results.detailedReport.softSkillsScore, issues: getGenericIssueCount(results.detailedReport.softSkillsScore)},
-                            {label: "ATS Compliance", score: results.detailedReport.atsStandardFormattingComplianceScore, issues: getGenericIssueCount(results.detailedReport.atsStandardFormattingComplianceScore, undefined, results.detailedReport.standardFormattingIssues?.length)},
+                            {label: "Searchability", score: analysisReport.searchabilityScore, issues: getSearchabilityIssueCount(analysisReport.searchabilityDetails)},
+                            {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: getGenericIssueCount(analysisReport.recruiterTipsScore, undefined, analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length)},
+                            {label: "Formatting", score: analysisReport.formattingScore, issues: getGenericIssueCount(analysisReport.formattingScore, undefined, analysisReport.formattingDetails?.length)},
+                            {label: "Highlights", score: analysisReport.highlightsScore, issues: getGenericIssueCount(analysisReport.highlightsScore)},
+                            {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: getGenericIssueCount(analysisReport.hardSkillsScore, undefined, analysisReport.missingSkills?.length)},
+                            {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: getGenericIssueCount(analysisReport.softSkillsScore)},
+                            {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: getGenericIssueCount(analysisReport.atsStandardFormattingComplianceScore, undefined, analysisReport.standardFormattingIssues?.length)},
                         ].map(cat => cat.score !== undefined && (
                             <div key={cat.label}>
                                 <div className="flex justify-between text-sm mb-0.5">
@@ -485,8 +470,8 @@ export default function ResumeAnalyzerPage() {
                             <strong className="text-blue-700">Quick Guide:</strong>
                             <ol className="list-decimal list-inside text-xs">
                                 <li>Review suggestions in the tabs/accordions below.</li>
-                                <li>Update your original resume document (e.g., in Word or Google Docs).</li>
-                                <li>Use "Upload & Rescan" with your updated resume to see improvements!</li>
+                                <li>Use "Power Edit" to get AI help with fixing your resume based on its findings.</li>
+                                <li>After changes, click "Re-Analyze" to see your updated score!</li>
                             </ol>
                         </div>
                     </div>
@@ -507,7 +492,7 @@ export default function ResumeAnalyzerPage() {
                         </TabsContent>
                         
                         <TabsContent value="searchability_analysis" className="mt-4 space-y-4">
-                            {results.detailedReport.searchabilityDetails && (
+                            {analysisReport.searchabilityDetails && (
                             <Card className="border-border shadow-sm">
                                 <CardHeader className="p-3 bg-secondary/20 rounded-t-md flex flex-row items-center justify-between">
                                     <CardTitle className="text-md font-semibold flex items-center gap-2">
@@ -518,17 +503,17 @@ export default function ResumeAnalyzerPage() {
                                 <CardContent className="p-3 divide-y divide-border">
                                     {[
                                       { group: "Contact Info", checks: [
-                                        {label: "Phone Number Present", checked: results.detailedReport.searchabilityDetails?.hasPhoneNumber ?? false, tip: "Ensure a clear phone number is easily found."},
-                                        {label: "Email Address Present", checked: results.detailedReport.searchabilityDetails?.hasEmail ?? false, tip: "Include a professional email address."},
-                                        {label: "Physical Address Present", checked: results.detailedReport.searchabilityDetails?.hasAddress ?? false, tip: "City & State are usually sufficient."},
+                                        {label: "Phone Number Present", checked: analysisReport.searchabilityDetails?.hasPhoneNumber ?? false, tip: "Ensure a clear phone number is easily found."},
+                                        {label: "Email Address Present", checked: analysisReport.searchabilityDetails?.hasEmail ?? false, tip: "Include a professional email address."},
+                                        {label: "Physical Address Present", checked: analysisReport.searchabilityDetails?.hasAddress ?? false, tip: "City & State are usually sufficient."},
                                       ]},
                                       { group: "Key Identifiers", checks: [
-                                        {label: "Job Title Aligns with JD Target", checked: results.detailedReport.searchabilityDetails?.jobTitleMatchesJD ?? false, tip: "Your current/recent title or resume headline should align with the target role in the JD."},
-                                        {label: "Professional Summary/Objective Found", checked: results.detailedReport.searchabilityDetails?.hasProfessionalSummary ?? false, tip: "A summary helps recruiters quickly grasp your profile."},
+                                        {label: "Job Title Aligns with JD Target", checked: analysisReport.searchabilityDetails?.jobTitleMatchesJD ?? false, tip: "Your current/recent title or resume headline should align with the target role in the JD."},
+                                        {label: "Professional Summary/Objective Found", checked: analysisReport.searchabilityDetails?.hasProfessionalSummary ?? false, tip: "A summary helps recruiters quickly grasp your profile."},
                                       ]},
                                       { group: "Section Headings", checks: [
-                                        {label: "Work Experience Section Clear", checked: results.detailedReport.searchabilityDetails?.hasWorkExperienceSection ?? false, tip: "Use standard headings like 'Experience' or 'Work History'."},
-                                        {label: "Education Section Clear", checked: results.detailedReport.searchabilityDetails?.hasEducationSection ?? false, tip: "Use standard headings like 'Education'."},
+                                        {label: "Work Experience Section Clear", checked: analysisReport.searchabilityDetails?.hasWorkExperienceSection ?? false, tip: "Use standard headings like 'Experience' or 'Work History'."},
+                                        {label: "Education Section Clear", checked: analysisReport.searchabilityDetails?.hasEducationSection ?? false, tip: "Use standard headings like 'Education'."},
                                       ]}
                                     ].map(section => (
                                       <div key={section.group} className="pt-3 first:pt-0">
@@ -544,10 +529,10 @@ export default function ResumeAnalyzerPage() {
                                         ))}
                                       </div>
                                     ))}
-                                    {results.detailedReport.searchabilityDetails?.keywordDensityFeedback && (
+                                    {analysisReport.searchabilityDetails?.keywordDensityFeedback && (
                                         <div className="pt-3">
                                           <h4 className="text-sm font-medium text-muted-foreground mb-1">Keyword Density Feedback:</h4>
-                                          <p className="text-xs italic p-2 bg-muted rounded-md">{results.detailedReport.searchabilityDetails.keywordDensityFeedback}</p>
+                                          <p className="text-xs italic p-2 bg-muted rounded-md">{analysisReport.searchabilityDetails.keywordDensityFeedback}</p>
                                         </div>
                                     )}
                                 </CardContent>
@@ -557,11 +542,11 @@ export default function ResumeAnalyzerPage() {
 
                         <TabsContent value="full_report" className="mt-4">
                             <Accordion type="multiple" className="w-full space-y-3">
-                                {results.detailedReport.recruiterTips && results.detailedReport.recruiterTips.length > 0 && (
+                                {analysisReport.recruiterTips && analysisReport.recruiterTips.length > 0 && (
                                     <AccordionItem value="recruiter-feedback" className="border rounded-md shadow-sm bg-card">
-                                        <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Feedback ({results.detailedReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
+                                        <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Feedback ({analysisReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
                                         <AccordionContent className="p-3 border-t text-xs space-y-1">
-                                            {results.detailedReport.recruiterTips.map((tip, idx) => (
+                                            {analysisReport.recruiterTips.map((tip, idx) => (
                                                 <div key={idx} className={cn("p-2 border-l-4 rounded-r-md", tip.status === 'positive' ? 'border-green-500 bg-green-50' : tip.status === 'neutral' ? 'border-blue-500 bg-blue-50' : 'border-red-500 bg-red-50')}>
                                                     <strong className="text-foreground">{tip.category}:</strong> {tip.finding}
                                                     {tip.suggestion && tip.status !== 'positive' && <p className="text-blue-600 mt-0.5 pl-2"><em>Suggestion: {tip.suggestion}</em></p>}
@@ -573,31 +558,31 @@ export default function ResumeAnalyzerPage() {
                                 <AccordionItem value="content-quality" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Palette className="mr-2 h-4 w-4"/>Content & Style Insights</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
-                                        {results.detailedReport.quantifiableAchievementDetails && (
-                                            <div><strong className="text-muted-foreground">Quantifiable Achievements ({results.detailedReport.quantifiableAchievementDetails.score ?? 0}%):</strong>
-                                                {results.detailedReport.quantifiableAchievementDetails.examplesFound?.map(ex => <p key={ex} className="text-green-600 ml-2">- {ex}</p>)}
-                                                {results.detailedReport.quantifiableAchievementDetails.areasLackingQuantification?.map(area => <p key={area} className="text-red-600 ml-2">- Needs numbers: {area}</p>)}
+                                        {analysisReport.quantifiableAchievementDetails && (
+                                            <div><strong className="text-muted-foreground">Quantifiable Achievements ({analysisReport.quantifiableAchievementDetails.score ?? 0}%):</strong>
+                                                {analysisReport.quantifiableAchievementDetails.examplesFound?.map(ex => <p key={ex} className="text-green-600 ml-2">- {ex}</p>)}
+                                                {analysisReport.quantifiableAchievementDetails.areasLackingQuantification?.map(area => <p key={area} className="text-red-600 ml-2">- Needs numbers: {area}</p>)}
                                             </div>
                                         )}
-                                        {results.detailedReport.actionVerbDetails && (
-                                            <div><strong className="text-muted-foreground">Action Verbs ({results.detailedReport.actionVerbDetails.score ?? 0}%):</strong>
-                                                {results.detailedReport.actionVerbDetails.strongVerbsUsed && results.detailedReport.actionVerbDetails.strongVerbsUsed.length > 0 && <p>Strong: {results.detailedReport.actionVerbDetails.strongVerbsUsed.join(', ')}</p>}
-                                                {results.detailedReport.actionVerbDetails.weakVerbsUsed && results.detailedReport.actionVerbDetails.weakVerbsUsed.length > 0 && <p className="text-yellow-600">Weak: {results.detailedReport.actionVerbDetails.weakVerbsUsed.join(', ')}</p>}
-                                                {results.detailedReport.actionVerbDetails.overusedVerbs && results.detailedReport.actionVerbDetails.overusedVerbs.length > 0 && <p className="text-yellow-600">Overused: {results.detailedReport.actionVerbDetails.overusedVerbs.join(', ')}</p>}
-                                                {results.detailedReport.actionVerbDetails.suggestedStrongerVerbs?.map(s => <p key={s.original} className="ml-2">Suggest: "{s.original}" → "{s.suggestion}"</p>)}
+                                        {analysisReport.actionVerbDetails && (
+                                            <div><strong className="text-muted-foreground">Action Verbs ({analysisReport.actionVerbDetails.score ?? 0}%):</strong>
+                                                {analysisReport.actionVerbDetails.strongVerbsUsed && analysisReport.actionVerbDetails.strongVerbsUsed.length > 0 && <p>Strong: {analysisReport.actionVerbDetails.strongVerbsUsed.join(', ')}</p>}
+                                                {analysisReport.actionVerbDetails.weakVerbsUsed && analysisReport.actionVerbDetails.weakVerbsUsed.length > 0 && <p className="text-yellow-600">Weak: {analysisReport.actionVerbDetails.weakVerbsUsed.join(', ')}</p>}
+                                                {analysisReport.actionVerbDetails.overusedVerbs && analysisReport.actionVerbDetails.overusedVerbs.length > 0 && <p className="text-yellow-600">Overused: {analysisReport.actionVerbDetails.overusedVerbs.join(', ')}</p>}
+                                                {analysisReport.actionVerbDetails.suggestedStrongerVerbs?.map(s => <p key={s.original} className="ml-2">Suggest: "{s.original}" → "{s.suggestion}"</p>)}
                                             </div>
                                         )}
-                                        {results.detailedReport.impactStatementDetails && (
-                                            <div><strong className="text-muted-foreground">Impact Statements ({results.detailedReport.impactStatementDetails.clarityScore ?? 0}%):</strong>
-                                                {results.detailedReport.impactStatementDetails.exampleWellWrittenImpactStatements?.map(ex => <p key={ex} className="text-green-600 ml-2">- Good: {ex}</p>)}
-                                                {results.detailedReport.impactStatementDetails.unclearImpactStatements?.map(area => <p key={area} className="text-red-600 ml-2">- Unclear: {area}</p>)}
+                                        {analysisReport.impactStatementDetails && (
+                                            <div><strong className="text-muted-foreground">Impact Statements ({analysisReport.impactStatementDetails.clarityScore ?? 0}%):</strong>
+                                                {analysisReport.impactStatementDetails.exampleWellWrittenImpactStatements?.map(ex => <p key={ex} className="text-green-600 ml-2">- Good: {ex}</p>)}
+                                                {analysisReport.impactStatementDetails.unclearImpactStatements?.map(area => <p key={area} className="text-red-600 ml-2">- Unclear: {area}</p>)}
                                             </div>
                                         )}
-                                        {results.detailedReport.readabilityDetails && (
+                                        {analysisReport.readabilityDetails && (
                                             <div><strong className="text-muted-foreground">Readability:</strong>
-                                                {results.detailedReport.readabilityDetails.fleschReadingEase !== undefined && <p>Ease: {results.detailedReport.readabilityDetails.fleschReadingEase.toFixed(1)}</p>}
-                                                {results.detailedReport.readabilityDetails.fleschKincaidGradeLevel !== undefined && <p>Grade Level: {results.detailedReport.readabilityDetails.fleschKincaidGradeLevel.toFixed(1)}</p>}
-                                                {results.detailedReport.readabilityDetails.readabilityFeedback && <p>Feedback: {results.detailedReport.readabilityDetails.readabilityFeedback}</p>}
+                                                {analysisReport.readabilityDetails.fleschReadingEase !== undefined && <p>Ease: {analysisReport.readabilityDetails.fleschReadingEase.toFixed(1)}</p>}
+                                                {analysisReport.readabilityDetails.fleschKincaidGradeLevel !== undefined && <p>Grade Level: {analysisReport.readabilityDetails.fleschKincaidGradeLevel.toFixed(1)}</p>}
+                                                {analysisReport.readabilityDetails.readabilityFeedback && <p>Feedback: {analysisReport.readabilityDetails.readabilityFeedback}</p>}
                                             </div>
                                         )}
                                     </AccordionContent>
@@ -605,13 +590,13 @@ export default function ResumeAnalyzerPage() {
                                 <AccordionItem value="ats-friendliness" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><SearchCheck className="mr-2 h-4 w-4"/>ATS Friendliness</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
-                                        {results.detailedReport.atsParsingConfidence && <p><strong>Overall Parsing Confidence:</strong> {results.detailedReport.atsParsingConfidence.overall ?? 'N/A'}%</p>}
-                                        {results.detailedReport.atsParsingConfidence?.warnings?.map((warn, i) => <p key={i} className="text-yellow-600">- Warning: {warn}</p>)}
+                                        {analysisReport.atsParsingConfidence && <p><strong>Overall Parsing Confidence:</strong> {analysisReport.atsParsingConfidence.overall ?? 'N/A'}%</p>}
+                                        {analysisReport.atsParsingConfidence?.warnings?.map((warn, i) => <p key={i} className="text-yellow-600">- Warning: {warn}</p>)}
                                         
-                                        {results.detailedReport.atsStandardFormattingComplianceScore !== undefined && <p className="mt-2"><strong>Standard Formatting Score:</strong> {results.detailedReport.atsStandardFormattingComplianceScore}%</p>}
-                                        {results.detailedReport.standardFormattingIssues?.map((iss, i) => <div key={i} className="ml-2"><p className="text-red-600">Issue: {iss.issue}</p><p className="text-blue-600">→ Rec: {iss.recommendation}</p></div>)}
+                                        {analysisReport.atsStandardFormattingComplianceScore !== undefined && <p className="mt-2"><strong>Standard Formatting Score:</strong> {analysisReport.atsStandardFormattingComplianceScore}%</p>}
+                                        {analysisReport.standardFormattingIssues?.map((iss, i) => <div key={i} className="ml-2"><p className="text-red-600">Issue: {iss.issue}</p><p className="text-blue-600">→ Rec: {iss.recommendation}</p></div>)}
                                         
-                                        {results.detailedReport.undefinedAcronyms && results.detailedReport.undefinedAcronyms.length > 0 && <p className="mt-2 text-yellow-600"><strong>Undefined Acronyms:</strong> {results.detailedReport.undefinedAcronyms.join(', ')}</p>}
+                                        {analysisReport.undefinedAcronyms && analysisReport.undefinedAcronyms.length > 0 && <p className="mt-2 text-yellow-600"><strong>Undefined Acronyms:</strong> {analysisReport.undefinedAcronyms.join(', ')}</p>}
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>
@@ -630,7 +615,7 @@ export default function ResumeAnalyzerPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex flex-col items-center">
-                     <ScoreCircle score={results.detailedReport.overallQualityScore ?? results.detailedReport.hardSkillsScore ?? 0} size="lg" label="Overall Match" />
+                     <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="lg" label="Overall Match" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="bg-secondary/30">
@@ -638,10 +623,10 @@ export default function ResumeAnalyzerPage() {
                             <CardTitle className="text-md font-semibold flex items-center gap-2"><ListX className="h-5 w-5 text-destructive"/>Missing Keywords</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {results.detailedReport.missingSkills && results.detailedReport.missingSkills.length > 0 ? (
+                            {analysisReport.missingSkills && analysisReport.missingSkills.length > 0 ? (
                                 <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {results.detailedReport.missingSkills.slice(0,10).map((skill, index) => <li key={`missing-${index}`}>{skill}</li>)}
-                                    {results.detailedReport.missingSkills.length > 10 && <li>...and {results.detailedReport.missingSkills.length - 10} more</li>}
+                                    {analysisReport.missingSkills.slice(0,10).map((skill, index) => <li key={`missing-${index}`}>{skill}</li>)}
+                                    {analysisReport.missingSkills.length > 10 && <li>...and {analysisReport.missingSkills.length - 10} more</li>}
                                 </ul>
                             ) : (
                                 <p className="text-sm text-muted-foreground">No critical missing keywords identified by AI, or none provided.</p>
@@ -653,10 +638,10 @@ export default function ResumeAnalyzerPage() {
                              <CardTitle className="text-md font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-green-500"/>Matching Keywords</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {results.detailedReport.matchingSkills && results.detailedReport.matchingSkills.length > 0 ? (
+                            {analysisReport.matchingSkills && analysisReport.matchingSkills.length > 0 ? (
                                 <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {results.detailedReport.matchingSkills.slice(0,10).map((skill, index) => <li key={`matching-${index}`}>{skill}</li>)}
-                                     {results.detailedReport.matchingSkills.length > 10 && <li>...and {results.detailedReport.matchingSkills.length - 10} more</li>}
+                                    {analysisReport.matchingSkills.slice(0,10).map((skill, index) => <li key={`matching-${index}`}>{skill}</li>)}
+                                     {analysisReport.matchingSkills.length > 10 && <li>...and {analysisReport.matchingSkills.length - 10} more</li>}
                                 </ul>
                             ) : (
                                 <p className="text-sm text-muted-foreground">No specific matching keywords highlighted by AI, or none provided.</p>
@@ -740,58 +725,41 @@ export default function ResumeAnalyzerPage() {
         </CardContent>
       </Card>
       <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
-        <DialogContent className="max-w-6xl h-[90vh]">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
               <Wand2 className="h-6 w-6 text-primary"/> Power Edit with AI
             </DialogTitle>
             <DialogUIDescription>
-              Make manual edits, provide instructions, and let the AI rewrite your resume to better match the job description.
+              The AI has identified areas needing more detail. Provide the information below to help it rewrite your resume.
             </DialogUIDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-hidden h-[calc(90vh-180px)]">
-            {/* Left side: User input */}
-            <div className="flex flex-col space-y-3">
-              <h3 className="text-lg font-semibold">Your Version</h3>
-              <Textarea 
-                value={powerEditBaseText}
-                onChange={(e) => setPowerEditBaseText(e.target.value)}
-                className="h-full flex-grow resize-none"
-                placeholder="Your resume text..."
-              />
-              <Label htmlFor="power-edit-instructions">Specific Instructions for AI (Optional)</Label>
+          <div className="py-4 space-y-4">
+            {analysisReport?.clarificationPrompts && analysisReport.clarificationPrompts.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-muted-foreground">AI Clarification Prompts:</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm p-3 bg-secondary/50 rounded-md">
+                  {analysisReport.clarificationPrompts.map((prompt, index) => (
+                    <li key={index}>{prompt}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div>
+              <Label htmlFor="power-edit-instructions">Your Instructions & Clarifications</Label>
               <Textarea
                 id="power-edit-instructions"
                 value={powerEditInstructions}
                 onChange={(e) => setPowerEditInstructions(e.target.value)}
-                placeholder="e.g., Emphasize leadership skills, make tone more formal..."
-                rows={3}
+                placeholder="Based on the prompts above, provide specific details. For example: 'For the project team, I led 5 developers. We increased efficiency by 25% by implementing CI/CD pipelines.' or 'I used TypeScript in the e-commerce project to build type-safe components.'"
+                rows={6}
               />
-            </div>
-            {/* Right side: AI output */}
-            <div className="flex flex-col space-y-3">
-              <h3 className="text-lg font-semibold">AI-Rewritten Version</h3>
-              {isPowerEditing ? (
-                <div className="h-full flex-grow border rounded-md flex items-center justify-center bg-secondary/50">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <Textarea
-                  value={powerEditResultText}
-                  readOnly
-                  className="h-full flex-grow resize-none bg-muted"
-                  placeholder="AI will generate the rewritten resume here..."
-                />
-              )}
             </div>
           </div>
           <DialogFooter className="pt-4">
-            <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
             <Button onClick={handleRewriteWithAI} disabled={isPowerEditing}>
               {isPowerEditing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Rewriting...</> : <><Sparkles className="mr-2 h-4 w-4"/>Rewrite with AI</>}
-            </Button>
-            <Button onClick={applyPowerEditChanges} disabled={!powerEditResultText.trim()}>
-              Apply This Version
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -800,3 +768,4 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
+

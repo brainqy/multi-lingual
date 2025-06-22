@@ -103,6 +103,8 @@ const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
   actionVerbDetails: ActionVerbDetailsSchema.optional().describe("Details on action verb usage."),
   impactStatementDetails: ImpactStatementDetailsSchema.optional().describe("Analysis of impact statement clarity and effectiveness."),
   readabilityDetails: ReadabilityDetailsSchema.optional().describe("Assessment of the resume's readability."),
+
+  clarificationPrompts: z.array(z.string()).optional().describe("A list of specific questions for the user to clarify parts of their resume that are ambiguous or could be improved with more detail. For example, 'Can you quantify the result of leading the project team?' or 'What specific technologies were used in the e-commerce platform project?'"),
 });
 
 export type AnalyzeResumeAndJobDescriptionOutput = z.infer<typeof AnalyzeResumeAndJobDescriptionOutputSchema>;
@@ -159,7 +161,8 @@ function getDefaultOutput(errorMessage?: string): AnalyzeResumeAndJobDescription
     },
     readabilityDetails: {
       readabilityFeedback: "Could not assess readability."
-    }
+    },
+    clarificationPrompts: ["Could not generate clarification prompts due to an error."],
   };
 }
 
@@ -237,6 +240,7 @@ export async function analyzeResumeAndJobDescription(
     actionVerbDetails: output.actionVerbDetails ?? getDefaultOutput().actionVerbDetails!,
     impactStatementDetails: output.impactStatementDetails ?? getDefaultOutput().impactStatementDetails!,
     readabilityDetails: output.readabilityDetails ?? getDefaultOutput().readabilityDetails!,
+    clarificationPrompts: output.clarificationPrompts ?? [],
   };
 }
 
@@ -296,53 +300,9 @@ Analysis Categories and Instructions for JSON Output Fields:
     *   impactStatementDetails (ImpactStatementDetailsSchema): Object with clarityScore (default 0), unclearImpactStatements (default []), exampleWellWrittenImpactStatements (default []). Example: { "clarityScore": 0, "unclearImpactStatements": ["Could not assess impact statements."], "exampleWellWrittenImpactStatements": [] }.
     *   readabilityDetails (ReadabilityDetailsSchema): Object with optional numbers and readabilityFeedback (default "N/A"). Example: { "readabilityFeedback": "Could not assess readability." }.
 
+5.  **Clarification Prompts:**
+    *   clarificationPrompts: Array of strings. Identify 2-3 of the most critical areas in the resume that are vague, lack quantifiable results, or could be better aligned with the job description if more specific information were provided. Formulate direct, actionable questions to the user to elicit this information. These prompts will be shown to the user so they can provide input for an AI-powered rewrite. Do not ask for information already present. Focus on extracting *new*, clarifying details. If the resume is excellent and clear, return an empty array [].
+
 **CRITICAL FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default (0 for numbers, null for optional numbers if appropriate but 0 is safer here, "N/A" or "Could not assess" for strings, [] for arrays, and fully structured default objects for nested schemas as shown in the examples above). DO NOT OMIT ANY FIELD OR SUB-FIELD from the defined schema.
 `,
 });
-
-// Note: analyzeResumeAndJobDescriptionFlow is not directly called if the main exported function bypasses it.
-// For full Genkit tracing/UI, you'd typically call this flow.
-// const analyzeResumeAndJobDescriptionFlow = ai.defineFlow(
-//   {
-//     name: 'analyzeResumeAndJobDescriptionFlow',
-//     inputSchema: AnalyzeResumeAndJobDescriptionInputSchema,
-//     outputSchema: AnalyzeResumeAndJobDescriptionOutputSchema,
-//   },
-//   analyzeResumeAndJobDescription // This creates a recursive definition if not careful
-// );
-// To use with Genkit UI, the flow function would typically call the prompt directly:
-/*
-const analyzeResumeAndJobDescriptionFlow = ai.defineFlow(
-  {
-    name: 'analyzeResumeAndJobDescriptionFlow',
-    inputSchema: AnalyzeResumeAndJobDescriptionInputSchema,
-    outputSchema: AnalyzeResumeAndJobDescriptionOutputSchema,
-  },
-  async (input) => {
-    logger.info("Flow: Starting analyzeResumeAndJobDescription with input lengths:", { resume: input.resumeText?.length, jd: input.jobDescriptionText?.length });
-    if (!input.resumeText?.trim() || !input.jobDescriptionText?.trim()) {
-      logger.error("Flow Error: Resume text or Job Description text is empty.");
-      return getDefaultOutput("Resume text or Job Description text cannot be empty.");
-    }
-    try {
-      const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
-      if (!output) {
-        logger.error("Flow Error: AI prompt did not return any parsable output.");
-        return getDefaultOutput("AI analysis did not return any parsable output.");
-      }
-      // Here, you might do light massaging of the output if needed, similar to the main function,
-      // but the main function's robust defaulting is key.
-      return output;
-    } catch (error: any) {
-      logger.error("Flow CRITICAL ERROR during AI prompt execution:", error);
-      console.error("[AI FLOW CRITICAL ERROR STACK] ", error.stack);
-      if (error.details) console.error("[AI FLOW CRITICAL ERROR DETAILS] ", error.details);
-      return getDefaultOutput(`An error occurred during AI analysis in flow: ${error.message || String(error)}`);
-    }
-  }
-);
-*/
-// For now, the exported async function `analyzeResumeAndJobDescription` is what Next.js Server Actions will use.
-// If you want Genkit Dev UI to trace this, you'd define and export the flow like above,
-// and your server action would call `analyzeResumeAndJobDescriptionFlow(input)` instead of `analyzeResumeAndJobDescriptionPrompt(input)`.
-// For simplicity and directness, the current setup calls the prompt from the exported function.
