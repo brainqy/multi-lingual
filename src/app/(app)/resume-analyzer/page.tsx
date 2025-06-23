@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
 
 export default function ResumeAnalyzerPage() {
@@ -42,6 +42,8 @@ export default function ResumeAnalyzerPage() {
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
 
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [newResumeName, setNewResumeName] = useState('');
 
   const { toast } = useToast();
 
@@ -231,23 +233,35 @@ export default function ResumeAnalyzerPage() {
       toast({ title: "Scan Deleted", description: "Scan history entry removed." });
   };
   
+  const openSaveDialog = () => {
+    const currentScanDetails = scanHistory[0];
+    const defaultName = currentScanDetails?.jobTitle ? `Resume for ${currentScanDetails.jobTitle}` : `New Resume Version (${new Date().toLocaleDateString()})`;
+    setNewResumeName(defaultName);
+    setIsSaveDialogOpen(true);
+  };
+  
   const handleSaveResume = () => {
     if (!analysisReport || !resumeText) {
         toast({ title: "Cannot Save", description: "No resume text or report to save.", variant: "destructive"});
         return;
     }
-    const currentScanDetails = scanHistory[0]; // The latest scan
+    if (!newResumeName.trim()) {
+      toast({ title: "Name Required", description: "Please provide a name for this resume version.", variant: "destructive" });
+      return;
+    }
+
     const newResume: ResumeProfile = {
         id: `resume-${Date.now()}`,
         tenantId: sampleUserProfile.tenantId,
         userId: sampleUserProfile.id,
-        name: `Resume for ${currentScanDetails?.jobTitle || 'Job'} (${new Date().toLocaleDateString()})`,
+        name: newResumeName,
         resumeText: resumeText,
         lastAnalyzed: new Date().toISOString().split('T')[0]
     };
     sampleResumeProfiles.unshift(newResume);
     setResumes(prev => [newResume, ...prev]);
     toast({ title: "Resume Saved", description: `"${newResume.name}" has been saved to My Resumes.`});
+    setIsSaveDialogOpen(false);
   };
 
   const filteredScanHistory = useMemo(() => {
@@ -466,7 +480,7 @@ export default function ResumeAnalyzerPage() {
 
                     <div className="space-y-3 pt-4 border-t">
                       {(analysisReport.overallQualityScore && analysisReport.overallQualityScore >= 80) ? (
-                          <Button onClick={handleSaveResume} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                          <Button onClick={openSaveDialog} className="w-full bg-green-600 hover:bg-green-700 text-white">
                             <Save className="mr-2 h-4 w-4" /> Save This Version
                           </Button>
                         ) : (
@@ -723,9 +737,32 @@ export default function ResumeAnalyzerPage() {
             />
         </Dialog>
       )}
+
+      <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Resume Version</DialogTitle>
+            <DialogDescription>
+              Please confirm the name for this resume version. You can edit it if you'd like.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="resume-name-input">Resume Name</Label>
+            <Input
+              id="resume-name-input"
+              value={newResumeName}
+              onChange={(e) => setNewResumeName(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleSaveResume} className="bg-primary hover:bg-primary/90">Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
     </div>
   );
 }
-
-    
