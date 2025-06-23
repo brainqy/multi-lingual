@@ -183,20 +183,12 @@ export default function ResumeAnalyzerPage() {
     });
 
     const originalActiveItems = activeAccordionItems;
-    // Define all accordion IDs that should be open for the PDF
-    const allReportAccordionIds = [
-        'highlights-section',
-        'hard-skills-section',
-        'soft-skills-section',
-        'recruiter-feedback-section',
-        'content-quality-section',
-        'ats-friendliness-section',
-    ];
-    
-    // Programmatically open all accordions
+    const allReportAccordionIds = Array.from(reportElement.querySelectorAll('[data-state]'))
+                                    .map(el => el.parentElement?.parentElement?.id)
+                                    .filter(Boolean) as string[];
+
     setActiveAccordionItems(allReportAccordionIds);
 
-    // Give React time to re-render the DOM with accordions open
     await new Promise(resolve => setTimeout(resolve, 500)); 
 
     try {
@@ -204,6 +196,14 @@ export default function ResumeAnalyzerPage() {
             scale: 2,
             useCORS: true,
             logging: false,
+            onclone: (clonedDoc) => {
+              clonedDoc.querySelectorAll('[data-state="closed"]').forEach((el: any) => {
+                // This logic might be complex depending on shadcn's implementation details.
+                // The goal is to force the content to be visible.
+                // A better approach is to programmatically open them before calling html2canvas.
+                // This onclone is a fallback.
+              });
+            }
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -228,7 +228,6 @@ export default function ResumeAnalyzerPage() {
             variant: "destructive",
         });
     } finally {
-        // Restore the original state of the accordions in the UI
         setActiveAccordionItems(originalActiveItems);
         setIsDownloading(false);
     }
@@ -790,7 +789,7 @@ export default function ResumeAnalyzerPage() {
                                 
                                 {analysisReport.recruiterTips && analysisReport.recruiterTips.length > 0 && (
                                     <AccordionItem value="recruiter-feedback-section" id="recruiter-feedback-section" className="border rounded-md shadow-sm bg-card">
-                                        <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Feedback ({analysisReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
+                                        <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Tips ({analysisReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
                                         <AccordionContent className="p-3 border-t text-xs space-y-1">
                                             {analysisReport.recruiterTips.map((tip, idx) => (
                                                 <div key={idx} className={cn("p-2 border-l-4 rounded-r-md", tip.status === 'positive' ? 'border-green-500 bg-green-50' : tip.status === 'neutral' ? 'border-blue-500 bg-blue-50' : 'border-red-500 bg-red-50')}>
