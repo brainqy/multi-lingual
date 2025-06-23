@@ -62,6 +62,9 @@ export default function ResumeAnalyzerPage() {
   const [newResumeName, setNewResumeName] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
+  const [isEditingCompanyName, setIsEditingCompanyName] = useState(false);
+
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -560,14 +563,54 @@ export default function ResumeAnalyzerPage() {
                 {/* Left Column - Scores & Actions */}
                 <div className="md:col-span-1 space-y-6 p-4 border-r border-border rounded-l-lg bg-secondary/30">
                     <div className="space-y-4 border-b pb-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="report-job-title" className="text-xs font-medium">Target Job Title</Label>
-                            <Input id="report-job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Enter job title" className="bg-background"/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="report-company-name" className="text-xs font-medium">Target Company</Label>
-                            <Input id="report-company-name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Enter company name" className="bg-background"/>
-                        </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="report-job-title" className="text-xs font-medium">Target Job Title</Label>
+                          {isEditingJobTitle ? (
+                              <Input
+                                  id="report-job-title"
+                                  value={jobTitle}
+                                  onChange={(e) => setJobTitle(e.target.value)}
+                                  onBlur={() => setIsEditingJobTitle(false)}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingJobTitle(false); } }}
+                                  placeholder="Enter job title"
+                                  className="bg-background"
+                                  autoFocus
+                              />
+                          ) : (
+                              <div
+                                  onClick={() => setIsEditingJobTitle(true)}
+                                  className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingJobTitle(true); }}
+                              >
+                                  {jobTitle || <span className="text-muted-foreground">Enter job title</span>}
+                              </div>
+                          )}
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="report-company-name" className="text-xs font-medium">Target Company</Label>
+                          {isEditingCompanyName ? (
+                              <Input
+                                  id="report-company-name"
+                                  value={companyName}
+                                  onChange={(e) => setCompanyName(e.target.value)}
+                                  onBlur={() => setIsEditingCompanyName(false)}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingCompanyName(false); } }}
+                                  placeholder="Enter company name"
+                                  className="bg-background"
+                                  autoFocus
+                              />
+                          ) : (
+                              <div
+                                  onClick={() => setIsEditingCompanyName(true)}
+                                  className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingCompanyName(true); }}
+                              >
+                                  {companyName || <span className="text-muted-foreground">Enter company name</span>}
+                              </div>
+                          )}
+                      </div>
                     </div>
 
                     <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="xl" label="Match Rate" />
@@ -920,3 +963,4 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
+
