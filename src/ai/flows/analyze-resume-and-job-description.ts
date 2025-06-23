@@ -80,7 +80,6 @@ const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
 
   searchabilityScore: z.number().min(0).max(100).optional().describe("Overall searchability score (0-100). Based on presence of contact info, section headings, and job title match."),
   recruiterTipsScore: z.number().min(0).max(100).optional().describe("Overall score based on recruiter tips (0-100), such as word count, action verbs, and measurable results."),
-  formattingScore: z.number().min(0).max(100).optional().describe("Overall formatting score (0-100), considering clarity, consistency, and length."),
   highlightsScore: z.number().min(0).max(100).optional().describe("Score for the quality and relevance of resume highlights (0-100) against the job description."),
   softSkillsScore: z.number().min(0).max(100).optional().describe("Score for identified soft skills relevant to the job (0-100)."),
   identifiedSoftSkills: z.array(z.string()).optional().describe('Soft skills identified in the resume that are relevant to the job description. These contribute to Soft Skills Score.'),
@@ -89,7 +88,7 @@ const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
   formattingDetails: z.array(AtsFormattingIssueSchema).optional().describe("Detailed breakdown of formatting aspects and feedback."),
   
   atsParsingConfidence: AtsParsingConfidenceSchema.optional().describe("Confidence scores for ATS parsing."),
-  atsStandardFormattingComplianceScore: z.number().min(0).max(100).optional().describe("Score for compliance with standard ATS-friendly formatting."),
+  atsStandardFormattingComplianceScore: z.number().min(0).max(100).optional().describe("Score for compliance with standard ATS-friendly formatting, considering clarity, consistency, and length."),
   standardFormattingIssues: z.array(AtsFormattingIssueSchema).optional().describe("Specific standard formatting issues identified."),
   undefinedAcronyms: z.array(z.string()).optional().describe("Acronyms used without prior definition."),
 

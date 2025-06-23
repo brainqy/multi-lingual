@@ -316,11 +316,10 @@ export default function ResumeAnalyzerPage() {
     return {
       searchability: getSearchabilityIssueCount(analysisReport.searchabilityDetails),
       recruiterTips: analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length || 0,
-      formatting: analysisReport.standardFormattingIssues?.length || 0,
+      atsFriendliness: (analysisReport.standardFormattingIssues?.length || 0) + (analysisReport.undefinedAcronyms?.length || 0),
       highlights: getIssuesFromScore(analysisReport.highlightsScore),
       hardSkills: analysisReport.missingSkills?.length || 0,
       softSkills: getIssuesFromScore(analysisReport.softSkillsScore),
-      atsCompliance: (analysisReport.standardFormattingIssues?.length || 0) + (analysisReport.undefinedAcronyms?.length || 0),
     };
   }, [analysisReport]);
 
@@ -526,11 +525,10 @@ export default function ResumeAnalyzerPage() {
                       {[
                           {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability, sectionId: 'searchability-details-section', tabId: 'searchability_analysis'},
                           {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips, sectionId: 'recruiter-feedback-section', tabId: 'full_report'},
-                          {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting, sectionId: 'ats-friendliness-section', tabId: 'full_report'},
+                          {label: "ATS Friendliness", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsFriendliness, sectionId: 'ats-friendliness-section', tabId: 'full_report'},
                           {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights, sectionId: 'highlights-section', tabId: 'full_report'},
                           {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills, sectionId: 'hard-skills-section', tabId: 'full_report'},
                           {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills, sectionId: 'soft-skills-section', tabId: 'full_report'},
-                          {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance, sectionId: 'ats-friendliness-section', tabId: 'full_report'},
                       ].map(cat => cat.score !== undefined && (
                           <div key={cat.label}>
                               <div className="flex justify-between text-sm mb-0.5 items-center">
