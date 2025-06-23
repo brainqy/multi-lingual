@@ -28,6 +28,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ScoreCircle from '@/components/ui/score-circle';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const getIssuesFromScore = (score?: number): number => {
   if (score === undefined || score === null) return 0;
@@ -58,6 +60,7 @@ export default function ResumeAnalyzerPage() {
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [newResumeName, setNewResumeName] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { toast } = useToast();
 
@@ -159,8 +162,67 @@ export default function ResumeAnalyzerPage() {
     }
   };
 
-  const handleDownloadReport = () => {
-    toast({ title: "Download Report (Mock)", description: "PDF report generation is mocked. Printing the page to PDF can be an alternative."});
+  const handleDownloadReport = async () => {
+    const reportElement = document.getElementById('analysis-report-section');
+    if (!reportElement) {
+      toast({
+        title: "Download Error",
+        description: "Could not find the report element to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    toast({
+      title: "Generating PDF...",
+      description: "Please wait, this may take a moment.",
+    });
+
+    try {
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        onclone: (document) => {
+          // Find all accordions and if they are closed, open them for the screenshot
+          document.querySelectorAll('[data-state="closed"]').forEach(el => {
+            // This is a bit of a hack. A better solution might involve setting a class
+            // that overrides the accordion animation/height for printing.
+            // For now, we'll try to just remove the height restriction.
+            const content = el.querySelector('.overflow-hidden');
+            if (content) {
+              (content as HTMLElement).style.height = 'auto';
+              (content as HTMLElement).style.visibility = 'visible';
+            }
+          });
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`ResumeAnalysis_Report_${jobTitle || 'Job'}.pdf`);
+
+      toast({
+        title: "Download Complete",
+        description: "Your report has been downloaded.",
+      });
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: "Download Failed",
+        description: "An error occurred while generating the PDF.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
   
   const handleStartNewAnalysis = () => {
@@ -479,11 +541,12 @@ export default function ResumeAnalyzerPage() {
                 <CardDescription>Detailed breakdown of your resume against the job description.</CardDescription>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Button onClick={() => handleSubmit()} variant="outline" className="flex-1 sm:flex-none">
+                    <Button onClick={() => handleSubmit()} variant="outline" className="flex-1 sm:flex-none" disabled={isDownloading}>
                         <RefreshCcw className="mr-2 h-4 w-4" /> Re-Analyze
                     </Button>
-                    <Button onClick={handleDownloadReport} variant="outline" className="flex-1 sm:flex-none">
-                        <Download className="mr-2 h-4 w-4" /> Download
+                    <Button onClick={handleDownloadReport} variant="outline" className="flex-1 sm:flex-none" disabled={isDownloading}>
+                        {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                        {isDownloading ? 'Downloading...' : 'Download'}
                     </Button>
                 </div>
             </CardHeader>
