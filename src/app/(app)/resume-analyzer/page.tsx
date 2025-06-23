@@ -53,6 +53,8 @@ export default function ResumeAnalyzerPage() {
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | 'highest' | 'starred' | 'archived'>('all');
 
+  const [activeTab, setActiveTab] = useState('full_report');
+  const [activeAccordionItems, setActiveAccordionItems] = useState<string[]>([]);
   const [isPowerEditDialogOpen, setIsPowerEditDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [newResumeName, setNewResumeName] = useState('');
@@ -314,13 +316,30 @@ export default function ResumeAnalyzerPage() {
     return {
       searchability: getSearchabilityIssueCount(analysisReport.searchabilityDetails),
       recruiterTips: analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length || 0,
-      formatting: analysisReport.formattingDetails?.length || 0,
+      formatting: analysisReport.standardFormattingIssues?.length || 0,
       highlights: getIssuesFromScore(analysisReport.highlightsScore),
       hardSkills: analysisReport.missingSkills?.length || 0,
       softSkills: getIssuesFromScore(analysisReport.softSkillsScore),
-      atsCompliance: analysisReport.standardFormattingIssues?.length || 0,
+      atsCompliance: (analysisReport.standardFormattingIssues?.length || 0) + (analysisReport.undefinedAcronyms?.length || 0),
     };
   }, [analysisReport]);
+
+  const handleNavigateToIssue = (tab: string, sectionId: string) => {
+    setActiveTab(tab);
+
+    setTimeout(() => {
+        setActiveAccordionItems(prev => {
+            const newSet = new Set(prev);
+            newSet.add(sectionId);
+            return Array.from(newSet);
+        });
+
+        setTimeout(() => {
+            const element = document.getElementById(sectionId);
+            element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    }, 50);
+  };
 
 
   return (
@@ -505,19 +524,21 @@ export default function ResumeAnalyzerPage() {
 
                     <div className="space-y-3 pt-4 border-t">
                       {[
-                          {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability},
-                          {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips},
-                          {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting},
-                          {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights},
-                          {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills},
-                          {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills},
-                          {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance},
+                          {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability, sectionId: 'searchability-details-section', tabId: 'searchability_analysis'},
+                          {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips, sectionId: 'recruiter-feedback-section', tabId: 'full_report'},
+                          {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting, sectionId: 'ats-friendliness-section', tabId: 'full_report'},
+                          {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights, sectionId: 'highlights-section', tabId: 'full_report'},
+                          {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills, sectionId: 'hard-skills-section', tabId: 'full_report'},
+                          {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills, sectionId: 'soft-skills-section', tabId: 'full_report'},
+                          {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance, sectionId: 'ats-friendliness-section', tabId: 'full_report'},
                       ].map(cat => cat.score !== undefined && (
                           <div key={cat.label}>
                               <div className="flex justify-between text-sm mb-0.5 items-center">
                                   <span className="font-medium text-muted-foreground">{cat.label}</span>
                                   {cat.issues > 0 && (
-                                      <span className="text-xs text-red-500 font-semibold">{cat.issues} issue{cat.issues !== 1 ? 's' : ''}</span>
+                                     <Button variant="link" size="sm" className="text-xs text-red-500 font-semibold p-0 h-auto" onClick={() => handleNavigateToIssue(cat.tabId, cat.sectionId)}>
+                                        {cat.issues} issue{cat.issues !== 1 ? 's' : ''}
+                                    </Button>
                                   )}
                               </div>
                               <Progress value={cat.score ?? 0} className="h-2 [&>div]:bg-primary mb-1" />
@@ -541,7 +562,7 @@ export default function ResumeAnalyzerPage() {
                         </div>
                     </div>
                     
-                    <Tabs defaultValue="full_report" className="w-full">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
                             <TabsTrigger value="resume_text" className="text-xs sm:text-sm">Resume</TabsTrigger>
                             <TabsTrigger value="jd_text" className="text-xs sm:text-sm">Job Desc.</TabsTrigger>
@@ -558,7 +579,7 @@ export default function ResumeAnalyzerPage() {
                         
                         <TabsContent value="searchability_analysis" className="mt-4 space-y-4">
                             {analysisReport.searchabilityDetails && (
-                            <Card className="border-border shadow-sm">
+                            <Card className="border-border shadow-sm" id="searchability-details-section">
                                 <CardHeader className="p-3 bg-secondary/20 rounded-t-md flex flex-row items-center justify-between">
                                     <CardTitle className="text-md font-semibold flex items-center gap-2">
                                         <Search className="h-5 w-5 text-primary"/>Searchability Details
@@ -606,8 +627,8 @@ export default function ResumeAnalyzerPage() {
                         </TabsContent>
 
                         <TabsContent value="full_report" className="mt-4">
-                            <Accordion type="multiple" className="w-full space-y-3">
-                                <AccordionItem value="highlights" className="border rounded-md shadow-sm bg-card">
+                            <Accordion type="multiple" className="w-full space-y-3" value={activeAccordionItems} onValueChange={setActiveAccordionItems}>
+                                <AccordionItem value="highlights-section" id="highlights-section" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Target className="mr-2 h-4 w-4"/>Key Highlights</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
                                         <div>
@@ -621,7 +642,7 @@ export default function ResumeAnalyzerPage() {
                                     </AccordionContent>
                                 </AccordionItem>
 
-                                <AccordionItem value="hard-skills" className="border rounded-md shadow-sm bg-card">
+                                <AccordionItem value="hard-skills-section" id="hard-skills-section" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><ListChecks className="mr-2 h-4 w-4"/>Hard Skills Analysis ({analysisReport.hardSkillsScore ?? 0}%)</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
                                         <div>
@@ -643,7 +664,7 @@ export default function ResumeAnalyzerPage() {
                                     </AccordionContent>
                                 </AccordionItem>
 
-                                <AccordionItem value="soft-skills" className="border rounded-md shadow-sm bg-card">
+                                <AccordionItem value="soft-skills-section" id="soft-skills-section" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Brain className="mr-2 h-4 w-4"/>Soft Skills Analysis ({analysisReport.softSkillsScore ?? 0}%)</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
                                         <div>
@@ -658,7 +679,7 @@ export default function ResumeAnalyzerPage() {
                                 </AccordionItem>
                                 
                                 {analysisReport.recruiterTips && analysisReport.recruiterTips.length > 0 && (
-                                    <AccordionItem value="recruiter-feedback" className="border rounded-md shadow-sm bg-card">
+                                    <AccordionItem value="recruiter-feedback-section" id="recruiter-feedback-section" className="border rounded-md shadow-sm bg-card">
                                         <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Feedback ({analysisReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
                                         <AccordionContent className="p-3 border-t text-xs space-y-1">
                                             {analysisReport.recruiterTips.map((tip, idx) => (
@@ -670,7 +691,7 @@ export default function ResumeAnalyzerPage() {
                                         </AccordionContent>
                                     </AccordionItem>
                                 )}
-                                <AccordionItem value="content-quality" className="border rounded-md shadow-sm bg-card">
+                                <AccordionItem value="content-quality-section" id="content-quality-section" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Palette className="mr-2 h-4 w-4"/>Content & Style Insights</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
                                         {analysisReport.quantifiableAchievementDetails && (
@@ -702,7 +723,7 @@ export default function ResumeAnalyzerPage() {
                                         )}
                                     </AccordionContent>
                                 </AccordionItem>
-                                <AccordionItem value="ats-friendliness" className="border rounded-md shadow-sm bg-card">
+                                <AccordionItem value="ats-friendliness-section" id="ats-friendliness-section" className="border rounded-md shadow-sm bg-card">
                                     <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><SearchCheck className="mr-2 h-4 w-4"/>ATS Friendliness</AccordionTrigger>
                                     <AccordionContent className="p-3 border-t text-xs space-y-3">
                                         {analysisReport.atsParsingConfidence && <p><strong>Overall Parsing Confidence:</strong> {analysisReport.atsParsingConfidence.overall ?? 'N/A'}%</p>}
