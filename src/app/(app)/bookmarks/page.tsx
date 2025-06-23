@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -255,5 +254,5 @@ export default function BookmarksPage() {
       )}
     </div>
   );
+}
 
-    
