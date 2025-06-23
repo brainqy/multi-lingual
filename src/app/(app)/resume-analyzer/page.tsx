@@ -591,6 +591,56 @@ export default function ResumeAnalyzerPage() {
 
                         <TabsContent value="full_report" className="mt-4">
                             <Accordion type="multiple" className="w-full space-y-3">
+                                <AccordionItem value="highlights" className="border rounded-md shadow-sm bg-card">
+                                    <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Target className="mr-2 h-4 w-4"/>Key Highlights</AccordionTrigger>
+                                    <AccordionContent className="p-3 border-t text-xs space-y-3">
+                                        <div>
+                                            <h4 className="font-semibold text-foreground mb-1">Your Resume's Strengths</h4>
+                                            <p className="text-muted-foreground whitespace-pre-line">{analysisReport.resumeKeyStrengths || "No specific strengths highlighted by AI."}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-foreground mb-1">Job's Key Requirements</h4>
+                                            <p className="text-muted-foreground whitespace-pre-line">{analysisReport.jobDescriptionKeyRequirements || "No specific requirements highlighted by AI."}</p>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                <AccordionItem value="hard-skills" className="border rounded-md shadow-sm bg-card">
+                                    <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><ListChecks className="mr-2 h-4 w-4"/>Hard Skills Analysis ({analysisReport.hardSkillsScore ?? 0}%)</AccordionTrigger>
+                                    <AccordionContent className="p-3 border-t text-xs space-y-3">
+                                        <div>
+                                            <h4 className="font-semibold text-green-600 mb-1">Matching Skills</h4>
+                                            {analysisReport.matchingSkills && analysisReport.matchingSkills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {analysisReport.matchingSkills.map(skill => <Badge key={skill} variant="success" className="bg-green-100 text-green-700 border-green-300">{skill}</Badge>)}
+                                                </div>
+                                            ) : <p className="text-muted-foreground">No matching hard skills found.</p>}
+                                        </div>
+                                         <div>
+                                            <h4 className="font-semibold text-red-600 mb-1">Missing Skills</h4>
+                                            {analysisReport.missingSkills && analysisReport.missingSkills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {analysisReport.missingSkills.map(skill => <Badge key={skill} variant="destructive">{skill}</Badge>)}
+                                                </div>
+                                            ) : <p className="text-muted-foreground">No critical missing skills identified. Good job!</p>}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                <AccordionItem value="soft-skills" className="border rounded-md shadow-sm bg-card">
+                                    <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Brain className="mr-2 h-4 w-4"/>Soft Skills Analysis ({analysisReport.softSkillsScore ?? 0}%)</AccordionTrigger>
+                                    <AccordionContent className="p-3 border-t text-xs space-y-3">
+                                        <div>
+                                            <h4 className="font-semibold text-foreground mb-1">Identified Soft Skills</h4>
+                                            {analysisReport.identifiedSoftSkills && analysisReport.identifiedSoftSkills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {analysisReport.identifiedSoftSkills.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
+                                                </div>
+                                            ) : <p className="text-muted-foreground">No specific soft skills were highlighted by the AI.</p>}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                
                                 {analysisReport.recruiterTips && analysisReport.recruiterTips.length > 0 && (
                                     <AccordionItem value="recruiter-feedback" className="border rounded-md shadow-sm bg-card">
                                         <AccordionTrigger className="text-sm font-medium hover:text-primary data-[state=open]:text-primary p-3"><Users className="mr-2 h-4 w-4"/>Recruiter Feedback ({analysisReport.recruiterTipsScore ?? 0}%)</AccordionTrigger>
