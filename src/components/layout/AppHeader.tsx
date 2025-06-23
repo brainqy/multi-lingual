@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
@@ -27,7 +28,6 @@ import { useState, useEffect } from 'react';
 import { getRecentPages } from '@/lib/recent-pages'; 
 import type { RecentPageItem } from '@/types'; 
 import { usePathname, useRouter } from "next/navigation"; 
-import AnnouncementBanner from '@/components/features/AnnouncementBanner';
 
 export function AppHeader() {
   const { toast } = useToast();
@@ -57,8 +57,7 @@ export function AppHeader() {
 
   return (
     <TooltipProvider>
-      <header className="sticky top-0 z-10 border-b bg-card shadow-sm">
-        <AnnouncementBanner />
+      <header className="border-b bg-card shadow-sm">
         <div className="flex h-16 items-center gap-4 px-4 md:px-6">
           <SidebarTrigger />
           <div className="flex-1">
