@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { 
     Search, UploadCloud, ArrowRight, Loader2, Download, CheckCircle, BarChart, Edit3, 
     Wrench, AlignLeft, SlidersHorizontal, Wand2, Lightbulb, Brain, SearchCheck, 
@@ -628,7 +629,7 @@ export default function ResumeAnalyzerPage() {
                                             <h4 className="font-semibold text-green-600 mb-1">Matching Skills</h4>
                                             {analysisReport.matchingSkills && analysisReport.matchingSkills.length > 0 ? (
                                                 <div className="flex flex-wrap gap-1">
-                                                    {analysisReport.matchingSkills.map(skill => <Badge key={skill} variant="success" className="bg-green-100 text-green-700 border-green-300">{skill}</Badge>)}
+                                                    {analysisReport.matchingSkills.map(skill => <Badge key={skill} variant="secondary" className="bg-green-100 text-green-700 border-green-300">{skill}</Badge>)}
                                                 </div>
                                             ) : <p className="text-muted-foreground">No matching hard skills found.</p>}
                                         </div>
