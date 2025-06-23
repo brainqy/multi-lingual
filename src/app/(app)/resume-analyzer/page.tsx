@@ -165,62 +165,72 @@ export default function ResumeAnalyzerPage() {
   const handleDownloadReport = async () => {
     const reportElement = document.getElementById('analysis-report-section');
     if (!reportElement) {
-      toast({
-        title: "Download Error",
-        description: "Could not find the report element to download.",
-        variant: "destructive",
-      });
-      return;
+        toast({
+            title: "Download Error",
+            description: "Could not find the report element to download.",
+            variant: "destructive",
+        });
+        return;
     }
 
     setIsDownloading(true);
     toast({
-      title: "Generating PDF...",
-      description: "Please wait, this may take a moment.",
+        title: "Generating PDF...",
+        description: "Please wait, this may take a moment.",
     });
 
+    const originalActiveItems = activeAccordionItems;
+    // Define all accordion IDs that should be open for the PDF
+    const allReportAccordionIds = [
+        'highlights-section',
+        'hard-skills-section',
+        'soft-skills-section',
+        'recruiter-feedback-section',
+        'content-quality-section',
+        'ats-friendliness-section',
+    ];
+    
+    // Programmatically open all accordions
+    setActiveAccordionItems(allReportAccordionIds);
+
+    // Give React time to re-render the DOM with accordions open
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+
     try {
-      const canvas = await html2canvas(reportElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Find all Radix Accordion content panels that are closed
-          clonedDoc.querySelectorAll('[data-radix-collapsible-content][data-state="closed"]').forEach(el => {
-            const contentEl = el as HTMLElement;
-            // Force the element to be visible and take up its natural height for the screenshot.
-            contentEl.style.height = 'auto';
-            contentEl.style.overflow = 'visible';
-          });
-        }
-      });
+        const canvas = await html2canvas(reportElement, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+        });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
-      });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'px',
+            format: [canvas.width, canvas.height],
+        });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(`ResumeAnalysis_Report_${jobTitle || 'Job'}.pdf`);
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`ResumeAnalysis_Report_${jobTitle || 'Job'}.pdf`);
 
-      toast({
-        title: "Download Complete",
-        description: "Your report has been downloaded.",
-      });
+        toast({
+            title: "Download Complete",
+            description: "Your report has been downloaded.",
+        });
     } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({
-        title: "Download Failed",
-        description: "An error occurred while generating the PDF.",
-        variant: "destructive",
-      });
+        console.error("PDF generation error:", error);
+        toast({
+            title: "Download Failed",
+            description: "An error occurred while generating the PDF.",
+            variant: "destructive",
+        });
     } finally {
-      setIsDownloading(false);
+        // Restore the original state of the accordions in the UI
+        setActiveAccordionItems(originalActiveItems);
+        setIsDownloading(false);
     }
   };
-  
+
   const handleStartNewAnalysis = () => {
     setResumeFile(null);
     setAnalysisReport(null); 
