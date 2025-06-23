@@ -7,7 +7,7 @@ import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
 import type { IdentifyResumeIssuesOutput } from '@/types';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, CheckCircle } from 'lucide-react';
+import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, CheckCircle, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -125,8 +125,16 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
   const handleWriteSection = (sectionName?: string) => {
     if (!sectionName) return;
     const instruction = `Please write a new "${sectionName}" section for this resume, tailored for the job description.`;
-    setUserInstructions(prev => prev ? `${prev}\n${instruction}` : instruction);
+    setUserInstructions(prev => prev ? `${prev}\n- ${instruction}` : `- ${instruction}`);
     toast({ title: "Instruction Added", description: `Added instruction to write the ${sectionName} section.`});
+  };
+
+  const handleAddInstruction = (instruction: string) => {
+    setUserInstructions(prev => prev ? `${prev}\n- ${instruction}` : `- ${instruction}`);
+    toast({
+      title: "Instruction Added",
+      description: "The instruction has been added for the AI to consider during the rewrite.",
+    });
   };
 
   const renderContent = () => {
@@ -176,6 +184,12 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
                                 <Button size="sm" variant="outline" onClick={() => handleWriteSection(issue.suggestion)}>
                                   <WandSparkles className="mr-2 h-4 w-4" />
                                   Write {issue.suggestion}
+                                </Button>
+                              )}
+                               {['missingQuantification', 'unclearExperience', 'missingContactInfo', 'other'].includes(issue.type) && (
+                                <Button size="sm" variant="outline" onClick={() => handleAddInstruction(issue.detail)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add to Instructions
                                 </Button>
                               )}
                           </div>

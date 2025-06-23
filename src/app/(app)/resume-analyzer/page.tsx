@@ -308,6 +308,20 @@ export default function ResumeAnalyzerPage() {
     if (score >= 20) return 4;
     return 5;
   };
+  
+   const categoryIssues = useMemo(() => {
+      if (!analysisReport) return {};
+      return {
+          searchability: getSearchabilityIssueCount(analysisReport.searchabilityDetails),
+          recruiterTips: getGenericIssueCount(analysisReport.recruiterTipsScore, undefined, analysisReport.recruiterTips?.filter(tip => tip.status === 'negative')),
+          formatting: getGenericIssueCount(analysisReport.formattingScore, undefined, analysisReport.formattingDetails),
+          highlights: getGenericIssueCount(analysisReport.highlightsScore),
+          hardSkills: getGenericIssueCount(analysisReport.hardSkillsScore, undefined, analysisReport.missingSkills),
+          softSkills: getGenericIssueCount(analysisReport.softSkillsScore),
+          atsCompliance: getGenericIssueCount(analysisReport.atsStandardFormattingComplianceScore, undefined, analysisReport.standardFormattingIssues),
+      }
+  }, [analysisReport]);
+
 
   return (
     <div className="space-y-8">
@@ -491,18 +505,20 @@ export default function ResumeAnalyzerPage() {
 
                     <div className="space-y-3 pt-4 border-t">
                         {[
-                            {label: "Searchability", score: analysisReport.searchabilityScore, issues: getSearchabilityIssueCount(analysisReport.searchabilityDetails)},
-                            {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: getGenericIssueCount(analysisReport.recruiterTipsScore, undefined, analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length)},
-                            {label: "Formatting", score: analysisReport.formattingScore, issues: getGenericIssueCount(analysisReport.formattingScore, undefined, analysisReport.formattingDetails?.length)},
-                            {label: "Highlights", score: analysisReport.highlightsScore, issues: getGenericIssueCount(analysisReport.highlightsScore)},
-                            {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: getGenericIssueCount(analysisReport.hardSkillsScore, undefined, analysisReport.missingSkills?.length)},
-                            {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: getGenericIssueCount(analysisReport.softSkillsScore)},
-                            {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: getGenericIssueCount(analysisReport.atsStandardFormattingComplianceScore, undefined, analysisReport.standardFormattingIssues?.length)},
+                            {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability},
+                            {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips},
+                            {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting},
+                            {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights},
+                            {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills},
+                            {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills},
+                            {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance},
                         ].map(cat => cat.score !== undefined && (
                             <div key={cat.label}>
-                                <div className="flex justify-between text-sm mb-0.5">
+                                <div className="flex justify-between text-sm mb-0.5 items-center">
                                     <span className="font-medium text-muted-foreground">{cat.label}</span>
-                                    <span className="text-xs text-red-500">{cat.issues} issue{cat.issues !== 1 ? 's' : ''}</span>
+                                    {cat.issues > 0 && (
+                                        <span className="text-xs text-red-500 font-semibold">{cat.issues} issue{cat.issues !== 1 ? 's' : ''}</span>
+                                    )}
                                 </div>
                                 <Progress value={cat.score ?? 0} className="h-2 [&>div]:bg-primary mb-1" />
                                 <p className="text-xs text-primary text-right font-semibold">{cat.score ?? 0}%</p>
