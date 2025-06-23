@@ -611,15 +611,18 @@ export interface MockInterviewQuestion {
   questionText: string;
   category?: InterviewQuestionCategory;
   difficulty?: InterviewQuestionDifficulty;
+  baseScore?: number;
 }
 
 export interface MockInterviewAnswer {
   questionId: string;
+  questionText: string;
   userAnswer: string;
   aiFeedback?: string;
   aiScore?: number;
   strengths?: string[];
   areasForImprovement?: string[];
+  suggestedImprovements?: string[];
   isRecording?: boolean;
 }
 
@@ -645,6 +648,7 @@ export interface MockInterviewSession {
   timerPerQuestion?: number;
   questionCategories?: InterviewQuestionCategory[];
   difficulty?: InterviewQuestionDifficulty;
+  recordingReferences?: RecordingReference[];
 }
 
 
@@ -822,10 +826,14 @@ export interface AtsFormattingIssue {
   recommendation: string;
 }
 
-export interface AnalyzeResumeAndJobDescriptionInput {
-  resumeText: string;
-  jobDescriptionText: string;
-}
+export const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
+  resumeText: z.string().describe('The text content of the resume.'),
+  jobDescriptionText: z.string().describe('The text content of the job description.'),
+  jobTitle: z.string().optional().describe('The target job title for the resume.'),
+  companyName: z.string().optional().describe('The target company name.'),
+});
+export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
+
 
 export interface SearchabilityDetails {
   hasPhoneNumber?: boolean;

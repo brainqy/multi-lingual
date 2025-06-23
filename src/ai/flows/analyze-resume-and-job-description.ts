@@ -11,12 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
-  resumeText: z.string().describe('The text content of the resume.'),
-  jobDescriptionText: z.string().describe('The text content of the job description.'),
-});
-export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
+import { AnalyzeResumeAndJobDescriptionInputSchema, type AnalyzeResumeAndJobDescriptionOutput } from '@/types';
 
 const SearchabilityDetailsSchema = z.object({
   hasPhoneNumber: z.boolean().optional().describe("Resume contains a phone number."),
@@ -104,10 +99,8 @@ const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
   readabilityDetails: ReadabilityDetailsSchema.optional().describe("Assessment of the resume's readability."),
 });
 
-export type AnalyzeResumeAndJobDescriptionOutput = z.infer<typeof AnalyzeResumeAndJobDescriptionOutputSchema>;
-
 export async function analyzeResumeAndJobDescription(
-  input: AnalyzeResumeAndJobDescriptionInput
+  input: z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
   if (!input.resumeText?.trim() || !input.jobDescriptionText?.trim()) {
     throw new Error("Resume text or Job Description text cannot be empty.");
@@ -133,6 +126,10 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
     ],
   },
   prompt: `You are an expert resume and job description analyst. Your task is to provide a comprehensive analysis of the given resume against the provided job description.
+
+**Analysis Context:**
+{{#if jobTitle}}Target Job Title: {{{jobTitle}}}{{/if}}
+{{#if companyName}}Target Company: {{{companyName}}}{{/if}}
 
 **Primary Analysis Task:**
 Evaluate the resume based on all categories defined in the output schema, providing detailed feedback and scores.
