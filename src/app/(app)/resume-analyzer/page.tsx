@@ -188,9 +188,9 @@ export default function ResumeAnalyzerPage() {
           // Find all Radix Accordion content panels that are closed
           clonedDoc.querySelectorAll('[data-radix-collapsible-content][data-state="closed"]').forEach(el => {
             const contentEl = el as HTMLElement;
-            // The Radix animation for closing sets height to 0. We override this
-            // for the screenshot by setting height to 'auto'.
+            // Force the element to be visible and take up its natural height for the screenshot.
             contentEl.style.height = 'auto';
+            contentEl.style.overflow = 'visible';
           });
         }
       });
