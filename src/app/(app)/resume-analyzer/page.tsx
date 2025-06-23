@@ -184,17 +184,13 @@ export default function ResumeAnalyzerPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        onclone: (document) => {
-          // Find all accordions and if they are closed, open them for the screenshot
-          document.querySelectorAll('[data-state="closed"]').forEach(el => {
-            // This is a bit of a hack. A better solution might involve setting a class
-            // that overrides the accordion animation/height for printing.
-            // For now, we'll try to just remove the height restriction.
-            const content = el.querySelector('.overflow-hidden');
-            if (content) {
-              (content as HTMLElement).style.height = 'auto';
-              (content as HTMLElement).style.visibility = 'visible';
-            }
+        onclone: (clonedDoc) => {
+          // Find all Radix Accordion content panels that are closed
+          clonedDoc.querySelectorAll('[data-radix-collapsible-content][data-state="closed"]').forEach(el => {
+            const contentEl = el as HTMLElement;
+            // The Radix animation for closing sets height to 0. We override this
+            // for the screenshot by setting height to 'auto'.
+            contentEl.style.height = 'auto';
           });
         }
       });
