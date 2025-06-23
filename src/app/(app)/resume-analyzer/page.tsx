@@ -182,14 +182,17 @@ export default function ResumeAnalyzerPage() {
         description: "Please wait, this may take a moment.",
     });
 
-    const originalActiveItems = activeAccordionItems;
-    const allReportAccordionIds = Array.from(reportElement.querySelectorAll('[data-state]'))
-                                    .map(el => el.parentElement?.parentElement?.id)
-                                    .filter(Boolean) as string[];
+    const originalActiveItems = [...activeAccordionItems];
+    // Find all accordion item values in the report section
+    const allReportItemValues = Array.from(reportElement.querySelectorAll('[data-radix-collection-item]'))
+                                     .map(el => (el as HTMLElement).dataset.value)
+                                     .filter(Boolean) as string[];
 
-    setActiveAccordionItems(allReportAccordionIds);
-
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    // Programmatically open all accordions before taking the screenshot
+    setActiveAccordionItems(allReportItemValues);
+    
+    // Give the DOM a moment to update and render the expanded content
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
         const canvas = await html2canvas(reportElement, {
@@ -197,12 +200,16 @@ export default function ResumeAnalyzerPage() {
             useCORS: true,
             logging: false,
             onclone: (clonedDoc) => {
-              clonedDoc.querySelectorAll('[data-state="closed"]').forEach((el: any) => {
-                // This logic might be complex depending on shadcn's implementation details.
-                // The goal is to force the content to be visible.
-                // A better approach is to programmatically open them before calling html2canvas.
-                // This onclone is a fallback.
-              });
+                // This onclone logic is a fallback; the state-based approach is more reliable.
+                // We're attempting to force visibility on any content that might still be hidden.
+                clonedDoc.querySelectorAll('[data-state="closed"]').forEach((el: any) => {
+                    const content = el.querySelector('[data-radix-accordion-content]');
+                    if(content) {
+                       content.style.height = 'auto';
+                       content.style.overflow = 'visible';
+                       content.style.display = 'block';
+                    }
+                });
             }
         });
 
@@ -228,10 +235,12 @@ export default function ResumeAnalyzerPage() {
             variant: "destructive",
         });
     } finally {
-        setActiveAccordionItems(originalActiveItems);
+        // Restore the original state of the accordions
+        setActiveAccordionItems(originalActiveItems); 
         setIsDownloading(false);
     }
   };
+
 
   const handleStartNewAnalysis = () => {
     setResumeFile(null);
@@ -485,11 +494,49 @@ export default function ResumeAnalyzerPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                       <Label htmlFor="job-title-input">Target Job Title</Label>
-                      <Input id="job-title-input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="e.g., Senior Software Engineer" />
+                        {isEditingJobTitle ? (
+                           <Input
+                               id="job-title-input"
+                               value={jobTitle}
+                               onChange={(e) => setJobTitle(e.target.value)}
+                               onBlur={() => setIsEditingJobTitle(false)}
+                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingJobTitle(false); } }}
+                               placeholder="Enter job title"
+                               autoFocus
+                           />
+                        ) : (
+                           <div
+                                onClick={() => setIsEditingJobTitle(true)}
+                                className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingJobTitle(true); }}
+                           >
+                               {jobTitle || <span className="text-muted-foreground">Enter job title</span>}
+                           </div>
+                        )}
                   </div>
                   <div>
                       <Label htmlFor="company-name-input">Target Company Name</Label>
-                      <Input id="company-name-input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g., Innovate LLC" />
+                       {isEditingCompanyName ? (
+                           <Input
+                               id="company-name-input"
+                               value={companyName}
+                               onChange={(e) => setCompanyName(e.target.value)}
+                               onBlur={() => setIsEditingCompanyName(false)}
+                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingCompanyName(false); } }}
+                               placeholder="Enter company name"
+                               autoFocus
+                           />
+                        ) : (
+                           <div
+                                onClick={() => setIsEditingCompanyName(true)}
+                                className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingCompanyName(true); }}
+                           >
+                               {companyName || <span className="text-muted-foreground">Enter company name</span>}
+                           </div>
+                        )}
                   </div>
                 </div>
 
@@ -562,54 +609,6 @@ export default function ResumeAnalyzerPage() {
                 {/* Left Column - Scores & Actions */}
                 <div className="md:col-span-1 space-y-6 p-4 border-r border-border rounded-l-lg bg-secondary/30">
                     <div className="space-y-4 border-b pb-4">
-                      <div className="space-y-2">
-                          <Label htmlFor="report-job-title" className="text-xs font-medium">Target Job Title</Label>
-                          {isEditingJobTitle ? (
-                              <Input
-                                  id="report-job-title"
-                                  value={jobTitle}
-                                  onChange={(e) => setJobTitle(e.target.value)}
-                                  onBlur={() => setIsEditingJobTitle(false)}
-                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingJobTitle(false); } }}
-                                  placeholder="Enter job title"
-                                  className="bg-background"
-                                  autoFocus
-                              />
-                          ) : (
-                              <div
-                                  onClick={() => setIsEditingJobTitle(true)}
-                                  className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
-                                  tabIndex={0}
-                                  onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingJobTitle(true); }}
-                              >
-                                  {jobTitle || <span className="text-muted-foreground">Enter job title</span>}
-                              </div>
-                          )}
-                      </div>
-                      <div className="space-y-2">
-                          <Label htmlFor="report-company-name" className="text-xs font-medium">Target Company</Label>
-                          {isEditingCompanyName ? (
-                              <Input
-                                  id="report-company-name"
-                                  value={companyName}
-                                  onChange={(e) => setCompanyName(e.target.value)}
-                                  onBlur={() => setIsEditingCompanyName(false)}
-                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); setIsEditingCompanyName(false); } }}
-                                  placeholder="Enter company name"
-                                  className="bg-background"
-                                  autoFocus
-                              />
-                          ) : (
-                              <div
-                                  onClick={() => setIsEditingCompanyName(true)}
-                                  className="flex items-center w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-text"
-                                  tabIndex={0}
-                                  onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingCompanyName(true); }}
-                              >
-                                  {companyName || <span className="text-muted-foreground">Enter company name</span>}
-                              </div>
-                          )}
-                      </div>
                     </div>
 
                     <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="xl" label="Match Rate" />
@@ -962,4 +961,3 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
-
