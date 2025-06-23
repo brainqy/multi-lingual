@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { RecentPageItem } from '@/types';
@@ -100,7 +99,4 @@ export function getLabelForPath(path: string): string {
     const quizId = new URLSearchParams(pathWithoutLocale.split('?')[1]).get('quizId');
     return quizId ? `Quiz: ${quizId.substring(0,8)}...` : 'Take Quiz';
   }
-  // if (pathWithoutLocale.startsWith('/live-interview/') && pathWithoutLocale !== '/live-interview/new') { // Removed
-  //   const interviewId = pathWithoutLocale.substring('/live-interview/'.length);
-  //   return `Live Interview: ${interviewId.substring(0,8)}...`;
-  // }
+}
