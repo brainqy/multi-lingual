@@ -444,6 +444,17 @@ export default function ResumeAnalyzerPage() {
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left Column - Scores & Actions */}
                 <div className="md:col-span-1 space-y-6 p-4 border-r border-border rounded-l-lg bg-secondary/30">
+                    <div className="space-y-4 border-b pb-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="report-job-title" className="text-xs font-medium">Target Job Title</Label>
+                            <Input id="report-job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Enter job title" className="bg-background"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="report-company-name" className="text-xs font-medium">Target Company</Label>
+                            <Input id="report-company-name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Enter company name" className="bg-background"/>
+                        </div>
+                    </div>
+
                     <ScoreCircle score={analysisReport.overallQualityScore ?? analysisReport.hardSkillsScore ?? 0} size="xl" label="Match Rate" />
                     
                     <Button onClick={handleStartNewAnalysis} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
@@ -716,3 +727,5 @@ export default function ResumeAnalyzerPage() {
     </div>
   );
 }
+
+    
