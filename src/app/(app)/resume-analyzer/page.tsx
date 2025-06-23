@@ -29,6 +29,17 @@ import ScoreCircle from '@/components/ui/score-circle';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
 
+const getIssuesFromScore = (score?: number): number => {
+  if (score === undefined || score === null) return 0;
+  if (score >= 90) return 0;
+  if (score >= 75) return 1;
+  if (score >= 60) return 2;
+  if (score >= 40) return 3;
+  if (score >= 20) return 4;
+  return 5;
+};
+
+
 export default function ResumeAnalyzerPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
@@ -288,39 +299,27 @@ export default function ResumeAnalyzerPage() {
   const getSearchabilityIssueCount = (details?: AnalyzeResumeAndJobDescriptionOutput['searchabilityDetails']): number => {
       if (!details) return 0;
       let issues = 0;
-      if (!details.hasPhoneNumber) issues++;
-      if (!details.hasEmail) issues++;
-      if (!details.hasAddress) issues++;
-      if (!details.jobTitleMatchesJD) issues++;
-      if (!details.hasWorkExperienceSection) issues++;
-      if (!details.hasEducationSection) issues++;
-      if (!details.hasProfessionalSummary) issues++;
+      if (details.hasPhoneNumber === false) issues++;
+      if (details.hasEmail === false) issues++;
+      if (details.hasAddress === false) issues++;
+      if (details.jobTitleMatchesJD === false) issues++;
+      if (details.hasWorkExperienceSection === false) issues++;
+      if (details.hasEducationSection === false) issues++;
+      if (details.hasProfessionalSummary === false) issues++;
       return issues;
-  };
-
-  const getGenericIssueCount = (score?: number, items?: any[], negativeItems?: any[]): number => {
-    if (negativeItems && negativeItems.length > 0) return negativeItems.length;
-    if (items && items.length > 0 && score === undefined) return items.length;
-    if (score === undefined || score === null) return 0;
-    if (score >= 90) return 0;
-    if (score >= 75) return 1;
-    if (score >= 60) return 2;
-    if (score >= 40) return 3;
-    if (score >= 20) return 4;
-    return 5;
   };
   
    const categoryIssues = useMemo(() => {
-      if (!analysisReport) return {};
-      return {
-          searchability: getSearchabilityIssueCount(analysisReport.searchabilityDetails),
-          recruiterTips: getGenericIssueCount(analysisReport.recruiterTipsScore, undefined, analysisReport.recruiterTips?.filter(tip => tip.status === 'negative')),
-          formatting: getGenericIssueCount(analysisReport.formattingScore, undefined, analysisReport.formattingDetails),
-          highlights: getGenericIssueCount(analysisReport.highlightsScore),
-          hardSkills: getGenericIssueCount(analysisReport.hardSkillsScore, undefined, analysisReport.missingSkills),
-          softSkills: getGenericIssueCount(analysisReport.softSkillsScore),
-          atsCompliance: getGenericIssueCount(analysisReport.atsStandardFormattingComplianceScore, undefined, analysisReport.standardFormattingIssues),
-      }
+    if (!analysisReport) return {};
+    return {
+      searchability: getSearchabilityIssueCount(analysisReport.searchabilityDetails),
+      recruiterTips: analysisReport.recruiterTips?.filter(tip => tip.status === 'negative').length || 0,
+      formatting: analysisReport.formattingDetails?.length || 0,
+      highlights: getIssuesFromScore(analysisReport.highlightsScore),
+      hardSkills: analysisReport.missingSkills?.length || 0,
+      softSkills: getIssuesFromScore(analysisReport.softSkillsScore),
+      atsCompliance: analysisReport.standardFormattingIssues?.length || 0,
+    };
   }, [analysisReport]);
 
 
@@ -505,30 +504,30 @@ export default function ResumeAnalyzerPage() {
                     </div>
 
                     <div className="space-y-3 pt-4 border-t">
-                        {[
-                            {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability},
-                            {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips},
-                            {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting},
-                            {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights},
-                            {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills},
-                            {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills},
-                            {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance},
-                        ].map(cat => cat.score !== undefined && (
-                            <div key={cat.label}>
-                                <div className="flex justify-between text-sm mb-0.5 items-center">
-                                    <span className="font-medium text-muted-foreground">{cat.label}</span>
-                                    {cat.issues > 0 && (
-                                        <span className="text-xs text-red-500 font-semibold">{cat.issues} issue{cat.issues !== 1 ? 's' : ''}</span>
-                                    )}
-                                </div>
-                                <Progress value={cat.score ?? 0} className="h-2 [&>div]:bg-primary mb-1" />
-                                <p className="text-xs text-primary text-right font-semibold">{cat.score ?? 0}%</p>
-                            </div>
-                        ))}
+                      {[
+                          {label: "Searchability", score: analysisReport.searchabilityScore, issues: categoryIssues.searchability},
+                          {label: "Recruiter Tips", score: analysisReport.recruiterTipsScore, issues: categoryIssues.recruiterTips},
+                          {label: "Formatting", score: analysisReport.formattingScore, issues: categoryIssues.formatting},
+                          {label: "Highlights", score: analysisReport.highlightsScore, issues: categoryIssues.highlights},
+                          {label: "Hard Skills", score: analysisReport.hardSkillsScore, issues: categoryIssues.hardSkills},
+                          {label: "Soft Skills", score: analysisReport.softSkillsScore, issues: categoryIssues.softSkills},
+                          {label: "ATS Compliance", score: analysisReport.atsStandardFormattingComplianceScore, issues: categoryIssues.atsCompliance},
+                      ].map(cat => cat.score !== undefined && (
+                          <div key={cat.label}>
+                              <div className="flex justify-between text-sm mb-0.5 items-center">
+                                  <span className="font-medium text-muted-foreground">{cat.label}</span>
+                                  {cat.issues > 0 && (
+                                      <span className="text-xs text-red-500 font-semibold">{cat.issues} issue{cat.issues !== 1 ? 's' : ''}</span>
+                                  )}
+                              </div>
+                              <Progress value={cat.score ?? 0} className="h-2 [&>div]:bg-primary mb-1" />
+                              <p className="text-xs text-primary text-right font-semibold">{cat.score ?? 0}%</p>
+                          </div>
+                      ))}
                     </div>
                 </div>
 
-                {/* Right Column - Detailed Breakdown (Simplified Focus) */}
+                {/* Right Column - Detailed Breakdown */}
                 <div className="md:col-span-2 space-y-6 p-4">
                     <div className="flex items-start gap-2 text-sm text-muted-foreground mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                         <Info className="h-6 w-6 text-blue-600 shrink-0 mt-0.5"/>
@@ -542,7 +541,7 @@ export default function ResumeAnalyzerPage() {
                         </div>
                     </div>
                     
-                    <Tabs defaultValue="searchability_analysis" className="w-full">
+                    <Tabs defaultValue="full_report" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
                             <TabsTrigger value="resume_text" className="text-xs sm:text-sm">Resume</TabsTrigger>
                             <TabsTrigger value="jd_text" className="text-xs sm:text-sm">Job Desc.</TabsTrigger>
