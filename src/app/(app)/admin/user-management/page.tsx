@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/hooks/use-i18n";
-import { UsersCog } from "lucide-react";
+import { UserCog } from "lucide-react";
 
 export default function UserManagementPage() {
   const { t } = useI18n();
@@ -14,7 +14,7 @@ export default function UserManagementPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-            <UsersCog className="h-6 w-6"/>
+            <UserCog className="h-6 w-6"/>
             {pageTitle}
           </CardTitle>
         </CardHeader>
