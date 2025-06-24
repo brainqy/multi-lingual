@@ -42,12 +42,21 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
         setIssues(result);
         setDialogState('identified');
       } catch (e: any) {
+        const errorMessage = (e.message || String(e)).toLowerCase();
+        if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+            toast({
+                title: "API Usage Limit Exceeded",
+                description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+                variant: "destructive",
+                duration: 9000,
+            });
+        }
         setError(e.message || 'Failed to identify issues.');
         setDialogState('error');
       }
     };
     getIssues();
-  }, [resumeText, jobDescription]);
+  }, [resumeText, jobDescription, toast]);
 
   const handleRewrite = async () => {
     setDialogState('rewriting');
@@ -64,6 +73,15 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       setFixes(result.fixesApplied);
       setDialogState('rewritten');
     } catch (e: any) {
+      const errorMessage = (e.message || String(e)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      }
       setError(e.message || 'Failed to rewrite resume.');
       setDialogState('error');
     }

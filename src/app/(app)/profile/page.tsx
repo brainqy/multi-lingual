@@ -1,3 +1,4 @@
+
 "use client";
 import { suggestDynamicSkills, type SuggestDynamicSkillsInput, type SuggestDynamicSkillsOutput } from '@/ai/flows/suggest-dynamic-skills';
 import { useI18n } from "@/hooks/use-i18n";
@@ -209,7 +210,17 @@ export default function ProfilePage() {
       toast({ title: "Skill Suggestions Ready!", description: "AI has suggested some skills for you below." });
     } catch (error) {
       console.error("Skill suggestion error:", error);
-      toast({ title: "Skill Suggestion Failed", description: "An error occurred while fetching skill suggestions.", variant: "destructive" });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Skill Suggestion Failed", description: "An error occurred while fetching skill suggestions.", variant: "destructive" });
+      }
     } finally {
       setIsSkillsLoading(false);
     }

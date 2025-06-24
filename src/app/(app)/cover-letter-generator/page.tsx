@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, type FormEvent } from 'react';
@@ -69,7 +70,17 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
       toast({ title: "Cover Letter Generated", description: "Your personalized cover letter is ready below." });
     } catch (error) {
       console.error("Cover letter generation error:", error);
-      toast({ title: "Generation Failed", description: "An error occurred while generating the cover letter.", variant: "destructive" });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Generation Failed", description: "An error occurred while generating the cover letter.", variant: "destructive" });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -156,7 +156,17 @@ export default function ResumeAnalyzerPage() {
       }
       toast({ title: "Analysis Complete", description: "Resume analysis results are ready." });
     } catch (error: any) {
-      toast({ title: "Analysis Failed", description: `An error occurred during analysis: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
+      const errorMessage = (error.message || String(error)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Analysis Failed", description: `An error occurred during analysis: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
+      }
       setAnalysisReport(null);
     } finally {
       setIsLoading(false);
@@ -183,15 +193,12 @@ export default function ResumeAnalyzerPage() {
     });
 
     const originalActiveItems = [...activeAccordionItems];
-    // Find all accordion item values in the report section
     const allReportItemValues = Array.from(reportElement.querySelectorAll('[data-radix-collection-item]'))
                                      .map(el => (el as HTMLElement).dataset.value)
                                      .filter(Boolean) as string[];
-
-    // Programmatically open all accordions before taking the screenshot
+    
     setActiveAccordionItems(allReportItemValues);
     
-    // Give the DOM a moment to update and render the expanded content
     await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
@@ -200,14 +207,12 @@ export default function ResumeAnalyzerPage() {
             useCORS: true,
             logging: false,
             onclone: (clonedDoc) => {
-                // This onclone logic is a fallback; the state-based approach is more reliable.
-                // We're attempting to force visibility on any content that might still be hidden.
                 clonedDoc.querySelectorAll('[data-state="closed"]').forEach((el: any) => {
                     const content = el.querySelector('[data-radix-accordion-content]');
-                    if(content) {
-                       content.style.height = 'auto';
-                       content.style.overflow = 'visible';
-                       content.style.display = 'block';
+                    if (content) {
+                        content.style.removeProperty('height');
+                        content.style.removeProperty('overflow');
+                        content.style.display = 'block';
                     }
                 });
             }
@@ -235,7 +240,6 @@ export default function ResumeAnalyzerPage() {
             variant: "destructive",
         });
     } finally {
-        // Restore the original state of the accordions
         setActiveAccordionItems(originalActiveItems); 
         setIsDownloading(false);
     }
@@ -293,7 +297,17 @@ export default function ResumeAnalyzerPage() {
       setAnalysisReport(detailedReportRes);
       toast({ title: "Historical Report Loaded", description: "The analysis report for the selected scan has been re-generated." });
     } catch (error: any) {
-      toast({ title: "Report Load Failed", description: `An error occurred while re-generating the historical report: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
+      const errorMessage = (error.message || String(error)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Report Load Failed", description: `An error occurred while re-generating the historical report: ${error.message || String(error)}`, variant: "destructive", duration: 7000 });
+      }
       setAnalysisReport(null);
     } finally {
       setIsLoading(false);
@@ -418,7 +432,6 @@ export default function ResumeAnalyzerPage() {
         }, 50);
     }, 50);
   };
-
 
   return (
     <div className="space-y-8">

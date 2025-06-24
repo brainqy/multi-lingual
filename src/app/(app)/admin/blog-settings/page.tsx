@@ -120,7 +120,17 @@ export default function AdminBlogSettingsPage() {
 
     } catch (error) {
       console.error("AI Blog generation error:", error);
-      toast({ title: t("blogSettingsAdmin.toast.generationFailed.title"), description: t("blogSettingsAdmin.toast.generationFailed.description"), variant: "destructive" });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: t("blogSettingsAdmin.toast.generationFailed.title"), description: t("blogSettingsAdmin.toast.generationFailed.description"), variant: "destructive" });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -241,5 +251,3 @@ export default function AdminBlogSettingsPage() {
     </div>
   );
 }
-
-    

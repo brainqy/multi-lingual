@@ -322,7 +322,17 @@ export default function AiMockInterviewPage() {
 
     } catch (error: any) {
       logger.error("Error during setup or question generation:", error);
-      toast({ title: "Setup Failed", description: error.message || "Could not generate interview questions.", variant: "destructive" });
+      const errorMessage = (error.message || String(error)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Setup Failed", description: error.message || "Could not generate interview questions.", variant: "destructive" });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -368,7 +378,17 @@ export default function AiMockInterviewPage() {
 
     } catch (error: any) {
       logger.error("Error evaluating answer:", error);
-      toast({ title: "Evaluation Failed", description: error.message || "Could not evaluate your answer.", variant: "destructive" });
+      const errorMessage = (error.message || String(error)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Evaluation Failed", description: error.message || "Could not evaluate your answer.", variant: "destructive" });
+      }
     } finally {
       setIsEvaluatingAnswer(false);
     }
@@ -427,7 +447,17 @@ export default function AiMockInterviewPage() {
       stopAllMediaStreams();
     } catch (error: any) {
         logger.error("Error generating overall feedback:", error);
-        toast({ title: "Feedback Generation Failed", description: error.message || "Could not generate overall interview feedback.", variant: "destructive" });
+        const errorMessage = (error.message || String(error)).toLowerCase();
+        if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+            toast({
+                title: "API Usage Limit Exceeded",
+                description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+                variant: "destructive",
+                duration: 9000,
+            });
+        } else {
+          toast({ title: "Feedback Generation Failed", description: error.message || "Could not generate overall interview feedback.", variant: "destructive" });
+        }
     } finally {
         setIsLoading(false);
     }
@@ -517,7 +547,7 @@ export default function AiMockInterviewPage() {
         }
 
         try {
-            const options = { mimeType: MediaRecorder.isTypeSupported('audio/webm; codecs=opus') ? 'audio/webm; codecs=opus' : 'audio/ogg; codecs=opus' };
+            const options = { mimeType: MediaRecorder.isTypeSupported('audio/webm; codecs=opus') ? 'audio/webm; codecs=opus' : 'audio/webm' };
             if(!MediaRecorder.isTypeSupported(options.mimeType)) {
                  options.mimeType = 'audio/webm'; // Fallback if opus not supported
                  if(!MediaRecorder.isTypeSupported(options.mimeType)) {
@@ -696,4 +726,3 @@ export default function AiMockInterviewPage() {
     </div>
   );
 }
-

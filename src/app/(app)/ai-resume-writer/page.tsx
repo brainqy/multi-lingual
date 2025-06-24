@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, type FormEvent } from 'react';
@@ -76,7 +77,17 @@ export default function AiResumeWriterPage() {
       toast({ title: "Resume Variant Generated", description: "The new resume version is ready below." });
     } catch (error) {
       console.error("Resume generation error:", error);
-      toast({ title: "Generation Failed", description: "An error occurred while generating the resume variant.", variant: "destructive" });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Generation Failed", description: "An error occurred while generating the resume variant.", variant: "destructive" });
+      }
     } finally {
       setIsLoading(false);
     }

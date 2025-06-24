@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -42,11 +43,21 @@ export function TranslationTool() {
       setTranslationResult(result);
     } catch (error) {
       console.error("Translation error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: t("translateTool.errorTranslating"),
-      });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+        toast({
+          title: "API Usage Limit Exceeded",
+          description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+          variant: "destructive",
+          duration: 9000,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: t("translateTool.errorTranslating"),
+        });
+      }
     } finally {
       setIsLoading(false);
     }
