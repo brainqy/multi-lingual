@@ -577,12 +577,19 @@ export interface InterviewQuestionUserRating {
 
 export interface DailyChallenge {
   id: string;
-  date: string;
+  type: 'standard' | 'flip';
+  date?: string;
   title: string;
   description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  category: string;
-  solution: string; // The solution or hints to the challenge
+  difficulty?: "Easy" | "Medium" | "Hard";
+  category?: string;
+  solution?: string;
+  xpReward?: number;
+  tasks?: {
+    description: string;
+    action: 'refer' | 'attend_interview' | 'take_interview' | 'analyze_resume' | 'post_job';
+    target: number;
+  }[];
 }
 
 
@@ -1120,7 +1127,7 @@ export type UserInputAction = z.infer<typeof UserInputActionSchema>;
 
 export const IdentifyResumeIssuesInputSchema = z.object({
   resumeText: z.string().describe('The text content of the resume.'),
-  jobDescription: z.string().describe('The text content of the job description.'),
+  jobDescriptionText: z.string().describe('The text content of the job description.'),
 });
 export type IdentifyResumeIssuesInput = z.infer<typeof IdentifyResumeIssuesInputSchema>;
 
