@@ -261,65 +261,60 @@ export default function UserDashboard() {
           </Button>
         </div>
 
-        <Card className="md:col-span-2 lg:col-span-4 shadow-lg">
-          <CardHeader>
-            <CardTitle>{t("userDashboard.progress.title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-              {/* Column 1: Daily Challenge */}
-              {dailyChallenge && (
-                <div className="bg-background shadow-inner flex flex-col p-4 rounded-lg border">
-                  <div className="pb-2">
-                    <h3 className="text-base font-semibold flex items-center gap-2">
-                      <Puzzle className="h-4 w-4 text-primary" />
-                      {t("userDashboard.dailyChallenge.title")}
-                    </h3>
-                  </div>
-                  <div className="text-sm flex-grow">
-                    <p className="text-muted-foreground line-clamp-2">{dailyChallenge.title}</p>
-                  </div>
-                  <div className="pt-2 mt-auto">
-                    <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
-                      <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
-                    </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 shadow-lg">
+            <CardHeader>
+              <CardTitle>{t("userDashboard.progress.title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                <div className="bg-background shadow-inner flex flex-col justify-center p-4 rounded-lg border h-full">
+                  <h3 className="text-base font-semibold flex items-center justify-between">
+                    <span>{t("userDashboard.progress.level", { level: xpLevel })}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</span>
+                  </h3>
+                  <Progress value={progressPercentage} className="w-full h-2 my-2" />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
+                    <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
                   </div>
                 </div>
-              )}
-
-              {/* Column 2: Level & Progress */}
-              <div className="bg-background shadow-inner flex flex-col justify-center p-4 rounded-lg border">
-                <div className="pb-2">
-                   <h3 className="text-base font-semibold flex items-center justify-between">
-                      <span>{t("userDashboard.progress.level", { level: xpLevel })}</span>
-                      <span className="text-sm font-medium text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</span>
-                   </h3>
-                </div>
-                <div>
-                    <Progress value={progressPercentage} className="w-full h-2" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
-                      <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
-                    </div>
-                </div>
-              </div>
-              
-              {/* Column 3: Streak & Badges */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
-                    <Flame className="h-7 w-7 text-orange-500 mb-1"/>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
+                    <Flame className="h-7 w-7 text-orange-500 mb-1" />
                     <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
                     <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
-                </div>
-                 <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
-                    <Award className="h-7 w-7 text-yellow-500 mb-1"/>
+                  </div>
+                  <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
+                    <Award className="h-7 w-7 text-yellow-500 mb-1" />
                     <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
                     <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {dailyChallenge && (
+            <Card className="lg:col-span-1 shadow-lg flex flex-col">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Puzzle className="h-4 w-4 text-primary" />
+                  {t("userDashboard.dailyChallenge.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-sm text-muted-foreground line-clamp-3">{dailyChallenge.title}</p>
+                <Badge variant="outline" className="mt-2">{dailyChallenge.category}</Badge>
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
+                  <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+        </div>
         
         {visibleWidgetIds.has('promotionCard') && (
           <Card className="shadow-lg bg-gradient-to-r from-primary/80 via-primary to-accent/80 text-primary-foreground overflow-hidden">
