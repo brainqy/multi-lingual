@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight } from "lucide-react";
-import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
+import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions, sampleChallenges } from "@/lib/sample-data";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import type { TourStep, Appointment, PracticeSession, Activity as ActivityType } from '@/types';
+import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestion } from '@/types';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/use-i18n";
-import sampleChallenges from "@/lib/sample-challenges";
 import { Progress } from "@/components/ui/progress";
 
 
@@ -131,7 +130,16 @@ export default function UserDashboard() {
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(visibleWidgetIds);
   
-  const dailyChallenge = sampleChallenges[0];
+  const dailyChallenge: InterviewQuestion | undefined = useMemo(() => {
+    if (!user?.challengeTopics || user.challengeTopics.length === 0) {
+      return sampleChallenges[0];
+    }
+    const selectedTopics = user.challengeTopics;
+    const matchingChallenge = sampleChallenges.find(
+      (challenge) => challenge.category && selectedTopics.includes(challenge.category)
+    );
+    return matchingChallenge || sampleChallenges[0];
+  }, [user?.challengeTopics]);
 
   const recentUserActivities = useMemo(() => {
     return sampleActivities

@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 
 export type Translations = {
@@ -250,6 +249,9 @@ export interface BlogPost {
   bookmarkedBy?: string[];
 }
 
+export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR'] as const;
+export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
+
 export interface UserProfile extends AlumniProfile {
   id: string;
   tenantId: string;
@@ -311,6 +313,7 @@ export interface UserProfile extends AlumniProfile {
   interviewCredits?: number;
   createdAt?: string;
   isDistinguished?: boolean;
+  challengeTopics?: InterviewQuestionCategory[];
 }
 
 export interface ResumeProfile {
@@ -556,9 +559,6 @@ export const RESUME_BUILDER_STEPS: { id: ResumeBuilderStep; title: string; descr
   { id: 'finalize', title: 'Finalize', description: "Review and finalize your resume.", mainHeading: "Review & Finalize" },
 ];
 
-export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR'] as const;
-export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
-
 export const ALL_DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const;
 export type InterviewQuestionDifficulty = typeof ALL_DIFFICULTIES[number];
 
@@ -574,6 +574,17 @@ export interface InterviewQuestionUserRating {
   userId: string;
   rating: number; // 1-5
 }
+
+export interface DailyChallenge {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: string;
+  solution: string; // The solution or hints to the challenge
+}
+
 
 export interface InterviewQuestion {
   id: string;
@@ -1188,8 +1199,10 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     referralCode: `REF${Date.now().toString().slice(-6)}`,
     affiliateCode: undefined,
     pastInterviewSessions: [],
+    challengeTopics: [],
     shortBio: '', // From AlumniProfile
     university: '', // From AlumniProfile
+    userApiKey: '',
     // ... any other fields from UserProfile or AlumniProfile that need defaults
   };
   return { ...defaultUser, ...partialProfile };

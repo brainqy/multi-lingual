@@ -1,5 +1,4 @@
 
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, type FormEvent } from "react";
@@ -9,10 +8,11 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2 } from "lucide-react";
+import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
-import type { Tenant, UserProfile, PlatformSettings } from "@/types";
+import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory } from "@/types";
+import { ALL_CATEGORIES } from "@/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +24,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SettingsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = useState<UserProfile>(sampleUserProfile);
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
+  const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>(currentUser.challengeTopics || []);
 
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -100,9 +102,13 @@ export default function SettingsPage() {
   };
 
   const handleSaveSettings = () => {
+    const updatedUser = { ...currentUser, challengeTopics };
+    Object.assign(sampleUserProfile, updatedUser);
+    setCurrentUser(updatedUser);
+
     console.log("General settings saved (mocked):", {
       isDarkMode, emailNotificationsEnabled, appNotificationsEnabled,
-      gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled
+      gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics
     });
 
     if(currentUser.role === 'admin'){
@@ -153,6 +159,16 @@ export default function SettingsPage() {
   const handleDataDeletionRequest = () => {
     setDeleteConfirmText("");
     toast({title: t("userSettings.toastDataDeletionMock.title"), description:t("userSettings.toastDataDeletionMock.description")});
+  };
+
+  const handleChallengeTopicChange = (category: InterviewQuestionCategory, checked: boolean) => {
+    setChallengeTopics(prev => {
+        if (checked) {
+            return [...prev, category];
+        } else {
+            return prev.filter(c => c !== category);
+        }
+    });
   };
 
   return (
@@ -233,6 +249,28 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Puzzle className="h-5 w-5 text-primary" />Challenge & Practice Preferences</CardTitle>
+          <CardDescription>Select the topics you want to be challenged on.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+                {ALL_CATEGORIES.map((category) => (
+                    <div key={category} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`topic-${category}`}
+                            checked={challengeTopics.includes(category)}
+                            onCheckedChange={(checked) => handleChallengeTopicChange(category, !!checked)}
+                        />
+                        <Label htmlFor={`topic-${category}`} className="font-normal">{category}</Label>
+                    </div>
+                ))}
+            </div>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-lg">
         <CardHeader>
