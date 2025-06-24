@@ -4,8 +4,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
-import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
 import sampleChallenges from "@/lib/sample-challenges";
+import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
@@ -269,57 +269,53 @@ export default function UserDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
               {/* Column 1: Daily Challenge */}
               {dailyChallenge && (
-                <Card className="bg-background shadow-inner flex flex-col">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
+                <div className="bg-background shadow-inner flex flex-col p-4 rounded-lg border">
+                  <div className="pb-2">
+                    <h3 className="text-base font-semibold flex items-center gap-2">
                       <Puzzle className="h-4 w-4 text-primary" />
                       {t("userDashboard.dailyChallenge.title")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm flex-grow">
+                    </h3>
+                  </div>
+                  <div className="text-sm flex-grow">
                     <p className="text-muted-foreground line-clamp-2">{dailyChallenge.title}</p>
-                  </CardContent>
-                  <CardFooter>
+                  </div>
+                  <div className="pt-2 mt-auto">
                     <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
                       <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
                     </Button>
-                  </CardFooter>
-                </Card>
+                  </div>
+                </div>
               )}
 
               {/* Column 2: Level & Progress */}
-              <Card className="bg-background shadow-inner flex flex-col justify-center">
-                <CardHeader className="pb-2">
-                   <CardTitle className="text-base flex items-center justify-between">
+              <div className="bg-background shadow-inner flex flex-col justify-center p-4 rounded-lg border">
+                <div className="pb-2">
+                   <h3 className="text-base font-semibold flex items-center justify-between">
                       <span>{t("userDashboard.progress.level", { level: xpLevel })}</span>
                       <span className="text-sm font-medium text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</span>
-                   </CardTitle>
-                </CardHeader>
-                <CardContent>
+                   </h3>
+                </div>
+                <div>
                     <Progress value={progressPercentage} className="w-full h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
                       <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
                       <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
                     </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
               
               {/* Column 3: Streak & Badges */}
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-background shadow-inner text-center">
-                    <CardContent className="p-3 flex flex-col items-center justify-center h-full">
-                        <Flame className="h-7 w-7 text-orange-500 mb-1"/>
-                        <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
-                        <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
-                    </CardContent>
-                </Card>
-                 <Card className="bg-background shadow-inner text-center">
-                    <CardContent className="p-3 flex flex-col items-center justify-center h-full">
-                        <Award className="h-7 w-7 text-yellow-500 mb-1"/>
-                        <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
-                        <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
-                    </CardContent>
-                </Card>
+                <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
+                    <Flame className="h-7 w-7 text-orange-500 mb-1"/>
+                    <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
+                </div>
+                 <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
+                    <Award className="h-7 w-7 text-yellow-500 mb-1"/>
+                    <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
+                </div>
               </div>
             </div>
           </CardContent>
