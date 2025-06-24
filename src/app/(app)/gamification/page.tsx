@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,8 +35,12 @@ export default function GamificationPage() {
   const earnedBadges = badges.filter(badge => user.earnedBadges?.includes(badge.id));
   const notEarnedBadges = badges.filter(badge => !user.earnedBadges?.includes(badge.id));
 
-  const xpLevel = Math.floor((user.xpPoints || 0) / 1000) + 1;
-  const xpProgress = ((user.xpPoints || 0) % 1000) / 10;
+  const xpPerLevel = 1000;
+  const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
+  const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
+  const xpForNextLevel = xpLevel * xpPerLevel;
+  const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
+  const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
 
   const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
 
@@ -66,18 +71,14 @@ export default function GamificationPage() {
             <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-primary"/>XP & Level</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-4xl font-bold text-primary">{user.xpPoints || 0} XP</p>
-            <p className="text-lg text-muted-foreground mb-2">Level {xpLevel}</p>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                   <Progress value={xpProgress} className="w-full h-3 [&>div]:bg-primary" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{(user.xpPoints || 0) % 1000} / 1000 XP to next level</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <p className="text-sm text-muted-foreground">Level</p>
+            <p className="text-5xl font-bold text-primary">{xpLevel}</p>
+            <Progress value={progressPercentage} className="w-full h-3 my-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{xpProgressInLevel} XP</span>
+              <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
+            </div>
+            <p className="text-sm font-semibold mt-4">{user.xpPoints || 0} Total XP</p>
           </CardContent>
         </Card>
         <Card className="shadow-lg">
@@ -196,4 +197,3 @@ export default function GamificationPage() {
     </div>
   );
 }
-

@@ -147,6 +147,13 @@
     "dailyChallenge": {
       "title": "आजचे दैनिक आव्हान",
       "button": "आव्हान स्वीकारा"
+    },
+    "progress": {
+      "title": "तुमची प्रगती अवलोकन",
+      "level": "स्तर {level}",
+      "totalXp": "एकूण XP: {xp}",
+      "dayStreak": "दिवसाची स्ट्रीक",
+      "badgesEarned": "बॅजेस"
     }
   },
   "adminDashboard": {

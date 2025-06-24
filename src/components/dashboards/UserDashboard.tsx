@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
-import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight } from "lucide-react";
+import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
 import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
 import sampleChallenges from "@/lib/sample-challenges";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -86,10 +86,6 @@ const renderActiveShape = (props: PieSectorDataItem) => {
 type UserDashboardWidgetId =
   | 'promotionCard'
   | 'dailyChallenge'
-  | 'resumesAnalyzedStat'
-  | 'avgMatchScoreStat'
-  | 'jobApplicationsStat'
-  | 'alumniConnectionsStat'
   | 'jobApplicationStatusChart'
   | 'matchScoreOverTimeChart'
   | 'jobAppReminders'
@@ -105,10 +101,6 @@ interface WidgetConfig {
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'promotionCard', title: 'Promotional Spotlight', defaultVisible: true },
   { id: 'dailyChallenge', title: 'Daily Challenge', defaultVisible: true },
-  { id: 'resumesAnalyzedStat', title: 'Resumes Analyzed Stat', defaultVisible: true },
-  { id: 'avgMatchScoreStat', title: 'Average Match Score Stat', defaultVisible: true },
-  { id: 'jobApplicationsStat', title: 'Job Applications Stat', defaultVisible: true },
-  { id: 'alumniConnectionsStat', title: 'Alumni Connections Stat', defaultVisible: true },
   { id: 'jobApplicationStatusChart', title: 'Job Application Status Chart', defaultVisible: true },
   { id: 'matchScoreOverTimeChart', title: 'Match Score Over Time Chart', defaultVisible: true },
   { id: 'jobAppReminders', title: 'Job App Reminders', defaultVisible: true },
@@ -118,8 +110,6 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
 
 export default function UserDashboard() {
   const { t } = useI18n();
-  const [totalResumesAnalyzed, setTotalResumesAnalyzed] = useState(0);
-  const [averageMatchScore, setAverageMatchScore] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const user = sampleUserProfile;
   const { toast } = useToast();
@@ -150,9 +140,6 @@ export default function UserDashboard() {
   }, [user.id]);
 
   useEffect(() => {
-    setTotalResumesAnalyzed(125);
-    setAverageMatchScore(78);
-
     const today = new Date();
     sampleAppointments.forEach(appt => {
         if (appt.requesterUserId === user.id || appt.alumniUserId === user.id) {
@@ -244,6 +231,14 @@ export default function UserDashboard() {
     setTempVisibleWidgetIds(new Set(visibleWidgetIds)); 
     setIsCustomizeDialogOpen(true);
   };
+  
+  const xpPerLevel = 1000;
+  const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
+  const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
+  const xpForNextLevel = xpLevel * xpPerLevel;
+  const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
+  const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
+
 
   return (
     <>
@@ -262,6 +257,39 @@ export default function UserDashboard() {
           </Button>
         </div>
 
+        <Card className="md:col-span-2 lg:col-span-4 shadow-lg">
+          <CardHeader>
+            <CardTitle>{t("userDashboard.progress.title", "Your Progress Overview")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            <div className="md:col-span-2 p-4 border rounded-lg bg-background">
+              <div className="flex justify-between items-baseline mb-2">
+                <p className="text-lg font-semibold text-foreground">{t("userDashboard.progress.level", "Level {level}", { level: xpLevel })}</p>
+                <p className="text-sm text-muted-foreground">{t("userDashboard.progress.totalXp", "Total XP: {xp}", { xp: user.xpPoints || 0 })}</p>
+              </div>
+              <Progress value={progressPercentage} className="w-full h-2" />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
+                <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="p-3 border rounded-lg bg-background">
+                  <Flame className="h-7 w-7 text-orange-500 mx-auto mb-1"/>
+                  <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
+                  <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak", "Day Streak")}</p>
+              </div>
+               <div className="p-3 border rounded-lg bg-background">
+                  <Award className="h-7 w-7 text-yellow-500 mx-auto mb-1"/>
+                  <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
+                  <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned", "Badges")}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
         {visibleWidgetIds.has('dailyChallenge') && dailyChallenge && (
             <Card className="shadow-lg bg-gradient-to-r from-accent/50 to-primary/20 border-primary/30">
                 <CardHeader>
@@ -314,57 +342,6 @@ export default function UserDashboard() {
             </div>
           </Card>
         )}
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {visibleWidgetIds.has('resumesAnalyzedStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.resumesAnalyzed.title")}</CardTitle>
-                <Zap className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalResumesAnalyzed}</div>
-                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.resumesAnalyzed.description", { count: 10 })}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('avgMatchScoreStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.avgMatchScore.title")}</CardTitle>
-                <Target className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{averageMatchScore}%</div>
-                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.avgMatchScore.description", { score: "2.1" })}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('jobApplicationsStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.jobApplications.title")}</CardTitle>
-                <Briefcase className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{sampleJobApplications.filter(app => app.userId === user.id).length}</div>
-                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.jobApplications.description", { count: sampleJobApplications.filter(app => app.userId === user.id && app.status === 'Interviewing').length })}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('alumniConnectionsStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("userDashboard.stats.alumniConnections.title")}</CardTitle>
-                <Users className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{sampleAlumni.length}</div>
-                <p className="text-xs text-muted-foreground">{t("userDashboard.stats.alumniConnections.description", { count: 5 })}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {visibleWidgetIds.has('jobApplicationStatusChart') && (
