@@ -7,7 +7,7 @@ import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, 
 import sampleChallenges from "@/lib/sample-challenges";
 import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent } from "@/lib/sample-data";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/use-i18n";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 
 const jobApplicationStatusData = sampleJobApplications.reduce((acc, curr) => {
@@ -113,7 +115,6 @@ export default function UserDashboard() {
   const user = sampleUserProfile;
   const { toast } = useToast();
   const [showUserTour, setShowUserTour] = useState(false);
-  const promotion = samplePromotionalContent;
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(
     new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
@@ -244,6 +245,8 @@ export default function UserDashboard() {
   const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
   const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
 
+  const activePromotions = useMemo(() => samplePromotionalContent.filter(p => p.isActive), []);
+
 
   return (
     <>
@@ -317,40 +320,69 @@ export default function UserDashboard() {
           )}
         </div>
         
-        {visibleWidgetIds.has('promotionCard') && promotion.isActive && (
-          <Card className={cn(
-            "shadow-lg md:col-span-2 lg:col-span-4 bg-gradient-to-r text-primary-foreground overflow-hidden",
-            promotion.gradientFrom, promotion.gradientVia, promotion.gradientTo
-          )}>
-            <div className="flex flex-col md:flex-row items-center p-6 gap-6">
-              <div className="md:w-1/3 flex justify-center">
-                <Image
-                  src={promotion.imageUrl}
-                  alt={promotion.imageAlt}
-                  width={250}
-                  height={160}
-                  className="rounded-lg shadow-md object-cover"
-                  data-ai-hint={promotion.imageHint || "promotion"}
-                />
-              </div>
-              <div className="md:w-2/3 text-center md:text-left">
-                <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
-                <p className="text-sm opacity-90 mb-4">
-                  {promotion.description}
-                </p>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  asChild
+        {visibleWidgetIds.has('promotionCard') && activePromotions.length > 0 && (
+            <Card className="shadow-lg md:col-span-2 lg:col-span-4 p-0 overflow-hidden">
+                <Carousel
+                plugins={[
+                    Autoplay({
+                    delay: 5000,
+                    stopOnInteraction: true,
+                    })
+                ]}
+                className="w-full"
+                opts={{
+                    loop: true,
+                }}
                 >
-                  <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
-                    {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </Card>
+                <CarouselContent>
+                    {activePromotions.map((promotion) => (
+                    <CarouselItem key={promotion.id}>
+                        <div className={cn(
+                        "text-primary-foreground bg-gradient-to-r",
+                        promotion.gradientFrom,
+                        promotion.gradientVia,
+                        promotion.gradientTo
+                        )}>
+                        <div className="flex flex-col md:flex-row items-center p-6 gap-6">
+                            <div className="md:w-1/3 flex justify-center">
+                            <Image
+                                src={promotion.imageUrl}
+                                alt={promotion.imageAlt}
+                                width={250}
+                                height={160}
+                                className="rounded-lg shadow-md object-cover"
+                                data-ai-hint={promotion.imageHint || "promotion"}
+                            />
+                            </div>
+                            <div className="md:w-2/3 text-center md:text-left">
+                            <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
+                            <p className="text-sm opacity-90 mb-4">
+                                {promotion.description}
+                            </p>
+                            <Button
+                                variant="secondary"
+                                size="lg"
+                                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                                asChild
+                            >
+                                <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
+                                {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                            </div>
+                        </div>
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                {activePromotions.length > 1 && (
+                    <>
+                    <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
+                    <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
+                    </>
+                )}
+                </Carousel>
+            </Card>
         )}
 
         <div className="grid gap-6 md:grid-cols-2">

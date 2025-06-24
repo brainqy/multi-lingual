@@ -661,7 +661,6 @@ export interface MockInterviewSession {
   createdAt: string;
   timerPerQuestion?: number;
   questionCategories?: InterviewQuestionCategory[];
-  difficulty?: InterviewQuestionDifficulty;
   recordingReferences?: RecordingReference[];
 }
 
