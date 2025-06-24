@@ -450,7 +450,13 @@
     "totalActiveDaysLabel": "Total Active Days:",
     "keepItUpButton": "Keep it Up!",
     "dayLabels": {
-      "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa"
+      "S": "S",
+      "M": "M",
+      "T": "T",
+      "W": "W",
+      "Th": "Th",
+      "F": "F",
+      "Sa": "Sa"
     }
   },
   "featureRequests": {
@@ -592,6 +598,8 @@
     "confirmDeletionButton": "Yes, Delete My Account",
     "cancelButton": "Cancel",
     "saveAllSettingsButton": "Save All Settings",
+    "challengePrefsCardTitle": "Challenge & Practice Preferences",
+    "challengePrefsCardDescription": "Select the topics you want to be challenged on.",
     "toastThemeChanged": {
         "title": "Theme Changed",
         "description": "Theme switched to {themeMode} mode."
@@ -816,87 +824,191 @@
     }
   },
   "sideMenu": {
-    "dashboard": "डॅशबोर्ड",
-    "communityFeed": "समुदाय फीड",
-    "alumniNetwork": "माजी विद्यार्थी नेटवर्क",
-    "jobBoard": "नोकरी मंडळ",
-    "jobTracker": "नोकरी ट्रॅकर",
-    "practiceHub": "सराव केंद्र",
-    "aiTools": "एआय साधने",
-    "resumeAnalyzer": "रेझ्युमे विश्लेषक",
-    "aiResumeWriter": "एआय रेझ्युमे लेखक",
-    "coverLetterGenerator": "कव्हर लेटर जनरेटर",
-    "resumeTools": "रेझ्युमे साधने",
-    "myResumes": "माझे रेझ्युमे",
-    "resumeBuilder": "रेझ्युमे बिल्डर",
-    "resumeTemplates": "रेझ्युमे टेम्पलेट्स",
-    "eventGallery": "इव्हेंट गॅलरी",
-    "activityLog": "क्रियाकलाप लॉग",
-    "myProfile": "माझे प्रोफाइल",
-    "appointments": "भेटी",
-    "digitalWallet": "डिजिटल वॉलेट",
-    "featureRequests": "वैशिष्ट्य विनंत्या",
-    "settings": "सेटिंग्ज",
-    "documentation": "डॉक्युमेंटेशन",
-    "dbTest": "DB चाचणी",
-    "rewardsBadges": "बक्षिसे आणि बॅजेस",
-    "referrals": "संदर्भ",
-    "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
-    "blog": "ब्लॉग",
-    "adminDashboard": "प्रशासक डॅशबोर्ड",
-    "tenantManagement": "भाडेकरू व्यवस्थापन",
-    "tenantOnboarding": "भाडेकरू ऑनबोर्डिंग",
-    "userManagement": "वापरकर्ता व्यवस्थापन",
-    "gamificationRules": "गेमिफिकेशन नियम",
-    "contentModeration": "सामग्री मॉडरेशन",
-    "announcementsMgt": "घोषणा व्यवस्थापन",
-    "messengerMgt": "मेसेन्जर व्यवस्थापन",
-    "affiliateMgt": "अफिलिएट व्यवस्थापन",
-    "galleryMgt": "गॅलरी व्यवस्थापन",
-    "blogSettings": "ब्लॉग सेटिंग्ज",
-    "platformSettings": "प्लॅटफॉर्म सेटिंग्ज",
-    "engagement": "एंगेजमेंट",
-    "utilities": "उपयुक्तता",
-    "adminPanel": "प्रशासक पॅनेल",
-    "managerPanel": "व्यवस्थापक पॅनेल",
-    "tenant": "भाडेकरू"
+    "dashboard": "Dashboard",
+    "communityFeed": "Community Feed",
+    "alumniNetwork": "Alumni Network",
+    "jobBoard": "Job Board",
+    "jobTracker": "Job Tracker",
+    "practiceHub": "Practice Hub",
+    "aiTools": "AI Tools",
+    "resumeAnalyzer": "Resume Analyzer",
+    "aiResumeWriter": "AI Resume Writer",
+    "coverLetterGenerator": "Cover Letter Generator",
+    "resumeTools": "Resume Tools",
+    "myResumes": "My Resumes",
+    "resumeBuilder": "Resume Builder",
+    "resumeTemplates": "Resume Templates",
+    "eventGallery": "Event Gallery",
+    "activityLog": "Activity Log",
+    "myProfile": "My Profile",
+    "appointments": "Appointments",
+    "digitalWallet": "Digital Wallet",
+    "featureRequests": "Feature Requests",
+    "settings": "Settings",
+    "documentation": "Documentation",
+    "dbTest": "DB Test",
+    "rewardsBadges": "Rewards & Badges",
+    "referrals": "Referrals",
+    "affiliatesProgram": "Affiliates Program",
+    "blog": "Blog",
+    "adminDashboard": "Admin Dashboard",
+    "tenantManagement": "Tenant Management",
+    "tenantOnboarding": "Tenant Onboarding",
+    "userManagement": "User Management",
+    "gamificationRules": "Gamification Rules",
+    "contentModeration": "Content Moderation",
+    "announcementsMgt": "Announcements Mgt",
+    "messengerMgt": "Messenger Mgt",
+    "affiliateMgt": "Affiliate Mgt",
+    "galleryMgt": "Gallery Mgt",
+    "blogSettings": "Blog Settings",
+    "platformSettings": "Platform Settings",
+    "engagement": "Engagement",
+    "utilities": "Utilities",
+    "adminPanel": "Admin Panel",
+    "managerPanel": "Manager Panel",
+    "tenant": "Tenant"
   },
     "appHeader": {
-      "notifications": "Notifications",
-      "profile": "Profile",
-      "myBookmarks": "My Bookmarks",
-      "recentPages": "Recent Pages",
-      "jobTracker": "Job Tracker",
-      "rewardsBadges": "Rewards & Badges",
-      "wallet": "Wallet",
-      "resumeManager": "Resume Manager",
-      "settings": "Settings",
-      "blog": "Blog",
-      "activity": "Activity",
-      "logout": "Logout",
-      "dailyStreak": "Daily Login Streak",
-      "totalXP": "Total Experience Points",
-      "coinBalance": "Coin Balance"
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "myBookmarks": "My Bookmarks",
+    "recentPages": "Recent Pages",
+    "jobTracker": "Job Tracker",
+    "rewardsBadges": "Rewards & Badges",
+    "wallet": "Wallet",
+    "resumeManager": "Resume Manager",
+    "settings": "Settings",
+    "blog": "Blog",
+    "activity": "Activity",
+    "logout": "Logout",
+    "dailyStreak": "Daily Login Streak",
+    "totalXP": "Total Experience Points",
+    "coinBalance": "Coin Balance"
+  },
+  "dailyChallenge": {
+    "title": "Daily Interview Challenge",
+    "refresh": "Get New Challenge",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "yourAnswer": "Type your answer here...",
+    "showHint": "Show Hint",
+    "submit": "Submit (Coming Soon)",
+    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
+  },
+  "userDashboard": {
+    "title": "My Dashboard",
+    "customizeButton": "Customize Dashboard",
+    "promotionalSpotlight": {
+      "title": "Unlock Premium Features!",
+      "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
+      "learnMoreButton": "Learn More & Upgrade"
     },
     "dailyChallenge": {
-      "title": "Daily Interview Challenge",
-      "refresh": "Get New Challenge",
-      "category": "Category",
-      "difficulty": "Difficulty",
-      "yourAnswer": "Type your answer here...",
-      "showHint": "Show Hint",
-      "submit": "Submit (Coming Soon)",
-      "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
+      "title": "Today's Daily Challenge",
+      "button": "Take the Challenge"
     },
-    "userDashboard": {
-      "progress": {
-        "title": "Your Progress Overview",
-        "level": "Level {level}",
-        "totalXp": "Total XP: {xp}",
-        "dayStreak": "Day Streak",
-        "badgesEarned": "Badges"
+    "stats": {
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "+{count}% from last month"
+      },
+      "avgMatchScore": {
+        "title": "Avg. Match Score",
+        "description": "+{score}% from last month"
+      },
+      "jobApplications": {
+        "title": "Job Applications",
+        "description": "{count} in interview stage"
+      },
+      "alumniConnections": {
+        "title": "Alumni Connections",
+        "description": "+{count} new this week"
       }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "Job Application Status",
+        "description": "An overview of your current application statuses."
+      },
+      "matchScoreOverTime": {
+        "title": "Average Match Score Over Time",
+        "description": "Track the improvement in your resume match scores."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "Upcoming Job App Reminders",
+        "description": "Follow-ups and deadlines for your applications.",
+        "noReminders": "No upcoming reminders set.",
+        "viewButton": "View"
+      }
+    },
+    "upcomingSessions": {
+      "title": "Upcoming Appointments & Interviews",
+      "description": "Your scheduled mentorship and practice sessions.",
+      "noSessions": "No upcoming sessions.",
+      "typeLabel": "Type",
+      "withLabel": "With",
+      "dateLabel": "Date",
+      "todayLabel": "(Today!)"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "description": "Your latest actions on the platform.",
+      "noActivities": "No recent activity to show.",
+      "viewAllButton": "View All Activity"
+    },
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard!"
+    },
+    "customizeDialog": {
+      "title": "Customize Your Dashboard",
+      "description": "Select which widgets you want to see on your dashboard.",
+      "saveButton": "Save Preferences",
+      "cancelButton": "Cancel"
+    },
+    "toast": {
+      "upgradeMock": {
+        "title": "Upgrade Mock",
+        "description": "This would open the premium features page."
+      },
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widget preferences have been saved for this session."
+      },
+      "appointmentReminder": {
+        "title": "Appointment Reminder",
+        "description": "You have an appointment for \"{title}\" with {user} today at {time}."
+      }
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "dailyChallenge": "Daily Challenge",
+      "resumesAnalyzedStat": "Resumes Analyzed Stat",
+      "avgMatchScoreStat": "Avg Match Score Stat",
+      "jobApplicationsStat": "Job Applications Stat",
+      "alumniConnectionsStat": "Alumni Connections Stat",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities"
+    },
+    "progress": {
+      "title": "Your Progress Overview",
+      "level": "Level {level}",
+      "totalXp": "Total XP: {xp}",
+      "dayStreak": "Day Streak",
+      "badgesEarned": "Badges"
     }
+  },
+  "gamification": {
+    "title": "Rewards & Progress",
+    "pageDescription": "Track your achievements and engagement within the platform.",
+    "yourBadges": "Your Badges",
+    "badgesDescription": "Collect badges by engaging with the platform and community.",
+    "leaderboard": "Leaderboard",
+    "leaderboardDescription": "See how you rank among fellow alumni based on XP points (Top 10 shown)."
+  }
 }
-    
-
