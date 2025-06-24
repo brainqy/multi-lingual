@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
-import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight } from "lucide-react";
 import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo } from "react";
@@ -20,6 +20,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/use-i18n";
+import sampleChallenges from "@/lib/sample-challenges";
+import { Progress } from "@/components/ui/progress";
+
 
 const jobApplicationStatusData = sampleJobApplications.reduce((acc, curr) => {
   const status = curr.status;
@@ -82,6 +85,7 @@ const renderActiveShape = (props: PieSectorDataItem) => {
 
 type UserDashboardWidgetId =
   | 'promotionCard'
+  | 'dailyChallenge'
   | 'resumesAnalyzedStat'
   | 'avgMatchScoreStat'
   | 'jobApplicationsStat'
@@ -100,6 +104,7 @@ interface WidgetConfig {
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'promotionCard', title: 'Promotional Spotlight', defaultVisible: true },
+  { id: 'dailyChallenge', title: 'Daily Challenge', defaultVisible: true },
   { id: 'resumesAnalyzedStat', title: 'Resumes Analyzed Stat', defaultVisible: true },
   { id: 'avgMatchScoreStat', title: 'Average Match Score Stat', defaultVisible: true },
   { id: 'jobApplicationsStat', title: 'Job Applications Stat', defaultVisible: true },
@@ -125,6 +130,8 @@ export default function UserDashboard() {
   );
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(visibleWidgetIds);
+  
+  const dailyChallenge = sampleChallenges[0];
 
   const recentUserActivities = useMemo(() => {
     return sampleActivities
@@ -245,6 +252,28 @@ export default function UserDashboard() {
             <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton")}
           </Button>
         </div>
+
+        {visibleWidgetIds.has('dailyChallenge') && dailyChallenge && (
+            <Card className="shadow-lg bg-gradient-to-r from-accent/50 to-primary/20 border-primary/30">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Puzzle className="h-6 w-6 text-primary" />
+                        {t("userDashboard.dailyChallenge.title", "Today's Daily Challenge")}
+                    </CardTitle>
+                    <CardDescription>{dailyChallenge.title}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{dailyChallenge.description}</p>
+                </CardContent>
+                <CardFooter>
+                    <Link href="/daily-interview-challenge" passHref>
+                    <Button>
+                        {t("userDashboard.dailyChallenge.button", "Take the Challenge")} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    </Link>
+                </CardFooter>
+            </Card>
+        )}
 
         {visibleWidgetIds.has('promotionCard') && (
           <Card className="shadow-lg bg-gradient-to-r from-primary/80 via-primary to-accent/80 text-primary-foreground overflow-hidden">
@@ -523,4 +552,3 @@ export default function UserDashboard() {
     </>
   );
 }
-

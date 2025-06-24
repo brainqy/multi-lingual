@@ -110,7 +110,11 @@
     "pageTitle": "साक्षात्कार तैयारी केंद्र"
   },
   "userDashboard": {
-    "title": "मेरा डैशबोर्ड"
+    "title": "मेरा डैशबोर्ड",
+    "dailyChallenge": {
+      "title": "आज की दैनिक चुनौती",
+      "button": "चुनौती स्वीकार करें"
+    }
   },
   "adminDashboard": {
     "title": "प्रशासक डैशबोर्ड"
@@ -124,7 +128,7 @@
   },
     "appHeader": {
     "notifications": "सूचनाएँ",
-    "profile": "प्रोफाइल",
+    "profile": "प्रोफ़ाइल",
     "myBookmarks": "मेरे बुकमार्क्स",
     "recentPages": "हाल के पृष्ठ",
     "jobTracker": "नौकरी ट्रैकर",
@@ -138,6 +142,16 @@
     "dailyStreak": "दैनिक लॉगिन स्ट्रीक",
     "totalXP": "कुल अनुभव अंक",
     "coinBalance": "सिक्का शेष"
+  },
+  "dailyChallenge": {
+    "title": "Daily Interview Challenge",
+    "refresh": "Get New Challenge",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "yourAnswer": "Type your answer here...",
+    "showHint": "Show Hint",
+    "submit": "Submit (Coming Soon)",
+    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
   }
 }
     

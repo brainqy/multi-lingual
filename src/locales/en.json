@@ -624,13 +624,13 @@
         "title": "Password Changed (Mock)",
         "description": "Your password would be updated in a real application."
     },
-    "toastMockAction": {
-        "title": "Action Mocked",
-        "description": "This is a placeholder for a future feature."
-    },
     "toastDataDeletionMock": {
       "title": "Account Deletion Requested (Mock)",
       "description": "Your request has been submitted. In a real system, this would start the deletion process."
+    },
+    "toastMockAction": {
+      "title": "Action Mocked",
+      "description": "This is a placeholder for a future feature."
     }
   },
   "interviewPrep": {
@@ -673,8 +673,12 @@
         "title": "Created Quizzes",
         "description": "Manage your custom quizzes or start one.",
         "noQuizzes": "No quizzes created yet. Create one from the Question Bank below!",
-        "startButton": "Start Quiz",
-        "editButton": "Edit"
+        "noDescription": "No description",
+        "questions": "Questions",
+        "difficulty": "Difficulty",
+        "na": "N/A",
+        "startQuiz": "Start Quiz",
+        "edit": "Edit"
     },
     "questionBank": {
         "title": "Question Bank ({count})",
@@ -813,18 +817,17 @@
   },
   "sideMenu": {
     "dashboard": "Dashboard",
+    "communityFeed": "Community Feed",
     "alumniNetwork": "Alumni Network",
     "jobBoard": "Job Board",
     "jobTracker": "Job Tracker",
-    "resumeAnalyzer": "Resume Analyzer",
-    "myResumes": "My Resumes",
     "practiceHub": "Practice Hub",
-    "settings": "Settings",
-    "communityFeed": "Community Feed",
     "aiTools": "AI Tools",
+    "resumeAnalyzer": "Resume Analyzer",
     "aiResumeWriter": "AI Resume Writer",
     "coverLetterGenerator": "Cover Letter Generator",
     "resumeTools": "Resume Tools",
+    "myResumes": "My Resumes",
     "resumeBuilder": "Resume Builder",
     "resumeTemplates": "Resume Templates",
     "eventGallery": "Event Gallery",
@@ -833,16 +836,13 @@
     "appointments": "Appointments",
     "digitalWallet": "Digital Wallet",
     "featureRequests": "Feature Requests",
+    "settings": "Settings",
     "documentation": "Documentation",
     "dbTest": "DB Test",
-    "engagement": "Engagement",
     "rewardsBadges": "Rewards & Badges",
     "referrals": "Referrals",
     "affiliatesProgram": "Affiliates Program",
     "blog": "Blog",
-    "utilities": "Utilities",
-    "adminPanel": "Admin Panel",
-    "managerPanel": "Manager Panel",
     "adminDashboard": "Admin Dashboard",
     "tenantManagement": "Tenant Management",
     "tenantOnboarding": "Tenant Onboarding",
@@ -850,337 +850,62 @@
     "gamificationRules": "Gamification Rules",
     "contentModeration": "Content Moderation",
     "announcementsMgt": "Announcements",
-    "messengerMgt": "Messenger Settings",
-    "affiliateMgt": "Affiliate Management",
-    "galleryMgt": "Gallery Management",
+    "messengerMgt": "Messenger Mgt",
+    "affiliateMgt": "Affiliate Mgt",
+    "galleryMgt": "Gallery Mgt",
     "blogSettings": "Blog Settings",
     "platformSettings": "Platform Settings",
+    "engagement": "Engagement",
+    "utilities": "Utilities",
+    "adminPanel": "Admin Panel",
+    "managerPanel": "Manager Panel",
     "tenant": "Tenant"
   },
-  "userDashboard": {
-    "title": "My Dashboard",
-    "customizeButton": "Customize",
-    "promotionalSpotlight": {
-      "title": "Unlock Premium Features!",
-      "description": "Upgrade to Premium today for unlimited resume scans, advanced AI mock interviews, and exclusive access to expert career coaching sessions.",
-      "learnMoreButton": "Learn More & Upgrade"
+    "dailyChallenge": {
+      "title": "Daily Interview Challenge",
+      "refresh": "Get New Challenge",
+      "category": "Category",
+      "difficulty": "Difficulty",
+      "yourAnswer": "Type your answer here...",
+      "showHint": "Show Hint",
+      "submit": "Submit (Coming Soon)",
+      "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
     },
-    "stats": {
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed",
-        "description": "+{count} This Month"
-      },
-      "avgMatchScore": {
-        "title": "Average Match Score",
-        "description": "+{score}% from last month"
-      },
-      "jobApplications": {
-        "title": "Job Applications Tracked",
-        "description": "{count} in Interview Stage"
-      },
-      "alumniConnections": {
-        "title": "Alumni Connections",
-        "description": "{count} new connections this week"
+    "appHeader": {
+      "notifications": "Notifications",
+      "profile": "Profile",
+      "myBookmarks": "My Bookmarks",
+      "recentPages": "Recent Pages",
+      "jobTracker": "Job Tracker",
+      "rewardsBadges": "Rewards & Badges",
+      "wallet": "Wallet",
+      "resumeManager": "Resume Manager",
+      "settings": "Settings",
+      "blog": "Blog",
+      "activity": "Activity",
+      "logout": "Logout",
+      "dailyStreak": "Daily Login Streak",
+      "totalXP": "Total Experience Points",
+      "coinBalance": "Coin Balance"
+    },
+    "bookmarks": {
+      "title": "My Bookmarks",
+      "filter": "Filter by type",
+      "all": "All Types",
+      "posts": "Bookmarked Community Posts",
+      "noPosts": "No bookmarked posts yet.",
+      "blogs": "Bookmarked Blog Posts",
+      "noBlogs": "No bookmarked blogs yet.",
+      "questions": "Bookmarked Interview Questions",
+      "noQuestions": "No bookmarked questions yet.",
+      "resumeScans": "Bookmarked Resume Scans",
+      "noResumeScans": "No bookmarked resume scans yet."
+    },
+    "userDashboard": {
+      "dailyChallenge": {
+        "title": "Today's Daily Challenge",
+        "button": "Take the Challenge"
       }
-    },
-    "charts": {
-      "jobApplicationStatus": {
-        "title": "Job Application Status",
-        "description": "Overview of your current job application pipeline."
-      },
-      "matchScoreOverTime": {
-        "title": "Match Score Over Time",
-        "description": "Track your resume match score improvements."
-      }
-    },
-    "reminders": {
-      "jobApp": {
-        "title": "Job Application Reminders",
-        "description": "Upcoming follow-ups and deadlines.",
-        "noReminders": "No upcoming reminders for job applications.",
-        "viewButton": "View"
-      }
-    },
-    "upcomingSessions": {
-      "title": "Upcoming Appointments & Interviews",
-      "description": "Your scheduled meetings and practice sessions.",
-      "noSessions": "No upcoming appointments or practice sessions.",
-      "typeLabel": "Type",
-      "withLabel": "With",
-      "dateLabel": "Date",
-      "todayLabel": "(Today!)"
-    },
-    "recentActivities": {
-      "title": "Recent Activities",
-      "description": "A quick look at your latest actions on the platform.",
-      "noActivities": "No recent activities to display.",
-      "viewAllButton": "View All Activities"
-    },
-    "toast": {
-      "upgradeMock": {
-        "title": "Upgrade (Mock)",
-        "description": "This would lead to the subscription page."
-      },
-      "appointmentReminder": {
-        "title": "Appointment Reminder!",
-        "description": "You have an appointment: \"{title}\" with {user} today at {time}."
-      },
-      "dashboardUpdated": {
-        "title": "Dashboard Updated",
-        "description": "Your dashboard widget preferences have been saved."
-      }
-    },
-    "welcomeTour": {
-      "title": "Welcome to Your Dashboard!"
-    },
-    "widgets": {
-      "promotionCard": "Promotional Spotlight",
-      "resumesAnalyzedStat": "Resumes Analyzed Stat",
-      "avgMatchScoreStat": "Average Match Score Stat",
-      "jobApplicationsStat": "Job Applications Stat",
-      "alumniConnectionsStat": "Alumni Connections Stat",
-      "jobApplicationStatusChart": "Job Application Status Chart",
-      "matchScoreOverTimeChart": "Match Score Over Time Chart",
-      "jobAppReminders": "Job App Reminders",
-      "upcomingAppointments": "Upcoming Appointments & Interviews",
-      "recentActivities": "Recent Activities"
-    },
-    "customizeDialog": {
-      "title": "Customize Dashboard Widgets",
-      "description": "Select the widgets you want to see on your dashboard.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save Preferences"
     }
-  },
-  "adminDashboard": {
-    "title": "Administrator Dashboard",
-    "description": "Overview of platform activity and management tools.",
-    "customizeButton": "Customize Dashboard",
-    "promotionalSpotlight": {
-      "title": "Admin Tools & Platform Health",
-      "description": "Access key administrative functions and monitor overall system status.",
-      "content": "Use the quick action links below or navigate via the sidebar for detailed management.",
-      "learnMoreButton": "System Health Details"
-    },
-    "stats": {
-      "totalUsers": {
-        "title": "Total Users",
-        "description": "+{count} new signups ({period})"
-      },
-      "totalTenants": {
-        "title": "Total Tenants",
-        "description": "Active organizational accounts"
-      },
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed",
-        "description": "{period}"
-      },
-      "communityPosts": {
-        "title": "Community Posts",
-        "description": "{period}"
-      },
-      "platformActivity": {
-        "title": "Platform Activity",
-        "description": "Active users {period}"
-      },
-      "jobApplications": {
-        "title": "Job Applications Tracked",
-        "description": "{period}"
-      },
-      "alumniConnections": {
-        "title": "Alumni Connections Made",
-        "description": "Total connections facilitated"
-      },
-      "mockInterviews": {
-        "title": "Mock Interviews Conducted",
-        "description": "Total AI and expert sessions"
-      }
-    },
-    "charts": {
-      "registrationTrends": {
-        "title": "User Registration Trends",
-        "description": "New user signups over the last 30 days."
-      },
-      "aiUsage": {
-        "title": "AI Feature Usage Breakdown",
-        "description": "Popularity of various AI-powered tools."
-      },
-      "contentModeration": {
-        "title": "Content Moderation Queue",
-        "description": "Posts flagged for review by users or AI.",
-        "flaggedPosts": "Flagged Posts",
-        "reviewButton": "Review Queue"
-      },
-      "systemAlerts": {
-        "title": "System Alerts & Notifications",
-        "description": "Important system status updates and critical events.",
-        "noAlerts": "No system alerts at this time. All systems normal.",
-        "markReadButton": "Mark as Read",
-        "viewAllButton": "View All Alerts",
-        "alertReadToastTitle": "Alert Marked as Read",
-        "alertReadToastDescription": "'{title}' marked as read.",
-        "unreadAlertsCount": "{count} Unread"
-      },
-      "timeSpent": {
-        "title": "User Engagement - Time Spent",
-        "description": "Analyze how users are spending time on the platform.",
-        "weekly": "Weekly",
-        "monthly": "Monthly",
-        "avgSessionDuration": "Avg. Session Duration",
-        "totalPlatformUsage": "Total Platform Usage ({period})",
-        "topUsers": "Top Users by Time ({period})",
-        "mostUsedFeatures": "Most Used Features (Overall)"
-      },
-      "tenantActivity": {
-        "title": "Tenant Activity Overview ({period})",
-        "description": "Key metrics for each tenant.",
-        "legendNewUsers": "New Users",
-        "legendResumesAnalyzed": "Resumes Analyzed",
-        "legendCommunityPosts": "Community Posts"
-      }
-    },
-    "quickActions": {
-      "title": "Admin Quick Actions",
-      "manageUsers": "Manage Users",
-      "platformSettings": "Platform Settings",
-      "manageTenants": "Manage Tenants",
-      "contentModeration": "Content Moderation",
-      "announcements": "Announcements",
-      "gamificationRules": "Gamification Rules",
-      "blogSettings": "Blog Settings",
-      "userActivityAnalytics": "User Activity Analytics"
-    },
-    "customizeDialog": {
-      "title": "Customize Admin Dashboard",
-      "description": "Select which widgets to display on your admin dashboard.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save Customization"
-    },
-    "widgets": {
-      "promotionalSpotlight": "Promotional Spotlight",
-      "totalUsersStat": "Total Users Stat",
-      "totalTenantsStat": "Total Tenants Stat",
-      "resumesAnalyzedStat": "Resumes Analyzed Stat",
-      "communityPostsStat": "Community Posts Stat",
-      "platformActivityStat": "Platform Activity Stat",
-      "jobApplicationsStat": "Job Applications Stat",
-      "alumniConnectionsStat": "Alumni Connections Stat",
-      "mockInterviewsStat": "Mock Interviews Stat",
-      "timeSpentStats": "Time Spent Stats",
-      "tenantActivityOverview": "Tenant Activity Overview",
-      "registrationTrendsChart": "Registration Trends Chart",
-      "aiUsageBreakdownChart": "AI Usage Breakdown Chart",
-      "contentModerationQueueSummary": "Content Moderation Queue Summary",
-      "systemAlerts": "System Alerts",
-      "adminQuickActions": "Admin Quick Actions"
-    },
-    "toast": {
-        "dashboardUpdated": {
-            "title": "Dashboard Updated",
-            "description": "Your admin dashboard widget preferences have been saved."
-        }
-    }
-  },
-  "managerDashboard": {
-    "title": "Manager Dashboard: {tenantName}",
-    "description": "Manage your tenant's users, content, and engagement.",
-    "customizeButton": "Customize Dashboard",
-    "stats": {
-        "activeUsers": {
-            "title": "Active Users (Tenant)",
-            "description": "{count} total users in tenant"
-        },
-        "resumesAnalyzed": {
-            "title": "Resumes Analyzed (Tenant)",
-            "description": "Total scans by your tenant's users"
-        },
-        "communityPosts": {
-            "title": "Community Posts (Tenant)",
-            "description": "Posts within your tenant's feed"
-        },
-        "pendingApprovals": {
-            "title": "Pending Event Approvals",
-            "description": "Events awaiting your review"
-        }
-    },
-    "charts": {
-        "tenantEngagement": {
-            "title": "Tenant Engagement Overview",
-            "description": "Key activity metrics within your tenant.",
-            "legendPosts": "Posts",
-            "legendResumesAnalyzed": "Resumes Analyzed",
-            "legendAppointments": "Appointments",
-            "activityCount": "Activity Count"
-        }
-    },
-    "quickActions": {
-        "title": "Tenant Management Actions",
-        "description": "Quick links to manage your tenant.",
-        "manageTenantUsers": "Manage Tenant Users",
-        "moderateTenantFeed": "Moderate Tenant Feed",
-        "manageEventGallery": "Manage Event Gallery",
-        "reviewEventSubmissions": "Review Event Submissions",
-        "manageAnnouncements": "Manage Announcements"
-    },
-    "toast": {
-      "dashboardUpdated": {
-          "title": "Dashboard Updated",
-          "description": "Your manager dashboard widget preferences have been saved."
-      }
-    },
-    "widgets": {
-      "activeUsersStat": "Active Users (Tenant)",
-      "resumesAnalyzedStat": "Resumes Analyzed (Tenant)",
-      "communityPostsStat": "Community Posts (Tenant)",
-      "pendingApprovalsStat": "Pending Event Approvals",
-      "tenantEngagementOverview": "Tenant Engagement Overview Chart",
-      "tenantManagementActions": "Tenant Quick Actions"
-    },
-    "customizeDialog": {
-      "title": "Customize Manager Dashboard",
-      "description": "Select which widgets to display on your manager dashboard.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save Customization"
-    }
-  },
-  "common": {
-    "cancel": "Cancel",
-    "submit": "Submit"
-  },  "bookmarks": {
-    "title": "My Bookmarks",
-    "posts": "Bookmarked Community Posts",
-    "noPosts": "No bookmarked posts yet.",
-    "blogs": "Bookmarked Blog Posts",
-    "noBlogs": "No bookmarked blogs yet.",
-    "questions": "Bookmarked Interview Questions",
-    "noQuestions": "No bookmarked questions yet.",
-    "resumeScans": "Bookmarked Resume Scans",
-    "noResumeScans": "No bookmarked resume scans yet."
-  },  "appHeader": {
-    "notifications": "Notifications",
-    "profile": "Profile",
-    "myBookmarks": "My Bookmarks",
-    "recentPages": "Recent Pages",
-    "jobTracker": "Job Tracker",
-    "rewardsBadges": "Rewards & Badges",
-    "wallet": "Wallet",
-    "resumeManager": "Resume Manager",
-    "settings": "Settings",
-    "blog": "Blog",
-    "activity": "Activity",
-    "logout": "Logout",
-    "dailyStreak": "Daily Login Streak",
-    "totalXP": "Total Experience Points",
-    "coinBalance": "Coin Balance"
-  },  "dailyChallenge": {
-    "title": "Daily Interview Challenge",
-    "refresh": "Get New Challenge",
-    "category": "Category",
-    "difficulty": "Difficulty",
-    "yourAnswer": "Type your answer here...",
-    "showHint": "Show Hint",
-    "submit": "Submit (Coming Soon)",
-    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
-  }
 }
     
