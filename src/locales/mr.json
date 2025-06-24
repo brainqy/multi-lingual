@@ -53,14 +53,21 @@
   "userDashboard": {
     "title": "वापरकर्ता डॅशबोर्ड",
     "customizeButton": "डॅशबोर्ड सानुकूलित करा",
+    "progress": {
+      "title": "तुमची प्रगती अवलोकन",
+      "level": "स्तर {level}",
+      "totalXp": "एकूण XP: {xp}",
+      "dayStreak": "दिवसाची स्ट्रीक",
+      "badgesEarned": "बॅजेस"
+    },
     "promotionalSpotlight": {
       "title": "प्रीमियम वैशिष्ट्ये अनलॉक करा!",
-      "description": "प्रगत विश्लेषण, अमर्यादित रेझ्युमे स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला ResumeMatch AI अनुभव श्रेणीसुधारित करा.",
+      "description": "प्रगत विश्लेषण, अमर्यादित बायोडाटा स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला ResumeMatch AI अनुभव श्रेणीसुधारित करा.",
       "learnMoreButton": "अधिक जाणून घ्या"
     },
     "stats": {
       "resumesAnalyzed": {
-        "title": "विश्लेषित रेझ्युमे",
+        "title": "विश्लेषित बायोडाटा",
         "description": "गेल्या महिन्यापासून +{count}%"
       },
       "avgMatchScore": {
@@ -83,7 +90,7 @@
       },
       "matchScoreOverTime": {
         "title": "वेळेनुसार सरासरी जुळणी गुण",
-        "description": "आपल्या रेझ्युमे जुळणी गुणांमधील सुधारणांचा मागोवा घ्या."
+        "description": "आपल्या बायोडाटा जुळणी गुणांमधील सुधारणांचा मागोवा घ्या."
       }
     },
     "reminders": {
@@ -134,22 +141,11 @@
     },
     "widgets": {
       "promotionCard": "प्रमोशनल स्पॉटलाइट",
-      "resumesAnalyzedStat": "विश्लेषित रेझ्युमे आकडेवारी",
-      "avgMatchScoreStat": "सरासरी जुळणी गुण आकडेवारी",
-      "jobApplicationsStat": "नोकरी अर्ज आकडेवारी",
-      "alumniConnectionsStat": "माजी विद्यार्थी कनेक्शन आकडेवारी",
       "jobApplicationStatusChart": "नोकरी अर्ज स्थिती चार्ट",
       "matchScoreOverTimeChart": "वेळेनुसार जुळणी गुण चार्ट",
       "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
       "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
       "recentActivities": "अलीकडील क्रियाकलाप"
-    },
-    "progress": {
-      "title": "तुमची प्रगती अवलोकन",
-      "level": "स्तर {level}",
-      "totalXp": "एकूण XP: {xp}",
-      "dayStreak": "दिवसाची स्ट्रीक",
-      "badgesEarned": "बॅजेस"
     }
   },
   "adminDashboard": {

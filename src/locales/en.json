@@ -559,7 +559,7 @@
     "tenantLogoUrlPlaceholder": "https://example.com/your-logo.png",
     "logoUploadLabel": "Upload Logo",
     "logoUploadHelpText": "Recommended size: 200x50px. PNG or JPG.",
-    "tenantThemeColorsLabel": "Tenant Theme Colors",
+    "tenantThemeColorsLabel": "Tenant Theme Colors (Mock)",
     "primaryColorLabel": "Primary Color",
     "accentColorLabel": "Accent Color",
     "colorPlaceholder": "#RRGGBB",
@@ -724,6 +724,86 @@
           "description": "In a real app, your answer would be evaluated. This feature is coming soon!"
         }
       }
+    },
+  "userDashboard": {
+    "title": "My Dashboard",
+    "customizeButton": "Customize Dashboard",
+    "progress": {
+      "title": "Your Progress Overview",
+      "level": "Level {level}",
+      "totalXp": "Total XP: {xp}",
+      "dayStreak": "Day Streak",
+      "badgesEarned": "Badges"
+    },
+    "promotionalSpotlight": {
+        "title": "Unlock Premium Features!",
+        "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
+        "learnMoreButton": "Learn More"
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities"
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "Job Application Status",
+        "description": "A breakdown of your current application statuses."
+      },
+      "matchScoreOverTime": {
+        "title": "Average Match Score Over Time",
+        "description": "Track your resume analysis score improvements."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "Upcoming Job App Reminders",
+        "description": "Follow-ups and deadlines for your job applications.",
+        "noReminders": "No upcoming reminders set.",
+        "viewButton": "View"
+      }
+    },
+    "upcomingSessions": {
+      "title": "Upcoming Appointments & Interviews",
+      "description": "Your scheduled mentorship and practice sessions.",
+      "noSessions": "No upcoming sessions found.",
+      "typeLabel": "Type",
+      "withLabel": "With",
+      "dateLabel": "Date",
+      "todayLabel": "(Today!)"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "description": "Your latest actions on the platform.",
+      "noActivities": "No recent activities to show.",
+      "viewAllButton": "View all activity"
+    },
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard!"
+    },
+    "customizeDialog": {
+      "title": "Customize Your Dashboard",
+      "description": "Select which widgets you want to see on your dashboard.",
+      "saveButton": "Save Preferences",
+      "cancelButton": "Cancel"
+    },
+    "toast": {
+      "upgradeMock": {
+        "title": "Upgrade Mock",
+        "description": "The premium features page would open."
+      },
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widget preferences have been saved for this session."
+      },
+      "appointmentReminder": {
+        "title": "Appointment Reminder",
+        "description": "You have an appointment for \"{title}\" with {user} today at {time}."
+      }
     }
+  }
 }
     
