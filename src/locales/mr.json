@@ -144,10 +144,6 @@
       "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
       "recentActivities": "अलीकडील क्रियाकलाप"
     },
-    "dailyChallenge": {
-      "title": "आजचे दैनिक आव्हान",
-      "button": "आव्हान स्वीकारा"
-    },
     "progress": {
       "title": "तुमची प्रगती अवलोकन",
       "level": "स्तर {level}",
@@ -681,7 +677,7 @@
       "description": "प्लॅटफॉर्म वैशिष्ट्य प्राधान्ये अद्यतनित केली आहेत."
     },
     "toastTenantBrandingSaved": {
-      "title": "भाडेकरू ब्रांडिंग जतन केले",
+      "title": "भाडेकरू सेटिंग्ज जतन केल्या",
       "description": "\"{tenantName}\" साठी ब्रांडिंग अद्यतनित केले."
     },
     "toastUserSettingsSaved": {
@@ -778,14 +774,29 @@
       "coinBalance": "Coin Balance"
     },
     "dailyChallenge": {
-      "title": "Daily Interview Challenge",
-      "refresh": "Get New Challenge",
-      "category": "Category",
-      "difficulty": "Difficulty",
-      "yourAnswer": "Type your answer here...",
-      "showHint": "Show Hint",
-      "submit": "Submit (Coming Soon)",
-      "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
+      "title": "दैनिक मुलाखत आव्हान",
+      "refresh": "नवीन आव्हान मिळवा",
+      "category": "श्रेणी",
+      "difficulty": "कठीणता",
+      "yourAnswer": "तुमचे उत्तर येथे टाइप करा...",
+      "showHint": "इशारा दाखवा",
+      "submit": "सबमिट करा",
+      "footerNote": "दररोज एक नवीन आव्हान पोस्ट केले जाते. तुमच्या मुलाखत कौशल्यात सुधारणा करण्यासाठी नियमित सराव करा!",
+      "completeTasksButton": "XP गुण मिळवण्यासाठी कार्ये पूर्ण करा",
+      "toast": {
+        "newChallenge": {
+          "title": "नवीन आव्हान लोड केले",
+          "description": "तुमच्यासाठी एक नवीन तांत्रिक आव्हान आणले आहे."
+        },
+        "showHint": {
+          "title": "इशारा",
+          "noHint": "या प्रश्नासाठी कोणताही विशिष्ट इशारा उपलब्ध नाही."
+        },
+        "submitMock": {
+          "title": "उत्तर प्राप्त झाले (मॉक)",
+          "description": "वास्तविक अॅपमध्ये, तुमच्या उत्तराचे मूल्यांकन केले जाईल. हे वैशिष्ट्य लवकरच येत आहे!"
+        }
+      }
     }
 }
     

@@ -20,7 +20,7 @@ const sampleChallenges: DailyChallenge[] = [
     description: "Write a function that reverses a given string.",
     difficulty: "Easy",
     category: "Strings",
-    solution: "",
+    solution: "A common approach is to use `str.split('').reverse().join('')` in JavaScript, or to use a two-pointer technique swapping characters from the start and end of the string.",
   },
   {
     id: "challenge-2",
@@ -30,7 +30,7 @@ const sampleChallenges: DailyChallenge[] = [
     description: "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the one that is missing from the array.",
     difficulty: "Medium",
     category: "Arrays",
-    solution: "",
+    solution: "Calculate the expected sum of the sequence using the formula n*(n+1)/2. The missing number is the difference between the expected sum and the actual sum of the array elements.",
   },
    {
     id: "flip-challenge-2",
@@ -51,7 +51,7 @@ const sampleChallenges: DailyChallenge[] = [
     description: "Given two strings text1 and text2, return the length of their longest common subsequence. If there is no common subsequence, return 0.",
     difficulty: "Hard",
     category: "Dynamic Programming",
-    solution: "",
+    solution: "This is a classic dynamic programming problem. Use a 2D DP table where dp[i][j] is the length of the LCS for the first i characters of text1 and the first j characters of text2.",
   },
   {
     id: "flip-challenge-3",
@@ -72,7 +72,7 @@ const sampleChallenges: DailyChallenge[] = [
     description: "Write a function to find the largest number in a given array of integers.",
     difficulty: "Easy",
     category: "Arrays",
-    solution: "",
+    solution: "Initialize a variable with the first element of the array. Iterate through the rest of the array, updating the variable if you find a larger element.",
   },
   {
     id: "challenge-5",
@@ -82,7 +82,7 @@ const sampleChallenges: DailyChallenge[] = [
     description: "Reverse a singly linked list. Return the reversed list.",
     difficulty: "Medium",
     category: "Linked Lists",
-    solution: "",
+    solution: "Iterate through the list, keeping track of the previous, current, and next nodes. In each iteration, reverse the 'next' pointer of the current node to point to the previous node.",
   },
 ];
 

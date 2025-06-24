@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
 import sampleChallenges from '@/lib/sample-challenges';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
@@ -9,19 +9,48 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, RefreshCw, Lightbulb, CheckCircle, Award, Brain } from 'lucide-react';
 import type { DailyChallenge } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 const DailyInterviewChallengePage: React.FC = () => {
   const { t } = useI18n();
-  
-  const standardChallenge = sampleChallenges.find(c => c.type === 'standard');
-  const flipChallenge = sampleChallenges.find(c => c.type === 'flip');
+  const { toast } = useToast();
+
+  const [standardChallenge, setStandardChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'standard'));
+  const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'flip'));
 
   const handleRefresh = () => {
-    // Logic to fetch a new challenge (to be implemented)
+    // Mock logic: find another standard challenge that is not the current one
+    const otherChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
+    if (otherChallenges.length > 0) {
+      setStandardChallenge(otherChallenges[Math.floor(Math.random() * otherChallenges.length)]);
+    }
+    toast({
+      title: t("dailyChallenge.toast.newChallenge.title"),
+      description: t("dailyChallenge.toast.newChallenge.description"),
+    });
   };
 
   const handleShowHint = () => {
-    // Logic to show a hint (to be implemented)
+    if (standardChallenge?.solution) {
+      toast({
+        title: t("dailyChallenge.toast.showHint.title"),
+        description: standardChallenge.solution,
+        duration: 10000,
+      });
+    } else {
+      toast({
+        title: t("dailyChallenge.toast.showHint.title"),
+        description: t("dailyChallenge.toast.showHint.noHint"),
+        variant: "default",
+      });
+    }
+  };
+  
+  const handleSubmit = () => {
+    toast({
+      title: t("dailyChallenge.toast.submitMock.title"),
+      description: t("dailyChallenge.toast.submitMock.description"),
+    });
   };
 
   const renderStandardChallenge = (challenge: DailyChallenge) => (
@@ -38,7 +67,6 @@ const DailyInterviewChallengePage: React.FC = () => {
         <textarea
           className="w-full min-h-[100px] border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder={t("dailyChallenge.yourAnswer", "Type your answer here...")}
-          disabled
         />
       </CardContent>
       <CardFooter className="flex justify-between items-center mt-auto border-t pt-4">
@@ -46,7 +74,7 @@ const DailyInterviewChallengePage: React.FC = () => {
           <Lightbulb className="mr-2 h-4 w-4" />
           {t("dailyChallenge.showHint", "Show Hint")}
         </Button>
-        <Button disabled>{t("dailyChallenge.submit", "Submit (Coming Soon)")}</Button>
+        <Button onClick={handleSubmit}>{t("dailyChallenge.submit", "Submit")}</Button>
       </CardFooter>
     </Card>
   );
@@ -78,7 +106,7 @@ const DailyInterviewChallengePage: React.FC = () => {
             </div>
         </CardContent>
         <CardFooter className="flex justify-end mt-auto border-t pt-4">
-          <Button disabled>{t("dailyChallenge.submit", "Complete Tasks to Earn XP")}</Button>
+          <Button onClick={handleSubmit}>{t("dailyChallenge.completeTasksButton", "Complete Tasks to Earn XP")}</Button>
         </CardFooter>
     </Card>
   );

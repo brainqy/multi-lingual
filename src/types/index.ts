@@ -490,12 +490,6 @@ export interface ResumeTemplate {
   content: string;
 }
 
-export interface RecentPageItem {
-  path: string;
-  label: string;
-  timestamp: number;
-}
-
 export interface TourStep {
   title: string;
   description: string;

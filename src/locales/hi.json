@@ -111,16 +111,105 @@
   },
   "userDashboard": {
     "title": "मेरा डैशबोर्ड",
-    "dailyChallenge": {
-      "title": "आज की दैनिक चुनौती",
-      "button": "चुनौती स्वीकार करें"
+    "customizeButton": "डैशबोर्ड अनुकूलित करें",
+    "promotionalSpotlight": {
+        "title": "प्रीमियम सुविधाएँ अनलॉक करें!",
+        "description": "उन्नत एनालिटिक्स, असीमित बायोडाटा स्कैन, प्राथमिकता समर्थन और विशेष टेम्पलेट्स के साथ अपने ResumeMatch AI अनुभव को अपग्रेड करें।",
+        "learnMoreButton": "और जानें"
+    },
+    "stats": {
+        "resumesAnalyzed": {
+            "title": "विश्लेषित बायोडाटा",
+            "description": "पिछले महीने से +{count}%"
+        },
+        "avgMatchScore": {
+            "title": "औसत मिलान स्कोर",
+            "description": "पिछले महीने से +{score}%"
+        },
+        "jobApplications": {
+            "title": "नौकरी के आवेदन",
+            "description": "{count} साक्षात्कार चरण में"
+        },
+        "alumniConnections": {
+            "title": "पूर्व छात्र कनेक्शन",
+            "description": "इस सप्ताह +{count} नए"
+        }
+    },
+    "charts": {
+        "jobApplicationStatus": {
+            "title": "नौकरी आवेदन की स्थिति",
+            "description": "आपकी वर्तमान आवेदन स्थितियों का अवलोकन।"
+        },
+        "matchScoreOverTime": {
+            "title": "समय के साथ औसत मिलान स्कोर",
+            "description": "अपने बायोडाटा मिलान स्कोर में सुधार को ट्रैक करें।"
+        }
+    },
+    "reminders": {
+        "jobApp": {
+            "title": "आगामी नौकरी ऐप अनुस्मारक",
+            "description": "आपके आवेदनों के लिए अनुवर्ती और समय-सीमा।",
+            "noReminders": "कोई आगामी अनुस्मारक सेट नहीं है।",
+            "viewButton": "देखें"
+        }
+    },
+    "upcomingSessions": {
+        "title": "आगामी नियुक्तियाँ और साक्षात्कार",
+        "description": "आपके निर्धारित मेंटरशिप और अभ्यास सत्र।",
+        "noSessions": "कोई आगामी सत्र नहीं।",
+        "typeLabel": "प्रकार",
+        "withLabel": "साथ",
+        "dateLabel": "दिनांक",
+        "todayLabel": "(आज!)"
+    },
+    "recentActivities": {
+        "title": "हाल की गतिविधियाँ",
+        "description": "मंच पर आपकी नवीनतम क्रियाएँ।",
+        "noActivities": "दिखाने के लिए कोई हाल की गतिविधि नहीं।",
+        "viewAllButton": "सभी गतिविधियाँ देखें"
+    },
+    "welcomeTour": {
+        "title": "आपके डैशबोर्ड में आपका स्वागत है!"
+    },
+    "customizeDialog": {
+        "title": "अपना डैशबोर्ड अनुकूलित करें",
+        "description": "चुनें कि आप अपने डैशबोर्ड पर कौन से विजेट देखना चाहते हैं।",
+        "saveButton": "प्राथमिकताएँ सहेजें",
+        "cancelButton": "रद्द करें"
+    },
+    "toast": {
+        "upgradeMock": {
+            "title": "अपग्रेड मॉक",
+            "description": "यह प्रीमियम सुविधा पृष्ठ खोलेगा।"
+        },
+        "dashboardUpdated": {
+            "title": "डैशबोर्ड अपडेट किया गया",
+            "description": "आपकी डैशबोर्ड विजेट प्राथमिकताएँ इस सत्र के लिए सहेज ली गई हैं।"
+        },
+        "appointmentReminder": {
+            "title": "नियुक्ति अनुस्मारक",
+            "description": "आपकी \"{title}\" के लिए {user} के साथ आज {time} पर एक नियुक्ति है।"
+        }
+    },
+    "widgets": {
+        "promotionCard": "प्रचार स्पॉटलाइट",
+        "dailyChallenge": "दैनिक चुनौती",
+        "resumesAnalyzedStat": "विश्लेषित बायोडाटा आँकड़ा",
+        "avgMatchScoreStat": "औसत मिलान स्कोर आँकड़ा",
+        "jobApplicationsStat": "नौकरी आवेदन आँकड़ा",
+        "alumniConnectionsStat": "पूर्व छात्र कनेक्शन आँकड़ा",
+        "jobApplicationStatusChart": "नौकरी आवेदन स्थिति चार्ट",
+        "matchScoreOverTimeChart": "समय के साथ मिलान स्कोर चार्ट",
+        "jobAppReminders": "नौकरी ऐप अनुस्मारक",
+        "upcomingAppointments": "आगामी नियुक्तियाँ और साक्षात्कार",
+        "recentActivities": "हाल की गतिविधियाँ"
     },
     "progress": {
-      "title": "आपकी प्रगति का अवलोकन",
-      "level": "स्तर {level}",
-      "totalXp": "कुल XP: {xp}",
-      "dayStreak": "दिन की स्ट्रीक",
-      "badgesEarned": "बैज"
+        "title": "आपकी प्रगति का अवलोकन",
+        "level": "स्तर {level}",
+        "totalXp": "कुल XP: {xp}",
+        "dayStreak": "दिन की स्ट्रीक",
+        "badgesEarned": "बैज"
     }
   },
   "adminDashboard": {
@@ -151,14 +240,29 @@
     "coinBalance": "सिक्का शेष"
   },
   "dailyChallenge": {
-    "title": "Daily Interview Challenge",
-    "refresh": "Get New Challenge",
-    "category": "Category",
-    "difficulty": "Difficulty",
-    "yourAnswer": "Type your answer here...",
-    "showHint": "Show Hint",
-    "submit": "Submit (Coming Soon)",
-    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
+    "title": "दैनिक साक्षात्कार चुनौती",
+    "refresh": "नई चुनौती प्राप्त करें",
+    "category": "श्रेणी",
+    "difficulty": "कठिनाई",
+    "yourAnswer": "अपना उत्तर यहाँ टाइप करें...",
+    "showHint": "संकेत दिखाएँ",
+    "submit": "सबमिट करें",
+    "footerNote": "हर दिन एक नई चुनौती पोस्ट की जाती है। अपने साक्षात्कार कौशल को बेहतर बनाने के लिए नियमित रूप से अभ्यास करें!",
+    "completeTasksButton": "XP अंक अर्जित करने के लिए कार्य पूरे करें",
+    "toast": {
+      "newChallenge": {
+        "title": "नई चुनौती लोड की गई",
+        "description": "आपके लिए एक नई तकनीकी चुनौती लाई गई है।"
+      },
+      "showHint": {
+        "title": "संकेत",
+        "noHint": "इस प्रश्न के लिए कोई विशिष्ट संकेत उपलब्ध नहीं है।"
+      },
+      "submitMock": {
+        "title": "प्रस्तुति प्राप्त हुई (मॉक)",
+        "description": "एक वास्तविक ऐप में, आपके उत्तर का मूल्यांकन किया जाएगा। यह सुविधा जल्द ही आ रही है!"
+      }
+    }
   }
 }
     

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
 import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
-import sampleChallenges from "@/lib/sample-challenges";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
@@ -85,7 +84,6 @@ const renderActiveShape = (props: PieSectorDataItem) => {
 
 type UserDashboardWidgetId =
   | 'promotionCard'
-  | 'dailyChallenge'
   | 'jobApplicationStatusChart'
   | 'matchScoreOverTimeChart'
   | 'jobAppReminders'
@@ -100,7 +98,6 @@ interface WidgetConfig {
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'promotionCard', title: 'Promotional Spotlight', defaultVisible: true },
-  { id: 'dailyChallenge', title: 'Daily Challenge', defaultVisible: true },
   { id: 'jobApplicationStatusChart', title: 'Job Application Status Chart', defaultVisible: true },
   { id: 'matchScoreOverTimeChart', title: 'Match Score Over Time Chart', defaultVisible: true },
   { id: 'jobAppReminders', title: 'Job App Reminders', defaultVisible: true },
@@ -121,16 +118,6 @@ export default function UserDashboard() {
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(visibleWidgetIds);
   
-  const dailyChallenge: InterviewQuestion | undefined = useMemo(() => {
-    if (!user?.challengeTopics || user.challengeTopics.length === 0) {
-      return sampleChallenges[0];
-    }
-    const selectedTopics = user.challengeTopics;
-    const matchingChallenge = sampleChallenges.find(
-      (challenge) => challenge.category && selectedTopics.includes(challenge.category)
-    );
-    return matchingChallenge || sampleChallenges[0];
-  }, [user?.challengeTopics]);
 
   const recentUserActivities = useMemo(() => {
     return sampleActivities
@@ -289,28 +276,6 @@ export default function UserDashboard() {
             </div>
           </CardContent>
         </Card>
-        
-        {visibleWidgetIds.has('dailyChallenge') && dailyChallenge && (
-            <Card className="shadow-lg bg-gradient-to-r from-accent/50 to-primary/20 border-primary/30">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Puzzle className="h-6 w-6 text-primary" />
-                        {t("userDashboard.dailyChallenge.title", "Today's Daily Challenge")}
-                    </CardTitle>
-                    <CardDescription>{dailyChallenge.title}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{dailyChallenge.description}</p>
-                </CardContent>
-                <CardFooter>
-                    <Link href="/daily-interview-challenge" passHref>
-                    <Button>
-                        {t("userDashboard.dailyChallenge.button", "Take the Challenge")} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    </Link>
-                </CardFooter>
-            </Card>
-        )}
 
         {visibleWidgetIds.has('promotionCard') && (
           <Card className="shadow-lg bg-gradient-to-r from-primary/80 via-primary to-accent/80 text-primary-foreground overflow-hidden">

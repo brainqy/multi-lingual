@@ -449,15 +449,7 @@
     "longestStreakLabel": "Longest Streak",
     "totalActiveDaysLabel": "Total Active Days:",
     "keepItUpButton": "Keep it Up!",
-    "dayLabels": {
-      "S": "S",
-      "M": "M",
-      "T": "T",
-      "W": "W",
-      "Th": "Th",
-      "F": "F",
-      "Sa": "Sa"
-    }
+    "dayLabels": { "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa" }
   },
   "featureRequests": {
     "pageTitle": "Feature Requests & Suggestions",
@@ -642,373 +634,96 @@
     }
   },
   "interviewPrep": {
-    "pageTitle": "Interview Preparation Hub",
-    "startPracticeButton": "Start New Practice Session",
-    "creditsLeft": "Credits left: {count} AI interviews",
-    "tabs": {
-        "upcoming": "Upcoming",
-        "all": "All Interviews",
-        "cancelled": "Cancelled"
-    },
-    "upcomingTitle": "UPCOMING PRACTICE INTERVIEWS",
-    "allTitle": "ALL PRACTICE INTERVIEWS",
-    "cancelledTitle": "CANCELLED INTERVIEWS",
-    "noUpcoming": "No upcoming practice sessions scheduled.",
-    "noAll": "No practice sessions found.",
-    "noCancelled": "No cancelled interviews found.",
-    "sessionCard": {
-        "statusScheduled": "SCHEDULED",
-        "statusCompleted": "COMPLETED",
-        "statusCancelled": "CANCELLED",
-        "focusLabel": "Focus:",
-        "aiCategory": "Practice with AI",
-        "expertsCategory": "Practice with Experts",
-        "friendsCategory": "Practice with Friends",
-        "aiDetails": {
-            "questions": "Questions: {count}",
-            "difficulty": "Difficulty: {level}",
-            "timer": "Timer: {seconds}s/question"
-        },
-        "joinAIButton": "Start AI Interview",
-        "joinInterviewButton": "Join Interview",
-        "editQuestionsButton": "Edit Questions",
-        "cancelButton": "Cancel",
-        "rescheduleButton": "Reschedule",
-        "viewReportButton": "View Report",
-        "passedMessage": "Session time passed"
-    },
-    "createdQuizzes": {
-        "title": "Created Quizzes",
-        "description": "Manage your custom quizzes or start one.",
-        "noQuizzes": "No quizzes created yet. Create one from the Question Bank below!",
-        "noDescription": "No description",
-        "questions": "Questions",
-        "difficulty": "Difficulty",
-        "na": "N/A",
-        "startQuiz": "Start Quiz",
-        "edit": "Edit"
-    },
-    "questionBank": {
-        "title": "Question Bank ({count})",
-        "description": "Browse, filter, and select questions for your practice quizzes.",
-        "addNewButton": "Add New Question",
-        "searchPlaceholder": "Search questions or tags...",
-        "filterByLabel": "Filter by:",
-        "sort": {
-            "placeholder": "Sort by...",
-            "default": "Default",
-            "highestRated": "Highest Rated",
-            "mostRecent": "Most Recent"
-        },
-        "view": {
-            "all": "All Questions",
-            "myBookmarks": "My Bookmarks",
-            "needsApproval": "Needs Approval"
-        },
-        "accordion": {
-            "idLabel": "ID: {id}",
-            "suggestedAnswerLabel": "Suggested Answer/Tip:",
-            "mcqOptionsLabel": "MCQ Options:",
-            "approveButton": "Approve",
-            "awaitingApprovalBadge": "Awaiting Approval",
-            "rateButton": "Rate",
-            "commentsButton": "Comments ({count})",
-            "yourCommentLabel": "Your Comment:",
-            "addCommentPlaceholder": "Add a public comment...",
-            "rateLabel": "Rate (1-5):",
-            "submitRatingButton": "Submit Rating"
-        },
-        "noQuestionsFound": "No questions found matching your criteria.",
-        "pagination": {
-            "previous": "Previous",
-            "pageInfo": "Page {currentPage} of {totalPages}",
-            "next": "Next"
-        },
-        "createQuizButton": "Create Quiz from Selected ({count})"
-    },
-    "addQuestionDialog": {
-        "createTitle": "Add New Question",
-        "editTitle": "Edit Question",
-        "questionTextLabel": "Question Text *",
-        "categoryLabel": "Category *",
-        "selectCategoryPlaceholder": "Select category",
-        "difficultyLabel": "Difficulty",
-        "selectDifficultyPlaceholder": "Select difficulty",
-        "tagsLabel": "Tags (comma-separated)",
-        "tagsPlaceholder": "e.g., java, oop, behavioral",
-        "isMCQLabel": "Is this a Multiple Choice Question?",
-        "mcqOptionsLabel": "MCQ Options (at least 2 required, max 4 shown)",
-        "mcqOptionPlaceholder": "Option {letter}",
-        "correctAnswerLabel": "Correct Answer (exact text of one option)",
-        "correctAnswerPlaceholder": "Paste the correct option text here",
-        "answerTipLabel": "Suggested Answer / Explanation / Tip *",
-        "saveButton": "Save Changes",
-        "addButton": "Add Question"
-    },
-    "editQuestionsDialog": {
-        "title": "Edit Pre-selected Questions",
-        "currentQuestionsLabel": "Current Questions ({count}):",
-        "noCurrentQuestions": "No questions currently selected.",
-        "newQuestionIdsLabel": "Add New Question IDs (comma-separated from Question Bank):",
-        "newQuestionIdsPlaceholder": "e.g., iq1, mcq5, coding3",
-        "saveButton": "Save Question Changes"
-    },
-    "setupDialog": {
-        "selectTypeTitle": "Select Interview Type",
-        "selectTopicsTitleExperts": "Select Practice Topics for Expert Session",
-        "selectTopicsTitleAI": "Select Practice Topics for AI Interview",
-        "selectTimeSlotTitle": "Choose Date & Time",
-        "aiSetupBasicTitle": "AI Interview: Basic Setup",
-        "aiSetupAdvancedTitle": "AI Interview: Advanced Options",
-        "aiSetupCategoriesTitle": "AI Interview: Question Categories",
-        "selectTypeDescription": "How would you like to practice?",
-        "selectTopicsDescription": "For your {type} interview.",
-        "selectTimeSlotDescription": "For your {type} interview on {topics}.",
-        "aiSetupBasicDescription": "Tell us about the role or topic for your AI mock interview.",
-        "aiSetupAdvancedDescription": "Configure the number of questions, difficulty, and timer.",
-        "aiSetupCategoriesDescription": "Optionally, select specific question categories for your AI interview.",
-        "practiceWith": {
-            "friends": "Practice with Friends",
-            "experts": "Practice with Experts",
-            "ai": "Practice with AI"
-        },
-        "friendEmailLabel": "Friend's Email",
-        "friendEmailPlaceholder": "Enter friend's email",
-        "aiTopicRoleLabel": "Interview Topic / Role *",
-        "aiTopicRolePlaceholder": "e.g., Frontend Developer",
-        "aiJobDescriptionLabel": "Job Description (Optional)",
-        "aiJobDescriptionPlaceholder": "Paste job description for tailored questions...",
-        "aiNumQuestionsLabel": "Number of Questions (1-50)",
-        "aiDifficultyLabel": "Difficulty",
-        "aiTimerLabel": "Time per Question (seconds)",
-        "aiTimerOptionNoTimer": "No Timer",
-        "aiTimerOptionSeconds": "{seconds} seconds",
-        "aiTimerOptionMinutes": "{minutes} min{plural}",
-        "aiCategoriesLabel": "Question Categories (Optional)",
-        "aiCategoriesDescription": "Select specific question types or leave blank for a general mix."
-    },
-    "toast": {
-        "selectInterviewType": "Please select an interview type.",
-        "enterFriendEmail": "Please enter a friend's email.",
-        "invitationSentMock": "Invitation would be sent to {email}. This is a mock feature.",
-        "selectTopic": "Please select at least one topic.",
-        "specifyAITopic": "Please specify the AI interview topic/role.",
-        "bookingErrorType": "Interview type not selected.",
-        "bookingErrorExpertDetails": "Missing expert session details (topics or date/time).",
-        "bookingErrorAITopic": "Missing AI interview topic/role.",
-        "expertSessionBookedMock": "Session for {type} on {date} scheduled.",
-        "aiInterviewSetupComplete": "Redirecting to start your AI mock interview for \"{topic}\".",
-        "sessionCancelled": "The practice session has been cancelled.",
-        "rescheduleMocked": "Rescheduling functionality for this session is not yet implemented.",
-        "permissionDeniedEdit": "You can only edit questions you created.",
-        "permissionDeniedDelete": "You can only delete questions you created.",
-        "questionUpdated": "The interview question has been updated.",
-        "questionAdded": "New question added{status}.",
-        "questionAddedAdmin": "",
-        "questionAddedAwaitingApproval": " and awaiting approval",
-        "questionDeleted": "Question removed from the bank.",
-        "noQuestionsSelected": "Please select questions to include in the quiz.",
-        "noValidMCQQuestions": "Please select valid Multiple Choice Questions with options and a correct answer to create a quiz.",
-        "someQuestionsInvalid": "Only {count} valid MCQ questions were used for the quiz. Others were excluded.",
-        "commentAdded": "Your comment has been posted.",
-        "ratingSubmitted": "You rated this question {rating} stars.",
-        "questionBookmarked": "Question Bookmarked",
-        "bookmarkRemoved": "Bookmark Removed",
-        "questionsUpdated": "Pre-selected questions for the session have been updated.",
-        "errorFindSession": "Could not find the live interview session to edit questions."
-    },
-    "common": {
-        "cancel": "Cancel",
-        "next": "Next",
-        "back": "Back"
+    "pageTitle": "Interview Preparation Hub"
+  },
+    "sideMenu": {
+      "dashboard": "Dashboard",
+      "communityFeed": "Community Feed",
+      "alumniNetwork": "Alumni Network",
+      "jobBoard": "Job Board",
+      "jobTracker": "Job Tracker",
+      "practiceHub": "Practice Hub",
+      "aiTools": "AI Tools",
+      "resumeAnalyzer": "Resume Analyzer",
+      "aiResumeWriter": "AI Resume Writer",
+      "coverLetterGenerator": "Cover Letter Generator",
+      "resumeTools": "Resume Tools",
+      "myResumes": "My Resumes",
+      "resumeBuilder": "Resume Builder",
+      "resumeTemplates": "Resume Templates",
+      "eventGallery": "Event Gallery",
+      "activityLog": "Activity Log",
+      "myProfile": "My Profile",
+      "appointments": "Appointments",
+      "digitalWallet": "Digital Wallet",
+      "featureRequests": "Feature Requests",
+      "settings": "Settings",
+      "documentation": "Documentation",
+      "dbTest": "DB Test",
+      "rewardsBadges": "Rewards & Badges",
+      "referrals": "Referrals",
+      "affiliatesProgram": "Affiliates Program",
+      "blog": "Blog",
+      "adminDashboard": "Admin Dashboard",
+      "tenantManagement": "Tenant Management",
+      "tenantOnboarding": "Tenant Onboarding",
+      "userManagement": "User Management",
+      "gamificationRules": "Gamification Rules",
+      "contentModeration": "Content Moderation",
+      "announcementsMgt": "Announcements Mgt",
+      "messengerMgt": "Messenger Mgt",
+      "affiliateMgt": "Affiliate Mgt",
+      "galleryMgt": "Gallery Mgt",
+      "blogSettings": "Blog Settings",
+      "platformSettings": "Platform Settings",
+      "engagement": "Engagement",
+      "utilities": "Utilities",
+      "adminPanel": "Admin Panel",
+      "managerPanel": "Manager Panel",
+      "tenant": "Tenant"
     }
-  },
-  "sideMenu": {
-    "dashboard": "Dashboard",
-    "communityFeed": "Community Feed",
-    "alumniNetwork": "Alumni Network",
-    "jobBoard": "Job Board",
-    "jobTracker": "Job Tracker",
-    "practiceHub": "Practice Hub",
-    "aiTools": "AI Tools",
-    "resumeAnalyzer": "Resume Analyzer",
-    "aiResumeWriter": "AI Resume Writer",
-    "coverLetterGenerator": "Cover Letter Generator",
-    "resumeTools": "Resume Tools",
-    "myResumes": "My Resumes",
-    "resumeBuilder": "Resume Builder",
-    "resumeTemplates": "Resume Templates",
-    "eventGallery": "Event Gallery",
-    "activityLog": "Activity Log",
-    "myProfile": "My Profile",
-    "appointments": "Appointments",
-    "digitalWallet": "Digital Wallet",
-    "featureRequests": "Feature Requests",
-    "settings": "Settings",
-    "documentation": "Documentation",
-    "dbTest": "DB Test",
-    "rewardsBadges": "Rewards & Badges",
-    "referrals": "Referrals",
-    "affiliatesProgram": "Affiliates Program",
-    "blog": "Blog",
-    "adminDashboard": "Admin Dashboard",
-    "tenantManagement": "Tenant Management",
-    "tenantOnboarding": "Tenant Onboarding",
-    "userManagement": "User Management",
-    "gamificationRules": "Gamification Rules",
-    "contentModeration": "Content Moderation",
-    "announcementsMgt": "Announcements Mgt",
-    "messengerMgt": "Messenger Mgt",
-    "affiliateMgt": "Affiliate Mgt",
-    "galleryMgt": "Gallery Mgt",
-    "blogSettings": "Blog Settings",
-    "platformSettings": "Platform Settings",
-    "engagement": "Engagement",
-    "utilities": "Utilities",
-    "adminPanel": "Admin Panel",
-    "managerPanel": "Manager Panel",
-    "tenant": "Tenant"
-  },
+  ,  
     "appHeader": {
-    "notifications": "Notifications",
-    "profile": "Profile",
-    "myBookmarks": "My Bookmarks",
-    "recentPages": "Recent Pages",
-    "jobTracker": "Job Tracker",
-    "rewardsBadges": "Rewards & Badges",
-    "wallet": "Wallet",
-    "resumeManager": "Resume Manager",
-    "settings": "Settings",
-    "blog": "Blog",
-    "activity": "Activity",
-    "logout": "Logout",
-    "dailyStreak": "Daily Login Streak",
-    "totalXP": "Total Experience Points",
-    "coinBalance": "Coin Balance"
-  },
-  "dailyChallenge": {
-    "title": "Daily Interview Challenge",
-    "refresh": "Get New Challenge",
-    "category": "Category",
-    "difficulty": "Difficulty",
-    "yourAnswer": "Type your answer here...",
-    "showHint": "Show Hint",
-    "submit": "Submit (Coming Soon)",
-    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!"
-  },
-  "userDashboard": {
-    "title": "My Dashboard",
-    "customizeButton": "Customize Dashboard",
-    "promotionalSpotlight": {
-      "title": "Unlock Premium Features!",
-      "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
-      "learnMoreButton": "Learn More & Upgrade"
+      "notifications": "Notifications",
+      "profile": "Profile",
+      "myBookmarks": "My Bookmarks",
+      "recentPages": "Recent Pages",
+      "jobTracker": "Job Tracker",
+      "rewardsBadges": "Rewards & Badges",
+      "wallet": "Wallet",
+      "resumeManager": "Resume Manager",
+      "settings": "Settings",
+      "blog": "Blog",
+      "activity": "Activity",
+      "logout": "Logout",
+      "dailyStreak": "Daily Login Streak",
+      "totalXP": "Total Experience Points",
+      "coinBalance": "Coin Balance"
     },
     "dailyChallenge": {
-      "title": "Today's Daily Challenge",
-      "button": "Take the Challenge"
-    },
-    "stats": {
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed",
-        "description": "+{count}% from last month"
-      },
-      "avgMatchScore": {
-        "title": "Avg. Match Score",
-        "description": "+{score}% from last month"
-      },
-      "jobApplications": {
-        "title": "Job Applications",
-        "description": "{count} in interview stage"
-      },
-      "alumniConnections": {
-        "title": "Alumni Connections",
-        "description": "+{count} new this week"
+      "title": "Daily Interview Challenge",
+      "refresh": "Get New Challenge",
+      "category": "Category",
+      "difficulty": "Difficulty",
+      "yourAnswer": "Type your answer here...",
+      "showHint": "Show Hint",
+      "submit": "Submit",
+      "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!",
+      "completeTasksButton": "Complete Tasks to Earn XP",
+      "toast": {
+        "newChallenge": {
+          "title": "New Challenge Loaded",
+          "description": "A new technical challenge has been fetched for you."
+        },
+        "showHint": {
+          "title": "Hint",
+          "noHint": "No specific hint available for this question."
+        },
+        "submitMock": {
+          "title": "Submission Received (Mock)",
+          "description": "In a real app, your answer would be evaluated. This feature is coming soon!"
+        }
       }
-    },
-    "charts": {
-      "jobApplicationStatus": {
-        "title": "Job Application Status",
-        "description": "An overview of your current application statuses."
-      },
-      "matchScoreOverTime": {
-        "title": "Average Match Score Over Time",
-        "description": "Track the improvement in your resume match scores."
-      }
-    },
-    "reminders": {
-      "jobApp": {
-        "title": "Upcoming Job App Reminders",
-        "description": "Follow-ups and deadlines for your applications.",
-        "noReminders": "No upcoming reminders set.",
-        "viewButton": "View"
-      }
-    },
-    "upcomingSessions": {
-      "title": "Upcoming Appointments & Interviews",
-      "description": "Your scheduled mentorship and practice sessions.",
-      "noSessions": "No upcoming sessions.",
-      "typeLabel": "Type",
-      "withLabel": "With",
-      "dateLabel": "Date",
-      "todayLabel": "(Today!)"
-    },
-    "recentActivities": {
-      "title": "Recent Activities",
-      "description": "Your latest actions on the platform.",
-      "noActivities": "No recent activity to show.",
-      "viewAllButton": "View All Activity"
-    },
-    "welcomeTour": {
-      "title": "Welcome to Your Dashboard!"
-    },
-    "customizeDialog": {
-      "title": "Customize Your Dashboard",
-      "description": "Select which widgets you want to see on your dashboard.",
-      "saveButton": "Save Preferences",
-      "cancelButton": "Cancel"
-    },
-    "toast": {
-      "upgradeMock": {
-        "title": "Upgrade Mock",
-        "description": "This would open the premium features page."
-      },
-      "dashboardUpdated": {
-        "title": "Dashboard Updated",
-        "description": "Your dashboard widget preferences have been saved for this session."
-      },
-      "appointmentReminder": {
-        "title": "Appointment Reminder",
-        "description": "You have an appointment for \"{title}\" with {user} today at {time}."
-      }
-    },
-    "widgets": {
-      "promotionCard": "Promotional Spotlight",
-      "dailyChallenge": "Daily Challenge",
-      "resumesAnalyzedStat": "Resumes Analyzed Stat",
-      "avgMatchScoreStat": "Avg Match Score Stat",
-      "jobApplicationsStat": "Job Applications Stat",
-      "alumniConnectionsStat": "Alumni Connections Stat",
-      "jobApplicationStatusChart": "Job Application Status Chart",
-      "matchScoreOverTimeChart": "Match Score Over Time Chart",
-      "jobAppReminders": "Job App Reminders",
-      "upcomingAppointments": "Upcoming Appointments & Interviews",
-      "recentActivities": "Recent Activities"
-    },
-    "progress": {
-      "title": "Your Progress Overview",
-      "level": "Level {level}",
-      "totalXp": "Total XP: {xp}",
-      "dayStreak": "Day Streak",
-      "badgesEarned": "Badges"
     }
-  },
-  "gamification": {
-    "title": "Rewards & Progress",
-    "pageDescription": "Track your achievements and engagement within the platform.",
-    "yourBadges": "Your Badges",
-    "badgesDescription": "Collect badges by engaging with the platform and community.",
-    "leaderboard": "Leaderboard",
-    "leaderboardDescription": "See how you rank among fellow alumni based on XP points (Top 10 shown)."
-  }
 }
+    
