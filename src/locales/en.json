@@ -740,13 +740,28 @@
         "description": "Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.",
         "learnMoreButton": "Learn More"
     },
-    "widgets": {
-      "promotionCard": "Promotional Spotlight",
-      "jobApplicationStatusChart": "Job Application Status Chart",
-      "matchScoreOverTimeChart": "Match Score Over Time Chart",
-      "jobAppReminders": "Job App Reminders",
-      "upcomingAppointments": "Upcoming Appointments & Interviews",
-      "recentActivities": "Recent Activities"
+    "dailyChallenge": {
+      "title": "Today's Daily Challenge",
+      "description": "Sharpen your skills with a new challenge every day.",
+      "viewButton": "View Challenge"
+    },
+    "stats": {
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "+{count}% from last month"
+      },
+      "avgMatchScore": {
+        "title": "Avg. Match Score",
+        "description": "+{score}% from last month"
+      },
+      "jobApplications": {
+        "title": "Job Applications",
+        "description": "{count} in interview stage"
+      },
+      "alumniConnections": {
+        "title": "Alumni Connections",
+        "description": "+{count} new this week"
+      }
     },
     "charts": {
       "jobApplicationStatus": {
@@ -803,6 +818,15 @@
         "title": "Appointment Reminder",
         "description": "You have an appointment for \"{title}\" with {user} today at {time}."
       }
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities",
+      "dailyChallenge": "Daily Challenge Card"
     }
   }
 }

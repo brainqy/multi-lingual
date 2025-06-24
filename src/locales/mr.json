@@ -145,7 +145,13 @@
       "matchScoreOverTimeChart": "वेळेनुसार जुळणी गुण चार्ट",
       "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
       "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
-      "recentActivities": "अलीकडील क्रियाकलाप"
+      "recentActivities": "अलीकडील क्रियाकलाप",
+      "dailyChallenge": "दैनिक आव्हान कार्ड"
+    },
+    "dailyChallenge": {
+      "title": "आजचे दैनिक आव्हान",
+      "description": "दररोज एका नवीन आव्हानासह आपली कौशल्ये वाढवा.",
+      "viewButton": "आव्हान पहा"
     }
   },
   "adminDashboard": {
@@ -503,8 +509,6 @@
         "maxResumesMax": "कमाल बायोडाटा ५० पेक्षा जास्त असू शकत नाही",
         "sessionTimeoutMin": "सत्र कालबाह्यता किमान ५ मिनिटे असणे आवश्यक आहे",
         "sessionTimeoutMax": "सत्र कालबाह्यता १४४० मिनिटांपेक्षा (२४ तास) जास्त असू शकत नाही",
-        "maxEventRegistrationsMin": "कमाल कार्यक्रम नोंदणी किमान १ असणे आवश्यक आहे",
-        "maxEventRegistrationsMax": "कमाल कार्यक्रम नोंदणी १०० पेक्षा जास्त असू शकत नाही",
         "globalAnnouncementMax": "जागतिक घोषणा ५०० अक्षरांपेक्षा जास्त असू शकत नाही",
         "pointsForAffiliateMin": "संलग्न साइनअपसाठी गुण ऋण नसावेत"
     }
