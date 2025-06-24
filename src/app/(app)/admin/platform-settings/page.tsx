@@ -1,4 +1,5 @@
 
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon } from "lucide-react";
+import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PlatformSettings, ProfileVisibility } from "@/types";
 import { samplePlatformSettings, sampleUserProfile } from "@/lib/sample-data";
@@ -41,6 +42,7 @@ const settingsSchema = z.object({
   featureRequestsEnabled: z.boolean(),
   allowTenantCustomBranding: z.boolean(),
   allowTenantEmailCustomization: z.boolean(),
+  allowUserApiKey: z.boolean().optional(),
   defaultProfileVisibility: z.enum(['public', 'alumni_only', 'private']),
   maxResumeUploadsPerUser: z.coerce.number().min(1, "platformSettings.validation.maxResumesMin").max(50, "platformSettings.validation.maxResumesMax").default(5),
   defaultTheme: z.enum(['light', 'dark']).default('light'),
@@ -81,6 +83,7 @@ export default function PlatformSettingsPage() {
     featureRequestsEnabled: z.boolean(),
     allowTenantCustomBranding: z.boolean(),
     allowTenantEmailCustomization: z.boolean(),
+    allowUserApiKey: z.boolean().optional(),
     defaultProfileVisibility: z.enum(['public', 'alumni_only', 'private']),
     maxResumeUploadsPerUser: z.coerce.number().min(1, t("platformSettings.validation.maxResumesMin")).max(50, t("platformSettings.validation.maxResumesMax")).default(5),
     defaultTheme: z.enum(['light', 'dark']).default('light'),
@@ -240,6 +243,19 @@ export default function PlatformSettingsPage() {
                 )}
             </CardContent>
         </Card>
+        
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Code2 className="h-5 w-5 text-primary"/>Advanced Settings</CardTitle>
+                 <CardDescription>Control advanced developer and user options.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {renderSettingRow("allowUserApiKey", "Allow Users to Provide Their Own API Key", 
+                    <Controller name="allowUserApiKey" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, 
+                    "If enabled, users can enter their own Gemini API key in their settings to use for AI features."
+                )}
+            </CardContent>
+        </Card>
 
 
         <div className="pt-6 text-right">
@@ -252,5 +268,3 @@ export default function PlatformSettingsPage() {
     </TooltipProvider>
   );
 }
-
-    

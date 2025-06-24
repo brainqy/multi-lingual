@@ -1,15 +1,16 @@
 
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
+import { useState, useEffect, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound } from "lucide-react";
+import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect, type FormEvent } from "react";
 import { sampleUserProfile, sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
 import type { Tenant, UserProfile, PlatformSettings } from "@/types";
 import {
@@ -38,6 +39,8 @@ export default function SettingsPage() {
   const [referralNotificationsEnabled, setReferralNotificationsEnabled] = useState(true);
 
   const [walletEnabled, setWalletEnabled] = useState(platformSettings.walletEnabled);
+  const [userApiKey, setUserApiKey] = useState(currentUser.userApiKey || "");
+
 
   const [tenantNameInput, setTenantNameInput] = useState("");
   const [tenantLogoUrlInput, setTenantLogoUrlInput] = useState("");
@@ -120,6 +123,11 @@ export default function SettingsPage() {
         toast({ title: t("userSettings.toastTenantBrandingSaved.title"), description: t("userSettings.toastTenantBrandingSaved.description", { tenantName: tenantNameInput }) });
       }
     } else if (currentUser.role !== 'admin') {
+      const userIndex = samplePlatformUsers.findIndex(u => u.id === currentUser.id);
+      if(userIndex !== -1) {
+          samplePlatformUsers[userIndex].userApiKey = userApiKey;
+          Object.assign(sampleUserProfile, { userApiKey });
+      }
       toast({ title: t("userSettings.toastUserSettingsSaved.title"), description: t("userSettings.toastUserSettingsSaved.description") });
     }
   };
@@ -254,6 +262,30 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      
+      {platformSettings.allowUserApiKey && currentUser.role === 'user' && (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Code2 className="h-5 w-5 text-primary"/>Developer Settings</CardTitle>
+            <CardDescription>Manage your personal API keys for third-party services.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <Label htmlFor="user-api-key">Your Gemini API Key</Label>
+              <Input
+                id="user-api-key"
+                type="password"
+                value={userApiKey}
+                onChange={(e) => setUserApiKey(e.target.value)}
+                placeholder="Enter your personal Google Gemini API key"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Your key is stored locally and used for AI feature requests. It will override the platform's default key for your account.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {currentUser.role === 'admin' && (
         <Card className="shadow-lg">

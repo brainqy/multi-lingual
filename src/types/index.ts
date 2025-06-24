@@ -294,6 +294,7 @@ export interface UserProfile extends AlumniProfile {
   careerInterests?: string;
   bio: string;
   interests?: string[];
+  userApiKey?: string;
 
   offersHelpWith?: SupportArea[];
 
@@ -789,6 +790,7 @@ export interface PlatformSettings {
   featureRequestsEnabled: boolean;
   allowTenantCustomBranding: boolean;
   allowTenantEmailCustomization: boolean;
+  allowUserApiKey?: boolean;
   defaultProfileVisibility: ProfileVisibility;
   maxResumeUploadsPerUser: number;
   defaultTheme: 'light' | 'dark';
