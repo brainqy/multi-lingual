@@ -1,4 +1,4 @@
-import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge } from '@/types';
+import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge, PromotionalContent } from '@/types';
 import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industries, TimeCommitments, EngagementModes, SupportTypesSought, JOB_APPLICATION_STATUSES, KANBAN_COLUMNS_CONFIG, PREDEFINED_INTERVIEW_TOPICS, PRACTICE_FOCUS_AREAS, ALL_CATEGORIES, ALL_DIFFICULTIES, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS, PreferredTimeSlots, AnnouncementStatuses, AnnouncementAudiences, LiveInterviewSessionStatuses } from '@/types'; 
 
 export let SAMPLE_TENANT_ID = 'Brainqy'; 
@@ -1866,6 +1866,22 @@ export let sampleSystemAlerts: SystemAlert[] = [
     isRead: true, // Example of a read alert
   },
 ];
+
+export let samplePromotionalContent: PromotionalContent = {
+  id: 'promo-1',
+  isActive: true,
+  title: 'Unlock Premium Features!',
+  description: 'Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
+  imageUrl: 'https://placehold.co/300x200.png',
+  imageAlt: 'Retro motel sign against a blue sky',
+  imageHint: 'motel sign',
+  buttonText: 'Learn More',
+  buttonLink: '#', // Placeholder link
+  gradientFrom: 'from-primary/80',
+  gradientVia: 'via-primary',
+  gradientTo: 'to-accent/80',
+};
+
 // Utility function to ensure UserProfile has all fields, especially for sample data
 export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): UserProfile {
   const defaultUser: UserProfile = {
@@ -1922,8 +1938,7 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     challengeTopics: [],
     shortBio: '', // From AlumniProfile
     university: '', // From AlumniProfile,
-    userApiKey: '',
-    // ... any other fields from UserProfile or AlumniProfile that need defaults
+    userApiKey: ''
   };
   return { ...defaultUser, ...partialProfile };
 }

@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 
 export type Translations = {
@@ -1145,6 +1146,21 @@ export const RewriteResumeOutputSchema = z.object({
   fixesApplied: z.array(z.string()).describe("A bulleted list of the key changes the AI made. E.g., 'Quantified achievement in the XYZ role.', 'Strengthened action verbs in the summary.'"),
 });
 export type RewriteResumeOutput = z.infer<typeof RewriteResumeOutputSchema>;
+
+export interface PromotionalContent {
+  id: string;
+  isActive: boolean;
+  title: string;
+  description: string;
+  imageUrl: string;
+  imageAlt: string;
+  imageHint?: string;
+  buttonText: string;
+  buttonLink: string;
+  gradientFrom: string;
+  gradientTo: string;
+  gradientVia?: string;
+}
 
 
 // Utility function to ensure UserProfile has all fields, especially for sample data

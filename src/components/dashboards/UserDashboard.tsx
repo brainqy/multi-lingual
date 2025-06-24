@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
 import sampleChallenges from "@/lib/sample-challenges";
-import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions } from "@/lib/sample-data";
+import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent } from "@/lib/sample-data";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
@@ -113,6 +113,7 @@ export default function UserDashboard() {
   const user = sampleUserProfile;
   const { toast } = useToast();
   const [showUserTour, setShowUserTour] = useState(false);
+  const promotion = samplePromotionalContent;
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(
     new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
@@ -316,31 +317,36 @@ export default function UserDashboard() {
           )}
         </div>
         
-        {visibleWidgetIds.has('promotionCard') && (
-          <Card className="shadow-lg bg-gradient-to-r from-primary/80 via-primary to-accent/80 text-primary-foreground overflow-hidden">
+        {visibleWidgetIds.has('promotionCard') && promotion.isActive && (
+          <Card className={cn(
+            "shadow-lg md:col-span-2 lg:col-span-4 bg-gradient-to-r text-primary-foreground overflow-hidden",
+            promotion.gradientFrom, promotion.gradientVia, promotion.gradientTo
+          )}>
             <div className="flex flex-col md:flex-row items-center p-6 gap-6">
               <div className="md:w-1/3 flex justify-center">
                 <Image
-                  src="https://picsum.photos/seed/promotion/300/200"
-                  alt="Promotional Offer"
+                  src={promotion.imageUrl}
+                  alt={promotion.imageAlt}
                   width={250}
                   height={160}
                   className="rounded-lg shadow-md object-cover"
-                  data-ai-hint="promotion offer"
+                  data-ai-hint={promotion.imageHint || "promotion"}
                 />
               </div>
               <div className="md:w-2/3 text-center md:text-left">
-                <h2 className="text-2xl font-bold mb-2">{t("userDashboard.promotionalSpotlight.title")}</h2>
+                <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
                 <p className="text-sm opacity-90 mb-4">
-                  {t("userDashboard.promotionalSpotlight.description")}
+                  {promotion.description}
                 </p>
                 <Button
                   variant="secondary"
                   size="lg"
                   className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  onClick={() => toast({ title: t("userDashboard.toast.upgradeMock.title"), description: t("userDashboard.toast.upgradeMock.description")})}
+                  asChild
                 >
-                  {t("userDashboard.promotionalSpotlight.learnMoreButton")} <ExternalLink className="ml-2 h-4 w-4" />
+                  <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
+                    {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </div>
