@@ -706,7 +706,7 @@ export default function InterviewPracticeHubPage() {
     }
     
     const liveSession = sampleLiveInterviewSessions.find(ls => ls.id === session.id);
-    const isCurrentUserInterviewerForThisLiveSession = liveSession?.participants.find(p => p.userId === currentUser.id && p.role === 'interviewer');
+    const isCurrentUserInterviewerForThisLiveSession = !!liveSession?.participants.find(p => p.userId === currentUser.id && p.role === 'interviewer');
     
     console.log(`[RenderSessionCard] Session ID: ${session.id}, User: ${currentUser.id}, IsInterviewer: ${isCurrentUserInterviewerForThisLiveSession}, CanJoin: ${canJoin}, Status: ${session.status}, Category: ${session.category}`);
 
@@ -831,9 +831,9 @@ export default function InterviewPracticeHubPage() {
 
       <Tabs defaultValue="upcoming" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upcoming">Upcoming Interviews</TabsTrigger>
-          <TabsTrigger value="all">All Interviews</TabsTrigger>
-          <TabsTrigger value="cancelled">Canceled Interviews</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="cancelled">Canceled</TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming" className="mt-6">
           <h2 className="text-xl font-semibold mb-4 text-foreground">UPCOMING PRACTICE INTERVIEWS</h2>
@@ -1071,7 +1071,7 @@ export default function InterviewPracticeHubPage() {
                                     <ScrollArea className="h-24 pr-2 text-xs space-y-1.5">
                                         {q.userComments.map(comment => (
                                         <div key={comment.id} className="p-1.5 bg-secondary rounded">
-                                            <p className="font-semibold">{comment.userName} <span className="text-muted-foreground/70 text-[10px]">{format(parseISO(comment.timestamp), 'PPp')}</span></p>
+                                            <p className="font-semibold">{comment.userName} <span className="text-muted-foreground/70 text-[10px] ml-1">{format(parseISO(comment.timestamp), 'PPp')}</span></p>
                                             <p>{comment.text}</p>
                                         </div>
                                         ))}
@@ -1373,55 +1373,6 @@ export default function InterviewPracticeHubPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Dialog open={isEditQuestionsDialogOpen} onOpenChange={setIsEditQuestionsDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Edit Pre-selected Questions</DialogTitle>
-            <DialogDescription>
-              Session: {sampleLiveInterviewSessions.find(s => s.id === editingSessionId)?.title || editingSessionId}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-            <div>
-              <Label>Current Questions ({currentEditingQuestions.length}):</Label>
-              {currentEditingQuestions.length > 0 ? (
-                <ScrollArea className="h-40 border rounded-md p-2 mt-1">
-                  <ul className="space-y-1">
-                    {currentEditingQuestions.map(q => (
-                      <li key={q.id} className="flex justify-between items-center p-1.5 text-xs bg-secondary rounded">
-                        <span className="truncate flex-1 mr-2" title={q.questionText}>{q.questionText}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveQuestionFromDialog(q.id)}>
-                          <Trash2 className="h-3.5 w-3.5 text-destructive"/>
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </ScrollArea>
-              ) : <p className="text-xs text-muted-foreground mt-1">No questions currently selected.</p>}
-            </div>
-            <div>
-              <Label htmlFor="newQuestionIdsInput">Add New Question IDs (comma-separated from Question Bank):</Label>
-              <Textarea
-                id="newQuestionIdsInput"
-                value={newQuestionIdsInput}
-                onChange={(e) => setNewQuestionIdsInput(e.target.value)}
-                placeholder="e.g., iq1, mcq5, coding3"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-            <Button onClick={handleSaveQuestionChanges}>Save Question Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
-    
-    
-
-    
-
