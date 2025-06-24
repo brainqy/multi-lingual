@@ -127,7 +127,7 @@
     "dailyChallenge": {
       "title": "आज की दैनिक चुनौती",
       "description": "हर दिन एक नई चुनौती के साथ अपने कौशल को तेज करें।",
-      "viewButton": "चुनौती देखें"
+      "viewButton": "चुनौती हल करें"
     },
     "stats": {
       "resumesAnalyzed": {
@@ -209,8 +209,7 @@
       "matchScoreOverTimeChart": "समय के साथ मिलान स्कोर चार्ट",
       "jobAppReminders": "नौकरी आवेदन अनुस्मारक",
       "upcomingAppointments": "आगामी नियुक्तियाँ और साक्षात्कार",
-      "recentActivities": "हाल की गतिविधियाँ",
-      "dailyChallenge": "दैनिक चुनौती कार्ड"
+      "recentActivities": "हाल की गतिविधियाँ"
     }
   },
   "adminDashboard": {

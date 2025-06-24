@@ -90,8 +90,7 @@ type UserDashboardWidgetId =
   | 'matchScoreOverTimeChart'
   | 'jobAppReminders'
   | 'upcomingAppointments'
-  | 'recentActivities'
-  | 'dailyChallenge';
+  | 'recentActivities';
 
 interface WidgetConfig {
   id: UserDashboardWidgetId;
@@ -101,7 +100,6 @@ interface WidgetConfig {
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'promotionCard', title: 'Promotional Spotlight', defaultVisible: true },
-  { id: 'dailyChallenge', title: 'Daily Challenge Card', defaultVisible: true },
   { id: 'jobApplicationStatusChart', title: 'Job Application Status Chart', defaultVisible: true },
   { id: 'matchScoreOverTimeChart', title: 'Match Score Over Time Chart', defaultVisible: true },
   { id: 'jobAppReminders', title: 'Job App Reminders', defaultVisible: true },
@@ -267,56 +265,52 @@ export default function UserDashboard() {
           <CardHeader>
             <CardTitle>{t("userDashboard.progress.title")}</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+          <CardContent className="flex flex-col gap-6">
             
-            <div className="md:col-span-2 p-4 border rounded-lg bg-background">
-              <div className="flex justify-between items-baseline mb-2">
-                <p className="text-lg font-semibold text-foreground">{t("userDashboard.progress.level", { level: xpLevel })}</p>
-                <p className="text-sm text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</p>
+            {dailyChallenge && (
+              <div className="p-4 border rounded-lg bg-background">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex-1">
+                        <p className="text-sm text-muted-foreground flex items-center gap-2"><Puzzle className="h-4 w-4" />{t("userDashboard.dailyChallenge.title")}</p>
+                        <p className="font-semibold text-foreground mt-1">{dailyChallenge.title}</p>
+                    </div>
+                    <Button asChild className="w-full sm:w-auto flex-shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    </Button>
+                </div>
               </div>
-              <Progress value={progressPercentage} className="w-full h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
-                <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              <div className="md:col-span-2 p-4 border rounded-lg bg-background">
+                <div className="flex justify-between items-baseline mb-2">
+                  <p className="text-lg font-semibold text-foreground">{t("userDashboard.progress.level", { level: xpLevel })}</p>
+                  <p className="text-sm text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</p>
+                </div>
+                <Progress value={progressPercentage} className="w-full h-2" />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>{xpProgressInLevel} / {xpPerLevel} XP</span>
+                  <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="p-3 border rounded-lg bg-background">
+                    <Flame className="h-7 w-7 text-orange-500 mx-auto mb-1"/>
+                    <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
+                </div>
+                 <div className="p-3 border rounded-lg bg-background">
+                    <Award className="h-7 w-7 text-yellow-500 mx-auto mb-1"/>
+                    <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="p-3 border rounded-lg bg-background">
-                  <Flame className="h-7 w-7 text-orange-500 mx-auto mb-1"/>
-                  <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
-                  <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
-              </div>
-               <div className="p-3 border rounded-lg bg-background">
-                  <Award className="h-7 w-7 text-yellow-500 mx-auto mb-1"/>
-                  <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
         
-        {visibleWidgetIds.has('dailyChallenge') && dailyChallenge && (
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Puzzle className="h-5 w-5 text-primary"/>{t("userDashboard.dailyChallenge.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.dailyChallenge.description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <p className="font-semibold text-foreground">{dailyChallenge.title}</p>
-                    <div className="flex gap-2 mt-2">
-                      {dailyChallenge.category && <Badge variant="outline">{dailyChallenge.category}</Badge>}
-                      {dailyChallenge.difficulty && <Badge variant="secondary">{dailyChallenge.difficulty}</Badge>}
-                    </div>
-                </div>
-                <Button asChild className="w-full sm:w-auto flex-shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </CardContent>
-            </Card>
-        )}
-
         {visibleWidgetIds.has('promotionCard') && (
           <Card className="shadow-lg bg-gradient-to-r from-primary/80 via-primary to-accent/80 text-primary-foreground overflow-hidden">
             <div className="flex flex-col md:flex-row items-center p-6 gap-6">

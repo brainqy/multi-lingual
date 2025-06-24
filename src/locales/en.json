@@ -743,7 +743,7 @@
     "dailyChallenge": {
       "title": "Today's Daily Challenge",
       "description": "Sharpen your skills with a new challenge every day.",
-      "viewButton": "View Challenge"
+      "viewButton": "Solve Challenge"
     },
     "stats": {
       "resumesAnalyzed": {
@@ -825,8 +825,7 @@
       "matchScoreOverTimeChart": "Match Score Over Time Chart",
       "jobAppReminders": "Job App Reminders",
       "upcomingAppointments": "Upcoming Appointments & Interviews",
-      "recentActivities": "Recent Activities",
-      "dailyChallenge": "Daily Challenge Card"
+      "recentActivities": "Recent Activities"
     }
   }
 }

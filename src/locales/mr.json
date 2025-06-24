@@ -65,6 +65,11 @@
       "description": "प्रगत विश्लेषण, अमर्यादित बायोडाटा स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला ResumeMatch AI अनुभव श्रेणीसुधारित करा.",
       "learnMoreButton": "अधिक जाणून घ्या"
     },
+    "dailyChallenge": {
+      "title": "आजचे दैनिक आव्हान",
+      "description": "दररोज एका नवीन आव्हानासह आपली कौशल्ये वाढवा.",
+      "viewButton": "आव्हान सोडवा"
+    },
     "stats": {
       "resumesAnalyzed": {
         "title": "विश्लेषित बायोडाटा",
@@ -145,13 +150,7 @@
       "matchScoreOverTimeChart": "वेळेनुसार जुळणी गुण चार्ट",
       "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
       "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
-      "recentActivities": "अलीकडील क्रियाकलाप",
-      "dailyChallenge": "दैनिक आव्हान कार्ड"
-    },
-    "dailyChallenge": {
-      "title": "आजचे दैनिक आव्हान",
-      "description": "दररोज एका नवीन आव्हानासह आपली कौशल्ये वाढवा.",
-      "viewButton": "आव्हान पहा"
+      "recentActivities": "अलीकडील क्रियाकलाप"
     }
   },
   "adminDashboard": {
