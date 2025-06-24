@@ -576,7 +576,7 @@ export interface DailyChallenge {
   title: string;
   description: string;
   difficulty?: "Easy" | "Medium" | "Hard";
-  category?: string;
+  category?: InterviewQuestionCategory;
   solution?: string;
   xpReward?: number;
   tasks?: {
@@ -1202,9 +1202,8 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     pastInterviewSessions: [],
     challengeTopics: [],
     shortBio: '', // From AlumniProfile
-    university: '', // From AlumniProfile
-    userApiKey: '',
-    // ... any other fields from UserProfile or AlumniProfile that need defaults
+    university: '', // From AlumniProfile,
+    userApiKey: ''
   };
   return { ...defaultUser, ...partialProfile };
 }
