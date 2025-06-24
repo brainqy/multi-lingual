@@ -61,9 +61,9 @@
       "badgesEarned": "बॅजेस"
     },
     "promotionalSpotlight": {
-      "title": "प्रीमियम वैशिष्ट्ये अनलॉक करा!",
-      "description": "प्रगत विश्लेषण, अमर्यादित बायोडाटा स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला ResumeMatch AI अनुभव श्रेणीसुधारित करा.",
-      "learnMoreButton": "अधिक जाणून घ्या"
+        "title": "प्रीमियम वैशिष्ट्ये अनलॉक करा!",
+        "description": "प्रगत विश्लेषण, अमर्यादित बायोडाटा स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला ResumeMatch AI अनुभव श्रेणीसुधारित करा.",
+        "learnMoreButton": "अधिक जाणून घ्या"
     },
     "dailyChallenge": {
       "title": "आजचे दैनिक आव्हान",
@@ -284,7 +284,7 @@
   },
   "managerDashboard": {
     "title": "व्यवस्थापक डॅशबोर्ड ({tenantName})",
-    "description": "तुमच्या भाडेकरूच्या सहभागाचे निरीक्षण करा, विशिष्ट वैशिष्ट्ये व्यवस्थापित करा आणि महत्त्वाचे मेट्रिक्स ट्रॅक करा.",
+    "description": "आपल्या भाडेकरूच्या सहभागाचे निरीक्षण करा, विशिष्ट वैशिष्ट्ये व्यवस्थापित करा आणि मुख्य मेट्रिक्सचा मागोवा घ्या.",
     "customizeButton": "डॅशबोर्ड सानुकूलित करा",
     "stats": {
       "activeUsers": {
@@ -307,7 +307,7 @@
     "charts": {
       "tenantEngagement": {
         "title": "भाडेकरू सहभाग अवलोकन",
-        "description": "तुमच्या भाडेकरू अंतर्गत क्रियाकलाप.",
+        "description": "आपल्या भाडेकरू अंतर्गत क्रियाकलाप.",
         "legendPosts": "पोस्ट्स",
         "legendResumesAnalyzed": "विश्लेषित बायोडाटा",
         "legendAppointments": "भेटी",
@@ -316,7 +316,7 @@
     },
     "quickActions": {
       "title": "भाडेकरू व्यवस्थापन क्रिया",
-      "description": "तुमच्या भाडेकरूच्या विशिष्ट सेटिंग्ज आणि सामग्री व्यवस्थापित करण्यासाठी साधनांमध्ये प्रवेश करा.",
+      "description": "आपल्या भाडेकरूच्या विशिष्ट सेटिंग्ज आणि सामग्री व्यवस्थापित करण्यासाठी साधनांमध्ये प्रवेश करा.",
       "manageTenantUsers": "भाडेकरू वापरकर्ते व्यवस्थापित करा",
       "moderateTenantFeed": "भाडेकरू फीड नियंत्रित करा",
       "manageEventGallery": "कार्यक्रम गॅलरी व्यवस्थापित करा",
@@ -626,7 +626,7 @@
     "appearanceCardDescription": "अनुप्रयोगाचे स्वरूप आणि अनुभव सानुकूलित करा.",
     "darkModeLabel": "गडद मोड",
     "tenantBrandingCardTitle": "भाडेकरू ब्रांडिंग सेटिंग्ज",
-    "tenantBrandingCardDescription": "तुमच्या भाडेकरूसाठी ब्रांडिंग सानुकूलित करा: {tenantName}.",
+    "tenantBrandingCardDescription": "तुमच्या संस्थेसाठी ब्रांडिंग सानुकूलित करा: {tenantName}.",
     "tenantNameLabel": "भाडेकरूचे नाव",
     "tenantNamePlaceholder": "तुमच्या संस्थेचे नाव",
     "tenantLogoUrlLabel": "भाडेकरू लोगो URL",
@@ -709,52 +709,52 @@
     "pageTitle": "मुलाखत तयारी केंद्र"
   },
     "sideMenu": {
-      "dashboard": "डॅशबोर्ड",
-      "communityFeed": "समुदाय फीड",
-      "alumniNetwork": "माजी विद्यार्थी नेटवर्क",
-      "jobBoard": "नोकरी मंडळ",
-      "jobTracker": "नोकरी ट्रॅकर",
-      "practiceHub": "सराव केंद्र",
-      "aiTools": "एआय साधने",
-      "resumeAnalyzer": "रेझ्युमे विश्लेषक",
-      "aiResumeWriter": "एआय रेझ्युमे लेखक",
-      "coverLetterGenerator": "कव्हर लेटर जनरेटर",
-      "resumeTools": "रेझ्युमे साधने",
-      "myResumes": "माझे रेझ्युमे",
-      "resumeBuilder": "रेझ्युमे बिल्डर",
-      "resumeTemplates": "रेझ्युमे टेम्पलेट्स",
-      "eventGallery": "इव्हेंट गॅलरी",
-      "activityLog": "क्रियाकलाप लॉग",
-      "myProfile": "माझे प्रोफाइल",
-      "appointments": "भेटी",
-      "digitalWallet": "डिजिटल वॉलेट",
-      "featureRequests": "वैशिष्ट्य विनंत्या",
-      "settings": "सेटिंग्ज",
-      "documentation": "डॉक्युमेंटेशन",
-      "dbTest": "DB चाचणी",
-      "rewardsBadges": "बक्षिसे आणि बॅजेस",
-      "referrals": "संदर्भ",
-      "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
-      "blog": "ब्लॉग",
-      "adminDashboard": "प्रशासक डॅशबोर्ड",
-      "tenantManagement": "भाडेकरू व्यवस्थापन",
-      "tenantOnboarding": "भाडेकरू ऑनबोर्डिंग",
-      "userManagement": "वापरकर्ता व्यवस्थापन",
-      "gamificationRules": "गेमिफिकेशन नियम",
-      "contentModeration": "सामग्री मॉडरेशन",
-      "announcementsMgt": "घोषणा व्यवस्थापन",
-      "messengerMgt": "मेसेन्जर व्यवस्थापन",
-      "affiliateMgt": "अफिलिएट व्यवस्थापन",
-      "galleryMgt": "गॅलरी व्यवस्थापन",
-      "blogSettings": "ब्लॉग सेटिंग्ज",
-      "promotionalContentMgt": "प्रोमो सामग्री",
-      "platformSettings": "प्लॅटफॉर्म सेटिंग्ज",
-      "engagement": "एंगेजमेंट",
-      "utilities": "उपयुक्तता",
-      "adminPanel": "प्रशासक पॅनेल",
-      "managerPanel": "व्यवस्थापक पॅनेल",
-      "tenant": "भाडेकरू"
-    }
+    "dashboard": "डॅशबोर्ड",
+    "communityFeed": "समुदाय फीड",
+    "alumniNetwork": "माजी विद्यार्थी नेटवर्क",
+    "jobBoard": "नोकरी मंडळ",
+    "jobTracker": "नोकरी ट्रॅकर",
+    "practiceHub": "सराव केंद्र",
+    "aiTools": "एआय साधने",
+    "resumeAnalyzer": "रेझ्युमे विश्लेषक",
+    "aiResumeWriter": "एआय रेझ्युमे लेखक",
+    "coverLetterGenerator": "कव्हर लेटर जनरेटर",
+    "resumeTools": "रेझ्युमे साधने",
+    "myResumes": "माझे रेझ्युमे",
+    "resumeBuilder": "रेझ्युमे बिल्डर",
+    "resumeTemplates": "रेझ्युमे टेम्पलेट्स",
+    "eventGallery": "इव्हेंट गॅलरी",
+    "activityLog": "क्रियाकलाप लॉग",
+    "myProfile": "माझे प्रोफाइल",
+    "appointments": "भेटी",
+    "digitalWallet": "डिजिटल वॉलेट",
+    "featureRequests": "वैशिष्ट्य विनंत्या",
+    "settings": "सेटिंग्ज",
+    "documentation": "डॉक्युमेंटेशन",
+    "dbTest": "DB चाचणी",
+    "rewardsBadges": "बक्षिसे आणि बॅजेस",
+    "referrals": "संदर्भ",
+    "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
+    "blog": "ब्लॉग",
+    "adminDashboard": "प्रशासक डॅशबोर्ड",
+    "tenantManagement": "भाडेकरू व्यवस्थापन",
+    "tenantOnboarding": "भाडेकरू ऑनबोर्डिंग",
+    "userManagement": "वापरकर्ता व्यवस्थापन",
+    "gamificationRules": "गेमिफिकेशन नियम",
+    "contentModeration": "सामग्री मॉडरेशन",
+    "announcementsMgt": "घोषणा व्यवस्थापन",
+    "messengerMgt": "मेसेन्जर व्यवस्थापन",
+    "affiliateMgt": "अफिलिएट व्यवस्थापन",
+    "galleryMgt": "गॅलरी व्यवस्थापन",
+    "blogSettings": "ब्लॉग सेटिंग्ज",
+    "promotionalContentMgt": "प्रोमो सामग्री",
+    "platformSettings": "प्लॅटफॉर्म सेटिंग्ज",
+    "engagement": "एंगेजमेंट",
+    "utilities": "उपयुक्तता",
+    "adminPanel": "प्रशासक पॅनेल",
+    "managerPanel": "व्यवस्थापक पॅनेल",
+    "tenant": "भाडेकरू"
+  }
   ,  
     "appHeader": {
       "notifications": "Notifications",
@@ -797,6 +797,20 @@
           "description": "वास्तविक अॅपमध्ये, तुमच्या उत्तराचे मूल्यांकन केले जाईल. हे वैशिष्ट्य लवकरच येत आहे!"
         }
       }
-    }
+    },
+  "translateTool": {
+    "title": "भाषांतर साधन",
+    "enterTextLabel": "भाषांतरासाठी मजकूर प्रविष्ट करा",
+    "enterTextPlaceholder": "येथे कोणताही शब्द किंवा वाक्य टाइप करा...",
+    "submitButton": "भाषांतर करा",
+    "originalText": "मूळ मजकूर",
+    "suggestedTranslations": "सुचवलेले भाषांतर",
+    "qualityScore": "गुणवत्ता गुण",
+    "errorTranslating": "भाषांतर करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+    "english": "इंग्रजी",
+    "marathi": "मराठी",
+    "hindi": "हिंदी"
+  }
 }
+
     
