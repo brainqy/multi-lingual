@@ -940,7 +940,7 @@ export default function ResumeAnalyzerPage() {
         <Dialog open={isPowerEditDialogOpen} onOpenChange={setIsPowerEditDialogOpen}>
             <PowerEditDialog
                 resumeText={resumeText}
-                jobDescription={jobDescription}
+                jobDescriptionText={jobDescription}
                 onRewriteComplete={handleRewriteComplete}
             />
         </Dialog>
