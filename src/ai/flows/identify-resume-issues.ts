@@ -21,10 +21,19 @@ import {
 
 export async function identifyResumeIssues(input: IdentifyResumeIssuesInput): Promise<IdentifyResumeIssuesOutput> {
   const result = await identifyIssuesFlow(input);
-  // Ensure we always return a valid structure, even if the AI fails
+  
+  // Ensure we always return a valid structure with content, even if the AI fails or returns empty arrays.
+  const requiresUserInput = (result?.requiresUserInput && result.requiresUserInput.length > 0)
+    ? result.requiresUserInput
+    : [{type: 'other' as const, detail: "The AI found no specific issues requiring your input. You can still provide manual instructions below."}];
+    
+  const fixableByAi = (result?.fixableByAi && result.fixableByAi.length > 0)
+    ? result.fixableByAi
+    : ["General review for grammar, tone, and conciseness."];
+
   return {
-    fixableByAi: result?.fixableByAi || ["Review for grammar and tone improvements."],
-    requiresUserInput: result?.requiresUserInput || [{type: 'other', detail: "Review your resume to ensure all achievements are quantified with numbers where possible."}]
+    fixableByAi: fixableByAi,
+    requiresUserInput: requiresUserInput,
   };
 }
 
@@ -54,7 +63,7 @@ Analyze the following resume and job description. **Pay close attention to missi
 {{{resumeText}}}
 
 **Job Description:**
-{{{jobDescription}}}
+{{{jobDescriptionText}}}
 `,
 });
 
