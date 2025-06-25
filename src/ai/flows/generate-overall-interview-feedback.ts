@@ -20,7 +20,7 @@ const EvaluatedAnswerSchema = z.object({
 
 const GenerateOverallInterviewFeedbackInputSchema = z.object({
   topic: z.string().describe("The main topic or role of the interview session."),
-  jobDescription: z.string().optional().describe('The job description used for the interview, if any.'),
+  jobDescriptionText: z.string().optional().describe('The job description used for the interview, if any.'),
   evaluatedAnswers: z.array(EvaluatedAnswerSchema).describe("An array of questions, user answers, AI feedback, and scores for each question in the session."),
 });
 
@@ -45,9 +45,9 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert Interview Coach AI. Your task is to provide comprehensive overall feedback for a mock interview session based on the user's performance on individual questions.
 
 Interview Topic/Role: {{{topic}}}
-{{#if jobDescription}}
+{{#if jobDescriptionText}}}
 Job Description Context:
-{{{jobDescription}}}
+{{{jobDescriptionText}}}
 {{/if}}
 
 User's Performance on Individual Questions:

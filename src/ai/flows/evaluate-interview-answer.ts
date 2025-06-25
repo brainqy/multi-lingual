@@ -15,7 +15,7 @@ const EvaluateInterviewAnswerInputSchema = z.object({
   questionText: z.string().describe("The interview question that was asked."),
   userAnswer: z.string().describe("The user's answer to the question."),
   topic: z.string().optional().describe("The general topic or role of the interview for context (e.g., 'Java Developer', 'Behavioral Interview')."),
-  jobDescription: z.string().optional().describe('The job description, if available, for context in evaluating the answer.'),
+  jobDescriptionText: z.string().optional().describe('The job description, if available, for context in evaluating the answer.'),
 });
 
 const EvaluateInterviewAnswerOutputSchema = z.object({
@@ -40,9 +40,9 @@ const prompt = ai.definePrompt({
 
 Context:
 {{#if topic}}Interview Topic/Role: {{{topic}}}{{/if}}
-{{#if jobDescription}}
+{{#if jobDescriptionText}}
 Relevant Job Description:
-{{{jobDescription}}}
+{{{jobDescriptionText}}}
 {{/if}}
 
 Question Asked:

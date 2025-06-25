@@ -38,7 +38,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       setDialogState('identifying');
       setError(null);
       try {
-        const result = await identifyResumeIssues({ resumeText, jobDescription });
+        const result = await identifyResumeIssues({ resumeText, jobDescriptionText: jobDescription });
         setIssues(result);
         setDialogState('identified');
       } catch (e: any) {
@@ -65,7 +65,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
     try {
       const result = await rewriteResumeWithFixes({
         resumeText: editableResumeText,
-        jobDescription,
+        jobDescriptionText: jobDescription,
         fixableByAi: issues?.fixableByAi || [],
         userInstructions: userInstructions,
       });

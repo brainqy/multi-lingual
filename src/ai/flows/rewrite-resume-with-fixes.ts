@@ -60,7 +60,7 @@ const prompt = ai.definePrompt({
 {{{resumeText}}}
 
 **Target Job Description:**
-{{{jobDescription}}}
+{{{jobDescriptionText}}}
 `,
 });
 

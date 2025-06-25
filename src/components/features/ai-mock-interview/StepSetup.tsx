@@ -18,7 +18,7 @@ const ALL_QUESTION_CATEGORIES: InterviewQuestionCategory[] = ['Common', 'Behavio
 
 const setupSchema = z.object({
   topic: z.string().min(3, "Topic must be at least 3 characters long."),
-  jobDescription: z.string().optional(),
+  jobDescriptionText: z.string().optional(),
   numQuestions: z.coerce.number().min(1, "Must request at least 1 question.").max(50, "Cannot request more than 50 questions.").default(5), // Updated max to 50
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
   timerPerQuestion: z.coerce.number().min(0).max(300).optional().default(0),
@@ -37,7 +37,7 @@ export default function StepSetup({ onSetupComplete, isLoading }: StepSetupProps
     resolver: zodResolver(setupSchema),
     defaultValues: {
       topic: '',
-      jobDescription: '',
+      jobDescriptionText: '',
       numQuestions: 5,
       difficulty: 'medium',
       timerPerQuestion: 0,
@@ -70,11 +70,11 @@ export default function StepSetup({ onSetupComplete, isLoading }: StepSetupProps
       </div>
 
       <div>
-        <Label htmlFor="jobDescription">Job Description (Optional)</Label>
+        <Label htmlFor="jobDescriptionText">Job Description (Optional)</Label>
         <Controller
-          name="jobDescription"
+          name="jobDescriptionText"
           control={control}
-          render={({ field }) => <Textarea id="jobDescription" placeholder="Paste the job description here for more tailored questions..." rows={6} {...field} />}
+          render={({ field }) => <Textarea id="jobDescriptionText" placeholder="Paste the job description here for more tailored questions..." rows={6} {...field} />}
         />
         <p className="text-xs text-muted-foreground mt-1">Providing a job description helps the AI generate more relevant questions.</p>
       </div>
@@ -182,4 +182,3 @@ export default function StepSetup({ onSetupComplete, isLoading }: StepSetupProps
     </form>
   );
 }
-

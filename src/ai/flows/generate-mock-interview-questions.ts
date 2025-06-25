@@ -31,7 +31,7 @@ const MockInterviewQuestionSchema = z.object({
 
 const GenerateMockInterviewQuestionsInputSchema = z.object({
   topic: z.string().describe('The main topic, role, or area for the interview (e.g., "Software Engineering", "Product Management", "Java Backend Developer").'),
-  jobDescription: z.string().optional().describe('The full job description text to tailor questions to. If provided, questions will be more specific to the role.'),
+  jobDescriptionText: z.string().optional().describe('The full job description text to tailor questions to. If provided, questions will be more specific to the role.'),
   numQuestions: z.number().min(1).max(50).default(5).optional().describe('The desired number of questions to generate (default 5, max 50).'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium').optional().describe('The desired difficulty level of the questions (default medium). This will guide the AI in selecting appropriate questions.'),
   timerPerQuestion: z.number().min(0).max(300).optional().describe('Optional: Suggested time in seconds for answering each question. 0 or undefined means no timer.'),
@@ -75,9 +75,9 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert Interview Question Generator. Your task is to create a set of diverse and relevant mock interview questions based on the provided criteria.
 
 Topic/Role: {{{topic}}}
-{{#if jobDescription}}
+{{#if jobDescriptionText}}}
 Job Description:
-{{{jobDescription}}}
+{{{jobDescriptionText}}}
 {{else}}
 No specific job description provided. Generate general questions for the topic/role.
 {{/if}}

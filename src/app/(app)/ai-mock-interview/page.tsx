@@ -172,7 +172,7 @@ export default function AiMockInterviewPage() {
     if (topicFromUrl && !session) {
       const initialConfig: GenerateMockInterviewQuestionsInput = {
         topic: topicFromUrl,
-        jobDescription: searchParams.get('jobDescription') || undefined,
+        jobDescriptionText: searchParams.get('jobDescriptionText') || undefined,
         numQuestions: parseInt(searchParams.get('numQuestions') || '5', 10),
         difficulty: (searchParams.get('difficulty') as GenerateMockInterviewQuestionsInput['difficulty']) || 'medium',
         timerPerQuestion: parseInt(searchParams.get('timerPerQuestion') || '0', 10) || undefined,
@@ -298,7 +298,7 @@ export default function AiMockInterviewPage() {
         id: `session-ai-${Date.now()}`,
         userId: currentUser.id,
         topic: config.topic,
-        jobDescription: config.jobDescription,
+        jobDescription: config.jobDescriptionText,
         questions: genQuestions,
         answers: [],
         status: 'in-progress',
@@ -355,7 +355,7 @@ export default function AiMockInterviewPage() {
         questionText: currentQuestion.questionText,
         userAnswer,
         topic: session.topic,
-        jobDescription: session.jobDescription,
+        jobDescriptionText: session.jobDescription,
       };
       const evaluationResult = await evaluateInterviewAnswer(evaluationInput);
 
@@ -423,7 +423,7 @@ export default function AiMockInterviewPage() {
     try {
        const feedbackInput: GenerateOverallInterviewFeedbackInput = {
         topic: session.topic,
-        jobDescription: session.jobDescription,
+        jobDescriptionText: session.jobDescription,
         evaluatedAnswers: session.answers.map(a => ({
             questionText: a.questionText,
             userAnswer: a.userAnswer,

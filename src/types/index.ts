@@ -667,7 +667,7 @@ export interface MockInterviewSession {
 
 export interface GenerateMockInterviewQuestionsInput {
   topic: string;
-  jobDescription?: string;
+  jobDescriptionText?: string;
   numQuestions?: number;
   difficulty?: 'easy' | 'medium' | 'hard';
   timerPerQuestion?: number;
@@ -681,7 +681,7 @@ export interface EvaluateInterviewAnswerInput {
   questionText: string;
   userAnswer: string;
   topic?: string;
-  jobDescription?: string;
+  jobDescriptionText?: string;
 }
 export interface EvaluateInterviewAnswerOutput {
   feedback: string;
@@ -693,7 +693,7 @@ export interface EvaluateInterviewAnswerOutput {
 
 export interface GenerateOverallInterviewFeedbackInput {
   topic: string;
-  jobDescription?: string;
+  jobDescriptionText?: string;
   evaluatedAnswers: { questionText: string; userAnswer: string; feedback: string; score: number }[];
 }
 
@@ -932,7 +932,7 @@ export interface AnalyzeResumeAndJobDescriptionOutput {
 
 export interface CalculateMatchScoreInput {
   resumeText: string;
-  jobDescription: string;
+  jobDescriptionText: string;
 }
 
 export interface CalculateMatchScoreOutput {
@@ -943,7 +943,7 @@ export interface CalculateMatchScoreOutput {
 
 export interface SuggestResumeImprovementsInput {
   resumeText: string;
-  jobDescription: string;
+  jobDescriptionText: string;
 }
 
 export interface SuggestResumeImprovementsOutput {
@@ -1134,7 +1134,7 @@ export type IdentifyResumeIssuesOutput = z.infer<typeof IdentifyResumeIssuesOutp
 
 export const RewriteResumeInputSchema = z.object({
   resumeText: z.string().describe('The original (or user-edited) resume text to be rewritten.'),
-  jobDescription: z.string().describe('The target job description.'),
+  jobDescriptionText: z.string().describe('The target job description.'),
   userInstructions: z.string().optional().describe("Specific instructions from the user on what to add, change, or emphasize. E.g., 'Add that my team at XYZ was 5 people. Emphasize my experience with TypeScript.'"),
   fixableByAi: z.array(z.string()).optional().describe("A list of general improvements the AI should perform."),
 });
