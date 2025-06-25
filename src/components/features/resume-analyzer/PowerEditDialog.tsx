@@ -7,7 +7,7 @@ import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
 import type { IdentifyResumeIssuesOutput } from '@/types';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, PlusCircle } from 'lucide-react';
+import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, PlusCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
