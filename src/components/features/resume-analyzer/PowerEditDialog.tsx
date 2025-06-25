@@ -7,7 +7,7 @@ import { rewriteResumeWithFixes } from '@/ai/flows/rewrite-resume-with-fixes';
 import type { IdentifyResumeIssuesOutput } from '@/types';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, CheckCircle, PlusCircle } from 'lucide-react';
+import { Loader2, Wand2, UserRoundCog, ListChecks, WandSparkles, FileCheck2, ClipboardCopy, Check, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,13 +16,13 @@ import { useToast } from '@/hooks/use-toast';
 
 type PowerEditDialogProps = {
   resumeText: string;
-  jobDescription: string;
+  jobDescriptionText: string;
   onRewriteComplete: (newResume: string) => void;
 };
 
 type DialogState = 'identifying' | 'identified' | 'rewriting' | 'rewritten' | 'error';
 
-export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete }: PowerEditDialogProps) {
+export function PowerEditDialog({ resumeText, jobDescriptionText, onRewriteComplete }: PowerEditDialogProps) {
   const [dialogState, setDialogState] = useState<DialogState>('identifying');
   const [issues, setIssues] = useState<IdentifyResumeIssuesOutput | null>(null);
   const [editableResumeText, setEditableResumeText] = useState(resumeText);
@@ -38,7 +38,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       setDialogState('identifying');
       setError(null);
       try {
-        const result = await identifyResumeIssues({ resumeText, jobDescriptionText: jobDescription });
+        const result = await identifyResumeIssues({ resumeText, jobDescriptionText });
         setIssues(result);
         setDialogState('identified');
       } catch (e: any) {
@@ -56,7 +56,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
       }
     };
     getIssues();
-  }, [resumeText, jobDescription, toast]);
+  }, [resumeText, jobDescriptionText, toast]);
 
   const handleRewrite = async () => {
     setDialogState('rewriting');
@@ -65,7 +65,7 @@ export function PowerEditDialog({ resumeText, jobDescription, onRewriteComplete 
     try {
       const result = await rewriteResumeWithFixes({
         resumeText: editableResumeText,
-        jobDescriptionText: jobDescription,
+        jobDescriptionText: jobDescriptionText,
         fixableByAi: issues?.fixableByAi || [],
         userInstructions: userInstructions,
       });
