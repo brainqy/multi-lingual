@@ -5,10 +5,9 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-// RadioGroup and RadioGroupItem are not used in the new design
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { AlertCircle, Bookmark, Check, ChevronLeft, ChevronRight, Clock, Send, X, PieChart as PieChartIcon, BarChart2 as BarChart2Icon, ListChecks, Maximize, Minimize, Info, CheckSquare as CheckSquareIcon, Circle, Radio } from 'lucide-react';
+import { AlertCircle, Bookmark, Check, ChevronLeft, ChevronRight, Clock, Send, X, PieChart as PieChartIcon, BarChart2 as BarChart2Icon, ListChecks, Maximize, Minimize, Info, CheckSquare as CheckSquareIcon, Circle, Radio, Lightbulb } from 'lucide-react';
 import { sampleInterviewQuestions, sampleCreatedQuizzes, sampleUserProfile } from '@/lib/sample-data';
 import type { InterviewQuestion, MockInterviewSession } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -18,8 +17,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle as DialogUITitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogClose } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
-const QUIZ_TIME_SECONDS_PER_QUESTION = 90; // Default, can be overridden by quiz settings
+const QUIZ_TIME_SECONDS_PER_QUESTION = 90; 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8442FF', '#FF42A5', '#42FFA5'];
 
 
@@ -42,7 +42,7 @@ export default function QuizPage() {
 
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({}); // Store selected option text
+  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({}); 
   const [visitedQuestions, setVisitedQuestions] = useState<Set<string>>(new Set());
   const [timeLeft, setTimeLeft] = useState(0);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -101,8 +101,7 @@ export default function QuizPage() {
        }
        loadedMetadata = { id: `custom-${Date.now()}`, topic: 'Custom Quiz', description: `Quiz with ${loadedQuestions.length} selected questions.`, timerPerQuestion: QUIZ_TIME_SECONDS_PER_QUESTION };
     } else {
-      // Fallback to a default small quiz if no params
-      loadedQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === sampleUserProfile.id)).slice(0,5); // Small default
+      loadedQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === sampleUserProfile.id)).slice(0,5); 
       if (loadedQuestions.length === 0) {
          toast({title: "No Default Questions", description: "No default MCQ questions available for a quiz.", variant: "destructive", duration: 5000});
          setTimeout(() => router.push('/interview-prep'), 500);
@@ -126,15 +125,15 @@ export default function QuizPage() {
         return;
     }
 
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current); // Clear existing timer before starting a new one
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    setTimeLeft(totalQuizTime); // Initialize timeLeft when quiz starts
+    setTimeLeft(totalQuizTime);
 
     timerIntervalRef.current = setInterval(() => {
       setTimeLeft(prevTime => {
         if (prevTime <= 1) {
           if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-          if (!quizSubmittedRef.current) { // Check a ref to prevent multiple submissions
+          if (!quizSubmittedRef.current) { 
             handleSubmitQuiz(true); 
           }
           return 0;
@@ -146,7 +145,7 @@ export default function QuizPage() {
     return () => {
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [quizStarted, totalQuizTime, questions.length]); // Removed quizSubmitted to ensure timer starts
+  }, [quizStarted, totalQuizTime, questions.length]);
 
   const quizSubmittedRef = useRef(quizSubmitted);
   useEffect(() => {
@@ -181,7 +180,7 @@ export default function QuizPage() {
 
   const navigateQuestion = (direction: 'next' | 'prev') => {
     if (quizSubmitted) return;
-    setVisitedQuestions(prev => new Set(prev).add(currentQuestion.id)); // Mark current as visited before moving
+    setVisitedQuestions(prev => new Set(prev).add(currentQuestion.id));
     if (direction === 'next' && currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else if (direction === 'prev' && currentQuestionIndex > 0) {
@@ -190,7 +189,6 @@ export default function QuizPage() {
   };
   
   const handleSaveAndNext = () => {
-    // Answer is saved on select via handleAnswerSelect
     navigateQuestion('next');
   };
 
@@ -208,7 +206,7 @@ export default function QuizPage() {
   };
   
   const handleMarkAndNext = () => {
-    if(!markedForReview.has(currentQuestion.id)){ // Mark if not already marked
+    if(!markedForReview.has(currentQuestion.id)){ 
         handleMarkForReview();
     }
     navigateQuestion('next');
@@ -216,9 +214,9 @@ export default function QuizPage() {
 
 
   const handleSubmitQuiz = (autoSubmitted = false) => {
-    if (quizSubmittedRef.current) return; // Prevent multiple submissions
-    quizSubmittedRef.current = true; // Set ref immediately
-    setQuizSubmitted(true); // Set state
+    if (quizSubmittedRef.current) return; 
+    quizSubmittedRef.current = true;
+    setQuizSubmitted(true);
 
     if (isFullScreen && document.fullscreenElement && quizContainerRef.current === document.fullscreenElement) {
       document.exitFullscreen();
@@ -243,7 +241,7 @@ export default function QuizPage() {
     });
 
     const percentage = questions.length > 0 ? (score / questions.length) * 100 : 0;
-    const timeTaken = totalQuizTime - timeLeft; // timeLeft might be slightly off if cleared too early
+    const timeTaken = totalQuizTime - timeLeft;
     const answeredCount = Object.keys(userAnswers).length;
     const markedForReviewCount = markedForReview.size;
 
@@ -278,7 +276,6 @@ export default function QuizPage() {
   const startQuiz = async () => {
     setShowStartQuizDialog(false);
     setQuizStarted(true);
-    // setTimeLeft(totalQuizTime); // Moved to useEffect to ensure it runs after quizStarted and totalQuizTime are set
     
     if (quizContainerRef.current && !document.fullscreenElement) {
       try {
@@ -296,14 +293,12 @@ export default function QuizPage() {
     if (!document.fullscreenElement) {
       try {
         await quizContainerRef.current.requestFullscreen();
-        // setIsFullScreen(true) will be set by event listener
       } catch (err) {
         toast({ title: "Fullscreen Error", description: `Could not enter fullscreen: ${(err as Error).message}`, variant: "destructive" });
       }
     } else {
       if (document.exitFullscreen) {
         await document.exitFullscreen();
-         // setIsFullScreen(false) will be set by event listener
       }
     }
   };
@@ -312,7 +307,7 @@ export default function QuizPage() {
     if (quizSubmitted) return;
     setVisitedQuestions(prev => new Set(prev).add(currentQuestion.id));
     setCurrentQuestionIndex(index);
-    setIsNavDrawerOpen(false); // Close drawer after navigation
+    setIsNavDrawerOpen(false); 
   };
 
   const getQuestionStatus = (questionId: string, index: number): 'answered' | 'notAnswered' | 'marked' | 'answeredAndMarked' | 'notVisited' | 'currentUnanswered' => {
@@ -324,7 +319,7 @@ export default function QuizPage() {
     if (isAnswered && isMarked) return 'answeredAndMarked';
     if (isAnswered) return 'answered';
     if (isMarked) return 'marked';
-    if (isVisited) return 'notAnswered'; // Visited but not answered and not current
+    if (isVisited) return 'notAnswered'; 
     return 'notVisited';
   };
 
@@ -376,6 +371,10 @@ export default function QuizPage() {
         Total: data.total,
         Accuracy: data.accuracy,
     }));
+    
+    const topicsForRevision = Object.entries(quizResults.categoryStats)
+      .filter(([_, stats]) => stats.accuracy < 75)
+      .map(([category, _]) => category);
 
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-6 bg-secondary/30 dark:bg-background">
@@ -447,6 +446,24 @@ export default function QuizPage() {
             </CardContent>
         </Card>
 
+        {topicsForRevision.length > 0 && (
+          <Card className="w-full max-w-2xl p-6 shadow-xl">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-primary"/> Topics for Revision
+              </CardTitle>
+              <CardDescription>
+                Focus on these areas to improve your score next time.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 flex flex-wrap gap-2">
+              {topicsForRevision.map(topic => (
+                  <Badge key={topic} variant="secondary" className="text-md px-3 py-1">{topic}</Badge>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         <div className="w-full max-w-2xl">
             <Button onClick={() => router.push('/interview-prep')} className="w-full bg-primary hover:bg-primary/90">
                 Back to Interview Prep
@@ -472,7 +489,6 @@ export default function QuizPage() {
 
   return (
     <div ref={quizContainerRef} className={cn("flex flex-col min-h-screen", isFullScreen ? "bg-background" : "bg-slate-50 dark:bg-slate-900")}>
-      {/* Quiz Header */}
       <header className="bg-card shadow-sm p-2 md:p-3 sticky top-0 z-20 border-b">
         <div className="container mx-auto flex flex-wrap justify-between items-center gap-2">
           <h1 className="text-md md:text-lg font-semibold text-foreground truncate max-w-[calc(100%-250px)]" title={quizMetadata?.topic || 'Quiz'}>
@@ -523,10 +539,7 @@ export default function QuizPage() {
           </div>
         </div>
       </header>
-
-      {/* Main Quiz Area */}
       <div className={cn("flex-grow container mx-auto grid p-2 md:p-4 gap-2 md:gap-4", isFullScreen ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[1fr_300px]")}>
-        {/* Question & Options Area */}
         <Card className="shadow-xl bg-card flex flex-col overflow-hidden">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center mb-1">
@@ -589,8 +602,6 @@ export default function QuizPage() {
             )}
           </CardFooter>
         </Card>
-
-        {/* Right Panel: Question Palette & Legend */}
         <div className={cn("bg-card shadow-xl rounded-lg p-3 md:p-4 flex-col", isFullScreen ? "hidden" : "flex")}>
           <CardTitle className="text-base md:text-lg font-semibold mb-2 md:mb-3">Question Palette</CardTitle>
           <ScrollArea className="flex-grow mb-3 md:mb-4 pr-1">

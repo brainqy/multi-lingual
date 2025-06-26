@@ -1,14 +1,17 @@
+
 "use client";
 
 import type React from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Sparkles, ListChecks, CheckCircle, AlertTriangle, RefreshCw, MessageSquare, Share2 } from 'lucide-react';
+import { Sparkles, ListChecks, CheckCircle, AlertTriangle, RefreshCw, MessageSquare, Share2, Lightbulb } from 'lucide-react';
 import type { MockInterviewSession, CommunityPost } from '@/types';
 import ScoreCircle from '@/components/ui/score-circle';
 import { useToast } from '@/hooks/use-toast';
 import { sampleCommunityPosts, sampleUserProfile } from '@/lib/sample-data';
+import { Badge } from '@/components/ui/badge';
 
 interface StepFeedbackProps {
   session: MockInterviewSession;
@@ -18,6 +21,23 @@ interface StepFeedbackProps {
 export default function StepFeedback({ session, onRestart }: StepFeedbackProps) {
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
+
+  const topicsToRevise = useMemo(() => {
+    if (!session?.answers || !session?.questions) return [];
+    
+    const lowScoringTopics = new Set<string>();
+
+    session.answers.forEach(answer => {
+      if ((answer.aiScore ?? 100) < 80) {
+        const questionDetails = session.questions.find(q => q.id === answer.questionId);
+        if (questionDetails?.category) {
+          lowScoringTopics.add(questionDetails.category);
+        }
+      }
+    });
+
+    return Array.from(lowScoringTopics);
+  }, [session]);
 
   if (!session.overallFeedback) {
     return <p>Generating feedback... Please wait.</p>;
@@ -59,9 +79,7 @@ export default function StepFeedback({ session, onRestart }: StepFeedbackProps) 
       comments: [],
     };
 
-    // In a real app, this would be an API call to the backend.
-    // For demo purposes, we're modifying the sample data directly.
-    sampleCommunityPosts.unshift(newPost); // Adds to the beginning of the array
+    sampleCommunityPosts.unshift(newPost);
 
     toast({
       title: "Shared to Feed!",
@@ -177,6 +195,26 @@ export default function StepFeedback({ session, onRestart }: StepFeedbackProps) 
           )}
         </CardContent>
       </Card>
+      
+      {topicsToRevise.length > 0 && (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Lightbulb className="h-6 w-6 text-primary" /> Recommended Topics for Revision
+            </CardTitle>
+            <CardDescription>
+              Based on your performance, we recommend brushing up on these areas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {topicsToRevise.map((topic, index) => (
+              <Badge key={index} variant="secondary" className="text-md px-3 py-1">
+                {topic}
+              </Badge>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="text-center mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
         <Button onClick={onRestart} size="lg" variant="outline">
