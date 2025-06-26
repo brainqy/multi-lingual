@@ -23,8 +23,6 @@ export type GenerateResumeVariantInput = z.infer<typeof GenerateResumeVariantInp
 
 const GenerateResumeVariantOutputSchema = z.object({
   generatedResumeText: z.string().describe('The newly generated resume text.'),
-  // Optional: Could add a brief summary of changes made by the AI
-  // summaryOfChanges: z.string().optional().describe('A brief summary of how the resume was adapted.'),
 });
 export type GenerateResumeVariantOutput = z.infer<typeof GenerateResumeVariantOutputSchema>;
 
@@ -60,6 +58,8 @@ Please generate a new, complete resume text based on these requirements. Ensure 
 Focus on rephrasing, reordering, and highlighting existing information from the base resume to best fit the target role and industry.
 Do not invent new experiences or qualifications not present in the base resume.
 The generated resume should be ready to be copy-pasted.
+
+CRITICAL: Your entire output must be a single, valid JSON object that strictly adheres to the provided schema. The final resume text must be contained within the 'generatedResumeText' field.
 `,
 });
 

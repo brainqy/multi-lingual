@@ -970,7 +970,7 @@ export default function InterviewPracticeHubPage() {
                     <Accordion key={q.id} type="single" collapsible className="border rounded-md mb-2 bg-card shadow-sm hover:shadow-md transition-shadow">
                         <AccordionItem value={`item-${q.id}`} className="border-b-0">
                           <AccordionTrigger
-                            className="px-4 py-3 text-left text-sm font-medium group hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-secondary/50 data-[state=open]:rounded-b-none rounded-t-md"
+                            className="px-4 py-3 text-left text-sm font-medium group hover:no-underline data-[state=open]:border-b"
                           >
                             <div className="flex items-start flex-1 gap-3 w-full">
                                 <div className="flex items-center pt-0.5">
@@ -982,7 +982,7 @@ export default function InterviewPracticeHubPage() {
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 </div>
-                              <div className="flex-1 text-left">
+                              <div className="flex-1 text-left min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   {getCategoryIcon(q.category)}
                                   <span className="font-medium text-foreground">{q.questionText}</span>

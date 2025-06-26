@@ -1,18 +1,19 @@
 
 "use client";
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Sparkles, Save, FileText, Edit } from "lucide-react";
+import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateResumeVariant, type GenerateResumeVariantInput, type GenerateResumeVariantOutput } from '@/ai/flows/generate-resume-variant';
 import { sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types';
+import { useEffect } from 'react';
 
 export default function AiResumeWriterPage() {
   const [baseResumeText, setBaseResumeText] = useState('');
@@ -28,6 +29,9 @@ export default function AiResumeWriterPage() {
 
   const [userResumes, setUserResumes] = useState<ResumeProfile[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string>('');
+  
+  const currentUser = sampleUserProfile;
+
 
   useEffect(() => {
     // Filter resumes for the current user
@@ -113,6 +117,16 @@ export default function AiResumeWriterPage() {
     
     toast({ title: "Resume Saved (Mock)", description: `"${newResumeName}" has been added to 'My Resumes'.` });
   };
+  
+  const handleCopyToClipboard = () => {
+    if (!generatedResumeText) return;
+    navigator.clipboard.writeText(generatedResumeText).then(() => {
+      toast({ title: "Copied to Clipboard", description: "Cover letter copied!" });
+    }).catch(err => {
+      toast({ title: "Copy Failed", description: "Could not copy text.", variant: "destructive" });
+    });
+  };
+
 
   return (
     <div className="space-y-8">
@@ -244,17 +258,20 @@ export default function AiResumeWriterPage() {
             <CardTitle className="text-2xl font-bold flex items-center gap-2">
               <FileText className="h-7 w-7 text-primary" /> Generated Resume Variant
             </CardTitle>
-            <CardDescription>Review the AI-generated resume text below. You can edit it further or save it.</CardDescription>
+            <CardDescription>Review the AI-generated resume text below. You can edit it or copy it.</CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
               value={generatedResumeText}
               onChange={(e) => setGeneratedResumeText(e.target.value)} // Allow editing
               rows={20}
-              className="border-input focus:ring-primary font-mono text-sm"
+              className="border-input focus:ring-primary font-serif text-sm leading-relaxed" // Using serif for a letter feel
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex justify-between">
+             <Button onClick={handleCopyToClipboard} variant="outline">
+              <Copy className="mr-2 h-4 w-4" /> Copy to Clipboard
+            </Button>
             <Button onClick={handleSaveGeneratedResume} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
               <Save className="mr-2 h-4 w-4" /> Save Generated Resume
             </Button>
