@@ -366,7 +366,8 @@ Projects
     createdAt: new Date(Date.now() - 86400000 * 365).toISOString(),
     isDistinguished: true,
     userApiKey: '',
-    bio: ''
+    bio: '',
+    sessionId: undefined,
   },
   {
     id: 'alumni2',
@@ -396,6 +397,7 @@ Projects
     referralCode: 'BOB123',
     userApiKey: '',
     currentOrganization: 'Microsoft',
+    sessionId: undefined,
   },
   { 
     id: 'alumni3', 
@@ -425,6 +427,7 @@ Projects
     referralCode: 'CHARLIE789',
     userApiKey: '',
     currentOrganization: 'Meta',
+    sessionId: undefined,
   },
   {
     id: 'alumni4',
@@ -454,6 +457,7 @@ Projects
     referralCode: 'DIANA456',
     userApiKey: '',
     currentOrganization: 'SecureNet Solutions',
+    sessionId: undefined,
   },
   { 
     id: 'managerUser1', 
@@ -529,6 +533,7 @@ Team Leadership, Project Management, Alumni Relations, Strategic Planning, Stake
     createdAt: new Date(Date.now() - 86400000 * 90).toISOString(), 
     isDistinguished: false,
     userApiKey: '',
+    sessionId: undefined,
   },
 ];
 
@@ -1968,7 +1973,8 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     challengeTopics: [],
     shortBio: '', // From AlumniProfile
     university: '', // From AlumniProfile,
-    userApiKey: ''
+    userApiKey: '',
+    sessionId: undefined,
   };
   return { ...defaultUser, ...partialProfile };
 }

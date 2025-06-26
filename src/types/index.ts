@@ -315,6 +315,7 @@ export interface UserProfile extends AlumniProfile {
   createdAt?: string;
   isDistinguished?: boolean;
   challengeTopics?: InterviewQuestionCategory[];
+  sessionId?: string;
 }
 
 export interface ResumeProfile {
