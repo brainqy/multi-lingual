@@ -78,31 +78,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback((email: string, name?: string) => {
     const sessionId = `session-${Date.now()}`;
     let userToLogin: UserProfile | undefined = samplePlatformUsers.find(u => u.email === email);
+    let userToStore: UserProfile;
     
     if (userToLogin) {
-      // User exists, update their session ID and use their existing data
+      // User exists. Update their session ID and use their existing data.
+      userToStore = { ...userToLogin, sessionId };
       const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin!.id);
       if(userIndex !== -1) {
-        userToLogin = { ...userToLogin, sessionId };
-        samplePlatformUsers[userIndex] = userToLogin;
+        samplePlatformUsers[userIndex] = userToStore;
       }
     } else {
-      // For demo, if user doesn't exist, create a new one with 'user' role by default
-      userToLogin = ensureFullUserProfile({
+      // User does not exist, create a new one with 'user' role by default.
+      userToStore = ensureFullUserProfile({
         id: Date.now().toString(),
         email,
         name: name || email.split('@')[0],
-        role: 'user', // Default to 'user' for new logins from this flow
+        role: 'user',
         sessionId: sessionId,
       });
-      samplePlatformUsers.push(userToLogin);
+      samplePlatformUsers.push(userToStore);
     }
     
-    if(userToLogin) {
-      setUser(userToLogin);
-      localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
-      router.push('/dashboard');
-    }
+    setUser(userToStore);
+    localStorage.setItem('bhashaSetuUser', JSON.stringify(userToStore));
+    router.push('/dashboard');
+
   }, [router]);
 
   const signup = useCallback((name: string, email: string, role: 'user' | 'admin') => {
