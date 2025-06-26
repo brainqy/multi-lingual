@@ -1,12 +1,13 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Briefcase, Users, Zap, FileText, Edit, MessageSquare, Brain, Layers3, Award, CalendarCheck2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { BarChart, Briefcase, Users, Zap, FileText, Edit, MessageSquare, Brain, Layers3, Award, CalendarCheck2, ArrowRight, Code2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"; // Import Accordion components
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Import Avatar components
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
 
 export default function LandingPage() {
@@ -29,6 +30,13 @@ export default function LandingPage() {
     { title: "Interview Preparation Hub", description: "Practice with AI mock interviews, browse a vast question bank, and take custom quizzes.", icon: Brain, dataAiHint: "interview preparation", imagePlaceholder: "https://placehold.co/600x400.png" },
     { title: "Alumni Connect Directory", description: "Network with fellow alumni, find mentors, and book appointments for career guidance.", icon: Users, dataAiHint: "alumni directory", imagePlaceholder: "https://placehold.co/600x400.png" },
     { title: "Event Management & Gallery", description: "Discover and register for alumni events, and browse past event galleries.", icon: CalendarCheck2, dataAiHint: "events gallery", imagePlaceholder: "https://placehold.co/600x400.png" },
+  ];
+
+  const trendingJobs = [
+    { name: "AI & Machine Learning", icon: Brain, roles: ["ML Engineer", "Data Scientist", "AI Researcher"] },
+    { name: "Frontend Development", icon: Code2, roles: ["React Developer", "Next.js Specialist", "UI Engineer"] },
+    { name: "Cloud & DevOps", icon: Layers3, roles: ["Cloud Architect", "DevOps Engineer", "SRE"] },
+    { name: "Product Management", icon: Zap, roles: ["Product Manager", "Product Owner", "Technical PM"] },
   ];
 
   const faqs = [
@@ -111,6 +119,43 @@ export default function LandingPage() {
                   <CardContent>
                     <p className="text-sm text-muted-foreground">{feature.description}</p>
                   </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Trending Jobs Section */}
+        <section id="trending-jobs" className="py-16 sm:py-24 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Trending Job Categories</h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Explore the most in-demand roles and industries our alumni are thriving in.
+            </p>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-10">
+              {trendingJobs.map((job, index) => (
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 text-left">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <job.icon className="h-8 w-8 text-primary" />
+                      <CardTitle className="text-lg">{job.name}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      {job.roles.map((role, rIndex) => (
+                        <li key={rIndex} className="flex items-center gap-2">
+                          <ArrowRight className="h-4 w-4 text-primary/70 shrink-0" />
+                          <span>{role}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                   <CardFooter>
+                    <Button variant="link" className="p-0 h-auto text-primary">
+                      Explore Roles <ArrowRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
