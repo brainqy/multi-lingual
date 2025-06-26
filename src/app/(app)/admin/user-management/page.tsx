@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -11,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
 import { samplePlatformUsers, sampleTenants, ensureFullUserProfile } from "@/lib/sample-data";
@@ -34,7 +35,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function UserManagementPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -51,6 +52,14 @@ export default function UserManagementPage() {
     // This effect ensures that any global changes to sample data are reflected locally.
     setUsers(samplePlatformUsers);
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-1 items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
@@ -308,3 +317,4 @@ export default function UserManagementPage() {
     </div>
   );
 }
+
