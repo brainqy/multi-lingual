@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
-import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory } from "@/types";
+import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory, TourStep } from "@/types";
 import { ALL_CATEGORIES } from "@/types";
 import {
   AlertDialog,
@@ -25,6 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import WelcomeTourDialog from "@/components/features/WelcomeTourDialog";
 
 export default function SettingsPage() {
   const { t } = useI18n();
@@ -32,30 +33,31 @@ export default function SettingsPage() {
   const [currentUser, setCurrentUser] = useState<UserProfile>(sampleUserProfile);
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>(currentUser.challengeTopics || []);
-
   const [isDarkMode, setIsDarkMode] = useState(false);
-
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
   const [appNotificationsEnabled, setAppNotificationsEnabled] = useState(true);
   const [gamificationNotificationsEnabled, setGamificationNotificationsEnabled] = useState(true);
   const [referralNotificationsEnabled, setReferralNotificationsEnabled] = useState(true);
-
   const [walletEnabled, setWalletEnabled] = useState(platformSettings.walletEnabled);
   const [userApiKey, setUserApiKey] = useState(currentUser.userApiKey || "");
-
-
   const [tenantNameInput, setTenantNameInput] = useState("");
   const [tenantLogoUrlInput, setTenantLogoUrlInput] = useState("");
   const [currentPrimaryColor, setCurrentPrimaryColor] = useState("");
   const [currentAccentColor, setCurrentAccentColor] = useState("");
-
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showApiKeyTour, setShowApiKeyTour] = useState(false);
 
   const CONFIRMATION_PHRASE = "delete my account";
+
+  const apiKeyTourSteps: TourStep[] = [
+    { title: "Use Your Own API Key!", description: "The platform admin has enabled a new feature! You can now use your personal Google Gemini API key for all AI features." },
+    { title: "Developer Settings", description: "You'll find the new input field inside the 'Developer Settings' card.", targetId: "developer-settings-card" },
+    { title: "Enter Your Key", description: "Just paste your Gemini API key here and save your settings. This will use your key instead of the platform's default.", targetId: "user-api-key-input" }
+  ];
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -78,7 +80,15 @@ export default function SettingsPage() {
     }
     setWalletEnabled(platformSettings.walletEnabled);
 
-  }, [currentUser.role, currentUser.tenantId, platformSettings.walletEnabled]);
+    // Check for API Key tour
+    if (platformSettings.allowUserApiKey && typeof window !== 'undefined') {
+      const tourSeen = localStorage.getItem('apiKeyTourSeen');
+      if (!tourSeen) {
+        setShowApiKeyTour(true);
+      }
+    }
+
+  }, [currentUser.role, currentUser.tenantId, platformSettings.walletEnabled, platformSettings.allowUserApiKey]);
 
   const toggleTheme = () => {
     const newIsDarkMode = !isDarkMode;
@@ -102,13 +112,13 @@ export default function SettingsPage() {
   };
 
   const handleSaveSettings = () => {
-    const updatedUser = { ...currentUser, challengeTopics };
+    const updatedUser = { ...currentUser, challengeTopics, userApiKey };
     Object.assign(sampleUserProfile, updatedUser);
     setCurrentUser(updatedUser);
 
     console.log("General settings saved (mocked):", {
       isDarkMode, emailNotificationsEnabled, appNotificationsEnabled,
-      gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics
+      gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics, userApiKey
     });
 
     if(currentUser.role === 'admin'){
@@ -129,11 +139,6 @@ export default function SettingsPage() {
         toast({ title: t("userSettings.toastTenantBrandingSaved.title"), description: t("userSettings.toastTenantBrandingSaved.description", { tenantName: tenantNameInput }) });
       }
     } else if (currentUser.role !== 'admin') {
-      const userIndex = samplePlatformUsers.findIndex(u => u.id === currentUser.id);
-      if(userIndex !== -1) {
-          samplePlatformUsers[userIndex].userApiKey = userApiKey;
-          Object.assign(sampleUserProfile, { userApiKey });
-      }
       toast({ title: t("userSettings.toastUserSettingsSaved.title"), description: t("userSettings.toastUserSettingsSaved.description") });
     }
   };
@@ -252,8 +257,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Puzzle className="h-5 w-5 text-primary" />Challenge & Practice Preferences</CardTitle>
-          <CardDescription>Select the topics you want to be challenged on.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Puzzle className="h-5 w-5 text-primary" />{t("userSettings.challengePrefsCardTitle")}</CardTitle>
+          <CardDescription>{t("userSettings.challengePrefsCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
@@ -301,14 +306,14 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       
-      {platformSettings.allowUserApiKey && currentUser.role === 'user' && (
-        <Card className="shadow-lg">
+      {platformSettings.allowUserApiKey && (
+        <Card className="shadow-lg" id="developer-settings-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Code2 className="h-5 w-5 text-primary"/>Developer Settings</CardTitle>
             <CardDescription>Manage your personal API keys for third-party services.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div>
+            <div id="user-api-key-input">
               <Label htmlFor="user-api-key">Your Gemini API Key</Label>
               <Input
                 id="user-api-key"
@@ -466,6 +471,22 @@ export default function SettingsPage() {
           {t("userSettings.saveAllSettingsButton")}
         </Button>
       </div>
+
+      <WelcomeTourDialog
+        isOpen={showApiKeyTour}
+        onClose={() => {
+          setShowApiKeyTour(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('apiKeyTourSeen', 'true');
+          }
+        }}
+        tourKey="apiKeyTourSeen"
+        steps={apiKeyTourSteps}
+        title="New Developer Option!"
+      />
+
     </div>
   );
 }
+
+    
