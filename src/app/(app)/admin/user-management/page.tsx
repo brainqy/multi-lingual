@@ -38,8 +38,8 @@ export default function UserManagementPage() {
   const { user: currentUser, isLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
-
-  const [users, setUsers] = useState<UserProfile[]>(samplePlatformUsers);
+  
+  const [allUsers, setAllUsers] = useState<UserProfile[]>(samplePlatformUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -49,9 +49,28 @@ export default function UserManagementPage() {
   });
 
   useEffect(() => {
-    // This effect ensures that any global changes to sample data are reflected locally.
-    setUsers(samplePlatformUsers);
+    setAllUsers(samplePlatformUsers);
   }, []);
+
+  const usersToDisplay = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'admin') {
+      return allUsers;
+    }
+    if (currentUser.role === 'manager') {
+      return allUsers.filter(u => u.tenantId === currentUser.tenantId && u.role !== 'admin');
+    }
+    return [];
+  }, [allUsers, currentUser]);
+
+
+  const filteredUsers = useMemo(() => {
+    return usersToDisplay.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.tenantId && user.tenantId.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [usersToDisplay, searchTerm]);
 
   if (isLoading) {
     return (
@@ -60,22 +79,22 @@ export default function UserManagementPage() {
       </div>
     );
   }
-
-  if (!currentUser || currentUser.role !== 'admin') {
+  
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
 
-  const filteredUsers = useMemo(() => {
-    return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.tenantId && user.tenantId.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [users, searchTerm]);
 
   const openNewUserDialog = () => {
     setEditingUser(null);
-    reset({ name: '', email: '', role: 'user', status: 'active', tenantId: '', password: '' });
+    reset({
+        name: '', 
+        email: '', 
+        role: 'user', 
+        status: 'active', 
+        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : '', 
+        password: '' 
+    });
     setIsFormDialogOpen(true);
   };
 
@@ -95,29 +114,29 @@ export default function UserManagementPage() {
 
   const onSubmitForm = (data: UserFormData) => {
     if (editingUser) {
-      // Update existing user
       const updatedUser: UserProfile = { ...editingUser, ...data, role: data.role as UserRole, status: data.status as UserStatus };
-      setUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUser : u));
+      setAllUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUser : u));
       const globalIndex = samplePlatformUsers.findIndex(u => u.id === editingUser.id);
       if (globalIndex !== -1) samplePlatformUsers[globalIndex] = updatedUser;
       toast({ title: "User Updated", description: `Details for ${data.name} have been updated.` });
     } else {
-      // Create new user
       if (!data.password || data.password.length < 8) {
         toast({ title: "Password Required", description: "A password of at least 8 characters is required for new users.", variant: "destructive" });
         return;
       }
+      const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
+
       const newUser = ensureFullUserProfile({
         id: `user-${Date.now()}`,
         name: data.name,
         email: data.email,
         role: data.role as UserRole,
-        tenantId: data.tenantId,
+        tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
         createdAt: new Date().toISOString(),
       });
-      setUsers(prev => [newUser, ...prev]);
-      samplePlatformUsers.push(newUser); // Add to global for persistence
+      setAllUsers(prev => [newUser, ...prev]);
+      samplePlatformUsers.push(newUser); 
       toast({ title: "User Created", description: `User ${data.name} has been created.` });
     }
     setIsFormDialogOpen(false);
@@ -129,7 +148,7 @@ export default function UserManagementPage() {
         toast({ title: "Action Forbidden", description: "You cannot delete your own account.", variant: "destructive" });
         return;
     }
-    setUsers(prev => prev.filter(u => u.id !== userId));
+    setAllUsers(prev => prev.filter(u => u.id !== userId));
     const globalIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (globalIndex !== -1) samplePlatformUsers.splice(globalIndex, 1);
     toast({ title: "User Deleted", description: "The user has been removed from the system.", variant: "destructive" });
@@ -153,13 +172,19 @@ export default function UserManagementPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <UserCog className="h-8 w-8" /> User Management
+          <UserCog className="h-8 w-8" /> 
+          {currentUser.role === 'manager' ? `Tenant User Management (${getTenantName(currentUser.tenantId)})` : 'User Management'}
         </h1>
         <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <PlusCircle className="mr-2 h-5 w-5" /> Add New User
         </Button>
       </div>
-      <CardDescription>View, create, edit, and manage all user accounts on the platform.</CardDescription>
+      <CardDescription>
+        {currentUser.role === 'manager' ? 
+          `View, create, and manage users within your tenant (${getTenantName(currentUser.tenantId)}).` :
+          'View, create, edit, and manage all user accounts on the platform.'
+        }
+      </CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -179,7 +204,7 @@ export default function UserManagementPage() {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Tenant</TableHead>
+                {currentUser.role === 'admin' && <TableHead>Tenant</TableHead>}
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -200,7 +225,7 @@ export default function UserManagementPage() {
                     </div>
                   </TableCell>
                   <TableCell className="capitalize">{user.role}</TableCell>
-                  <TableCell>{getTenantName(user.tenantId)}</TableCell>
+                  {currentUser.role === 'admin' && <TableCell>{getTenantName(user.tenantId)}</TableCell>}
                   <TableCell>
                     <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${getStatusClass(user.status)}`}>
                       {user.status || 'unknown'}
@@ -265,12 +290,12 @@ export default function UserManagementPage() {
               <div>
                 <Label htmlFor="role">Role</Label>
                 <Controller name="role" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
                     <SelectTrigger id="role"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      {currentUser.role === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
                     </SelectContent>
                   </Select>
                 )} />
@@ -290,20 +315,22 @@ export default function UserManagementPage() {
                 )} />
               </div>
             </div>
-            <div>
-              <Label htmlFor="tenantId">Tenant</Label>
-              <Controller name="tenantId" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger id="tenantId"><SelectValue placeholder="Select a tenant for this user" /></SelectTrigger>
-                  <SelectContent>
-                    {sampleTenants.map(tenant => (
-                      <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )} />
-              {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
-            </div>
+            {currentUser.role === 'admin' && (
+              <div>
+                <Label htmlFor="tenantId">Tenant</Label>
+                <Controller name="tenantId" control={control} render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
+                    <SelectTrigger id="tenantId"><SelectValue placeholder="Select a tenant for this user" /></SelectTrigger>
+                    <SelectContent>
+                      {sampleTenants.map(tenant => (
+                        <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )} />
+                {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
+              </div>
+            )}
 
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
