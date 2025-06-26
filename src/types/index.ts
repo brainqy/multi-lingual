@@ -125,7 +125,7 @@ export interface AlumniProfile {
   university: string;
   skills: string[];
   email: string;
-  role?: UserRole;
+  role: UserRole;
   status?: UserStatus;
   lastLogin?: string;
   interests?: string[];
@@ -1219,7 +1219,8 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     challengeTopics: [],
     shortBio: '', // From AlumniProfile
     university: '', // From AlumniProfile,
-    userApiKey: ''
+    userApiKey: '',
+    sessionId: undefined,
   };
   return { ...defaultUser, ...partialProfile };
 }

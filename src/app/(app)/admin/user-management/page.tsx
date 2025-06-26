@@ -35,7 +35,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function UserManagementPage() {
-  const { user: currentUser, isAdmin, isLoading } = useAuth();
+  const { user: currentUser, isLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -61,7 +61,7 @@ export default function UserManagementPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
