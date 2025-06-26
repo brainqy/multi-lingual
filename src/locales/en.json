@@ -1,4 +1,3 @@
-
 {
   "appName": "Bhasha Setu",
   "dashboard": {
@@ -989,7 +988,122 @@
     "noBlogs": "No bookmarked blogs yet.",
     "noQuestions": "No bookmarked questions yet.",
     "noResumeScans": "No bookmarked resume scans yet."
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "users": "Users",
+    "userManagement": "User Management",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "confirmDeleteUser": "Are you sure you want to delete this user?",
+    "roles": "Roles",
+    "assignRole": "Assign Role",
+    "removeRole": "Remove Role",
+    "dashboard": "Dashboard",
+    "statistics": "Statistics",
+    "activeUsers": "Active Users",
+    "totalUsers": "Total Users",
+    "pendingInvitations": "Pending Invitations",
+    "settings": "Settings",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "search": "Search",
+    "noResults": "No results found.",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "suspended": "Suspended",
+    "profile": "Profile",
+    "email": "Email",
+    "name": "Name",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "logout": "Logout",
+    "welcome": "Welcome, Admin!",
+    "notifications": "Notifications",
+    "viewAll": "View All",
+    "logs": "System Logs",
+    "export": "Export",
+    "import": "Import",
+    "success": "Operation successful.",
+    "error": "An error occurred. Please try again."
+  },
+  "userDashboard": {
+    "title": "User Dashboard",
+    "customizeButton": "Customize Dashboard",
+    "customizeDialog": {
+      "title": "Customize Your Dashboard",
+      "description": "Select which widgets you want to display on your dashboard.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save"
+    },
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard"
+    },
+    "progress": {
+      "title": "Your Progress Overview",
+      "level": "Level {{level}}",
+      "totalXp": "Total XP: {{xp}}",
+      "dayStreak": "Day Streak",
+      "badgesEarned": "Badges"
+    },
+    "dailyChallenge": {
+      "title": "Today's Daily Challenge",
+      "viewButton": "View challenge"
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "Job Application Status",
+        "description": "Overview of your job application statuses."
+      },
+      "matchScoreOverTime": {
+        "title": "Match Score Over Time",
+        "description": "See how your match scores have changed over time."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "Job Application Reminders",
+        "description": "Upcoming reminders for your job applications.",
+        "noReminders": "No upcoming job application reminders.",
+        "viewButton": "View"
+      }
+    },
+    "upcomingSessions": {
+      "title": "Upcoming Appointments & Sessions",
+      "description": "Your upcoming appointments and practice sessions.",
+      "noSessions": "No upcoming appointments or sessions.",
+      "typeLabel": "Type",
+      "withLabel": "With",
+      "dateLabel": "Date",
+      "todayLabel": "(Today)"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "description": "Your most recent activities.",
+      "noActivities": "No recent activities.",
+      "viewAllButton": "View All"
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your dashboard widgets have been updated."
+      },
+      "appointmentReminder": {
+        "title": "Appointment Reminder",
+        "description": "{{title}} with {{user}} at {{time}}"
+      }
+    }
   }
 }
 
-    
