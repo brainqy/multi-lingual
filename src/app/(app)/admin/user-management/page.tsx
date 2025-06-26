@@ -35,7 +35,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function UserManagementPage() {
-  const { user: currentUser, isLoading } = useAuth();
+  const { user: currentUser, isAdmin, isLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -61,7 +61,7 @@ export default function UserManagementPage() {
     );
   }
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (!isAdmin) {
     return <AccessDeniedMessage />;
   }
 
@@ -125,7 +125,7 @@ export default function UserManagementPage() {
   };
 
   const handleDeleteUser = (userId: string) => {
-    if (userId === currentUser.id) {
+    if (userId === currentUser?.id) {
         toast({ title: "Action Forbidden", description: "You cannot delete your own account.", variant: "destructive" });
         return;
     }
@@ -212,7 +212,7 @@ export default function UserManagementPage() {
                     </Button>
                     <AlertDialog>
                        <AlertDialogTrigger asChild>
-                         <Button variant="destructive" size="sm" disabled={user.id === currentUser.id}>
+                         <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
                            <Trash2 className="h-4 w-4" />
                          </Button>
                        </AlertDialogTrigger>
@@ -317,4 +317,3 @@ export default function UserManagementPage() {
     </div>
   );
 }
-

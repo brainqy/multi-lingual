@@ -40,11 +40,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [router, pathname]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('bhashaSetuUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('bhashaSetuUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      setUser(null);
+      localStorage.removeItem('bhashaSetuUser');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
   
   // Session validation effect
@@ -99,6 +106,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [router]);
 
   const signup = useCallback((name: string, email: string, role: 'user' | 'admin') => {
+    const existingUser = samplePlatformUsers.find(u => u.email === email);
+    if (existingUser) {
+        toast({
+            title: "Account Exists",
+            description: "An account with this email already exists. Please login instead.",
+            variant: "destructive",
+        });
+        return;
+    }
+    
     const sessionId = `session-${Date.now()}`;
     const newUser = ensureFullUserProfile({
         id: Date.now().toString(),
@@ -112,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(newUser);
     localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
     router.push('/dashboard');
-  }, [router]);
+  }, [router, toast]);
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
