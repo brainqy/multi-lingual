@@ -41,7 +41,7 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    login(values.email, values.email.split('@')[0], 'user'); 
+    login(values.email, values.email.split('@')[0]); 
   }
 
   return (

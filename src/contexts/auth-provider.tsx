@@ -12,7 +12,7 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, name?: string, role?: 'user' | 'admin') => void;
+  login: (email: string, name?: string) => void;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin') => void;
   isLoading: boolean;
@@ -68,24 +68,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback((email: string, name?: string, role: 'user' | 'admin' = 'user') => {
+  const login = useCallback((email: string, name?: string) => {
     const sessionId = `session-${Date.now()}`;
     let userToLogin: UserProfile | undefined = samplePlatformUsers.find(u => u.email === email);
     
     if (userToLogin) {
-      // User exists, update their session ID in our mock DB
+      // User exists, update their session ID and use their existing data
       const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin!.id);
       if(userIndex !== -1) {
         userToLogin = { ...userToLogin, sessionId };
         samplePlatformUsers[userIndex] = userToLogin;
       }
     } else {
-      // For demo, if user doesn't exist, create one
+      // For demo, if user doesn't exist, create a new one with 'user' role by default
       userToLogin = ensureFullUserProfile({
         id: Date.now().toString(),
         email,
         name: name || email.split('@')[0],
-        role: role,
+        role: 'user', // Default to 'user' for new logins from this flow
         sessionId: sessionId,
       });
       samplePlatformUsers.push(userToLogin);
