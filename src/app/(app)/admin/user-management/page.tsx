@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
+import { sampleUserProfile } from '@/lib/sample-data';
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -34,7 +35,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function UserManagementPage() {
-  const { user: currentUser } = useAuth();
+    const currentUser = sampleUserProfile;
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -51,6 +52,12 @@ export default function UserManagementPage() {
     // This effect ensures that any global changes to sample data are reflected locally.
     setUsers(samplePlatformUsers);
   }, []);
+
+
+//log current userole 
+useEffect(() => {
+  console.log("Current user role:", currentUser?.role);
+}, [currentUser]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
