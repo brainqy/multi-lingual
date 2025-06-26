@@ -47,7 +47,8 @@ Job Description:
 
 {{#if additionalNotes}}
 Specific points to include or emphasize:
-{{{additionalNotes}}}{{#endif}}
+{{{additionalNotes}}}
+{{/if}}
 
 Please write a professional and engaging cover letter.
 The letter should:
