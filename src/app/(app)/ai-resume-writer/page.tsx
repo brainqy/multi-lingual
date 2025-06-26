@@ -14,6 +14,7 @@ import { generateResumeVariant, type GenerateResumeVariantInput, type GenerateRe
 import { sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types';
 import { useEffect } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
 export default function AiResumeWriterPage() {
   const [baseResumeText, setBaseResumeText] = useState('');
@@ -30,6 +31,9 @@ export default function AiResumeWriterPage() {
   const [userResumes, setUserResumes] = useState<ResumeProfile[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string>('');
   
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [newResumeName, setNewResumeName] = useState('');
+
   const currentUser = sampleUserProfile;
 
 
@@ -97,13 +101,22 @@ export default function AiResumeWriterPage() {
     }
   };
 
-  const handleSaveGeneratedResume = () => {
+  const openSaveDialog = () => {
     if (!generatedResumeText.trim()) {
       toast({ title: "Error", description: "No generated resume to save.", variant: "destructive" });
       return;
     }
-    // Mock saving - In a real app, this would save to backend and update userResumes state
-    const newResumeName = `Variant for ${targetRole || 'New Role'} (${new Date().toLocaleDateString()})`;
+    const defaultName = `Variant for ${targetRole || 'New Role'} (${new Date().toLocaleDateString()})`;
+    setNewResumeName(defaultName);
+    setIsSaveDialogOpen(true);
+  };
+
+
+  const handleSaveGeneratedResume = () => {
+    if (!newResumeName.trim()) {
+      toast({ title: "Name Required", description: "Please provide a name for the resume profile.", variant: "destructive" });
+      return;
+    }
     const newResume: ResumeProfile = {
       id: `resume-${Date.now()}`,
       tenantId: sampleUserProfile.tenantId,
@@ -112,10 +125,15 @@ export default function AiResumeWriterPage() {
       resumeText: generatedResumeText,
       lastAnalyzed: new Date().toISOString().split('T')[0],
     };
-    setUserResumes(prev => [newResume, ...prev]); // Add to local state for demo
-    sampleResumeProfiles.push(newResume); // Add to global sample data for demo
     
-    toast({ title: "Resume Saved (Mock)", description: `"${newResumeName}" has been added to 'My Resumes'.` });
+    // Add to the main sample data array for app-wide persistence in demo
+    sampleResumeProfiles.unshift(newResume);
+    // Update local state to re-render dropdown
+    setUserResumes(prev => [newResume, ...prev]); 
+    
+    toast({ title: "Resume Saved", description: `"${newResumeName}" has been saved to 'My Resumes'.` });
+    setIsSaveDialogOpen(false);
+    setNewResumeName(''); // Clear for next time
   };
   
   const handleCopyToClipboard = () => {
@@ -272,12 +290,40 @@ export default function AiResumeWriterPage() {
              <Button onClick={handleCopyToClipboard} variant="outline">
               <Copy className="mr-2 h-4 w-4" /> Copy to Clipboard
             </Button>
-            <Button onClick={handleSaveGeneratedResume} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
+            <Button onClick={openSaveDialog} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
               <Save className="mr-2 h-4 w-4" /> Save Generated Resume
             </Button>
           </CardFooter>
         </Card>
       )}
+
+      <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Resume Version</DialogTitle>
+            <DialogDescription>
+              Give this new resume version a name to save it to your "My Resumes" list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="resume-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="resume-name"
+                value={newResumeName}
+                onChange={(e) => setNewResumeName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleSaveGeneratedResume} type="button">Save Resume</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
