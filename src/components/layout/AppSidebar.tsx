@@ -168,7 +168,6 @@ export function AppSidebar() {
                 {adminItems.filter(item => {
                     if(currentUser.role === 'manager') {
                         const managerAccessible = [
-                            "/admin/dashboard",
                             "/admin/user-management", 
                             "/admin/content-moderation",
                             "/admin/gallery-management",
