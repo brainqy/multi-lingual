@@ -41,9 +41,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('bhashaSetuUser');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      const storedUserJSON = localStorage.getItem('bhashaSetuUser');
+      if (storedUserJSON) {
+        const storedUser = JSON.parse(storedUserJSON);
+        // Re-validate user from our "database" to prevent stale roles
+        const freshUser = samplePlatformUsers.find(u => u.id === storedUser.id);
+        if (freshUser) {
+          // If the user still exists, use the fresh data from the source
+          // and just keep the session ID from the stored data.
+          setUser({ ...freshUser, sessionId: storedUser.sessionId });
+        } else {
+          // User doesn't exist anymore, clear session
+          setUser(null);
+          localStorage.removeItem('bhashaSetuUser');
+        }
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
@@ -54,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
   
-  // Session validation effect
+  // Session validation effect for multi-device logout
   useEffect(() => {
     const interval = setInterval(() => {
       if (user && user.id && user.sessionId) {
@@ -69,41 +80,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
           logout();
         }
       }
-    }, 10000); // Check every 10 seconds
+    }, 10000); 
 
     return () => clearInterval(interval);
   }, [user, logout, toast]);
 
 
   const login = useCallback((email: string, name?: string) => {
-    const userToLogin: UserProfile | undefined = samplePlatformUsers.find(
-      (u) => u.email === email
-    );
+    const userToLogin = samplePlatformUsers.find(u => u.email === email);
 
-    if (!userToLogin) {
+    if (userToLogin) {
+      const sessionId = `session-${Date.now()}`;
+      const userWithSession = { ...userToLogin, sessionId };
+
+      const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin.id);
+      if (userIndex > -1) {
+        samplePlatformUsers[userIndex] = userWithSession;
+      }
+      
+      setUser(userWithSession);
+      localStorage.setItem('bhashaSetuUser', JSON.stringify(userWithSession));
+      router.push('/dashboard');
+      toast({ title: "Login Successful", description: `Welcome back, ${userToLogin.name}!` });
+    } else {
       toast({
         title: "Login Failed",
         description: "User not found. Please check your email or sign up.",
         variant: "destructive",
       });
-      return;
     }
-
-    // User found, proceed with login
-    const sessionId = `session-${Date.now()}`;
-    const userWithSession: UserProfile = { ...userToLogin, sessionId: sessionId };
-
-    // Update the session ID in the in-memory store for multi-device detection
-    const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin.id);
-    if (userIndex !== -1) {
-        samplePlatformUsers[userIndex] = userWithSession;
-    }
-
-    // Set state and local storage with the correct user data
-    setUser(userWithSession);
-    localStorage.setItem('bhashaSetuUser', JSON.stringify(userWithSession));
-    router.push('/dashboard');
-    
   }, [router, toast]);
 
   const signup = useCallback((name: string, email: string, role: 'user' | 'admin') => {
@@ -121,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         id: Date.now().toString(),
         email,
         name,
-        role, // The role from the form is used here.
+        role, 
         sessionId: `session-${Date.now()}`,
     });
     
