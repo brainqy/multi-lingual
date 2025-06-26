@@ -76,34 +76,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 
   const login = useCallback((email: string, name?: string) => {
-    const sessionId = `session-${Date.now()}`;
-    let userToLogin: UserProfile | undefined = samplePlatformUsers.find(u => u.email === email);
-    let userToStore: UserProfile;
-    
-    if (userToLogin) {
-      // User exists. Update their session ID and use their existing data.
-      userToStore = { ...userToLogin, sessionId };
-      const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin!.id);
-      if(userIndex !== -1) {
-        samplePlatformUsers[userIndex] = userToStore;
-      }
-    } else {
-      // User does not exist, create a new one with 'user' role by default.
-      userToStore = ensureFullUserProfile({
-        id: Date.now().toString(),
-        email,
-        name: name || email.split('@')[0],
-        role: 'user',
-        sessionId: sessionId,
-      });
-      samplePlatformUsers.push(userToStore);
-    }
-    
-    setUser(userToStore);
-    localStorage.setItem('bhashaSetuUser', JSON.stringify(userToStore));
-    router.push('/dashboard');
+    const userToLogin: UserProfile | undefined = samplePlatformUsers.find(
+      (u) => u.email === email
+    );
 
-  }, [router]);
+    if (!userToLogin) {
+      toast({
+        title: "Login Failed",
+        description: "User not found. Please check your email or sign up.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // User found, proceed with login
+    const sessionId = `session-${Date.now()}`;
+    const userWithSession: UserProfile = { ...userToLogin, sessionId: sessionId };
+
+    // Update the session ID in the in-memory store for multi-device detection
+    const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin.id);
+    if (userIndex !== -1) {
+        samplePlatformUsers[userIndex] = userWithSession;
+    }
+
+    // Set state and local storage with the correct user data
+    setUser(userWithSession);
+    localStorage.setItem('bhashaSetuUser', JSON.stringify(userWithSession));
+    router.push('/dashboard');
+    
+  }, [router, toast]);
 
   const signup = useCallback((name: string, email: string, role: 'user' | 'admin') => {
     const existingUser = samplePlatformUsers.find(u => u.email === email);
@@ -116,16 +117,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
     }
     
-    const sessionId = `session-${Date.now()}`;
     const newUser = ensureFullUserProfile({
         id: Date.now().toString(),
         email,
         name,
-        role,
-        sessionId,
+        role, // The role from the form is used here.
+        sessionId: `session-${Date.now()}`,
     });
     
     samplePlatformUsers.push(newUser);
+    
+    // Log in the new user immediately
     setUser(newUser);
     localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
     router.push('/dashboard');
