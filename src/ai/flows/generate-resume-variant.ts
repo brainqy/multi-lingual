@@ -42,17 +42,19 @@ Base Resume Text:
 {{{baseResumeText}}}
 
 Target Role: {{{targetRole}}}
-{{#if targetIndustry}}Target Industry: {{{targetIndustry}}}{{#endif}}
+{{#if targetIndustry}}Target Industry: {{{targetIndustry}}}{{/if}}
 Desired Tone: {{{tone}}}
 
 {{#if skillsToHighlight}}
 Skills to specifically highlight and emphasize (ensure these are naturally woven into the experience or skills sections):
 {{#each skillsToHighlight}}
 - {{{this}}}
-{{#each}}{{#endif}}
+{{/each}}
+{{/if}}
 
 {{#if additionalInstructions}}
-Additional Instructions: {{{additionalInstructions}}}{{#endif}}
+Additional Instructions: {{{additionalInstructions}}}
+{{/if}}
 
 Please generate a new, complete resume text based on these requirements. Ensure the output is well-formatted and reads naturally.
 Focus on rephrasing, reordering, and highlighting existing information from the base resume to best fit the target role and industry.
