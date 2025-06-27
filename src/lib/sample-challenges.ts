@@ -65,6 +65,18 @@ const sampleChallenges: DailyChallenge[] = [
     ]
   },
   {
+    id: "flip-challenge-4",
+    type: 'flip',
+    title: "Platform Guru",
+    description: "Demonstrate your complete mastery of the ResumeMatch AI ecosystem by completing these advanced tasks.",
+    xpReward: 2500,
+    tasks: [
+      { description: "Analyze a resume, then use Power Edit to apply at least one AI suggestion and re-analyze.", action: "power_edit_resume", target: 1 },
+      { description: "Create and save a custom interview quiz with at least 5 questions from the question bank.", action: "create_quiz", target: 1 },
+      { description: "Successfully book an appointment with an alumni mentor.", action: "book_appointment", target: 1 }
+    ]
+  },
+  {
     id: "challenge-4",
     type: 'standard',
     date: "2023-10-30",
