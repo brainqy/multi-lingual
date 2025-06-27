@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,8 +21,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { User, KeyRound, Mail, ShieldQuestion, Eye, EyeOff } from "lucide-react";
+import { User, KeyRound, Mail, ShieldQuestion, Eye, EyeOff, Gift } from "lucide-react";
 import React from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function SignupForm() {
   const { signup } = useAuth();
@@ -31,8 +33,12 @@ export function SignupForm() {
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     email: z.string().email({ message: t("validation.email") }),
-    password: z.string().min(1, { message: t("validation.required") }), 
+    password: z.string().min(1, { message: t("validation.required") }),
     role: z.enum(["user", "admin"]),
+    referralCode: z.string().optional(),
+    agreeToTerms: z.boolean().refine(val => val === true, {
+      message: t("validation.termsRequired", "You must accept the terms and conditions."),
+    }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,6 +48,8 @@ export function SignupForm() {
       email: "",
       password: "",
       role: "user",
+      referralCode: "",
+      agreeToTerms: false,
     },
   });
 
@@ -137,6 +145,46 @@ export function SignupForm() {
                     </Select>
                   </div>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="referralCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground/80">{t("signup.referralCodeLabel", "Referral Code (Optional)")}</FormLabel>
+                  <div className="relative">
+                    <Gift className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <FormControl>
+                      <Input placeholder={t("signup.referralCodePlaceholder", "Enter referral code")} {...field} className="pl-10"/>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
+                   <FormControl>
+                     <Checkbox
+                       checked={field.value}
+                       onCheckedChange={field.onChange}
+                     />
+                   </FormControl>
+                   <div className="space-y-1 leading-none">
+                     <FormLabel>
+                       {t("signup.agreeToTermsLabel", "Agree to our terms and conditions")}
+                     </FormLabel>
+                     <FormDescription>
+                        {t("signup.agreeToTermsDescription", "By signing up, you agree to our")}{" "}
+                        <Link href="/terms" className="text-primary hover:underline">{t("signup.termsLink", "Terms of Service")}</Link> & <Link href="/privacy" className="text-primary hover:underline">{t("signup.privacyLink", "Privacy Policy")}</Link>.
+                     </FormDescription>
+                     <FormMessage />
+                   </div>
                 </FormItem>
               )}
             />

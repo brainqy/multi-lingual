@@ -31,11 +31,18 @@
     "roleAdmin": "Admin (for demo)",
     "submitButton": "Sign Up",
     "loginPrompt": "Already have an account?",
-    "loginLink": "Login"
+    "loginLink": "Login",
+    "referralCodeLabel": "Referral Code (Optional)",
+    "referralCodePlaceholder": "Enter referral code",
+    "agreeToTermsLabel": "Agree to our terms and conditions",
+    "agreeToTermsDescription": "By signing up, you agree to our",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy"
   },
   "validation": {
     "email": "Please enter a valid email address.",
-    "required": "This field is required."
+    "required": "This field is required.",
+    "termsRequired": "You must accept the terms and conditions."
   },
   "platformSettings": {
     "title": "Platform Settings",

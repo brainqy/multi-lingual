@@ -31,11 +31,18 @@
     "roleAdmin": "प्रशासक (डेमोसाठी)",
     "submitButton": "नोंदणी करा",
     "loginPrompt": "आधीपासून खाते आहे?",
-    "loginLink": "लॉग इन करा"
+    "loginLink": "लॉग इन करा",
+    "referralCodeLabel": "रेफरल कोड (पर्यायी)",
+    "referralCodePlaceholder": "रेफरल कोड प्रविष्ट करा",
+    "agreeToTermsLabel": "आमच्या अटी आणि शर्तींना सहमत आहात",
+    "agreeToTermsDescription": "साइन अप करून, तुम्ही आमच्या",
+    "termsLink": "सेवा अटी",
+    "privacyLink": "गोपनीयता धोरण"
   },
   "validation": {
     "required": "हे क्षेत्र आवश्यक आहे.",
-    "email": "अवैध ईमेल पत्ता."
+    "email": "अवैध ईमेल पत्ता.",
+    "termsRequired": "तुम्ही अटी आणि शर्ती स्वीकारल्या पाहिजेत."
   },
   "landingPage": {
     "subtitle": "बहुभाषिक संवादासाठी आपले प्रवेशद्वार",
@@ -504,5 +511,3 @@
     "hindi": "हिंदी"
   }
 }
-
-    

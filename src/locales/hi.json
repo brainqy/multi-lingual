@@ -31,11 +31,18 @@
     "roleAdmin": "एडमिन (डेमो के लिए)",
     "submitButton": "साइन अप करें",
     "loginPrompt": "पहले से ही खाता है?",
-    "loginLink": "लॉग इन करें"
+    "loginLink": "लॉग इन करें",
+    "referralCodeLabel": "रेफ़रल कोड (वैकल्पिक)",
+    "referralCodePlaceholder": "रेफ़रल कोड दर्ज करें",
+    "agreeToTermsLabel": "हमारे नियमों और शर्तों से सहमत हों",
+    "agreeToTermsDescription": "साइन अप करके, आप हमारे",
+    "termsLink": "सेवा की शर्तें",
+    "privacyLink": "गोपनीयता नीति"
   },
   "validation": {
     "email": "कृपया एक मान्य ईमेल पता दर्ज करें।",
-    "required": "यह फ़ील्ड आवश्यक है।"
+    "required": "यह फ़ील्ड आवश्यक है।",
+    "termsRequired": "आपको नियमों और शर्तों को स्वीकार करना होगा।"
   },
   "platformSettings": {
     "title": "प्लेटफ़ॉर्म सेटिंग्स",
@@ -243,5 +250,3 @@
     "hindi": "हिन्दी"
   }
 }
-
-    
