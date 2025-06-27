@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -590,28 +591,24 @@ export default function CommunityFeedPage() {
                     </Avatar>
                     <div className="flex-1">
                       <p className="font-semibold text-foreground">{post.userName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(parseISO(post.timestamp), { addSuffix: true })}
-
-                        {/* Post type badge */}
+                      <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
+                        <span>{formatDistanceToNow(parseISO(post.timestamp), { addSuffix: true })}</span>
                         {post.type === 'poll' && (
-                          <Badge variant="outline" className="ml-2 border-blue-500 text-blue-500">Poll</Badge>
+                          <Badge variant="outline" className="border-blue-500 text-blue-500">Poll</Badge>
                         )}
                         {post.type === 'request' && (
-                          <Badge variant="outline" className="ml-2 border-orange-500 text-orange-500">Request</Badge>
+                          <Badge variant="outline" className="border-orange-500 text-orange-500">Request</Badge>
                         )}
                         {post.type === 'event' && (
-                          <Badge variant="outline" className="ml-2 border-green-500 text-green-500">Event</Badge>
+                          <Badge variant="outline" className="border-green-500 text-green-500">Event</Badge>
                         )}
-
-                        {/* Moderation badges */}
                         {post.moderationStatus === 'flagged' && (
-                          <Badge variant="destructive" className="ml-2">Flagged ({post.flagCount})</Badge>
+                          <Badge variant="destructive">Flagged ({post.flagCount})</Badge>
                         )}
                         {post.moderationStatus === 'removed' && (
-                          <Badge variant="secondary" className="ml-2">Removed</Badge>
+                          <Badge variant="secondary">Removed</Badge>
                         )}
-                      </p>
+                      </div>
                     </div>
                     {(post.userId === sampleUserProfile.id || currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) && post.moderationStatus !== 'removed' && (
                       <Button variant="ghost" size="icon" onClick={() => openEditPostDialog(post)} title="Edit Post">
