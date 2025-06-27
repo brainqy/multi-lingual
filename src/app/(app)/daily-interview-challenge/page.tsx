@@ -20,10 +20,17 @@ const DailyInterviewChallengePage: React.FC = () => {
 
   const handleRefresh = () => {
     // Mock logic: find another standard challenge that is not the current one
-    const otherChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
-    if (otherChallenges.length > 0) {
-      setStandardChallenge(otherChallenges[Math.floor(Math.random() * otherChallenges.length)]);
+    const otherStandardChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
+    if (otherStandardChallenges.length > 0) {
+      setStandardChallenge(otherStandardChallenges[Math.floor(Math.random() * otherStandardChallenges.length)]);
     }
+
+    // New logic for flip challenge
+    const otherFlipChallenges = sampleChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
+    if (otherFlipChallenges.length > 0) {
+        setFlipChallenge(otherFlipChallenges[Math.floor(Math.random() * otherFlipChallenges.length)]);
+    }
+
     toast({
       title: t("dailyChallenge.toast.newChallenge.title"),
       description: t("dailyChallenge.toast.newChallenge.description"),
