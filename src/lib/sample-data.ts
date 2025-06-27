@@ -1,3 +1,4 @@
+
 import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge, PromotionalContent } from '@/types';
 import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industries, TimeCommitments, EngagementModes, SupportTypesSought, JOB_APPLICATION_STATUSES, KANBAN_COLUMNS_CONFIG, PREDEFINED_INTERVIEW_TOPICS, PRACTICE_FOCUS_AREAS, ALL_CATEGORIES, ALL_DIFFICULTIES, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS, PreferredTimeSlots, AnnouncementStatuses, AnnouncementAudiences, LiveInterviewSessionStatuses } from '@/types'; 
 
@@ -879,7 +880,7 @@ export const sampleSurveyResponses: SurveyResponse[] = [
     }
 ];
 
-export const sampleAffiliates: Affiliate[] = [
+export let sampleAffiliates: Affiliate[] = [
   {
     id: 'affiliateuser1', 
     userId: 'alumni1', 
@@ -1505,39 +1506,6 @@ export let sampleInterviewQuestions: InterviewQuestion[] = [
     approved: true,
     createdAt: new Date(Date.now() - 86400000 * 0.5).toISOString(),
     bookmarkedBy: [],
-  },
-  {
-    id: 'analytical1',
-    category: 'Analytical',
-    questionText: "You are a project manager. A key stakeholder requests a major change to the project scope just two weeks before the deadline. The change could improve the final product but will certainly cause a delay. What are your next three steps?",
-    isMCQ: true,
-    mcqOptions: [
-      "Immediately accept the change to please the stakeholder.",
-      "Reject the change immediately to protect the deadline.",
-      "Analyze the impact, communicate options to stakeholders, and formally document any decision.",
-      "Quietly tell the development team to work overtime to fit it in."
-    ],
-    correctAnswer: "Analyze the impact, communicate options to stakeholders, and formally document any decision.",
-    answerOrTip: "A good answer involves: 1. Acknowledging the request and assessing its impact (on timeline, budget, resources). 2. Communicating the trade-offs clearly to all stakeholders. 3. Following a formal change control process.",
-    tags: ['project management', 'decision making'],
-    difficulty: 'Hard',
-    baseScore: 15,
-    createdBy: 'system',
-    approved: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'analytical2',
-    category: 'Analytical',
-    questionText: "A customer reports a critical bug that you cannot reproduce. They are frustrated. What are your steps to handle this situation?",
-    isMCQ: false,
-    answerOrTip: "Focus on empathy, gathering information, and clear communication. Steps: 1. Acknowledge the customer's frustration and reassure them. 2. Ask for detailed information about their environment (OS, browser, steps to reproduce). 3. If possible, schedule a brief screen-sharing session to see the issue live. 4. Escalate to the engineering team with all collected data, and provide the customer with a timeline for follow-up.",
-    tags: ['customer support', 'problem solving'],
-    difficulty: 'Medium',
-    baseScore: 10,
-    createdBy: 'system',
-    approved: true,
-    createdAt: new Date().toISOString(),
   },
 ];
 

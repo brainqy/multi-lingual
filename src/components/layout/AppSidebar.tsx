@@ -41,7 +41,7 @@ const navItems = [
 const utilityItems = [
   { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
   { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: Wallet },
-  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", icon: ShieldQuestion, adminOnly: true },
+  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", adminOnly: true },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
 ];
@@ -50,7 +50,7 @@ const gamificationItems = [
   { href: "/daily-interview-challenge", labelKey: "sideMenu.dailyChallenge", icon: PuzzleIcon },
   { href: "/gamification", labelKey: "sideMenu.rewardsBadges", icon: Award },
   { href: "/referrals", labelKey: "sideMenu.referrals", icon: Gift },
-  { href: "/affiliates", labelKey: "sideMenu.affiliatesProgram", icon: Target, adminOnly: true },
+  { href: "/affiliates", labelKey: "sideMenu.affiliatesProgram", icon: Target },
 ];
 
 const blogItems = [
