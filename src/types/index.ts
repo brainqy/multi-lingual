@@ -1162,6 +1162,17 @@ export interface PromotionalContent {
   gradientVia?: string;
 }
 
+export interface PromoCode {
+  id: string;
+  code: string;
+  description: string;
+  rewardType: 'coins' | 'xp' | 'premium_days';
+  rewardValue: number;
+  expiresAt?: string;
+  usageLimit: number;
+  timesUsed?: number;
+  isActive: boolean;
+}
 
 // Utility function to ensure UserProfile has all fields, especially for sample data
 export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): UserProfile {

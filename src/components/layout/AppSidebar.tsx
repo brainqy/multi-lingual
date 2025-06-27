@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
@@ -63,6 +64,7 @@ const adminItems = [
    { href: "/admin/tenant-onboarding", labelKey: "sideMenu.tenantOnboarding", icon: Layers3 },
    { href: "/admin/user-management", labelKey: "sideMenu.userManagement", icon: UserCog },
    { href: "/admin/gamification-rules", labelKey: "sideMenu.gamificationRules", icon: ListChecks },
+   { href: "/admin/promo-codes", labelKey: "sideMenu.promoCodeMgt", icon: Gift },
    { href: "/admin/content-moderation", labelKey: "sideMenu.contentModeration", icon: ShieldAlert },
    { href: "/admin/announcements", labelKey: "sideMenu.announcementsMgt", icon: Megaphone },
    { href: "/admin/messenger-management", labelKey: "sideMenu.messengerMgt", icon: BotMessageSquare },

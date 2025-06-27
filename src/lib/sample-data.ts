@@ -1,5 +1,6 @@
 
-import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge, PromotionalContent } from '@/types';
+
+import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge, PromotionalContent, PromoCode } from '@/types';
 import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industries, TimeCommitments, EngagementModes, SupportTypesSought, JOB_APPLICATION_STATUSES, KANBAN_COLUMNS_CONFIG, PREDEFINED_INTERVIEW_TOPICS, PRACTICE_FOCUS_AREAS, ALL_CATEGORIES, ALL_DIFFICULTIES, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS, PreferredTimeSlots, AnnouncementStatuses, AnnouncementAudiences, LiveInterviewSessionStatuses } from '@/types'; 
 
 export let SAMPLE_TENANT_ID = 'Brainqy'; 
@@ -1884,6 +1885,62 @@ export let samplePromotionalContent: PromotionalContent[] = [
     gradientTo: 'to-red-500',
   }
 ];
+
+export let samplePromoCodes: PromoCode[] = [
+  {
+    id: 'promo1',
+    code: 'WELCOME50',
+    description: 'Grants 50 bonus coins for new users.',
+    rewardType: 'coins',
+    rewardValue: 50,
+    expiresAt: new Date(Date.now() + 86400000 * 30).toISOString(),
+    usageLimit: 100,
+    timesUsed: 25,
+    isActive: true,
+  },
+  {
+    id: 'promo2',
+    code: 'XPBOOST',
+    description: 'Get an extra 100 XP!',
+    rewardType: 'xp',
+    rewardValue: 100,
+    usageLimit: 0, // Unlimited
+    timesUsed: 150,
+    isActive: true,
+  },
+  {
+    id: 'promo3',
+    code: 'PREMIUMTEST',
+    description: '7 days of premium access.',
+    rewardType: 'premium_days',
+    rewardValue: 7,
+    usageLimit: 50,
+    timesUsed: 50,
+    isActive: true,
+  },
+   {
+    id: 'promo4',
+    code: 'OLDCODE',
+    description: 'An expired test code.',
+    rewardType: 'coins',
+    rewardValue: 10,
+    expiresAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+    usageLimit: 100,
+    timesUsed: 10,
+    isActive: true,
+  },
+  {
+    id: 'promo5',
+    code: 'INACTIVE',
+    description: 'A currently inactive code.',
+    rewardType: 'coins',
+    rewardValue: 20,
+    usageLimit: 100,
+    timesUsed: 0,
+    isActive: false,
+  }
+];
+
 
 // Utility function to ensure UserProfile has all fields, especially for sample data
 export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): UserProfile {
