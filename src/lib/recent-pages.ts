@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { RecentPageItem } from '@/types';
@@ -79,7 +80,6 @@ const PATH_LABEL_MAP: Record<string, string> = {
   '/admin/gallery-management': 'Gallery Management',
   '/admin/blog-settings': 'AI Blog Settings',
   '/admin/platform-settings': 'Platform Settings',
-  '/db-test': 'DB Test Page',
 };
 
 export function getLabelForPath(path: string): string {

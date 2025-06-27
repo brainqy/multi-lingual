@@ -44,7 +44,6 @@ const utilityItems = [
   { href: "/feature-requests", labelKey: "sideMenu.featureRequests", icon: ShieldQuestion, adminOnly: true },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
-  { href: "/db-test", labelKey: "sideMenu.dbTest", icon: GitFork, adminOnly: true}
 ];
 
 const gamificationItems = [
