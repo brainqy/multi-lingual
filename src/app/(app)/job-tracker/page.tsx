@@ -492,23 +492,37 @@ export default function JobTrackerPage() {
                               <p className="text-sm text-muted-foreground text-center py-4">No interviews logged yet.</p>
                           )}
                           <div className="pt-4 border-t space-y-2">
-                               <h5 className="font-medium text-sm">Add New Interview</h5>
-                               <div className="grid grid-cols-2 gap-2">
-                                   <Input type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
-                                   <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
-                                       <SelectTrigger><SelectValue /></SelectTrigger>
-                                       <SelectContent>
-                                           <SelectItem value="Phone Screen">Phone Screen</SelectItem>
-                                           <SelectItem value="Technical">Technical</SelectItem>
-                                           <SelectItem value="Behavioral">Behavioral</SelectItem>
-                                           <SelectItem value="On-site">On-site</SelectItem>
-                                           <SelectItem value="Final Round">Final Round</SelectItem>
-                                       </SelectContent>
-                                   </Select>
-                               </div>
-                               <Input placeholder="Interviewer Name(s)" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
-                               <Textarea placeholder="Notes..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={2}/>
-                               <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
+                              <h5 className="font-medium text-sm">Add New Interview</h5>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                      <Label htmlFor="interview-date">Date & Time</Label>
+                                      <Input id="interview-date" type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
+                                  </div>
+                                  <div>
+                                      <Label htmlFor="interview-type">Type</Label>
+                                      <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
+                                          <SelectTrigger id="interview-type"><SelectValue /></SelectTrigger>
+                                          <SelectContent>
+                                              <SelectItem value="Phone Screen">Phone Screen</SelectItem>
+                                              <SelectItem value="Technical">Technical</SelectItem>
+                                              <SelectItem value="Behavioral">Behavioral</SelectItem>
+                                              <SelectItem value="On-site">On-site</SelectItem>
+                                              <SelectItem value="Final Round">Final Round</SelectItem>
+                                          </SelectContent>
+                                      </Select>
+                                  </div>
+                                  <div className="md:col-span-2">
+                                      <Label htmlFor="interviewer-name">Interviewer Name(s)</Label>
+                                      <Input id="interviewer-name" placeholder="e.g., Jane Doe, John Smith" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
+                                  </div>
+                                  <div className="md:col-span-2">
+                                      <Label htmlFor="interview-notes">Notes</Label>
+                                      <Textarea id="interview-notes" placeholder="e.g., Discussed project X, asked about system design..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
+                                  </div>
+                              </div>
+                              <div className="flex justify-end">
+                                <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
+                              </div>
                           </div>
                       </div>
                   </TabsContent>
@@ -531,4 +545,3 @@ export default function JobTrackerPage() {
     </div>
   );
 }
-

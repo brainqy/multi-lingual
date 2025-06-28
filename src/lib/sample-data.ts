@@ -31,7 +31,23 @@ export let sampleJobApplications: JobApplication[] = [
   { id: '5', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'CloudNetics', jobTitle: 'Cloud Engineer', status: 'Saved', dateApplied: '2024-07-05', notes: 'Interested, need to tailor resume.', location: 'Boston, MA', sourceJobOpeningId: 'job-board-cloudnetics-01', salary: '140000' },
   { id: '6', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'AI Future', jobTitle: 'Machine Learning Eng.', status: 'Saved', dateApplied: '2024-07-15', notes: 'From scan report, good match.', location: 'Seattle, WA', sourceJobOpeningId: 'job-board-aifuture-02', salary: '160000' },
   { id: '7', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Innovatech Solutions Inc.', jobTitle: 'Senior Frontend Developer', status: 'Applied', dateApplied: '2024-07-20', notes: 'Applied using AI generated cover letter.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 5).toISOString(), applicationUrl: 'https://example.com/innovatech/apply', salary: '145000' },
-  { id: '8', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Web Solutions Co.', jobTitle: 'Frontend Developer', status: 'Interviewing', dateApplied: '2024-07-18', notes: 'Technical interview next week.', location: 'Remote', applicationUrl: 'https://example.com/websolutions/apply', salary: '125000' },
+  { 
+    id: '8', 
+    tenantId: 'Brainqy', 
+    userId: 'alumni1', 
+    companyName: 'Web Solutions Co.', 
+    jobTitle: 'Frontend Developer', 
+    status: 'Interviewing', 
+    dateApplied: '2024-07-18', 
+    notes: 'Had a great phone screen, technical round is next.', 
+    location: 'Remote', 
+    applicationUrl: 'https://example.com/websolutions/apply', 
+    salary: '125000',
+    interviews: [
+      { id: 'int3', date: '2024-07-22T11:00:00Z', type: 'Phone Screen', interviewer: 'Emily White', notes: 'Positive initial call. Discussed React experience and portfolio. Seemed impressed with the live coding challenge solution.' },
+      { id: 'int4', date: '2024-07-29T15:00:00Z', type: 'Technical', interviewer: 'David Green', notes: 'Upcoming technical deep dive on state management and performance optimization.' },
+    ]
+  },
 ];
 
 
