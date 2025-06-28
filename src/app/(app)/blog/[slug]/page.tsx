@@ -13,10 +13,17 @@ import { ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label'; // Added import for Label
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import type { CommunityComment, BlogPost } from '@/types'; // Assuming CommunityComment is defined
+import type { CommunityComment, BlogPost } from '@/types';
+
+// This function generates the static paths for each blog post at build time.
+export async function generateStaticParams() {
+  return sampleBlogPosts.map((post) => ({
+    slug: post.slug,
+  }));
+}
 
 export default function BlogPostPage() {
   const params = useParams();
@@ -188,4 +195,3 @@ export default function BlogPostPage() {
     </div>
   );
 }
-
