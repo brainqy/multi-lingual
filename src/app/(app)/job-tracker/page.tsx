@@ -1,4 +1,3 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -139,7 +138,8 @@ function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { colu
           applications.map(app => (
             <JobCard key={app.id} application={app} onEdit={onEdit} onDelete={onDelete} onMove={onMove} />
           ))
-        )}
+        )
+        }
       </ScrollArea>
     </Card>
   );
@@ -156,7 +156,8 @@ export default function JobTrackerPage() {
   
   // State for Interviews tab within the dialog
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
-  const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '', notes: ''});
+  const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '',
+  interviewerEmail: '', notes: ''});
 
   const { control, handleSubmit, reset, setValue } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
@@ -473,65 +474,111 @@ export default function JobTrackerPage() {
                       </div>
                   </TabsContent>
                   <TabsContent value="interviews">
-                      <div className="space-y-4">
-                          <h4 className="font-medium">Interview History</h4>
-                          {currentInterviews.length > 0 ? (
-                              <div className="space-y-2">
-                                  {currentInterviews.map(interview => (
-                                      <Card key={interview.id} className="p-2 bg-secondary/50">
-                                          <div className="flex justify-between items-center">
-                                              <p className="text-sm font-semibold">{interview.type} with {interview.interviewer}</p>
-                                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveInterview(interview.id)}><Trash2 className="h-4 w-4"/></Button>
-                                          </div>
-                                          <p className="text-xs text-muted-foreground">{format(parseISO(interview.date), 'PPP p')}</p>
-                                          {interview.notes && <p className="text-xs italic mt-1">{interview.notes}</p>}
-                                      </Card>
-                                  ))}
-                              </div>
-                          ) : (
-                              <p className="text-sm text-muted-foreground text-center py-4">No interviews logged yet.</p>
-                          )}
-                          <div className="pt-4 border-t space-y-2">
-                              <h5 className="font-medium text-sm">Add New Interview</h5>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                      <Label htmlFor="interview-date">Date & Time</Label>
-                                      <Input id="interview-date" type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
-                                  </div>
-                                  <div>
-                                      <Label htmlFor="interview-type">Type</Label>
-                                      <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
-                                          <SelectTrigger id="interview-type"><SelectValue /></SelectTrigger>
-                                          <SelectContent>
-                                              <SelectItem value="Phone Screen">Phone Screen</SelectItem>
-                                              <SelectItem value="Technical">Technical</SelectItem>
-                                              <SelectItem value="Behavioral">Behavioral</SelectItem>
-                                              <SelectItem value="On-site">On-site</SelectItem>
-                                              <SelectItem value="Final Round">Final Round</SelectItem>
-                                          </SelectContent>
-                                      </Select>
-                                  </div>
-                                  <div className="md:col-span-2">
-                                      <Label htmlFor="interviewer-name">Interviewer Name(s)</Label>
-                                      <Input id="interviewer-name" placeholder="e.g., Jane Doe, John Smith" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
-                                  </div>
-                                  <div className="md:col-span-2">
-                                      <Label htmlFor="interview-notes">Notes</Label>
-                                      <Textarea id="interview-notes" placeholder="e.g., Discussed project X, asked about system design..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
-                                  </div>
-                              </div>
-                              <div className="flex justify-end">
-                                <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
-                              </div>
-                          </div>
-                      </div>
-                  </TabsContent>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Left Column: Interview History */}
+    <div className="space-y-4">
+      <h4 className="font-medium">Interview History</h4>
+      {currentInterviews.length > 0 ? (
+        <div className="space-y-2">
+          {currentInterviews.map(interview => (
+            <Card key={interview.id} className="p-2 bg-secondary/50">
+              <div className="flex justify-between items-center">
+                <p className="text-sm font-semibold">{interview.type} with {interview.interviewer}</p>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveInterview(interview.id)}>
+                  <Trash2 className="h-4 w-4"/>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{format(parseISO(interview.date), 'PPP p')}</p>
+              {interview.interviewerMobile && (
+                <p className="text-xs text-muted-foreground">📱 {interview.interviewerMobile}</p>
+              )}
+              {interview.interviewerEmail && (
+                <p className="text-xs text-muted-foreground">✉️ {interview.interviewerEmail}</p>
+              )}
+              {interview.notes && <p className="text-xs italic mt-1">{interview.notes}</p>}
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground text-center py-4">No interviews logged yet.</p>
+      )}
+    </div>
+    {/* Right Column: Interview Form */}
+    <div className="space-y-4">
+      <h5 className="font-medium text-sm">Add New Interview</h5>
+      <div className="space-y-2">
+        <div>
+          <Label htmlFor="interview-date">Date & Time</Label>
+          <Input id="interview-date" type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
+        </div>
+        <div>
+          <Label htmlFor="interview-type">Type</Label>
+          <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
+            <SelectTrigger id="interview-type"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Phone Screen">Phone Screen</SelectItem>
+              <SelectItem value="Technical">Technical</SelectItem>
+              <SelectItem value="Behavioral">Behavioral</SelectItem>
+              <SelectItem value="On-site">On-site</SelectItem>
+              <SelectItem value="Final Round">Final Round</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="interviewer-name">Interviewer Name(s)</Label>
+          <Input id="interviewer-name" placeholder="e.g., Jane Doe, John Smith" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
+        </div>
+        <div>
+          <Label htmlFor="interviewer-mobile">Interviewer Mobile Number</Label>
+          <Input id="interviewer-mobile" placeholder="e.g., +1234567890" value={newInterview.interviewerMobile || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerMobile: e.target.value}))} />
+        </div>
+        <div>
+          <Label htmlFor="interviewer-email">Interviewer Email</Label>
+          <Input id="interviewer-email" placeholder="e.g., jane.doe@email.com" value={newInterview.interviewerEmail || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerEmail: e.target.value}))} />
+        </div>
+        <div>
+          <Label htmlFor="interview-notes">Notes</Label>
+          <Textarea id="interview-notes" placeholder="e.g., Discussed project X, asked about system design..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
+        </div>
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</TabsContent>
                   <TabsContent value="notes">
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notes</Label>
-                      <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder="Contacts, interview details, thoughts..." rows={15} {...field} value={field.value ?? ''}/>} />
-                    </div>
-                  </TabsContent>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Left Column: Notes History */}
+    <div className="space-y-4">
+      <h4 className="font-medium">Notes History</h4>
+      {editingApplication && editingApplication.notes ? (
+        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
+          {editingApplication.notes}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground text-center py-4">No notes yet.</p>
+      )}
+    </div>
+    {/* Right Column: Notes Form */}
+    <div className="space-y-2">
+      <Label htmlFor="notes">Add/Edit Notes</Label>
+      <Controller
+        name="notes"
+        control={control}
+        render={({ field }) => (
+          <Textarea
+            id="notes"
+            placeholder="Contacts, interview details, thoughts..."
+            rows={15}
+            {...field}
+            value={field.value ?? ''}
+          />
+        )}
+      />
+    </div>
+  </div>
+</TabsContent>
                 </div>
               </ScrollArea>
             </Tabs>

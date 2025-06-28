@@ -102,6 +102,8 @@ export interface Interview {
   date: string; 
   type: 'Phone Screen' | 'Technical' | 'Behavioral' | 'On-site' | 'Final Round';
   interviewer: string;
+  interviewerMobile?: string;
+  interviewerEmail?: string;
   notes?: string;
 }
 
