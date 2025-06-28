@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -20,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link"; // Added Link
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   DropdownMenu,
@@ -42,7 +44,8 @@ const jobApplicationSchema = z.object({
   notes: z.string().optional(),
   jobDescription: z.string().optional(),
   location: z.string().optional(),
-  reminderDate: z.date().optional(),
+  applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  salary: z.string().optional(),
 });
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
@@ -57,7 +60,7 @@ const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; title: string; description: s
 function JobCard({ application, onEdit, onDelete, onMove }: { application: JobApplication, onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
   const { toast } = useToast();
   return (
-    <Card className="mb-3 shadow-md bg-card hover:shadow-lg transition-shadow duration-200">
+    <Card className="mb-3 shadow-md bg-card hover:shadow-lg transition-shadow duration-200 cursor-pointer" onClick={() => onEdit(application)}>
       <CardContent className="p-3 space-y-1">
         <div className="flex justify-between items-start">
           <div>
@@ -67,11 +70,11 @@ function JobCard({ application, onEdit, onDelete, onMove }: { application: JobAp
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
                 <GripVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={() => onEdit(application)}>
                 <Edit3 className="mr-2 h-4 w-4" /> Edit
               </DropdownMenuItem>
@@ -192,13 +195,10 @@ export default function JobTrackerPage() {
 
 
   const onSubmit = (data: JobApplicationFormData) => {
-    const applicationData = {
-        ...data,
-        reminderDate: data.reminderDate ? data.reminderDate.toISOString() : undefined,
-    };
+    const applicationData = { ...data };
 
     if (editingApplication) {
-      setApplications(apps => apps.map(app => app.id === editingApplication.id ? { ...app, ...applicationData, status: data.status as JobApplicationStatus } : app));
+      setApplications(apps => apps.map(app => app.id === editingApplication.id ? { ...app, ...applicationData, status: data.status as JobApplicationStatus, salary: data.salary } : app));
       toast({ title: "Application Updated", description: `${data.jobTitle} at ${data.companyName} updated.` });
     } else {
       const newApp: JobApplication = { ...applicationData, id: String(Date.now()), status: data.status as JobApplicationStatus, tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id };
@@ -206,20 +206,21 @@ export default function JobTrackerPage() {
       toast({ title: "Application Added", description: `${data.jobTitle} at ${data.companyName} added.` });
     }
     setIsDialogOpen(false);
-    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', reminderDate: undefined });
-    setEditingApplication(null);
   };
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
-    setValue('companyName', app.companyName);
-    setValue('jobTitle', app.jobTitle);
-    setValue('status', app.status);
-    setValue('dateApplied', app.dateApplied);
-    setValue('notes', app.notes || '');
-    setValue('jobDescription', app.jobDescription || '');
-    setValue('location', app.location || '');
-    setValue('reminderDate', app.reminderDate ? parseISO(app.reminderDate) : undefined);
+    reset({
+        companyName: app.companyName,
+        jobTitle: app.jobTitle,
+        status: app.status,
+        dateApplied: app.dateApplied,
+        notes: app.notes || '',
+        jobDescription: app.jobDescription || '',
+        location: app.location || '',
+        applicationUrl: app.applicationUrl || '',
+        salary: app.salary || '',
+    });
     setIsDialogOpen(true);
   };
 
@@ -238,7 +239,7 @@ export default function JobTrackerPage() {
 
   const openNewApplicationDialog = () => {
     setEditingApplication(null);
-    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', reminderDate: undefined });
+    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
     setIsDialogOpen(true);
   };
 
@@ -342,73 +343,96 @@ export default function JobTrackerPage() {
         </div>
       </div>
 
-      {/* Dialog for Adding/Editing Applications */}
       <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
         setIsDialogOpen(isOpen);
         if (!isOpen) {
             setEditingApplication(null);
-            reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', reminderDate: undefined });
+            reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
         }
       }}>
-        <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", "Edit Job Application") : t("jobTracker.addNewJob", "Add New Job Application")}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="jobTitle">{t("jobTracker.jobTitle", "Job Title")}</Label>
-              <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
-              {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="companyName">{t("jobTracker.companyName", "Company Name")}</Label>
-              <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
-              {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="location">{t("jobTracker.location", "Location")}</Label>
-              <Controller name="location" control={control} render={({ field }) => <Input id="location" placeholder={t("jobTracker.locationPlaceholder", "e.g., Remote, New York, NY")} {...field} />} />
-            </div>
-            <div>
-              <Label htmlFor="status">{t("jobTracker.status", "Status")}</Label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger><SelectValue placeholder={t("jobTracker.selectStatus", "Select status")} /></SelectTrigger>
-                    <SelectContent>
-                      {JOB_APPLICATION_STATUSES.map(s => (
-                        <SelectItem key={s} value={s}>{t(`jobTracker.statuses.${s}`, s === 'Interviewing' ? 'Interview' : s)}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-               {errors.status && <p className="text-sm text-destructive mt-1">{errors.status.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="dateApplied">{t("jobTracker.dateApplied", "Date Applied / Saved")}</Label>
-              <Controller name="dateApplied" control={control} render={({ field }) => <Input id="dateApplied" type="date" {...field} />} />
-              {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="reminderDate" className="flex items-center gap-1">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" /> {t("jobTracker.reminderDate", "Reminder Date (Optional)")}
-              </Label>
-              <Controller name="reminderDate" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder={t("jobTracker.setReminder", "Set a reminder")} />} />
-            </div>
-            <div>
-              <Label htmlFor="jobDescription">{t("jobTracker.jobDescription", "Job Description (Optional)")}</Label>
-              <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" placeholder={t("jobTracker.jobDescriptionPlaceholder", "Paste job description here...")} rows={4} {...field} />} />
-            </div>
-            <div>
-              <Label htmlFor="notes">{t("jobTracker.notes", "Notes (Optional)")}</Label>
-              <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder={t("jobTracker.notesPlaceholder", "Any relevant notes...")} rows={3} {...field} />} />
-            </div>
-            <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.cancel", "Cancel")}</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingApplication ? t("jobTracker.saveChanges", "Save Changes") : t("jobTracker.addApplication", "Add Application")}</Button>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
+            <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
+              <TabsList className="grid w-full grid-cols-5 shrink-0">
+                <TabsTrigger value="jobDetails">Job Details</TabsTrigger>
+                <TabsTrigger value="resume" disabled>Resume</TabsTrigger>
+                <TabsTrigger value="coverLetter" disabled>Cover Letter</TabsTrigger>
+                <TabsTrigger value="interviews" disabled>Interviews</TabsTrigger>
+                <TabsTrigger value="notes">Notes</TabsTrigger>
+              </TabsList>
+              <ScrollArea className="flex-grow mt-4">
+                <div className="px-1 pr-4">
+                  <TabsContent value="jobDetails">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="applicationUrl">Job Listing</Label>
+                          <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" placeholder="https://brainqy.com/jobs/123" {...field} value={field.value ?? ''} />} />
+                          {errors.applicationUrl && <p className="text-sm text-destructive mt-1">{errors.applicationUrl.message}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="companyName">Company Name</Label>
+                          <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
+                          {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="jobTitle">Job Title</Label>
+                          <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
+                          {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="location">Location</Label>
+                            <Controller name="location" control={control} render={({ field }) => <Input id="location" {...field} value={field.value ?? ''} />} />
+                          </div>
+                          <div>
+                            <Label htmlFor="status">Status</Label>
+                            <Controller name="status" control={control} render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {JOB_APPLICATION_STATUSES.map(s => <SelectItem key={s} value={s}>{t(`jobTracker.statuses.${s}`, s === 'Interviewing' ? 'Interview' : s)}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            )} />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="salary">Salary</Label>
+                          <Controller name="salary" control={control} render={({ field }) => <Input id="salary" placeholder="e.g., 7900000 or 120k - 140k" {...field} value={field.value ?? ''}/>} />
+                        </div>
+                        <div>
+                          <Label htmlFor="dateApplied">Date</Label>
+                          <Controller name="dateApplied" control={control} render={({ field }) => <Input type="date" id="dateApplied" {...field} />} />
+                          {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="jobDescription">Job Description</Label>
+                          <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" rows={19} {...field} value={field.value ?? ''}/>} />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="notes">
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Notes</Label>
+                      <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder="Contacts, interview details, thoughts..." rows={15} {...field} value={field.value ?? ''}/>} />
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="resume"><p className="text-muted-foreground p-4 text-center">Resume linking feature coming soon.</p></TabsContent>
+                  <TabsContent value="coverLetter"><p className="text-muted-foreground p-4 text-center">Cover letter management feature coming soon.</p></TabsContent>
+                  <TabsContent value="interviews"><p className="text-muted-foreground p-4 text-center">Interview tracking feature coming soon.</p></TabsContent>
+                </div>
+              </ScrollArea>
+            </Tabs>
+            <DialogFooter className="pt-4 border-t shrink-0">
+              <DialogClose asChild><Button type="button" variant="outline">Close</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">Save</Button>
             </DialogFooter>
           </form>
         </DialogContent>

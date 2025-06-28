@@ -109,6 +109,7 @@ export interface JobApplication {
   jobDescription?: string;
   resumeUsed?: string;
   location?: string;
+  salary?: string;
   reminderDate?: string;
   sourceJobOpeningId?: string;
   applicationUrl?: string;

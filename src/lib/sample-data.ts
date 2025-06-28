@@ -6,14 +6,14 @@ import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industrie
 export let SAMPLE_TENANT_ID = 'Brainqy'; 
 
 export let sampleJobApplications: JobApplication[] = [
-  { id: '1', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Tech Solutions Inc.', jobTitle: 'Software Engineer', status: 'Applied', dateApplied: '2024-07-01', notes: 'Applied via company portal.', location: 'Remote', reminderDate: new Date(Date.now() + 86400000 * 7).toISOString(), applicationUrl: 'https://example.com/apply/job1' }, 
-  { id: '2', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Innovate LLC', jobTitle: 'Frontend Developer', status: 'Interviewing', dateApplied: '2024-06-25', notes: 'First interview scheduled for 2024-07-10.', location: 'New York, NY', applicationUrl: 'https://example.com/apply/job2' },
-  { id: '3', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Data Corp', jobTitle: 'Data Analyst', status: 'Offer', dateApplied: '2024-06-15', notes: 'Received offer, considering.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 3).toISOString(), applicationUrl: 'https://example.com/apply/job3' }, 
-  { id: '4', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Web Wizards', jobTitle: 'UX Designer', status: 'Rejected', dateApplied: '2024-06-20', notes: 'Did not proceed after initial screening.', location: 'Austin, TX', },
-  { id: '5', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'CloudNetics', jobTitle: 'Cloud Engineer', status: 'Saved', dateApplied: '2024-07-05', notes: 'Interested, need to tailor resume.', location: 'Boston, MA', sourceJobOpeningId: 'job-board-cloudnetics-01' },
-  { id: '6', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'AI Future', jobTitle: 'Machine Learning Eng.', status: 'Saved', dateApplied: '2024-07-15', notes: 'From scan report, good match.', location: 'Seattle, WA', sourceJobOpeningId: 'job-board-aifuture-02' },
-  { id: '7', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Innovatech Solutions Inc.', jobTitle: 'Senior Frontend Developer', status: 'Applied', dateApplied: '2024-07-20', notes: 'Applied using AI generated cover letter.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 5).toISOString(), applicationUrl: 'https://example.com/innovatech/apply' },
-  { id: '8', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Web Solutions Co.', jobTitle: 'Frontend Developer', status: 'Interviewing', dateApplied: '2024-07-18', notes: 'Technical interview next week.', location: 'Remote', applicationUrl: 'https://example.com/websolutions/apply' },
+  { id: '1', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Tech Solutions Inc.', jobTitle: 'Software Engineer', status: 'Applied', dateApplied: '2024-07-01', notes: 'Applied via company portal.', location: 'Remote', reminderDate: new Date(Date.now() + 86400000 * 7).toISOString(), applicationUrl: 'https://example.com/apply/job1', salary: '150000' }, 
+  { id: '2', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Innovate LLC', jobTitle: 'Frontend Developer', status: 'Interviewing', dateApplied: '2024-06-25', notes: 'First interview scheduled for 2024-07-10.', location: 'New York, NY', applicationUrl: 'https://example.com/apply/job2', salary: '130000' },
+  { id: '3', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Data Corp', jobTitle: 'Data Analyst', status: 'Offer', dateApplied: '2024-06-15', notes: 'Received offer, considering.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 3).toISOString(), applicationUrl: 'https://example.com/apply/job3', salary: '110000' }, 
+  { id: '4', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Web Wizards', jobTitle: 'UX Designer', status: 'Rejected', dateApplied: '2024-06-20', notes: 'Did not proceed after initial screening.', location: 'Austin, TX', salary: '95000' },
+  { id: '5', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'CloudNetics', jobTitle: 'Cloud Engineer', status: 'Saved', dateApplied: '2024-07-05', notes: 'Interested, need to tailor resume.', location: 'Boston, MA', sourceJobOpeningId: 'job-board-cloudnetics-01', salary: '140000' },
+  { id: '6', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'AI Future', jobTitle: 'Machine Learning Eng.', status: 'Saved', dateApplied: '2024-07-15', notes: 'From scan report, good match.', location: 'Seattle, WA', sourceJobOpeningId: 'job-board-aifuture-02', salary: '160000' },
+  { id: '7', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Innovatech Solutions Inc.', jobTitle: 'Senior Frontend Developer', status: 'Applied', dateApplied: '2024-07-20', notes: 'Applied using AI generated cover letter.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 5).toISOString(), applicationUrl: 'https://example.com/innovatech/apply', salary: '145000' },
+  { id: '8', tenantId: 'Brainqy', userId: 'alumni1', companyName: 'Web Solutions Co.', jobTitle: 'Frontend Developer', status: 'Interviewing', dateApplied: '2024-07-18', notes: 'Technical interview next week.', location: 'Remote', applicationUrl: 'https://example.com/websolutions/apply', salary: '125000' },
 ];
 
 
@@ -881,7 +881,7 @@ export const sampleSurveyResponses: SurveyResponse[] = [
     }
 ];
 
-export let sampleAffiliates: Affiliate[] = [
+export const sampleAffiliates: Affiliate[] = [
   {
     id: 'affiliateuser1', 
     userId: 'alumni1', 
