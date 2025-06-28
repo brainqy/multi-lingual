@@ -21,15 +21,19 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import React from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { samplePlatformSettings } from "@/lib/sample-data";
 
 export function LoginForm() {
   const { login } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
+  const platformName = samplePlatformSettings.platformName || "Bhasha Setu";
 
   const formSchema = z.object({
     email: z.string().email({ message: t("validation.email") }),
     password: z.string().min(1, { message: t("validation.required") }),
+    rememberMe: z.boolean().default(false).optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -37,6 +41,7 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
 
@@ -48,7 +53,7 @@ export function LoginForm() {
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-3xl font-headline text-center text-primary">{t("login.title")}</CardTitle>
-        <CardDescription className="text-center">{t("appName")}</CardDescription>
+        <CardDescription className="text-center">{platformName}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -95,6 +100,30 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            <div className="flex items-center justify-between">
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-normal">
+                        Remember me
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <Link href="#" className="text-sm font-medium text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
               {t("login.submitButton")}
             </Button>
