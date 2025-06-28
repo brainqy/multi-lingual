@@ -1,6 +1,5 @@
 
 
-'use server';
 /**
  * @fileOverview Identifies actionable issues in a resume compared to a job description.
  * This flow categorizes issues into those the AI can fix and those requiring user input.

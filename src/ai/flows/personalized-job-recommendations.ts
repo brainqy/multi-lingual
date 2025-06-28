@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Provides AI-driven personalized job recommendations.
  *

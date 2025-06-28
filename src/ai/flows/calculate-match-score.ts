@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Calculates a match score between a resume and a job description, identifying missing keywords.
  *

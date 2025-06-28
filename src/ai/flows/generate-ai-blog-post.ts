@@ -1,4 +1,4 @@
-'use server';
+
 /**
  * @fileOverview Generates a blog post based on a given topic using AI.
  *

@@ -1,6 +1,5 @@
 
 // src/ai/flows/suggest-resume-improvements.ts
-'use server';
 
 /**
  * @fileOverview This file defines a Genkit flow for suggesting improvements to a resume based on job description analysis.

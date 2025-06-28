@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview Generates a new resume variant based on existing resume text and user preferences.
  *

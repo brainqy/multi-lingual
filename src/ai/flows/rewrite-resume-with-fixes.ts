@@ -1,6 +1,5 @@
 
 
-'use server';
 /**
  * @fileOverview Rewrites a resume based on a job description and user-provided instructions.
  * This flow aims to incorporate user feedback and apply general improvements.

@@ -1,4 +1,4 @@
-'use server';
+
 /**
  * @fileOverview Generates relevant interview questions on-the-fly for an interviewer during a live session.
  *

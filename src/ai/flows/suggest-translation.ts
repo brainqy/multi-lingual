@@ -1,5 +1,4 @@
 // src/ai/flows/suggest-translation.ts
-'use server';
 /**
  * @fileOverview A translation suggestion AI agent.
  *

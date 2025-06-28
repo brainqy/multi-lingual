@@ -1,4 +1,4 @@
-'use server';
+
 /**
  * @fileOverview Generates overall feedback for a mock interview session based on a series of evaluated answers.
  *
