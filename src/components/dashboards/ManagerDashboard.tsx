@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2 } from "lucide-react";
+import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
@@ -241,6 +241,11 @@ export default function ManagerDashboard() {
                   <Link href="/admin/announcements">
                       <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageAnnouncements")}
                   </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/admin/promo-codes">
+                    <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", "Promo Codes")}
+                </Link>
               </Button>
             </CardContent>
           </Card>

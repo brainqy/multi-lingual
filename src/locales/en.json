@@ -357,6 +357,11 @@
         }
       }
     },
+    "managerDashboard": {
+      "quickActions": {
+        "promoCodeMgt": "Promo Codes"
+      }
+    },
   "translateTool": {
     "title": "Translation Tool",
     "enterTextLabel": "Enter Text to Translate",

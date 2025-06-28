@@ -328,7 +328,8 @@
       "moderateTenantFeed": "भाडेकरू फीड नियंत्रित करा",
       "manageEventGallery": "कार्यक्रम गॅलरी व्यवस्थापित करा",
       "reviewEventSubmissions": "कार्यक्रम सबमिशनचे पुनरावलोकन करा",
-      "manageAnnouncements": "घोषणा व्यवस्थापित करा"
+      "manageAnnouncements": "घोषणा व्यवस्थापित करा",
+      "promoCodeMgt": "प्रोमो कोड व्यवस्थापित करा"
     },
     "customizeDialog": {
       "title": "व्यवस्थापक डॅशबोर्ड सानुकूलित करा",

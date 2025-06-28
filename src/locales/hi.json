@@ -205,6 +205,11 @@
       }
     }
   },
+  "managerDashboard": {
+    "quickActions": {
+      "promoCodeMgt": "प्रोमो कोड प्रबंधित करें"
+    }
+  },
   "userDashboard": {
     "title": "मेरा डैशबोर्ड"
   },

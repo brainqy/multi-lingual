@@ -18,23 +18,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { User, KeyRound, Mail, ShieldQuestion, Eye, EyeOff, Gift } from "lucide-react";
+import { User, KeyRound, Mail, Gift, Eye, EyeOff } from "lucide-react";
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { samplePlatformSettings } from "@/lib/sample-data";
 
 export function SignupForm() {
   const { signup } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
+  const platformName = samplePlatformSettings.platformName || "ResumeMatch AI";
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required") }),
     email: z.string().email({ message: t("validation.email") }),
     password: z.string().min(1, { message: t("validation.required") }),
-    role: z.enum(["user", "admin"]),
     referralCode: z.string().optional(),
     agreeToTerms: z.boolean().refine(val => val === true, {
       message: t("validation.termsRequired", "You must accept the terms and conditions."),
@@ -47,21 +47,20 @@ export function SignupForm() {
       name: "",
       email: "",
       password: "",
-      role: "user",
       referralCode: "",
       agreeToTerms: false,
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    signup(values.name, values.email, values.role);
+    signup(values.name, values.email, 'user');
   }
 
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-3xl font-headline text-center text-primary">{t("signup.title")}</CardTitle>
-        <CardDescription className="text-center">{t("appName")}</CardDescription>
+        <CardDescription className="text-center">{platformName}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -119,30 +118,6 @@ export function SignupForm() {
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
                     </Button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground/80">{t("signup.roleLabel")}</FormLabel>
-                  <div className="relative">
-                     <ShieldQuestion className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="user">{t("signup.roleUser")}</SelectItem>
-                        <SelectItem value="admin">{t("signup.roleAdmin")}</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                   <FormMessage />
                 </FormItem>
