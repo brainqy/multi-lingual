@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
 import { sampleCommunityPosts, sampleUserProfile, samplePlatformUsers, sampleAppointments } from "@/lib/sample-data";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -469,13 +469,11 @@ export default function CommunityFeedPage() {
               </div>
             </div>
              {postType === 'text' && (
-                <>
-                    <div>
-                        <Label htmlFor="post-imageUrl">Image URL (Optional)</Label>
-                        <Controller name="imageUrl" control={control} render={({ field }) => <Input id="post-imageUrl" {...field} placeholder="https://example.com/image.png" />} />
-                        {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
-                    </div>
-                </>
+                <div>
+                    <Label htmlFor="post-imageUrl" className="flex items-center gap-1"><ImageIconLucide className="h-4 w-4 text-muted-foreground"/>Image URL (Optional)</Label>
+                    <Controller name="imageUrl" control={control} render={({ field }) => <Input id="post-imageUrl" {...field} placeholder="https://example.com/image.png" />} />
+                    {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
+                </div>
             )}
              {postType === 'poll' && (
                 <div className="space-y-2">
@@ -621,66 +619,59 @@ export default function CommunityFeedPage() {
                         <p className="text-sm text-muted-foreground italic">This post has been removed by a moderator.</p>
                     ) : (
                       <>
-                        {post.type === 'text' && (
-                          <>
-                            {post.content && <p className="text-sm text-foreground whitespace-pre-line">{post.content}</p>}
-                            {post.imageUrl && (
-                                <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
-                                    <Image src={post.imageUrl} alt={"Community post image"} layout="fill" objectFit="cover" data-ai-hint={"community image"} />
-                                </div>
-                            )}
-                          </>
+                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{post.content}</p>}
+                        
+                        {post.type === 'text' && post.imageUrl && (
+                            <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
+                                <Image src={post.imageUrl} alt={"Community post image"} layout="fill" objectFit="cover" data-ai-hint={"community image"} />
+                            </div>
                         )}
-                        {post.type === 'poll' && post.content && (
-                        <div>
-                          <p className="text-sm font-semibold text-foreground mb-2">{post.content}</p>
-                          {post.pollOptions?.map((option, index) => (
-                              <div key={index} className="flex items-center space-x-2 mb-1 group cursor-pointer p-1.5 rounded hover:bg-primary/10" onClick={() => handleVote(post.id, index)}>
-                                <div className={cn("h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0", "border-primary group-hover:border-primary/70")}>
+
+                        {post.type === 'poll' && post.pollOptions && (
+                            <div className='mt-2'>
+                                {post.pollOptions?.map((option, index) => (
+                                <div key={index} className="flex items-center space-x-2 mb-1 group cursor-pointer p-1.5 rounded hover:bg-primary/10" onClick={() => handleVote(post.id, index)}>
+                                    <div className={cn("h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0", "border-primary group-hover:border-primary/70")}>
+                                    </div>
+                                    <Label htmlFor={`poll-option-${post.id}-${index}`} className="text-sm text-foreground cursor-pointer">{option.option} ({option.votes})</Label>
                                 </div>
-                                <Label htmlFor={`poll-option-${post.id}-${index}`} className="text-sm text-foreground cursor-pointer">{option.option} ({option.votes})</Label>
-                              </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
                         )}
                         {post.type === 'event' && (
-                          <div>
-                            {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-2">{post.content}</p>}
-                            <div className="border rounded-md p-3 space-y-1 bg-secondary/30">
-                              <p className="text-md font-semibold text-primary">{post.eventTitle || 'Event Details'}</p>
-                              {post.eventDate && <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3"/> {new Date(post.eventDate).toLocaleString()}</p>}
-                              {post.eventLocation && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3"/> {post.eventLocation}</p>}
-                              {post.capacity !== undefined && post.capacity > 0 && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <UsersIcon className="h-3 w-3" />
-                                  {Math.max(0, post.capacity - (post.attendees || 0))} seats available ({post.attendees || 0}/{post.capacity})
-                                </p>
-                              )}
-                               {post.capacity !== undefined && post.capacity === 0 && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1"><UsersIcon className="h-3 w-3" /> Unlimited spots</p>
-                               )}
-                              {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
-                                <Button variant="outline" size="sm" className="mt-2 text-primary border-primary hover:bg-primary/10" onClick={() => handleRegisterForEvent(post.id, post.eventTitle)}>
-                                  <Ticket className="mr-1 h-4 w-4"/> Register Now
-                                </Button>
-                              )}
-                               {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
-                                <Badge variant="destructive">Event Full</Badge>
-                              )}
-                            </div>
-                        </div>
-                        )}
-                        {post.type === 'request' && post.content && (
-                          <div>
-                            <p className="text-sm text-foreground whitespace-pre-line mb-2">{post.content}</p>
-                            {!post.assignedTo && post.status !== 'completed' && (
-                              <Button variant="outline" size="sm" className="mt-2 text-green-600 border-green-500 hover:bg-green-50" onClick={() => handleAssign(post.id, sampleUserProfile.name)}>
-                                <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
+                          <div className="border rounded-md p-3 space-y-1 bg-secondary/30 mt-2">
+                            <p className="text-md font-semibold text-primary">{post.eventTitle || 'Event Details'}</p>
+                            {post.eventDate && <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3"/> {new Date(post.eventDate).toLocaleString()}</p>}
+                            {post.eventLocation && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3"/> {post.eventLocation}</p>}
+                            {post.capacity !== undefined && post.capacity > 0 && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <UsersIcon className="h-3 w-3" />
+                                {Math.max(0, post.capacity - (post.attendees || 0))} seats available ({post.attendees || 0}/{post.capacity})
+                              </p>
+                            )}
+                             {post.capacity !== undefined && post.capacity === 0 && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1"><UsersIcon className="h-3 w-3" /> Unlimited spots</p>
+                             )}
+                            {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
+                              <Button variant="outline" size="sm" className="mt-2 text-primary border-primary hover:bg-primary/10" onClick={() => handleRegisterForEvent(post.id, post.eventTitle)}>
+                                <Ticket className="mr-1 h-4 w-4"/> Register Now
                               </Button>
                             )}
-                          {post.assignedTo && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
-                          {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
-                        </div>
+                             {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
+                              <Badge variant="destructive">Event Full</Badge>
+                            )}
+                          </div>
+                        )}
+                        {post.type === 'request' && (
+                          <div className='mt-2'>
+                              {!post.assignedTo && post.status !== 'completed' && (
+                                <Button variant="outline" size="sm" className="mt-2 text-green-600 border-green-500 hover:bg-green-50" onClick={() => handleAssign(post.id, sampleUserProfile.name)}>
+                                  <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
+                                </Button>
+                              )}
+                            {post.assignedTo && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
+                            {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
+                          </div>
                         )}
                         {post.tags && post.tags.length > 0 && (
                           <div className="mt-3 flex flex-wrap gap-2">
