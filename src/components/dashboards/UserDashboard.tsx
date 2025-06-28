@@ -508,7 +508,6 @@ export default function UserDashboard() {
                   <ul className="space-y-3">
                     {upcomingAppointmentsAndSessions.map(item => (
                       <li key={item.id} className="p-3 bg-secondary/50 rounded-md hover:bg-secondary/70 transition-colors">
-                        <Link href={item.link} className="block">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -522,9 +521,10 @@ export default function UserDashboard() {
                                 {differenceInDays(item.date, new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel")}`}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs text-primary">{t("userDashboard.reminders.jobApp.viewButton")}</Button>
+                            <Button asChild variant="ghost" size="sm" className="text-xs text-primary">
+                              <Link href={item.link}>{t("userDashboard.reminders.jobApp.viewButton")}</Link>
+                            </Button>
                           </div>
-                        </Link>
                       </li>
                     ))}
                   </ul>
