@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type React from 'react';
@@ -123,7 +122,7 @@ export default function FloatingMessenger() {
          setCurrentStepId(null); 
       }
     } else {
-      if (step.text) { // Display question text for user input steps if provided
+      if (step.text) { 
         addMessage('bot', step.text);
       }
       setCurrentStepId(step.id);
@@ -145,7 +144,6 @@ export default function FloatingMessenger() {
   };
   
   const handleDropdownChange = (value: string) => {
-    // This function is only for userDropdown type.
     if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
     
     const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
@@ -154,7 +152,6 @@ export default function FloatingMessenger() {
      if (currentSurveyStep.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
     }
-    // Find the next step from the current step's nextStepId
     const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
     processStep(nextStep);
   };
@@ -177,7 +174,7 @@ export default function FloatingMessenger() {
     messageIdCounter.current = 0;
     
     const surveyToStart = surveyDefinitions[surveyIdToLoad] || surveyDefinitions[defaultSurveyId];
-    setActiveSurveyId(surveyIdToLoad); // Set the active survey ID *before* processing the first step
+    setActiveSurveyId(surveyIdToLoad); 
 
     const firstStep = surveyToStart[0];
 
@@ -193,12 +190,11 @@ export default function FloatingMessenger() {
     }
   };
 
-  // Effect to listen for admin-driven survey changes (simulated)
   useEffect(() => {
     const handleAdminSurveyChange = (event: Event) => {
         const customEvent = event as CustomEvent<string>;
         if (customEvent.detail && customEvent.detail !== activeSurveyId) {
-            setIsOpen(true); // Open messenger if not already
+            setIsOpen(true); 
             resetSurvey(customEvent.detail);
         }
     };
@@ -239,7 +235,7 @@ export default function FloatingMessenger() {
         </CardHeader>
 
         <CardContent className="p-0 flex-grow overflow-hidden">
-           <ScrollArea className="h-[calc(450px-60px-70px)] p-3"> {/* Adjusted height */}
+           <ScrollArea className="h-[calc(450px-60px-70px)] p-3">
             <div className="space-y-3">
               {messages.map((msg) => (
                 <div key={msg.id} className={cn("flex", msg.type === 'user' ? 'justify-end' : 'justify-start')}>
@@ -268,17 +264,24 @@ export default function FloatingMessenger() {
           )}
           {currentSurveyStep && currentSurveyStep.type === 'userInput' && (
             <div className="flex items-center w-full gap-1.5">
-              <Textarea
-                value={inputValue}
-                onChange={handleInputChange}
-                placeholder={currentSurveyStep.placeholder || "Type your response..."}
-                rows={currentSurveyStep.inputType === 'textarea' ? 3 : 1}
-                className={cn(
-                    "flex-grow resize-none text-sm p-2 min-h-[40px]",
-                    currentSurveyStep.inputType === 'textarea' ? 'max-h-[100px]' : 'max-h-[40px]'
-                )}
-                onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey && currentSurveyStep.inputType !== 'textarea') { e.preventDefault(); handleInputSubmit(); }}}
-              />
+              {currentSurveyStep.inputType === 'textarea' ? (
+                <Textarea
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  placeholder={currentSurveyStep.placeholder || "Type your response..."}
+                  rows={3}
+                  className="flex-grow resize-none text-sm p-2"
+                />
+              ) : (
+                <Input
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  type={currentSurveyStep.inputType || 'text'}
+                  placeholder={currentSurveyStep.placeholder || "Type your response..."}
+                  className="flex-grow text-sm h-10"
+                  onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInputSubmit(); }}}
+                />
+              )}
               <Button size="icon" onClick={handleInputSubmit} disabled={!inputValue.trim()} className="h-9 w-9 shrink-0 self-end">
                 <Send className="h-4 w-4" />
               </Button>
