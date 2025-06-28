@@ -196,7 +196,8 @@ export default function UserDashboard() {
         title: appt.title,
         type: 'Appointment',
         with: appt.withUser,
-        link: '/appointments'
+        link: '/appointments',
+        isPractice: false,
       }));
 
     const upcomingPractice = samplePracticeSessions
@@ -207,7 +208,8 @@ export default function UserDashboard() {
         title: ps.category,
         type: ps.type,
         with: ps.category.includes('AI') ? 'AI Coach' : ps.category.includes('Expert') ? 'Expert Mentor' : 'Friend',
-        link: '/interview-prep'
+        link: '/interview-prep',
+        isPractice: true,
       }));
 
     const upcomingJobInterviews = sampleJobApplications
@@ -221,7 +223,8 @@ export default function UserDashboard() {
             title: app.jobTitle,
             type: interview.type,
             with: app.companyName,
-            link: '/job-tracker'
+            link: '/job-tracker',
+            isPractice: false,
           }))
       );
 
@@ -508,7 +511,10 @@ export default function UserDashboard() {
                         <Link href={item.link} className="block">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="text-sm font-medium text-foreground">{item.title}</p>
+                              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                                {item.title}
+                                {item.isPractice && <Badge variant="outline">Practice</Badge>}
+                              </p>
                               <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.typeLabel")}: {item.type}</p>
                               <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.withLabel")}: {item.with}</p>
                               <p className="text-xs text-blue-600 dark:text-blue-400">
