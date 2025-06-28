@@ -44,6 +44,16 @@
     "required": "यह फ़ील्ड आवश्यक है।",
     "termsRequired": "आपको नियमों और शर्तों को स्वीकार करना होगा।"
   },
+  "forgotPassword": {
+    "title": "पासवर्ड भूल गए?",
+    "description": "अपना ईमेल दर्ज करें और हम आपको पासवर्ड रीसेट करने के लिए निर्देश भेजेंगे।",
+    "submitButton": "रीसेट निर्देश भेजें",
+    "backToLogin": "लॉगिन पर वापस जाएं",
+    "toastSuccessTitle": "अपना ईमेल जांचें",
+    "toastSuccessDescription": "यदि {email} के लिए कोई खाता मौजूद है, तो आपको पासवर्ड रीसेट निर्देश प्राप्त होंगे।",
+    "submittedTitle": "निर्देश भेजे गए!",
+    "submittedDescription": "अगले चरणों के लिए कृपया {email} पर अपना इनबॉक्स जांचें।"
+  },
   "platformSettings": {
     "title": "प्लेटफ़ॉर्म सेटिंग्स",
     "description": "ResumeMatch AI प्लेटफ़ॉर्म के लिए वैश्विक सेटिंग्स प्रबंधित करें।",

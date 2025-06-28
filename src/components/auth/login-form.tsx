@@ -120,8 +120,8 @@ export function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Link href="#" className="text-sm font-medium text-primary hover:underline">
-                Forgot password?
+              <Link href="/auth/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                {t("forgotPassword.title")}
               </Link>
             </div>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90">

@@ -44,6 +44,16 @@
     "required": "This field is required.",
     "termsRequired": "You must accept the terms and conditions."
   },
+  "forgotPassword": {
+    "title": "Forgot Password?",
+    "description": "Enter your email and we'll send you instructions to reset your password.",
+    "submitButton": "Send Reset Instructions",
+    "backToLogin": "Back to Login",
+    "toastSuccessTitle": "Check Your Email",
+    "toastSuccessDescription": "If an account exists for {email}, you will receive password reset instructions.",
+    "submittedTitle": "Instructions Sent!",
+    "submittedDescription": "Please check your inbox at {email} for the next steps."
+  },
   "platformSettings": {
     "title": "Platform Settings",
     "description": "Manage global settings for the ResumeMatch AI platform.",
