@@ -466,13 +466,44 @@ export default function JobTrackerPage() {
                       </div>
                   </TabsContent>
                   <TabsContent value="coverLetter">
-                      <div className="space-y-2">
-                          <Label htmlFor="coverLetterText">Cover Letter</Label>
-                          <Controller name="coverLetterText" control={control} render={({ field }) => (
-                              <Textarea id="coverLetterText" placeholder="Paste or write your cover letter here..." rows={15} {...field} value={field.value ?? ''} />
-                          )} />
-                      </div>
-                  </TabsContent>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {/* Left: Cover Letter Textarea */}
+    <div className="md:col-span-2">
+      <Controller
+        name="coverLetterText"
+        control={control}
+        render={({ field }) => (
+          <Textarea
+            id="coverLetterText"
+            placeholder="Create a Cover Letter for this Job"
+            rows={18}
+            className="h-full min-h-[350px]"
+            {...field}
+            value={field.value ?? ''}
+          />
+        )}
+      />
+    </div>
+    {/* Right: Info and AI Upgrade */}
+    <div className="flex flex-col gap-4">
+      <div className="bg-muted rounded-lg p-5 border">
+        <h3 className="font-semibold text-lg mb-1 text-muted-foreground">Create a Cover Letter</h3>
+        <p className="text-sm text-foreground">
+          Create a cover letter for this job opportunity. Need inspiration? You can reference our cover letter writing guide for more tips.
+        </p>
+      </div>
+      <div className="bg-muted rounded-lg p-5 border flex flex-col items-center">
+        <h4 className="font-semibold text-base mb-1 text-muted-foreground">Get a boost from AI</h4>
+        <p className="text-sm text-foreground mb-4 text-center">
+          Upgrade to Brainqy Premium to automatically generate personalized cover letters for your job applications.
+        </p>
+        <Button className="w-full bg-teal-400 text-white font-semibold text-lg" disabled>
+          Upgrade
+        </Button>
+      </div>
+    </div>
+  </div>
+</TabsContent>
                   <TabsContent value="interviews">
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
     {/* Left Column: Interview History */}
@@ -552,6 +583,19 @@ export default function JobTrackerPage() {
     {/* Left Column: Notes History */}
     <div className="space-y-4">
       <h4 className="font-medium">Notes History</h4>
+      {/* Sample Notes */}
+      <div className="space-y-2">
+        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
+          <strong>2024-05-01:</strong> Had a call with recruiter, discussed company culture and next steps.
+        </div>
+        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
+          <strong>2024-05-10:</strong> Completed technical assessment. Focused on React and system design.
+        </div>
+        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
+          <strong>2024-05-15:</strong> Scheduled interview with engineering manager for next week.
+        </div>
+      </div>
+      {/* Existing application notes */}
       {editingApplication && editingApplication.notes ? (
         <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
           {editingApplication.notes}
@@ -591,4 +635,19 @@ export default function JobTrackerPage() {
       </Dialog>
     </div>
   );
+}
+
+// Add this helper function somewhere in your file (or import from your API utils)
+async function generateCoverLetter({ jobTitle, companyName, resumeText, jobDescription }: { jobTitle: string, companyName: string, resumeText: string, jobDescription: string }) {
+  // Replace this with your actual API call or logic
+  // Example placeholder:
+  return `Dear Hiring Manager at ${companyName},
+
+I am excited to apply for the ${jobTitle} position. My experience and skills are a great fit for this role.
+
+${resumeText ? "Resume highlights: " + resumeText.substring(0, 100) + "..." : ""}
+${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + "..." : ""}
+
+Thank you for your consideration.
+`;
 }
