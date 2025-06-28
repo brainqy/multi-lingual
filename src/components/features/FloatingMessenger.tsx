@@ -145,19 +145,16 @@ export default function FloatingMessenger() {
   };
   
   const handleDropdownChange = (value: string) => {
-    if (!currentSurveyStep || (currentSurveyStep.type !== 'userDropdown' && currentSurveyStep.type !== 'userOptions' )) return; 
+    // This function is only for userDropdown type.
+    if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
     
-    let selectedLabel = value; 
-    if(currentSurveyStep.type === 'userDropdown' && currentSurveyStep.dropdownOptions) {
-        selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
-    } else if (currentSurveyStep.type === 'userOptions' && currentSurveyStep.options) {
-         selectedLabel = currentSurveyStep.options?.find(opt => opt.value === value)?.text || value;
-    }
+    const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
 
     addMessage('user', selectedLabel);
      if (currentSurveyStep.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
     }
+    // Find the next step from the current step's nextStepId
     const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
     processStep(nextStep);
   };
@@ -310,4 +307,3 @@ export default function FloatingMessenger() {
     </div>
   );
 }
-
