@@ -210,7 +210,22 @@ export default function UserDashboard() {
         link: '/interview-prep'
       }));
 
-    return [...upcomingAppts, ...upcomingPractice]
+    const upcomingJobInterviews = sampleJobApplications
+      .filter(app => app.userId === user.id && app.interviews)
+      .flatMap(app => 
+        app.interviews!
+          .filter(interview => isFuture(parseISO(interview.date)))
+          .map(interview => ({
+            id: `${app.id}-${interview.id}`,
+            date: parseISO(interview.date),
+            title: app.jobTitle,
+            type: interview.type,
+            with: app.companyName,
+            link: '/job-tracker'
+          }))
+      );
+
+    return [...upcomingAppts, ...upcomingPractice, ...upcomingJobInterviews]
       .sort((a, b) => compareAsc(a.date, b.date))
       .slice(0, 5);
   }, [user.id]);
