@@ -97,6 +97,14 @@ export type SupportTypeSought = typeof SupportTypesSought[number];
 export type JobApplicationStatus = 'Saved' | 'Applied' | 'Interviewing' | 'Offer' | 'Rejected';
 export const JOB_APPLICATION_STATUSES: JobApplicationStatus[] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 
+export interface Interview {
+  id: string;
+  date: string; 
+  type: 'Phone Screen' | 'Technical' | 'Behavioral' | 'On-site' | 'Final Round';
+  interviewer: string;
+  notes?: string;
+}
+
 export interface JobApplication {
   id: string;
   tenantId: string;
@@ -107,13 +115,16 @@ export interface JobApplication {
   dateApplied: string;
   notes?: string;
   jobDescription?: string;
-  resumeUsed?: string;
   location?: string;
   salary?: string;
   reminderDate?: string;
   sourceJobOpeningId?: string;
   applicationUrl?: string;
+  resumeIdUsed?: string;
+  coverLetterText?: string;
+  interviews?: Interview[];
 }
+
 
 export interface AlumniProfile {
   id: string;

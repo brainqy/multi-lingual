@@ -10,8 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit3, Trash2, GripVertical, Search, FileText, Clock, Bookmark, CalendarDays } from "lucide-react";
-import { sampleJobApplications, sampleJobOpenings, sampleUserProfile } from "@/lib/sample-data"; // Added sampleJobOpenings
-import type { JobApplication, JobApplicationStatus, ResumeScanHistoryItem, KanbanColumnId, JobOpening } from "@/types"; // Added JobOpening
+import { sampleJobApplications, sampleJobOpenings, sampleUserProfile, sampleResumeProfiles } from "@/lib/sample-data"; 
+import type { JobApplication, JobApplicationStatus, ResumeScanHistoryItem, KanbanColumnId, JobOpening, ResumeProfile, Interview } from "@/types"; 
 import { JOB_APPLICATION_STATUSES } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -20,7 +20,7 @@ import * as z from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
-import Link from "next/link"; // Added Link
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
@@ -35,6 +35,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const interviewSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  type: z.enum(['Phone Screen', 'Technical', 'Behavioral', 'On-site', 'Final Round']),
+  interviewer: z.string(),
+  notes: z.string().optional(),
+});
+
 const jobApplicationSchema = z.object({
   id: z.string().optional(),
   companyName: z.string().min(1, "Company name is required"),
@@ -46,7 +54,11 @@ const jobApplicationSchema = z.object({
   location: z.string().optional(),
   applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
   salary: z.string().optional(),
+  resumeIdUsed: z.string().optional(),
+  coverLetterText: z.string().optional(),
+  interviews: z.array(interviewSchema).optional(),
 });
+
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
@@ -139,17 +151,26 @@ export default function JobTrackerPage() {
   const [applications, setApplications] = useState<JobApplication[]>(sampleJobApplications.filter(app => app.userId === sampleUserProfile.id));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState<JobApplication | null>(null);
+  const [resumes, setResumes] = useState<ResumeProfile[]>([]);
   const { toast } = useToast();
-  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<JobApplicationFormData>({
+  
+  // State for Interviews tab within the dialog
+  const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
+  const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '', notes: ''});
+
+  const { control, handleSubmit, reset, setValue } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
     defaultValues: { status: 'Saved', dateApplied: new Date().toISOString().split('T')[0] }
   });
 
-  // State for job search sidebar
   const [searchKeywords, setSearchKeywords] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [jobSearchResults, setJobSearchResults] = useState<JobOpening[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+
+  useEffect(() => {
+    setResumes(sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id));
+  }, []);
 
   const handleJobSearch = () => {
     setHasSearched(true);
@@ -193,9 +214,8 @@ export default function JobTrackerPage() {
     toast({ title: "Job Added to Saved", description: `${job.title} at ${job.company} added.` });
   };
 
-
   const onSubmit = (data: JobApplicationFormData) => {
-    const applicationData = { ...data };
+    const applicationData = { ...data, interviews: currentInterviews };
 
     if (editingApplication) {
       setApplications(apps => apps.map(app => app.id === editingApplication.id ? { ...app, ...applicationData, status: data.status as JobApplicationStatus, salary: data.salary } : app));
@@ -220,7 +240,10 @@ export default function JobTrackerPage() {
         location: app.location || '',
         applicationUrl: app.applicationUrl || '',
         salary: app.salary || '',
+        resumeIdUsed: app.resumeIdUsed || '',
+        coverLetterText: app.coverLetterText || '',
     });
+    setCurrentInterviews(app.interviews || []);
     setIsDialogOpen(true);
   };
 
@@ -239,9 +262,23 @@ export default function JobTrackerPage() {
 
   const openNewApplicationDialog = () => {
     setEditingApplication(null);
-    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
+    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: '' });
+    setCurrentInterviews([]);
     setIsDialogOpen(true);
   };
+  
+  const handleAddInterview = () => {
+    if(!newInterview.date || !newInterview.interviewer) {
+        toast({title: "Missing Info", description: "Please provide at least a date and interviewer name.", variant: "destructive"});
+        return;
+    }
+    setCurrentInterviews(prev => [...prev, {id: `int-${Date.now()}`, ...newInterview}]);
+    setNewInterview({ date: '', type: 'Phone Screen', interviewer: '', notes: ''});
+  };
+
+  const handleRemoveInterview = (interviewId: string) => {
+    setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
+  }
 
   const getAppsForColumn = (column: typeof KANBAN_COLUMNS_CONFIG[0]): JobApplication[] => {
     return applications.filter(app => column.acceptedStatuses.includes(app.status));
@@ -257,7 +294,6 @@ export default function JobTrackerPage() {
       </div>
 
       <div className="flex flex-1 gap-4 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
-        {/* Job Search Sidebar */}
         <Card className="w-full md:w-72 flex-shrink-0 shadow-lg h-full flex flex-col">
           <CardHeader className="pb-3 pt-4 px-4">
             <CardTitle className="text-md font-semibold">{t("jobTracker.jobs", "Jobs")}</CardTitle>
@@ -324,7 +360,6 @@ export default function JobTrackerPage() {
           </CardFooter>
         </Card>
 
-        {/* Kanban Columns */}
         <div className="flex flex-1 gap-4 h-full">
           {KANBAN_COLUMNS_CONFIG.map((colConfig) => (
             <KanbanColumn
@@ -348,6 +383,7 @@ export default function JobTrackerPage() {
         if (!isOpen) {
             setEditingApplication(null);
             reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
+            setCurrentInterviews([]);
         }
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
@@ -358,9 +394,9 @@ export default function JobTrackerPage() {
             <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
               <TabsList className="grid w-full grid-cols-5 shrink-0">
                 <TabsTrigger value="jobDetails">Job Details</TabsTrigger>
-                <TabsTrigger value="resume" disabled>Resume</TabsTrigger>
-                <TabsTrigger value="coverLetter" disabled>Cover Letter</TabsTrigger>
-                <TabsTrigger value="interviews" disabled>Interviews</TabsTrigger>
+                <TabsTrigger value="resume">Resume</TabsTrigger>
+                <TabsTrigger value="coverLetter">Cover Letter</TabsTrigger>
+                <TabsTrigger value="interviews">Interviews</TabsTrigger>
                 <TabsTrigger value="notes">Notes</TabsTrigger>
               </TabsList>
               <ScrollArea className="flex-grow mt-4">
@@ -369,19 +405,16 @@ export default function JobTrackerPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="applicationUrl">Job Listing</Label>
-                          <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" placeholder="https://brainqy.com/jobs/123" {...field} value={field.value ?? ''} />} />
-                          {errors.applicationUrl && <p className="text-sm text-destructive mt-1">{errors.applicationUrl.message}</p>}
+                          <Label htmlFor="applicationUrl">Job Listing URL</Label>
+                          <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" placeholder="https://example.com/jobs/123" {...field} value={field.value ?? ''} />} />
                         </div>
                         <div>
                           <Label htmlFor="companyName">Company Name</Label>
                           <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
-                          {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
                         </div>
                         <div>
                           <Label htmlFor="jobTitle">Job Title</Label>
                           <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
-                          {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -407,7 +440,6 @@ export default function JobTrackerPage() {
                         <div>
                           <Label htmlFor="dateApplied">Date</Label>
                           <Controller name="dateApplied" control={control} render={({ field }) => <Input type="date" id="dateApplied" {...field} />} />
-                          {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
                         </div>
                       </div>
                       <div className="space-y-4">
@@ -418,15 +450,74 @@ export default function JobTrackerPage() {
                       </div>
                     </div>
                   </TabsContent>
+                   <TabsContent value="resume">
+                      <div className="space-y-2">
+                        <Label htmlFor="resumeIdUsed">Select Resume Profile</Label>
+                        <Controller name="resumeIdUsed" control={control} render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value || ''}>
+                            <SelectTrigger id="resumeIdUsed"><SelectValue placeholder="Select the resume you used"/></SelectTrigger>
+                            <SelectContent>
+                              {resumes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        )} />
+                        <p className="text-xs text-muted-foreground">Link this application to one of your saved resumes from 'My Resumes'.</p>
+                      </div>
+                  </TabsContent>
+                  <TabsContent value="coverLetter">
+                      <div className="space-y-2">
+                          <Label htmlFor="coverLetterText">Cover Letter</Label>
+                          <Controller name="coverLetterText" control={control} render={({ field }) => (
+                              <Textarea id="coverLetterText" placeholder="Paste or write your cover letter here..." rows={15} {...field} value={field.value ?? ''} />
+                          )} />
+                      </div>
+                  </TabsContent>
+                  <TabsContent value="interviews">
+                      <div className="space-y-4">
+                          <h4 className="font-medium">Interview History</h4>
+                          {currentInterviews.length > 0 ? (
+                              <div className="space-y-2">
+                                  {currentInterviews.map(interview => (
+                                      <Card key={interview.id} className="p-2 bg-secondary/50">
+                                          <div className="flex justify-between items-center">
+                                              <p className="text-sm font-semibold">{interview.type} with {interview.interviewer}</p>
+                                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveInterview(interview.id)}><Trash2 className="h-4 w-4"/></Button>
+                                          </div>
+                                          <p className="text-xs text-muted-foreground">{format(parseISO(interview.date), 'PPP p')}</p>
+                                          {interview.notes && <p className="text-xs italic mt-1">{interview.notes}</p>}
+                                      </Card>
+                                  ))}
+                              </div>
+                          ) : (
+                              <p className="text-sm text-muted-foreground text-center py-4">No interviews logged yet.</p>
+                          )}
+                          <div className="pt-4 border-t space-y-2">
+                               <h5 className="font-medium text-sm">Add New Interview</h5>
+                               <div className="grid grid-cols-2 gap-2">
+                                   <Input type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
+                                   <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
+                                       <SelectTrigger><SelectValue /></SelectTrigger>
+                                       <SelectContent>
+                                           <SelectItem value="Phone Screen">Phone Screen</SelectItem>
+                                           <SelectItem value="Technical">Technical</SelectItem>
+                                           <SelectItem value="Behavioral">Behavioral</SelectItem>
+                                           <SelectItem value="On-site">On-site</SelectItem>
+                                           <SelectItem value="Final Round">Final Round</SelectItem>
+                                       </SelectContent>
+                                   </Select>
+                               </div>
+                               <Input placeholder="Interviewer Name(s)" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
+                               <Textarea placeholder="Notes..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={2}/>
+                               <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
+                          </div>
+                      </div>
+                  </TabsContent>
                   <TabsContent value="notes">
                     <div className="space-y-2">
                       <Label htmlFor="notes">Notes</Label>
                       <Controller name="notes" control={control} render={({ field }) => <Textarea id="notes" placeholder="Contacts, interview details, thoughts..." rows={15} {...field} value={field.value ?? ''}/>} />
                     </div>
                   </TabsContent>
-                  <TabsContent value="resume"><p className="text-muted-foreground p-4 text-center">Resume linking feature coming soon.</p></TabsContent>
-                  <TabsContent value="coverLetter"><p className="text-muted-foreground p-4 text-center">Cover letter management feature coming soon.</p></TabsContent>
-                  <TabsContent value="interviews"><p className="text-muted-foreground p-4 text-center">Interview tracking feature coming soon.</p></TabsContent>
                 </div>
               </ScrollArea>
             </Tabs>
@@ -440,3 +531,4 @@ export default function JobTrackerPage() {
     </div>
   );
 }
+
