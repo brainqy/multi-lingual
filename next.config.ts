@@ -32,8 +32,18 @@ const nextConfig: NextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         async_hooks: false,
+        net: false,
+        tls: false,
       };
     }
+
+    if (!config.externals) {
+      config.externals = [];
+    }
+    config.externals.push({
+      ejs: "commonjs ejs",
+    });
+
     return config;
   },
 };
