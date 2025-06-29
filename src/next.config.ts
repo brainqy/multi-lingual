@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
         ...config.resolve.fallback,
         async_hooks: false,
         net: false,
+        tls: false,
       };
     }
     return config;
