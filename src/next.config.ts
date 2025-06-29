@@ -31,9 +31,14 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        async_hooks: false,
-        net: false,
-        tls: false,
+        'async_hooks': false,
+        'dns': false,
+        'fs': false,
+        'fs/promises': false,
+        'http2': false,
+        'net': false,
+        'tls': false,
+        'perf_hooks': false,
       };
     }
 
