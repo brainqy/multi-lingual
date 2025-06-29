@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
         tls: false,
       };
     }
+
+    if (!config.externals) {
+      config.externals = [];
+    }
+    config.externals.push({
+      ejs: "commonjs ejs",
+    });
+
     return config;
   },
 };
