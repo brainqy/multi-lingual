@@ -4,12 +4,6 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   output: 'export',
   /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -31,9 +25,14 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        async_hooks: false,
-        net: false,
-        tls: false,
+        'async_hooks': false,
+        'dns': false,
+        'fs': false,
+        'fs/promises': false,
+        'http2': false,
+        'net': false,
+        'tls': false,
+        'perf_hooks': false,
       };
     }
 
