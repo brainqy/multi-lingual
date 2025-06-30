@@ -106,7 +106,7 @@ export default function GalleryManagementPage() {
     setValue('imageUrls', event.imageUrls.join(', '));
     setValue('description', event.description || '');
     setValue('dataAiHint', event.dataAiHint || '');
-    setValue('isPlatformGlobal', event.tenantId === 'platform' || event.isPlatformGlobal);
+    setValue('isPlatformGlobal', !!(event.tenantId === 'platform' || event.isPlatformGlobal));
     setIsFormDialogOpen(true);
   };
 
