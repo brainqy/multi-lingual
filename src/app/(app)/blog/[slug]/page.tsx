@@ -13,8 +13,14 @@ export async function generateStaticParams() {
   }));
 }
 
+// Props type for a dynamic page in Next.js App Router
+interface BlogPostPageProps {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
 // The page component itself is now a Server Component
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage({ params }: BlogPostPageProps) {
   const slug = params.slug;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = postIndex !== -1 ? sampleBlogPosts[postIndex] : null;
