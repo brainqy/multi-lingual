@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -29,8 +28,6 @@ const blogPostSchema = z.object({
 
 type BlogPostFormData = z.infer<typeof blogPostSchema>;
 
-const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-
 export default function CreateBlogPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -52,7 +49,7 @@ export default function CreateBlogPage() {
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
         title: data.title,
-        slug: generateSlug(data.title),
+        slug: data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
         author: currentUser.name,
         date: new Date().toISOString(),
         imageUrl: data.imageUrl || undefined,
