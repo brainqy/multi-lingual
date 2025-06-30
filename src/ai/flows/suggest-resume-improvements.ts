@@ -1,4 +1,5 @@
 
+'use server';
 // src/ai/flows/suggest-resume-improvements.ts
 
 /**

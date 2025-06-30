@@ -1,5 +1,6 @@
 
 
+'use server';
 /**
  * @fileOverview THIS FLOW IS DEPRECATED AND NO LONGER IN USE.
  * Provides AI-driven suggestions for alumni connections.

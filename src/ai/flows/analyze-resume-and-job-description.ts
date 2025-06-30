@@ -1,4 +1,5 @@
 
+'use server';
 /**
  * @fileOverview Analyzes a resume and job description to identify matching skills, experience, and provide detailed feedback across various categories.
  *

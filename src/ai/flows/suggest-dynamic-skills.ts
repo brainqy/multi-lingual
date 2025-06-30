@@ -1,4 +1,5 @@
 
+'use server';
 /**
  * @fileOverview Suggests dynamic skills for a user based on their current skills and a given context.
  *

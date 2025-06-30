@@ -1,4 +1,5 @@
 
+'use server';
 /**
  * @fileOverview Generates a personalized cover letter based on user profile and job description.
  *

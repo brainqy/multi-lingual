@@ -1,4 +1,5 @@
 
+'use server';
 /**
  * @fileOverview Evaluates a user's answer to a mock interview question.
  *

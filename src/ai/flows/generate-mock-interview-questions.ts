@@ -1,4 +1,5 @@
 
+'use server';
 /**
  * @fileOverview Generates mock interview questions for a given topic or job description.
  *

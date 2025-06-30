@@ -1,3 +1,5 @@
+
+'use server';
 // src/ai/flows/suggest-translation.ts
 /**
  * @fileOverview A translation suggestion AI agent.
