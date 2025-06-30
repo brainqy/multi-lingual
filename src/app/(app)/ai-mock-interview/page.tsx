@@ -416,7 +416,7 @@ export default function AiMockInterviewPage() {
       return;
     }
      if (session.answers.length === 0 && session.questions.length > 0) {
-      toast({ title: "No Answers Provided", description: "Please answer at least one question to get overall feedback.", variant: "warning" });
+      toast({ title: "No Answers Provided", description: "Please answer at least one question to get overall feedback.", variant: "default" });
       return;
     }
 
