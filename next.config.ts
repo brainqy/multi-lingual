@@ -56,6 +56,7 @@ const nextConfig: NextConfig = {
     config.externals.push({
       ejs: "commonjs ejs",
       handlebars: "commonjs handlebars",
+      '@opentelemetry/exporter-jaeger': 'commonjs @opentelemetry/exporter-jaeger',
     });
 
     return config;
