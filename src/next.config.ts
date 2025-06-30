@@ -26,13 +26,16 @@ const nextConfig: NextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         'async_hooks': false,
+        'buffer': false,
         'dns': false,
         'fs': false,
         'fs/promises': false,
+        'http': false,
+        'https': false,
         'http2': false,
         'net': false,
-        'tls': false,
         'perf_hooks': false,
+        'tls': false,
       };
     }
 
