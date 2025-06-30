@@ -61,9 +61,9 @@ export default function GamificationPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Award className="h-8 w-8" /> {t("gamification.title", "Rewards & Progress")}
+        <Award className="h-8 w-8" /> {t("gamification.title")}
       </h1>
-      <CardDescription>{t("gamification.pageDescription", "Track your achievements and engagement within the platform.")}</CardDescription>
+      <CardDescription>{t("gamification.pageDescription")}</CardDescription>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="shadow-lg">
@@ -103,9 +103,9 @@ export default function GamificationPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("gamification.yourBadges", "Your Badges")}</CardTitle>
+          <CardTitle>{t("gamification.yourBadges")}</CardTitle>
           <CardDescription>
-            {t("gamification.badgesDescription", "Collect badges by engaging with the platform and community.")}
+            {t("gamification.badgesDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -150,8 +150,8 @@ export default function GamificationPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary"/>{t("gamification.leaderboard", "Leaderboard")}</CardTitle>
-          <CardDescription>{t("gamification.leaderboardDescription", "See how you rank among fellow alumni based on XP points (Top 10 shown).")}</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary"/>{t("gamification.leaderboard")}</CardTitle>
+          <CardDescription>{t("gamification.leaderboardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {leaderboardUsers.length === 0 ? (

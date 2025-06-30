@@ -1,3 +1,4 @@
+
 "use client"
 
 
@@ -23,6 +24,7 @@ const toggleGroupVariants = cva(
         default: "h-10 px-3 py-2",
         sm: "h-9 px-2.5",
         lg: "h-11 px-5",
+        xs: "h-auto px-2 py-1 text-xs",
       },
     },
     defaultVariants: {

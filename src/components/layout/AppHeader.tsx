@@ -68,7 +68,7 @@ export function AppHeader() {
 
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell className="h-5 w-5 text-muted-foreground" />
-              <span className="sr-only">{t("appHeader.notifications", "Notifications")}</span>
+              <span className="sr-only">{t("appHeader.notifications")}</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -85,20 +85,20 @@ export function AppHeader() {
                 <Link href="/profile" passHref>
                   <DropdownMenuItem>
                     <UserCircle className="mr-2 h-4 w-4" />
-                    {t("appHeader.profile", "Profile")}
+                    {t("appHeader.profile")}
                   </DropdownMenuItem>
                 </Link>
                 <Link href="/bookmarks" passHref>
                   <DropdownMenuItem>
                     <Bookmark className="mr-2 h-4 w-4" />
-                    {t("appHeader.myBookmarks", "My Bookmarks")}
+                    {t("appHeader.myBookmarks")}
                   </DropdownMenuItem>
                 </Link>
                 {recentPages.length > 0 && (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
                       <HistoryIcon className="mr-2 h-4 w-4" />
-                      {t("appHeader.recentPages", "Recent Pages")}
+                      {t("appHeader.recentPages")}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
@@ -114,17 +114,17 @@ export function AppHeader() {
                   </DropdownMenuSub>
                 )}
                 <DropdownMenuSeparator /> 
-                <Link href="/job-tracker" passHref><DropdownMenuItem><Briefcase className="mr-2 h-4 w-4" />{t("appHeader.jobTracker", "Job Tracker")}</DropdownMenuItem></Link>
-                <Link href="/gamification" passHref><DropdownMenuItem><Award className="mr-2 h-4 w-4" />{t("appHeader.rewardsBadges", "Rewards & Badges")}</DropdownMenuItem></Link>
-                <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />{t("appHeader.wallet", "Wallet")}</DropdownMenuItem></Link>
-                <Link href="/my-resumes" passHref><DropdownMenuItem><Layers3 className="mr-2 h-4 w-4" />{t("appHeader.resumeManager", "Resume Manager")}</DropdownMenuItem></Link>
-                <Link href="/settings" passHref><DropdownMenuItem><SettingsIcon className="mr-2 h-4 w-4" />{t("appHeader.settings", "Settings")}</DropdownMenuItem></Link>
-                <Link href="/blog" passHref><DropdownMenuItem><BookOpen className="mr-2 h-4 w-4" />{t("appHeader.blog", "Blog")}</DropdownMenuItem></Link>
-                <Link href="/activity-log" passHref><DropdownMenuItem><ActivityIcon className="mr-2 h-4 w-4" />{t("appHeader.activity", "Activity")}</DropdownMenuItem></Link>
+                <Link href="/job-tracker" passHref><DropdownMenuItem><Briefcase className="mr-2 h-4 w-4" />{t("appHeader.jobTracker")}</DropdownMenuItem></Link>
+                <Link href="/gamification" passHref><DropdownMenuItem><Award className="mr-2 h-4 w-4" />{t("appHeader.rewardsBadges")}</DropdownMenuItem></Link>
+                <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />{t("appHeader.wallet")}</DropdownMenuItem></Link>
+                <Link href="/my-resumes" passHref><DropdownMenuItem><Layers3 className="mr-2 h-4 w-4" />{t("appHeader.resumeManager")}</DropdownMenuItem></Link>
+                <Link href="/settings" passHref><DropdownMenuItem><SettingsIcon className="mr-2 h-4 w-4" />{t("appHeader.settings")}</DropdownMenuItem></Link>
+                <Link href="/blog" passHref><DropdownMenuItem><BookOpen className="mr-2 h-4 w-4" />{t("appHeader.blog")}</DropdownMenuItem></Link>
+                <Link href="/activity-log" passHref><DropdownMenuItem><ActivityIcon className="mr-2 h-4 w-4" />{t("appHeader.activity")}</DropdownMenuItem></Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  {t("appHeader.logout", "Logout")}
+                  {t("appHeader.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -139,7 +139,7 @@ export function AppHeader() {
                 <span>{user.dailyStreak || 0}</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent><p>{t("appHeader.dailyStreak", "Daily Login Streak")}</p></TooltipContent>
+            <TooltipContent><p>{t("appHeader.dailyStreak")}</p></TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -148,7 +148,7 @@ export function AppHeader() {
                 <span>{user.xpPoints || 0} XP</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent><p>{t("appHeader.totalXP", "Total Experience Points")}</p></TooltipContent>
+            <TooltipContent><p>{t("appHeader.totalXP")}</p></TooltipContent>
           </Tooltip>
           <Tooltip>
              <TooltipTrigger asChild>
@@ -159,7 +159,7 @@ export function AppHeader() {
                   </div>
                  </Link>
             </TooltipTrigger>
-             <TooltipContent><p>{t("appHeader.coinBalance", "Coin Balance")}</p></TooltipContent>
+             <TooltipContent><p>{t("appHeader.coinBalance")}</p></TooltipContent>
           </Tooltip>
         </div>
       </header>

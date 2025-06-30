@@ -73,15 +73,15 @@ const DailyInterviewChallengePage: React.FC = () => {
         <p className="text-foreground/90 mb-4">{challenge.description}</p>
         <textarea
           className="w-full min-h-[100px] border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder={t("dailyChallenge.yourAnswer", "Type your answer here...")}
+          placeholder={t("dailyChallenge.yourAnswer")}
         />
       </CardContent>
       <CardFooter className="flex justify-between items-center mt-auto border-t pt-4">
         <Button variant="outline" size="sm" onClick={handleShowHint}>
           <Lightbulb className="mr-2 h-4 w-4" />
-          {t("dailyChallenge.showHint", "Show Hint")}
+          {t("dailyChallenge.showHint")}
         </Button>
-        <Button onClick={handleSubmit}>{t("dailyChallenge.submit", "Submit")}</Button>
+        <Button onClick={handleSubmit}>{t("dailyChallenge.submit")}</Button>
       </CardFooter>
     </Card>
   );
@@ -113,7 +113,7 @@ const DailyInterviewChallengePage: React.FC = () => {
             </div>
         </CardContent>
         <CardFooter className="flex justify-end mt-auto border-t pt-4">
-          <Button onClick={handleSubmit}>{t("dailyChallenge.completeTasksButton", "Complete Tasks to Earn XP")}</Button>
+          <Button onClick={handleSubmit}>{t("dailyChallenge.completeTasksButton")}</Button>
         </CardFooter>
     </Card>
   );
@@ -123,9 +123,9 @@ const DailyInterviewChallengePage: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-7 w-7 text-primary" />
-          {t("dailyChallenge.title", "Daily Interview Challenge")}
+          {t("dailyChallenge.title")}
         </h1>
-        <Button variant="ghost" size="icon" onClick={handleRefresh} title={t("dailyChallenge.refresh", "Get New Challenge")}>
+        <Button variant="ghost" size="icon" onClick={handleRefresh} title={t("dailyChallenge.refresh")}>
           <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -136,7 +136,7 @@ const DailyInterviewChallengePage: React.FC = () => {
       </div>
 
       <div className="mt-8 text-center text-muted-foreground text-xs">
-        {t("dailyChallenge.footerNote", "A new challenge is posted every day. Practice regularly to improve your interview skills!")}
+        {t("dailyChallenge.footerNote")}
       </div>
     </div>
   );

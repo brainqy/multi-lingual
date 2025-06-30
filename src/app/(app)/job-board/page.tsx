@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useMemo, type FormEvent } from "react";
@@ -263,24 +264,24 @@ export default function JobBoardPage() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Briefcase className="h-8 w-8" /> {t("jobBoard.title", "Job Board")}
+            <Briefcase className="h-8 w-8" /> {t("jobBoard.title")}
           </h1>
           <CardDescription>
-            {t("jobBoard.pageDescription", "Find job opportunities shared within the alumni network.")}
+            {t("jobBoard.pageDescription")}
           </CardDescription>
         </div>
         <div className="relative w-full md:w-auto md:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input 
             type="search" 
-            placeholder={t("jobBoard.searchPlaceholder", "Search jobs...")}
+            placeholder={t("jobBoard.searchPlaceholder")}
             className="pl-10 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobBoard.postOpportunity", "Post Opportunity")}
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobBoard.postOpportunity")}
         </Button>
       </div>
 
@@ -547,4 +548,3 @@ export default function JobBoardPage() {
     </div>
   );
 }
-

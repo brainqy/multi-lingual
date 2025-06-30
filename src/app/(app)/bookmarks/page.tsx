@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -92,18 +93,18 @@ export default function BookmarksPage() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">{t("bookmarks.title", "My Bookmarks")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("bookmarks.title")}</h1>
         <div className="w-full sm:w-56">
           <Select value={filter} onValueChange={v => setFilter(v as any)}>
             <SelectTrigger>
-              <SelectValue placeholder={t("bookmarks.filter", "Filter by type")} />
+              <SelectValue placeholder={t("bookmarks.filter")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("bookmarks.all", "All Types")}</SelectItem>
-              <SelectItem value="posts">{t("bookmarks.posts", "Community Posts")}</SelectItem>
-              <SelectItem value="blogs">{t("bookmarks.blogs", "Blog Posts")}</SelectItem>
-              <SelectItem value="questions">{t("bookmarks.questions", "Interview Questions")}</SelectItem>
-              <SelectItem value="resumeScans">{t("bookmarks.resumeScans", "Resume Scans")}</SelectItem>
+              <SelectItem value="all">{t("bookmarks.all")}</SelectItem>
+              <SelectItem value="posts">{t("bookmarks.posts")}</SelectItem>
+              <SelectItem value="blogs">{t("bookmarks.blogs")}</SelectItem>
+              <SelectItem value="questions">{t("bookmarks.questions")}</SelectItem>
+              <SelectItem value="resumeScans">{t("bookmarks.resumeScans")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -112,11 +113,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "posts") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" />{t("bookmarks.posts", "Bookmarked Community Posts")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" />{t("bookmarks.posts")}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedPosts.length === 0 ? (
-              <CardDescription>{t("bookmarks.noPosts", "No bookmarked posts yet.")}</CardDescription>
+              <CardDescription>{t("bookmarks.noPosts")}</CardDescription>
             ) : (
               <ul className="space-y-2">
                 {bookmarkedPosts.map(post => (
@@ -138,11 +139,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "blogs") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />{t("bookmarks.blogs", "Bookmarked Blog Posts")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />{t("bookmarks.blogs")}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedBlogs.length === 0 ? (
-              <CardDescription>{t("bookmarks.noBlogs", "No bookmarked blogs yet.")}</CardDescription>
+              <CardDescription>{t("bookmarks.noBlogs")}</CardDescription>
             ) : (
               <ul className="space-y-2">
                 {bookmarkedBlogs.map(blog => (
@@ -164,11 +165,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "questions") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" />{t("bookmarks.questions", "Bookmarked Interview Questions")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" />{t("bookmarks.questions")}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedQuestions.length === 0 ? (
-              <CardDescription>{t("bookmarks.noQuestions", "No bookmarked questions yet.")}</CardDescription>
+              <CardDescription>{t("bookmarks.noQuestions")}</CardDescription>
             ) : (
               <Accordion type="multiple" className="w-full space-y-2">
                 {bookmarkedQuestions.map(q => (
@@ -220,11 +221,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "resumeScans") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" />{t("bookmarks.resumeScans", "Bookmarked Resume Scans")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" />{t("bookmarks.resumeScans")}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedResumeScans.length === 0 ? (
-              <CardDescription>{t("bookmarks.noResumeScans", "No bookmarked resume scans yet.")}</CardDescription>
+              <CardDescription>{t("bookmarks.noResumeScans")}</CardDescription>
             ) : (
               <div className="space-y-3">
                 {bookmarkedResumeScans.map(scan => (
@@ -255,4 +256,3 @@ export default function BookmarksPage() {
     </div>
   );
 }
-

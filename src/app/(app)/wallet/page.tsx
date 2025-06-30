@@ -74,18 +74,18 @@ export default function WalletPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <WalletCards className="h-8 w-8" /> {t("wallet.title", "Digital Wallet")}
+          <WalletCards className="h-8 w-8" /> {t("wallet.title")}
         </h1>
         <Button
           onClick={() =>
             toast({
-              title: t("wallet.addFundsToastTitle", "Add Funds (Mock)"),
-              description: t("wallet.addFundsToastDesc", "This feature is for demonstration."),
+              title: t("wallet.addFundsToastTitle"),
+              description: t("wallet.addFundsToastDesc"),
             })
           }
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("wallet.addCoins", "Add Coins")}
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("wallet.addCoins")}
         </Button>
       </div>
 
@@ -93,15 +93,15 @@ export default function WalletPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Coins className="h-6 w-6 text-primary" />
-            {t("wallet.currentBalance", "Current Balance")}
+            {t("wallet.currentBalance")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-5xl font-bold text-primary">
-            {wallet.coins} <span className="text-2xl text-muted-foreground">{t("wallet.coins", "Coins")}</span>
+            {wallet.coins} <span className="text-2xl text-muted-foreground">{t("wallet.coins")}</span>
           </p>
           <CardDescription className="mt-1">
-            {t("wallet.usageHint", "Use coins for premium features and services.")}
+            {t("wallet.usageHint")}
           </CardDescription>
         </CardContent>
       </Card>
@@ -123,21 +123,21 @@ export default function WalletPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("wallet.transactionHistory", "Transaction History")}</CardTitle>
-          <CardDescription>{t("wallet.recentActivity", "Recent activity in your wallet.")}</CardDescription>
+          <CardTitle>{t("wallet.transactionHistory")}</CardTitle>
+          <CardDescription>{t("wallet.recentActivity")}</CardDescription>
         </CardHeader>
         <CardContent>
           {wallet.transactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">
-              {t("wallet.noTransactions", "No transactions yet.")}
+              {t("wallet.noTransactions")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("wallet.date", "Date")}</TableHead>
-                  <TableHead>{t("wallet.description", "Description")}</TableHead>
-                  <TableHead className="text-right">{t("wallet.amount", "Amount")}</TableHead>
+                  <TableHead>{t("wallet.date")}</TableHead>
+                  <TableHead>{t("wallet.description")}</TableHead>
+                  <TableHead className="text-right">{t("wallet.amount")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -156,7 +156,7 @@ export default function WalletPage() {
                         ) : (
                           <ArrowDownCircle className="h-4 w-4" />
                         )}
-                        {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t("wallet.coins", "Coins")}
+                        {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t("wallet.coins")}
                       </span>
                     </TableCell>
                   </TableRow>

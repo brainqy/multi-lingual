@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -61,11 +62,11 @@ const jobApplicationSchema = z.object({
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
-const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; title: string; description: string; acceptedStatuses: JobApplicationStatus[] }[] = [
-  { id: 'Saved', title: 'Saved', description: 'Jobs saved from job boards or your resume scans.', acceptedStatuses: ['Saved'] },
-  { id: 'Applied', title: 'Applied', description: 'Application completed. Awaiting response.', acceptedStatuses: ['Applied'] },
-  { id: 'Interviewing', title: 'Interview', description: 'Record interview details and notes here.', acceptedStatuses: ['Interviewing'] },
-  { id: 'Offer', title: 'Offer', description: 'Interviews completed. Negotiating offer.', acceptedStatuses: ['Offer'] },
+const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; titleKey: string; descriptionKey: string; acceptedStatuses: JobApplicationStatus[] }[] = [
+  { id: 'Saved', titleKey: 'jobTracker.kanban.Saved.title', descriptionKey: 'jobTracker.kanban.Saved.description', acceptedStatuses: ['Saved'] },
+  { id: 'Applied', titleKey: 'jobTracker.kanban.Applied.title', descriptionKey: 'jobTracker.kanban.Applied.description', acceptedStatuses: ['Applied'] },
+  { id: 'Interviewing', titleKey: 'jobTracker.kanban.Interviewing.title', descriptionKey: 'jobTracker.kanban.Interviewing.description', acceptedStatuses: ['Interviewing'] },
+  { id: 'Offer', titleKey: 'jobTracker.kanban.Offer.title', descriptionKey: 'jobTracker.kanban.Offer.description', acceptedStatuses: ['Offer'] },
 ];
 
 function JobCard({ application, onEdit, onDelete, onMove }: { application: JobApplication, onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
@@ -96,7 +97,7 @@ function JobCard({ application, onEdit, onDelete, onMove }: { application: JobAp
                     {KANBAN_COLUMNS_CONFIG.map(col => (
                        col.acceptedStatuses[0] !== application.status &&
                         <DropdownMenuItem key={col.id} onClick={() => onMove(application.id, col.acceptedStatuses[0])}>
-                          {col.title}
+                          {col.titleKey.substring(col.titleKey.lastIndexOf('.')+1)}
                         </DropdownMenuItem>
                     ))}
                     {application.status !== 'Rejected' &&
@@ -122,7 +123,7 @@ function JobCard({ application, onEdit, onDelete, onMove }: { application: JobAp
   );
 }
 
-function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { column: typeof KANBAN_COLUMNS_CONFIG[0], applications: JobApplication[], onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
+function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { column: { id: KanbanColumnId; title: string; description: string; acceptedStatuses: JobApplicationStatus[] }, applications: JobApplication[], onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
   return (
     <Card className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-secondary/50 shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 px-4">
@@ -281,56 +282,56 @@ export default function JobTrackerPage() {
     setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
   }
 
-  const getAppsForColumn = (column: typeof KANBAN_COLUMNS_CONFIG[0]): JobApplication[] => {
+  const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[] }): JobApplication[] => {
     return applications.filter(app => column.acceptedStatuses.includes(app.status));
   };
 
   return (
     <div className="flex flex-col h-full space-y-4 p-0 -m-4 sm:-m-6 lg:-m-8"> 
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("jobTracker.title", "Job Application Tracker")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("jobTracker.title")}</h1>
         <Button onClick={openNewApplicationDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobTracker.addJob", "Add Job")}
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobTracker.addJob")}
         </Button>
       </div>
 
       <div className="flex flex-1 gap-4 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
         <Card className="w-full md:w-72 flex-shrink-0 shadow-lg h-full flex flex-col">
           <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-md font-semibold">{t("jobTracker.jobs", "Jobs")}</CardTitle>
+            <CardTitle className="text-md font-semibold">{t("jobTracker.jobs")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 flex-grow flex flex-col">
             <div>
-              <Label htmlFor="search-job-keywords">{t("jobTracker.searchJob", "Search job")}</Label>
+              <Label htmlFor="search-job-keywords">{t("jobTracker.searchJob")}</Label>
               <Input 
                 id="search-job-keywords" 
-                placeholder={t("jobTracker.keywordsPlaceholder", "Keywords, title...")}
+                placeholder={t("jobTracker.keywordsPlaceholder")}
                 value={searchKeywords}
                 onChange={(e) => setSearchKeywords(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="search-job-location">{t("jobTracker.location", "Location")}</Label>
+              <Label htmlFor="search-job-location">{t("jobTracker.location")}</Label>
               <Input 
                 id="search-job-location" 
-                placeholder={t("jobTracker.locationPlaceholder", "City, state, or remote")}
+                placeholder={t("jobTracker.locationPlaceholder")}
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
               />
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleJobSearch}>
-              <Search className="mr-2 h-4 w-4" /> {t("jobTracker.search", "Search")}
+              <Search className="mr-2 h-4 w-4" /> {t("jobTracker.search")}
             </Button>
             
             <ScrollArea className="flex-grow mt-3 border-2 border-dashed border-border rounded-md p-2 min-h-[200px]">
               {hasSearched && jobSearchResults.length === 0 && (
                 <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-                  {t("jobTracker.noJobsFound", "No jobs found.")}
+                  {t("jobTracker.noJobsFound")}
                 </div>
               )}
               {!hasSearched && jobSearchResults.length === 0 && (
                  <div className="h-full flex items-center justify-center text-muted-foreground text-center text-sm p-4">
-                  {t("jobTracker.searchHint", "Search jobs from various platforms and drag them here to track or add to your saved list.")}
+                  {t("jobTracker.searchHint")}
                 </div>
               )}
               {jobSearchResults.length > 0 && (
@@ -346,7 +347,7 @@ export default function JobTrackerPage() {
                         className="mt-1.5 w-full h-7 text-[10px] py-0.5"
                         onClick={() => handleAddSearchedJobToTracker(job)}
                       >
-                        {t("jobTracker.addToSaved", "Add to Saved")}
+                        {t("jobTracker.addToSaved")}
                       </Button>
                     </Card>
                   ))}
@@ -356,7 +357,7 @@ export default function JobTrackerPage() {
           </CardContent>
           <CardFooter className="p-4 border-t">
             <Button variant="outline" className="w-full" asChild>
-              <Link href="/job-board">{t("jobTracker.findMoreJobs", "Find more jobs")}</Link>
+              <Link href="/job-board">{t("jobTracker.findMoreJobs")}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -367,8 +368,8 @@ export default function JobTrackerPage() {
               key={colConfig.id}
               column={{
                 ...colConfig,
-                title: t(`jobTracker.kanban.${colConfig.id}.title`, colConfig.title),
-                description: t(`jobTracker.kanban.${colConfig.id}.description`, colConfig.description)
+                title: t(colConfig.titleKey),
+                description: t(colConfig.descriptionKey)
               }}
               applications={getAppsForColumn(colConfig)}
               onEdit={handleEdit}
@@ -389,7 +390,7 @@ export default function JobTrackerPage() {
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader className="shrink-0">
-            <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", "Edit Job Application") : t("jobTracker.addNewJob", "Add New Job Application")}</DialogTitle>
+            <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob") : t("jobTracker.addNewJob")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
             <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
@@ -428,7 +429,7 @@ export default function JobTrackerPage() {
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  {JOB_APPLICATION_STATUSES.map(s => <SelectItem key={s} value={s}>{t(`jobTracker.statuses.${s}`, s === 'Interviewing' ? 'Interview' : s)}</SelectItem>)}
+                                  {JOB_APPLICATION_STATUSES.map(s => <SelectItem key={s} value={s}>{t(`jobTracker.statuses.${s}`)}</SelectItem>)}
                                 </SelectContent>
                               </Select>
                             )} />

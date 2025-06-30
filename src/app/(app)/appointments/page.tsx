@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -87,7 +88,7 @@ export default function AppointmentsPage() {
         if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
     };
     updateGlobalAndLocal(appt => ({ ...appt, status: 'Confirmed' as AppointmentStatus }));
-    toast({ title: t("appointments.toastConfirmed", "Appointment Confirmed"), description: t("appointments.toastConfirmedDesc", "The appointment has been marked as confirmed.") });
+    toast({ title: t("appointments.toastConfirmed"), description: t("appointments.toastConfirmedDesc") });
   };
 
   const handleDeclineAppointment = (appointmentId: string) => {
@@ -97,7 +98,7 @@ export default function AppointmentsPage() {
         if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
     };
     updateGlobalAndLocal(appt => ({ ...appt, status: 'Cancelled' as AppointmentStatus }));
-    toast({ title: t("appointments.toastDeclined", "Appointment Declined"), description: t("appointments.toastDeclinedDesc", "The appointment has been marked as cancelled."), variant: "destructive" });
+    toast({ title: t("appointments.toastDeclined"), description: t("appointments.toastDeclinedDesc"), variant: "destructive" });
   };
 
   const handleMarkComplete = (appointmentId: string) => {
@@ -107,7 +108,7 @@ export default function AppointmentsPage() {
         if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
     };
     updateGlobalAndLocal(appt => ({ ...appt, status: 'Completed' as AppointmentStatus }));
-    toast({ title: t("appointments.toastCompleted", "Appointment Completed"), description: t("appointments.toastCompletedDesc", "The appointment has been marked as completed.") });
+    toast({ title: t("appointments.toastCompleted"), description: t("appointments.toastCompletedDesc") });
   };
 
   const openRescheduleDialog = (appointment: Appointment) => {
@@ -143,7 +144,7 @@ export default function AppointmentsPage() {
         status: 'Pending' as AppointmentStatus
     }));
 
-    toast({ title: t("appointments.toastReschedule", "Reschedule Request Sent (Mock)"), description: t("appointments.toastRescheduleDesc", { user: appointmentToReschedule.withUser }) });
+    toast({ title: t("appointments.toastReschedule"), description: t("appointments.toastRescheduleDesc", { user: appointmentToReschedule.withUser }) });
     setIsRescheduleDialogOpen(false);
   };
 
@@ -155,7 +156,7 @@ export default function AppointmentsPage() {
 
   const onFeedbackSubmit = (data: FeedbackFormData) => {
     if (!appointmentForFeedback) return;
-    toast({ title: t("appointments.toastFeedback", "Feedback Submitted (Mock)"), description: t("appointments.toastFeedbackDesc", { user: appointmentForFeedback.withUser }) });
+    toast({ title: t("appointments.toastFeedback"), description: t("appointments.toastFeedbackDesc", { user: appointmentForFeedback.withUser }) });
     setIsFeedbackDialogOpen(false);
   };
 
@@ -184,27 +185,27 @@ export default function AppointmentsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <CalendarDays className="h-8 w-8" /> {t("appointments.title", "My Appointments")}
+          <CalendarDays className="h-8 w-8" /> {t("appointments.title")}
         </h1>
-        <Button onClick={() => toast({ title: t("appointments.toastScheduleNew", "Schedule New (Mock)"), description: t("appointments.toastScheduleNewDesc", "Navigate to Alumni Connect to book.")})} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("appointments.scheduleNew", "Schedule New")}
+        <Button onClick={() => toast({ title: t("appointments.toastScheduleNew"), description: t("appointments.toastScheduleNewDesc")})} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("appointments.scheduleNew")}
         </Button>
       </div>
-      <CardDescription>{t("appointments.pageDescription", "View and manage your scheduled meetings with alumni and community requests.")}</CardDescription>
+      <CardDescription>{t("appointments.pageDescription")}</CardDescription>
 
       {/* Assigned Posts Section */}
       {assignedPosts.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-foreground">{t("appointments.assignedPosts", "Assigned Posts")}</h2>
+          <h2 className="text-xl font-semibold mb-4 text-foreground">{t("appointments.assignedPosts")}</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {assignedPosts.map(post => (
               <Card key={post.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
                   <CardTitle className="text-lg">{post.content}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{t("appointments.assignedTo", "Assigned to:")} {post.assignedTo}</p>
+                  <p className="text-sm text-muted-foreground">{t("appointments.assignedTo")} {post.assignedTo}</p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{post.tags?.join(', ') || t("appointments.noTags", "No tags")}</p>
+                  <p className="text-sm text-muted-foreground">{post.tags?.join(', ') || t("appointments.noTags")}</p>
                 </CardContent>
               </Card>
             ))}
@@ -217,19 +218,19 @@ export default function AppointmentsPage() {
         <AccordionItem value="filters">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">
             <div className="flex items-center gap-2 text-lg font-semibold">
-              <Filter className="h-5 w-5" /> {t("appointments.filters", "Filters")}
+              <Filter className="h-5 w-5" /> {t("appointments.filters")}
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
               <div>
-                <h4 className="font-medium mb-2">{t("appointments.status", "Status")}</h4>
+                <h4 className="font-medium mb-2">{t("appointments.status")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {AppointmentStatuses.map(status => (
                       <div key={status} className="flex items-center space-x-2">
                         <Checkbox id={`status-${status}`} checked={filterStatuses.has(status)} onCheckedChange={() => handleFilterChange(filterStatuses, status, setFilterStatuses as React.Dispatch<React.SetStateAction<Set<string>>>)} />
-                        <Label htmlFor={`status-${status}`} className="font-normal">{t(`appointments.statuses.${status}`, status)}</Label>
+                        <Label htmlFor={`status-${status}`} className="font-normal">{t(`appointments.statuses.${status}`)}</Label>
                       </div>
                     ))}
                   </div>
@@ -237,14 +238,14 @@ export default function AppointmentsPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="filter-alumni-name">{t("appointments.alumniName", "Alumni Name")}</Label>
-                  <Input id="filter-alumni-name" placeholder={t("appointments.searchByName", "Search by name...")} value={filterAlumniName} onChange={(e) => setFilterAlumniName(e.target.value)} />
+                  <Label htmlFor="filter-alumni-name">{t("appointments.alumniName")}</Label>
+                  <Input id="filter-alumni-name" placeholder={t("appointments.searchByName")} value={filterAlumniName} onChange={(e) => setFilterAlumniName(e.target.value)} />
                 </div>
                  <div>
-                  <Label htmlFor="filter-start-date">{t("appointments.dateRange", "Date Range")}</Label>
+                  <Label htmlFor="filter-start-date">{t("appointments.dateRange")}</Label>
                     <div className="flex flex-col gap-2">
-                      <DatePicker date={filterStartDate} setDate={setFilterStartDate} placeholder={t("appointments.startDate", "Start Date")}/>
-                      <DatePicker date={filterEndDate} setDate={setFilterEndDate} placeholder={t("appointments.endDate", "End Date")}/>
+                      <DatePicker date={filterStartDate} setDate={setFilterStartDate} placeholder={t("appointments.startDate")}/>
+                      <DatePicker date={filterEndDate} setDate={setFilterEndDate} placeholder={t("appointments.endDate")}/>
                    </div>
                  </div>
               </div>
@@ -257,8 +258,8 @@ export default function AppointmentsPage() {
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <CalendarDays className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <CardTitle className="text-2xl">{t("appointments.noAppointments", "No Appointments or Assigned Requests")}</CardTitle>
-            <CardDescription>{appointments.length > 0 ? t("appointments.tryAdjustingFilters", "Try adjusting your filters.") : t("appointments.noScheduled", "You have no scheduled appointments or assigned community requests.")}</CardDescription>
+            <CardTitle className="text-2xl">{t("appointments.noAppointments")}</CardTitle>
+            <CardDescription>{appointments.length > 0 ? t("appointments.tryAdjustingFilters") : t("appointments.noScheduled")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -282,7 +283,7 @@ export default function AppointmentsPage() {
                         {appt.status === 'Pending' && <Clock className="inline h-3 w-3 mr-1"/>}
                         {appt.status === 'Cancelled' && <XCircle className="inline h-3 w-3 mr-1"/>}
                         {appt.status === 'Completed' && <CheckCircle className="inline h-3 w-3 text-blue-600"/>}
-                        {t(`appointments.statuses.${appt.status}`, appt.status)}
+                        {t(`appointments.statuses.${appt.status}`)}
                       </span>
                     </div>
                     {alumni && (
@@ -294,42 +295,42 @@ export default function AppointmentsPage() {
                     {!alumni && appt.withUser && ( 
                         <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
                             <UsersIcon className="h-4 w-4"/>
-                            <span>{t("appointments.withUser", "With {name} {incoming}", { name: appt.withUser, incoming: isCurrentUserRequester ? '' : t("appointments.incomingRequest", "(Incoming Request)") })}</span>
+                            <span>{t("appointments.withUser", { name: appt.withUser, incoming: isCurrentUserRequester ? '' : t("appointments.incomingRequest") })}</span>
                         </div>
                     )}
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-foreground"><strong>{t("appointments.dateTime", "Date & Time")}:</strong> {format(apptDate, "PPPp")}</p>
+                    <p className="text-sm text-foreground"><strong>{t("appointments.dateTime")}:</strong> {format(apptDate, "PPPp")}</p>
                     <p className="text-sm text-muted-foreground mt-1">({formatDistanceToNow(apptDate, { addSuffix: true })})</p>
                     {daysToReminder !== null && (
                         <p className={cn("text-xs mt-1 flex items-center gap-1", daysToReminder === 0 ? "text-red-600 font-semibold" : "text-amber-600")}>
                             <Clock className="h-3 w-3"/>
-                            {t("appointments.reminder", "Reminder {when}", { when: daysToReminder === 0 ? t("appointments.today", "Today!") : t("appointments.inDays", `in ${daysToReminder} day${daysToReminder > 1 ? 's' : ''}`) })}
+                            {t("appointments.reminder", { when: daysToReminder === 0 ? t("appointments.today") : t("appointments.inDays", {count: daysToReminder}) })}
                         </p>
                     )}
-                     {appt.notes && <p className="text-xs mt-2 italic text-muted-foreground">{t("appointments.notes", "Notes")}: {appt.notes.substring(0,100)}{appt.notes.length > 100 ? '...' : ''}</p>}
+                     {appt.notes && <p className="text-xs mt-2 italic text-muted-foreground">{t("appointments.notes")}: {appt.notes.substring(0,100)}{appt.notes.length > 100 ? '...' : ''}</p>}
                   </CardContent>
                   <CardFooter className="flex flex-col items-stretch sm:flex-row sm:justify-end gap-2 border-t pt-4 mt-auto">
                     {appt.status === 'Confirmed' && (
                       <>
-                      <Button size="sm" variant="default" onClick={() => toast({title: t("appointments.toastJoinMeeting", "Join Meeting (Mock)"), description: t("appointments.toastJoinMeetingDesc", "This would typically open a video call link.")})} className="w-full sm:w-auto bg-primary hover:bg-primary/90"><Video className="mr-2 h-4 w-4" /> {t("appointments.joinMeeting", "Join Meeting")}</Button>
-                       <Button size="sm" variant="outline" onClick={() => handleMarkComplete(appt.id)} className="w-full sm:w-auto"><CheckCircle className="mr-2 h-4 w-4"/> {t("appointments.markCompleted", "Mark as Completed")}</Button>
-                       <Button size="sm" variant="outline" onClick={() => openRescheduleDialog(appt)} className="w-full sm:w-auto"><Edit3 className="mr-1 h-4 w-4"/> {t("appointments.manageReschedule", "Manage/Reschedule")}</Button>
+                      <Button size="sm" variant="default" onClick={() => toast({title: t("appointments.toastJoinMeeting"), description: t("appointments.toastJoinMeetingDesc")})} className="w-full sm:w-auto bg-primary hover:bg-primary/90"><Video className="mr-2 h-4 w-4" /> {t("appointments.joinMeeting")}</Button>
+                       <Button size="sm" variant="outline" onClick={() => handleMarkComplete(appt.id)} className="w-full sm:w-auto"><CheckCircle className="mr-2 h-4 w-4"/> {t("appointments.markCompleted")}</Button>
+                       <Button size="sm" variant="outline" onClick={() => openRescheduleDialog(appt)} className="w-full sm:w-auto"><Edit3 className="mr-1 h-4 w-4"/> {t("appointments.manageReschedule")}</Button>
                       </>
                     )}
                     {appt.status === 'Pending' && !isCurrentUserRequester && (
                       <>
-                        <Button size="sm" variant="default" onClick={() => handleAcceptAppointment(appt.id)} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"><ThumbsUp className="mr-2 h-4 w-4"/> {t("appointments.accept", "Accept")}</Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDeclineAppointment(appt.id)} className="w-full sm:w-auto"><XCircle className="mr-2 h-4 w-4"/> {t("appointments.decline", "Decline")}</Button>
+                        <Button size="sm" variant="default" onClick={() => handleAcceptAppointment(appt.id)} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"><ThumbsUp className="mr-2 h-4 w-4"/> {t("appointments.accept")}</Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDeclineAppointment(appt.id)} className="w-full sm:w-auto"><XCircle className="mr-2 h-4 w-4"/> {t("appointments.decline")}</Button>
                       </>
                     )}
                      {appt.status === 'Pending' && isCurrentUserRequester && (
-                         <Button size="sm" variant="outline" onClick={() => openRescheduleDialog(appt)} className="w-full sm:w-auto"><Edit3 className="mr-1 h-4 w-4"/> {t("appointments.manageReschedule", "Manage/Reschedule")}</Button>
+                         <Button size="sm" variant="outline" onClick={() => openRescheduleDialog(appt)} className="w-full sm:w-auto"><Edit3 className="mr-1 h-4 w-4"/> {t("appointments.manageReschedule")}</Button>
                      )}
                      {appt.status === 'Completed' && isCurrentUserRequester && (
-                        <Button size="sm" variant="outline" onClick={() => openFeedbackDialog(appt)} className="w-full sm:w-auto"><FeedbackIcon className="mr-1 h-4 w-4"/> {t("appointments.provideFeedback", "Provide Feedback")}</Button>
+                        <Button size="sm" variant="outline" onClick={() => openFeedbackDialog(appt)} className="w-full sm:w-auto"><FeedbackIcon className="mr-1 h-4 w-4"/> {t("appointments.provideFeedback")}</Button>
                      )}
-                     {appt.status === 'Cancelled' && (<p className="text-sm text-muted-foreground text-center sm:text-right w-full">{t("appointments.cancelledMsg", "This appointment was cancelled.")}</p>)}
+                     {appt.status === 'Cancelled' && (<p className="text-sm text-muted-foreground text-center sm:text-right w-full">{t("appointments.cancelledMsg")}</p>)}
                   </CardFooter>
                 </Card>
               );
@@ -339,24 +340,24 @@ export default function AppointmentsPage() {
 
           {assignedPosts.length > 0 && (
             <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4 text-foreground">{t("appointments.assignedCommunityRequests", "Assigned Community Requests")}</h2>
+              <h2 className="text-xl font-semibold mb-4 text-foreground">{t("appointments.assignedCommunityRequests")}</h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {assignedPosts.map(post => (
                   <Card key={post.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-blue-50 border-blue-200">
                     <CardHeader>
-                      <CardTitle className="text-lg text-blue-700">{t("appointments.request", "Request")}: {post.content ? post.content.substring(0, 50) : t("appointments.untitledRequest", "Untitled Request")}...</CardTitle>
+                      <CardTitle className="text-lg text-blue-700">{t("appointments.request")}: {post.content ? post.content.substring(0, 50) : t("appointments.untitledRequest")}...</CardTitle>
                       <CardDescription className="text-xs text-blue-600">
-                        {t("appointments.from", "From")}: {post.userName} ({t("appointments.communityFeed", "Community Feed")}) <br/>
-                        {t("appointments.assignedToYou", "Assigned to you")}
+                        {t("appointments.from")}: {post.userName} ({t("appointments.communityFeed")}) <br/>
+                        {t("appointments.assignedToYou")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">{t("appointments.status", "Status")}: <Badge variant="info">{post.status}</Badge></p>
-                       {post.tags && post.tags.length > 0 && <p className="text-xs mt-2 text-muted-foreground">{t("appointments.tags", "Tags")}: {post.tags.join(', ')}</p>}
+                      <p className="text-sm text-muted-foreground">{t("appointments.status")}: <Badge variant="info">{post.status}</Badge></p>
+                       {post.tags && post.tags.length > 0 && <p className="text-xs mt-2 text-muted-foreground">{t("appointments.tags")}: {post.tags.join(', ')}</p>}
                     </CardContent>
                      <CardFooter className="flex justify-end">
                         <Button size="sm" variant="outline" asChild>
-                            <Link href={`/community-feed#post-${post.id}`}>{t("appointments.viewOnFeed", "View on Feed")}</Link>
+                            <Link href={`/community-feed#post-${post.id}`}>{t("appointments.viewOnFeed")}</Link>
                         </Button>
                     </CardFooter>
                   </Card>
@@ -370,22 +371,22 @@ export default function AppointmentsPage() {
       <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{t("appointments.rescheduleTitle", "Reschedule Appointment")}</DialogTitle>
-            <CardDescription>{t("appointments.rescheduleDesc", "Request a new time for your appointment with {user}.", { user: appointmentToReschedule?.withUser || "" })}</CardDescription>
+            <DialogTitle className="text-2xl">{t("appointments.rescheduleTitle")}</DialogTitle>
+            <CardDescription>{t("appointments.rescheduleDesc", { user: appointmentToReschedule?.withUser || "" })}</CardDescription>
           </DialogHeader>
           {appointmentToReschedule && (
             <form onSubmit={handleRescheduleSubmit(onRescheduleSubmit)} className="space-y-4 py-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="rescheduleDate">{t("appointments.newPreferredDate", "New Preferred Date")}</Label>
+                  <Label htmlFor="rescheduleDate">{t("appointments.newPreferredDate")}</Label>
                   <Controller name="preferredDate" control={rescheduleControl} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
                   {rescheduleErrors.preferredDate && <p className="text-sm text-destructive mt-1">{rescheduleErrors.preferredDate.message}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="rescheduleTimeSlot">{t("appointments.newPreferredTimeSlot", "New Preferred Time Slot")}</Label>
+                  <Label htmlFor="rescheduleTimeSlot">{t("appointments.newPreferredTimeSlot")}</Label>
                   <Controller name="preferredTimeSlot" control={rescheduleControl} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="rescheduleTimeSlot"><SelectValue placeholder={t("appointments.selectTimeSlot", "Select a time slot")} /></SelectTrigger>
+                      <SelectTrigger id="rescheduleTimeSlot"><SelectValue placeholder={t("appointments.selectTimeSlot")} /></SelectTrigger>
                       <SelectContent>
                         {PreferredTimeSlots.map(slot => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
                       </SelectContent>
@@ -395,12 +396,12 @@ export default function AppointmentsPage() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="rescheduleMessage">{t("appointments.messageOptional", "Message (Optional)")}</Label>
-                <Controller name="message" control={rescheduleControl} render={({ field }) => <Textarea id="rescheduleMessage" placeholder={t("appointments.rescheduleReason", "Reason for rescheduling or additional details.")} rows={3} {...field} />} />
+                <Label htmlFor="rescheduleMessage">{t("appointments.messageOptional")}</Label>
+                <Controller name="message" control={rescheduleControl} render={({ field }) => <Textarea id="rescheduleMessage" placeholder={t("appointments.rescheduleReason")} rows={3} {...field} />} />
               </div>
               <DialogFooter>
-                <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel", "Cancel")}</Button></DialogClose>
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground"><CalendarPlus className="mr-2 h-4 w-4"/> {t("appointments.requestReschedule", "Request Reschedule")}</Button>
+                <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground"><CalendarPlus className="mr-2 h-4 w-4"/> {t("appointments.requestReschedule")}</Button>
               </DialogFooter>
             </form>
           )}
@@ -409,14 +410,14 @@ export default function AppointmentsPage() {
 
       <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
         <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle", "Provide Feedback")}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", "Share your experience for the session with {user}.", { user: appointmentForFeedback?.withUser })}</CardDescription></DialogHeader>
+            <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle")}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", { user: appointmentForFeedback?.withUser })}</CardDescription></DialogHeader>
             {appointmentForFeedback && (
                 <form onSubmit={handleFeedbackSubmit(onFeedbackSubmit)} className="space-y-4 py-4">
                     <div>
-                        <Label htmlFor="rating">{t("appointments.overallRating", "Overall Rating (1-5 Stars)")}</Label>
+                        <Label htmlFor="rating">{t("appointments.overallRating")}</Label>
                         <Controller name="rating" control={feedbackControl} render={({ field }) => (
                             <Select onValueChange={(value) => field.onChange(Number(value))} value={String(field.value || 0)}>
-                                <SelectTrigger id="rating"><SelectValue placeholder={t("appointments.selectRating", "Select rating")} /></SelectTrigger>
+                                <SelectTrigger id="rating"><SelectValue placeholder={t("appointments.selectRating")} /></SelectTrigger>
                                 <SelectContent>
                                     {[1,2,3,4,5].map(r => <SelectItem key={r} value={String(r)}>{r} Star{r > 1 ? 's' : ''}</SelectItem>)}
                                 </SelectContent>
@@ -425,12 +426,12 @@ export default function AppointmentsPage() {
                          {feedbackErrors.rating && <p className="text-sm text-destructive mt-1">{feedbackErrors.rating.message}</p>}
                     </div>
                     <div>
-                        <Label htmlFor="comments">{t("appointments.commentsOptional", "Comments (Optional)")}</Label>
-                        <Controller name="comments" control={feedbackControl} render={({ field }) => <Textarea id="comments" placeholder={t("appointments.whatWentWell", "What went well? Any suggestions?")} rows={4} {...field} />} />
+                        <Label htmlFor="comments">{t("appointments.commentsOptional")}</Label>
+                        <Controller name="comments" control={feedbackControl} render={({ field }) => <Textarea id="comments" placeholder={t("appointments.whatWentWell")} rows={4} {...field} />} />
                     </div>
                     <DialogFooter>
-                        <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel", "Cancel")}</Button></DialogClose>
-                        <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground"><FeedbackIcon className="mr-2 h-4 w-4"/> {t("common.submit", "Submit")}</Button>
+                        <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+                        <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground"><FeedbackIcon className="mr-2 h-4 w-4"/> {t("common.submit")}</Button>
                     </DialogFooter>
                 </form>
             )}
@@ -440,4 +441,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-

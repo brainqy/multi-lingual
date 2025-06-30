@@ -863,86 +863,85 @@ export const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
 export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
 
 
-export interface SearchabilityDetails {
-  hasPhoneNumber?: boolean;
-  hasEmail?: boolean;
-  hasAddress?: boolean;
-  jobTitleMatchesJD?: boolean;
-  hasWorkExperienceSection?: boolean;
-  hasEducationSection?: boolean;
-  hasProfessionalSummary?: boolean;
-  keywordDensityFeedback?: string;
-}
+const SearchabilityDetailsSchema = z.object({
+  hasPhoneNumber: z.boolean().optional().describe("Resume contains a phone number."),
+  hasEmail: z.boolean().optional().describe("Resume contains an email address."),
+  hasAddress: z.boolean().optional().describe("Resume contains a physical address (city, state is sufficient)."),
+  jobTitleMatchesJD: z.boolean().optional().describe("Job title in resume aligns with or is found in the job description."),
+  hasWorkExperienceSection: z.boolean().optional().describe("A distinct work experience section was identified."),
+  hasEducationSection: z.boolean().optional().describe("A distinct education section was identified."),
+  hasProfessionalSummary: z.boolean().optional().describe("Resume contains a professional summary or objective statement."),
+  keywordDensityFeedback: z.string().optional().describe("Feedback on keyword density and relevance to the job description."),
+});
 
-export interface RecruiterTipItem {
-    category: string;
-    finding: string;
-    status: 'positive' | 'neutral' | 'negative';
-    suggestion?: string;
-}
+const RecruiterTipItemSchema = z.object({
+    category: z.string().describe("Category of the tip (e.g., Word Count, Action Verbs, Measurable Results)."),
+    finding: z.string().describe("The specific finding or observation related to this tip."),
+    status: z.enum(['positive', 'neutral', 'negative']).describe("Assessment of the finding (positive, neutral, negative)."),
+    suggestion: z.string().optional().describe("A brief suggestion for improvement if status is neutral or negative."),
+});
 
-export interface AtsParsingConfidenceDetails {
-    overall?: number;
-    warnings?: string[];
-}
+const AtsParsingConfidenceSchema = z.object({
+    overall: z.number().min(0).max(100).optional().describe("Overall confidence score (0-100) for ATS parsing."),
+    warnings: z.array(z.string()).optional().describe("Specific warnings or potential issues for ATS parsing."),
+});
 
-export interface QuantifiableAchievementDetails {
-    score?: number;
-    examplesFound?: string[];
-    areasLackingQuantification?: string[];
-}
+const QuantifiableAchievementDetailsSchema = z.object({
+    score: z.number().min(0).max(100).optional().describe("Score for the use of quantifiable achievements."),
+    examplesFound: z.array(z.string()).optional().describe("Examples of strong quantifiable statements found."),
+    areasLackingQuantification: z.array(z.string()).optional().describe("Sections or bullet points where quantification could be added."),
+});
 
-export interface ActionVerbDetails {
-    score?: number;
-    strongVerbsUsed?: string[];
-    weakVerbsUsed?: string[];
-    overusedVerbs?: string[];
-    suggestedStrongerVerbs?: { original: string; suggestion: string }[];
-}
+const ActionVerbDetailsSchema = z.object({
+    score: z.number().min(0).max(100).optional().describe("Score for the quality, variety, and impact of action verbs."),
+    strongVerbsUsed: z.array(z.string()).optional().describe("Examples of strong action verbs found."),
+    weakVerbsUsed: z.array(z.string()).optional().describe("Examples of weak or passive verbs found."),
+    overusedVerbs: z.array(z.string()).optional().describe("Action verbs that might be overused."),
+    suggestedStrongerVerbs: z.array(z.object({ original: z.string(), suggestion: z.string() })).optional().describe("Suggestions for stronger verb alternatives."),
+});
 
-export interface ImpactStatementDetails {
-    clarityScore?: number;
-    unclearImpactStatements?: string[];
-    exampleWellWrittenImpactStatements?: string[];
-}
+const ImpactStatementDetailsSchema = z.object({
+    clarityScore: z.number().min(0).max(100).optional().describe("Score for the clarity and impact of experience/achievement statements."),
+    unclearImpactStatements: z.array(z.string()).optional().describe("Examples of statements that could be clearer or lack demonstrated impact."),
+    exampleWellWrittenImpactStatements: z.array(z.string()).optional().describe("Examples of well-written impact statements found."),
+});
 
-export interface ReadabilityDetails {
-    fleschKincaidGradeLevel?: number;
-    fleschReadingEase?: number;
-    readabilityFeedback?: string;
-}
+const ReadabilityDetailsSchema = z.object({
+    fleschKincaidGradeLevel: z.number().optional().describe("Estimated Flesch-Kincaid Grade Level."),
+    fleschReadingEase: z.number().optional().describe("Estimated Flesch Reading Ease score."),
+    readabilityFeedback: z.string().optional().describe("General feedback on the resume's readability, e.g., sentence structure, conciseness."),
+});
 
+export const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
+  hardSkillsScore: z.number().min(0).max(100).optional().describe("Score for hard skill alignment with the job description (0-100)."),
+  matchingSkills: z.array(z.string()).optional().describe('Skills that appear in both the resume and the job description. These contribute to Hard Skills Score.'),
+  missingSkills: z.array(z.string()).optional().describe('Skills crucial for the job description that are missing from the resume. These impact Hard Skills Score negatively.'),
+  resumeKeyStrengths: z.string().optional().describe('Key strengths and experiences highlighted from the resume that align with the job. This feeds into Highlights Score.'),
+  jobDescriptionKeyRequirements: z.string().optional().describe('Key requirements and critical expectations extracted from the job description for comparison.'),
+  overallQualityScore: z.number().min(0).max(100).optional().describe('An overall quality score (0-100) for the resume against the job description, considering content, structure, and alignment beyond just keywords.'),
+  recruiterTips: z.array(RecruiterTipItemSchema).optional().describe("Detailed breakdown of recruiter tips and assessments."),
+  overallFeedback: z.string().optional().describe("General overall feedback and summary of the resume's effectiveness for this job."),
 
-export interface AnalyzeResumeAndJobDescriptionOutput {
-  hardSkillsScore?: number;
-  matchingSkills?: string[];
-  missingSkills?: string[];
-  resumeKeyStrengths?: string;
-  jobDescriptionKeyRequirements?: string;
-  overallQualityScore?: number;
-  recruiterTips?: RecruiterTipItem[];
-  overallFeedback?: string;
+  searchabilityScore: z.number().min(0).max(100).optional().describe("Overall searchability score (0-100). Based on presence of contact info, section headings, and job title match."),
+  recruiterTipsScore: z.number().min(0).max(100).optional().describe("Overall score based on recruiter tips (0-100), such as word count, action verbs, and measurable results."),
+  highlightsScore: z.number().min(0).max(100).optional().describe("Score for the quality and relevance of resume highlights (0-100) against the job description."),
+  softSkillsScore: z.number().min(0).max(100).optional().describe("Score for identified soft skills relevant to the job (0-100)."),
+  identifiedSoftSkills: z.array(z.string()).optional().describe('Soft skills identified in the resume that are relevant to the job description. These contribute to Soft Skills Score.'),
+  
+  searchabilityDetails: SearchabilityDetailsSchema.optional().describe("Detailed breakdown of searchability aspects."),
+  formattingDetails: z.array(z.custom<AtsFormattingIssue>()).optional().describe("Detailed breakdown of formatting aspects and feedback."),
+  
+  atsParsingConfidence: AtsParsingConfidenceSchema.optional().describe("Confidence scores for ATS parsing."),
+  atsStandardFormattingComplianceScore: z.number().min(0).max(100).optional().describe("Score for compliance with standard ATS-friendly formatting, considering clarity, consistency, and length."),
+  standardFormattingIssues: z.array(z.custom<AtsFormattingIssue>()).optional().describe("Specific standard formatting issues identified."),
+  undefinedAcronyms: z.array(z.string()).optional().describe("Acronyms used without prior definition."),
 
-  searchabilityScore?: number;
-  recruiterTipsScore?: number;
-  formattingScore?: number;
-  highlightsScore?: number;
-  softSkillsScore?: number;
-  identifiedSoftSkills?: string[];
-
-  searchabilityDetails?: SearchabilityDetails;
-  formattingDetails?: AtsFormattingIssue[];
-
-  atsParsingConfidence?: AtsParsingConfidenceDetails;
-  atsStandardFormattingComplianceScore?: number;
-  standardFormattingIssues?: AtsFormattingIssue[];
-  undefinedAcronyms?: string[];
-
-  quantifiableAchievementDetails?: QuantifiableAchievementDetails;
-  actionVerbDetails?: ActionVerbDetails;
-  impactStatementDetails?: ImpactStatementDetails;
-  readabilityDetails?: ReadabilityDetails;
-}
+  quantifiableAchievementDetails: QuantifiableAchievementDetailsSchema.optional().describe("Details on quantifiable achievements."),
+  actionVerbDetails: ActionVerbDetailsSchema.optional().describe("Details on action verb usage."),
+  impactStatementDetails: ImpactStatementDetailsSchema.optional().describe("Analysis of impact statement clarity and effectiveness."),
+  readabilityDetails: ReadabilityDetailsSchema.optional().describe("Assessment of the resume's readability."),
+});
+export type AnalyzeResumeAndJobDescriptionOutput = z.infer<typeof AnalyzeResumeAndJobDescriptionOutputSchema>;
 
 export interface CalculateMatchScoreInput {
   resumeText: string;

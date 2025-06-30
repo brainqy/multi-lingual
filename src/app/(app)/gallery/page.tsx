@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -44,17 +45,17 @@ export default function GalleryPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <GalleryVerticalEnd className="h-8 w-8" /> {t("gallery.title", "Event Gallery")}
+        <GalleryVerticalEnd className="h-8 w-8" /> {t("gallery.title")}
       </h1>
-      <CardDescription>{t("gallery.pageDescription", "A glimpse into past events and memorable moments from our community.")}</CardDescription>
+      <CardDescription>{t("gallery.pageDescription")}</CardDescription>
 
       {sampleEvents.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <GalleryVerticalEnd className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <CardTitle className="text-2xl">{t("gallery.noEvents", "No Events in Gallery")}</CardTitle>
+            <CardTitle className="text-2xl">{t("gallery.noEvents")}</CardTitle>
             <CardDescription>
-              {t("gallery.noEventsHint", "Check back later for photos from our past events.")}
+              {t("gallery.noEventsHint")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -125,12 +126,12 @@ export default function GalleryPage() {
       <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("gallery.participantsFor", "Participants for: {title}", { title: viewingEventTitle })}</DialogTitle>
-            <CardDescription>{t("gallery.participantListDesc", "List of users who attended this event.")}</CardDescription>
+            <DialogTitle>{t("gallery.participantsFor", { title: viewingEventTitle })}</DialogTitle>
+            <CardDescription>{t("gallery.participantListDesc")}</CardDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] pr-4">
             {selectedEventParticipants.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">{t("gallery.noParticipants", "No participant data available for this event.")}</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t("gallery.noParticipants")}</p>
             ) : (
               <ul className="space-y-3 py-2">
                 {selectedEventParticipants.map(participant => (
@@ -150,7 +151,7 @@ export default function GalleryPage() {
           </ScrollArea>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">{t("gallery.close", "Close")}</Button>
+              <Button variant="outline">{t("gallery.close")}</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
@@ -194,12 +195,12 @@ export default function GalleryPage() {
                     )}
                   </Carousel>
                 ) : (
-                  <p className="text-center text-muted-foreground py-8">{t("gallery.noImages", "No images available for this event.")}</p>
+                  <p className="text-center text-muted-foreground py-8">{t("gallery.noImages")}</p>
                 )}
               </div>
               <DialogFooter className="p-4 border-t">
                 <DialogClose asChild>
-                  <Button variant="outline">{t("gallery.close", "Close")}</Button>
+                  <Button variant="outline">{t("gallery.close")}</Button>
                 </DialogClose>
               </DialogFooter>
             </>
