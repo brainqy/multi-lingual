@@ -1,5 +1,3 @@
-
-
 import * as z from "zod";
 
 export type Translations = {
@@ -1171,8 +1169,8 @@ export interface PromotionalContent {
   imageHint?: string;
   buttonText: string;
   buttonLink: string;
-  gradientFrom: string;
-  gradientTo: string;
+  gradientFrom?: string;
+  gradientTo?: string;
   gradientVia?: string;
 }
 
