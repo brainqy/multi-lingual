@@ -86,7 +86,7 @@ export default function AdminBlogSettingsPage() {
     try {
       const input: GenerateAiBlogPostInput = {
         topic: manualTopic,
-        style: settings.style,
+        style: settings.style || 'informative',
       };
       const blogOutput = await generateAiBlogPost(input);
       
