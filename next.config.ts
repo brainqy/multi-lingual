@@ -55,6 +55,7 @@ const nextConfig: NextConfig = {
     }
     config.externals.push({
       ejs: "commonjs ejs",
+      handlebars: "commonjs handlebars",
     });
 
     return config;

@@ -8,7 +8,7 @@ import type { BlogPost } from '@/types';
 
 // This function generates the static paths for each blog post at build time.
 // It MUST be exported from the page.tsx file.
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return sampleBlogPosts.map((post) => ({
     slug: post.slug,
   }));
