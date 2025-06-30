@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -82,40 +83,42 @@ export default function BlogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPosts.map((post) => (
-            <Card key={post.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden">
-              {post.imageUrl && (
-                <div className="relative w-full h-48">
-                  <Image
-                    src={post.imageUrl}
-                    alt={post.title}
-                    layout="fill"
-                    objectFit="cover"
-                    data-ai-hint="blog post image"
-                  />
-                </div>
-              )}
-              <CardHeader>
-                <CardTitle className="text-xl leading-tight">
-                   {post.title}
-                </CardTitle>
-                <div className="flex items-center space-x-4 text-xs text-muted-foreground pt-1">
-                   <span className="flex items-center gap-1"><User className="h-3 w-3"/> {post.author}</span>
-                   <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3"/> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
-              </CardContent>
-              <CardFooter className="border-t pt-4 mt-auto">
-                 <div className="flex flex-wrap gap-1">
-                   {post.tags?.slice(0, 2).map(tag => (
-                     <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full flex items-center gap-1">
-                       <Tag className="h-3 w-3"/>{tag}
-                     </span>
-                   ))}
-                 </div>
-              </CardFooter>
-            </Card>
+            <Link key={post.id} href={`/blog/${post.slug}`} passHref>
+              <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
+                {post.imageUrl && (
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.title}
+                      layout="fill"
+                      objectFit="cover"
+                      data-ai-hint="blog post image"
+                    />
+                  </div>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-xl leading-tight">
+                     {post.title}
+                  </CardTitle>
+                  <div className="flex items-center space-x-4 text-xs text-muted-foreground pt-1">
+                     <span className="flex items-center gap-1"><User className="h-3 w-3"/> {post.author}</span>
+                     <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3"/> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
+                </CardContent>
+                <CardFooter className="border-t pt-4 mt-auto">
+                   <div className="flex flex-wrap gap-1">
+                     {post.tags?.slice(0, 2).map(tag => (
+                       <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full flex items-center gap-1">
+                         <Tag className="h-3 w-3"/>{tag}
+                       </span>
+                     ))}
+                   </div>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
