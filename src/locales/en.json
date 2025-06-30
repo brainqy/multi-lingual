@@ -386,7 +386,32 @@
     "hindi": "Hindi"
   },
   "affiliates": {
-    "title": "Affiliates Program"
+    "title": "Affiliates Program",
+    "pageDescription": "Partner with ResumeMatch AI, share with your network, and earn commissions!",
+    "yourDetails": "Your Affiliate Details",
+    "detailsDesc": "Use this code or link to promote ResumeMatch AI.",
+    "codeLabel": "Your Unique Affiliate Code",
+    "linkLabel": "Your Affiliate Link",
+    "commissionRate": "Commission Rate",
+    "shareLink": "Share Affiliate Link",
+    "performance": "Affiliate Performance",
+    "performanceDesc": "Track your clicks, signups, and earnings.",
+    "totalClicks": "Total Clicks",
+    "successfulSignups": "Successful Signups",
+    "totalEarned": "Total Earned",
+    "recentSignups": "Recent Signups via Your Link",
+    "noSignups": "No signups through your affiliate link yet.",
+    "userIdMasked": "User ID (Masked)",
+    "signupDate": "Signup Date",
+    "commissionEarned": "Commission Earned",
+    "userMasked": "User...{last4}",
+    "pending": "Pending",
+    "commissionProcessNote": "Commissions are typically processed at the end of each month.",
+    "howItWorks": "How the Affiliate Program Works",
+    "step1": "1. Share your unique affiliate code or link.",
+    "step2": "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.",
+    "step3": "3. Track your performance and earnings in this dashboard.",
+    "step4": "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal]."
   },
   "blog": {
     "title": "Blog & Insights"

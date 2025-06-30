@@ -159,18 +159,18 @@ export default function AffiliatesPage() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Target className="h-8 w-8" /> {t("affiliates.title", "Affiliates Program")}
+        <Target className="h-8 w-8" /> {t("affiliates.title")}
       </h1>
-      <CardDescription>{t("affiliates.pageDescription", "Partner with ResumeMatch AI, share with your network, and earn commissions!")}</CardDescription>
+      <CardDescription>{t("affiliates.pageDescription")}</CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("affiliates.yourDetails", "Your Affiliate Details")}</CardTitle>
-          <CardDescription>{t("affiliates.detailsDesc", "Use this code or link to promote ResumeMatch AI.")}</CardDescription>
+          <CardTitle>{t("affiliates.yourDetails")}</CardTitle>
+          <CardDescription>{t("affiliates.detailsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="affiliate-code">{t("affiliates.codeLabel", "Your Unique Affiliate Code")}</Label>
+            <Label htmlFor="affiliate-code">{t("affiliates.codeLabel")}</Label>
             <div className="flex items-center space-x-2">
               <Input id="affiliate-code" value={userAffiliateProfile.affiliateCode} readOnly className="font-mono"/>
               <Button variant="outline" size="icon" onClick={() => copyToClipboard(userAffiliateProfile.affiliateCode)}>
@@ -179,7 +179,7 @@ export default function AffiliatesPage() {
             </div>
           </div>
           <div>
-            <Label htmlFor="affiliate-link">{t("affiliates.linkLabel", "Your Affiliate Link")}</Label>
+            <Label htmlFor="affiliate-link">{t("affiliates.linkLabel")}</Label>
             <div className="flex items-center space-x-2">
               <Input id="affiliate-link" value={affiliateLink} readOnly />
               <Button variant="outline" size="icon" onClick={() => copyToClipboard(affiliateLink)}>
@@ -188,63 +188,63 @@ export default function AffiliatesPage() {
             </div>
           </div>
            <p className="text-sm text-muted-foreground">
-            {t("affiliates.commissionRate", "Commission Rate")}: <span className="font-semibold text-primary">{(userAffiliateProfile.commissionRate * 100).toFixed(0)}%</span>
+            {t("affiliates.commissionRate")}: <span className="font-semibold text-primary">{(userAffiliateProfile.commissionRate * 100).toFixed(0)}%</span>
           </p>
         </CardContent>
          <CardFooter className="flex justify-end">
              <Button onClick={handleShare} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Share2 className="mr-2 h-4 w-4" /> {t("affiliates.shareLink", "Share Affiliate Link")}
+              <Share2 className="mr-2 h-4 w-4" /> {t("affiliates.shareLink")}
             </Button>
         </CardFooter>
       </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("affiliates.performance", "Affiliate Performance")}</CardTitle>
-          <CardDescription>{t("affiliates.performanceDesc", "Track your clicks, signups, and earnings.")}</CardDescription>
+          <CardTitle>{t("affiliates.performance")}</CardTitle>
+          <CardDescription>{t("affiliates.performanceDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="p-4 border rounded-lg">
                 <BarChart3 className="h-8 w-8 text-primary mx-auto mb-2"/>
                 <p className="text-2xl font-bold">{totalClicks}</p>
-                <p className="text-sm text-muted-foreground">{t("affiliates.totalClicks", "Total Clicks")}</p>
+                <p className="text-sm text-muted-foreground">{t("affiliates.totalClicks")}</p>
             </div>
              <div className="p-4 border rounded-lg">
                 <Users className="h-8 w-8 text-green-600 mx-auto mb-2"/>
                 <p className="text-2xl font-bold">{totalSignups}</p>
-                <p className="text-sm text-muted-foreground">{t("affiliates.successfulSignups", "Successful Signups")}</p>
+                <p className="text-sm text-muted-foreground">{t("affiliates.successfulSignups")}</p>
             </div>
             <div className="p-4 border rounded-lg">
                 <DollarSign className="h-8 w-8 text-yellow-500 mx-auto mb-2"/>
                 <p className="text-2xl font-bold">${totalEarned.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">{t("affiliates.totalEarned", "Total Earned")}</p>
+                <p className="text-sm text-muted-foreground">{t("affiliates.totalEarned")}</p>
             </div>
         </CardContent>
       </Card>
 
        <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("affiliates.recentSignups", "Recent Signups via Your Link")}</CardTitle>
+          <CardTitle>{t("affiliates.recentSignups")}</CardTitle>
         </CardHeader>
         <CardContent>
           {userSignups.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">{t("affiliates.noSignups", "No signups through your affiliate link yet.")}</p>
+            <p className="text-center text-muted-foreground py-4">{t("affiliates.noSignups")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("affiliates.userIdMasked", "User ID (Masked)")}</TableHead>
-                  <TableHead>{t("affiliates.signupDate", "Signup Date")}</TableHead>
-                  <TableHead className="text-right">{t("affiliates.commissionEarned", "Commission Earned")}</TableHead>
+                  <TableHead>{t("affiliates.userIdMasked")}</TableHead>
+                  <TableHead>{t("affiliates.signupDate")}</TableHead>
+                  <TableHead className="text-right">{t("affiliates.commissionEarned")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {userSignups.map((signup) => (
                   <TableRow key={signup.id}>
-                    <TableCell className="font-medium">{t("affiliates.userMasked", "User...{last4}", { last4: signup.newUserId.slice(-4) })}</TableCell>
+                    <TableCell className="font-medium">{t("affiliates.userMasked", { last4: signup.newUserId.slice(-4) })}</TableCell>
                     <TableCell>{format(new Date(signup.signupDate), 'PP')}</TableCell>
                     <TableCell className="text-right text-green-600 font-semibold">
-                      {signup.commissionEarned ? `$${signup.commissionEarned.toFixed(2)}` : t("affiliates.pending", "Pending")}
+                      {signup.commissionEarned ? `$${signup.commissionEarned.toFixed(2)}` : t("affiliates.pending")}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -253,19 +253,19 @@ export default function AffiliatesPage() {
           )}
         </CardContent>
          <CardFooter>
-            <p className="text-xs text-muted-foreground">{t("affiliates.commissionProcessNote", "Commissions are typically processed at the end of each month.")}</p>
+            <p className="text-xs text-muted-foreground">{t("affiliates.commissionProcessNote")}</p>
          </CardFooter>
       </Card>
 
        <Card className="shadow-lg bg-primary/10 border-primary/30">
             <CardHeader>
-                <CardTitle>{t("affiliates.howItWorks", "How the Affiliate Program Works")}</CardTitle>
+                <CardTitle>{t("affiliates.howItWorks")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-foreground/80">
-                <p>{t("affiliates.step1", "1. Share your unique affiliate code or link.")}</p>
-                <p>{t("affiliates.step2", "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.")}</p>
-                <p>{t("affiliates.step3", "3. Track your performance and earnings in this dashboard.")}</p>
-                <p>{t("affiliates.step4", "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal].")}</p>
+                <p>{t("affiliates.step1")}</p>
+                <p>{t("affiliates.step2")}</p>
+                <p>{t("affiliates.step3")}</p>
+                <p>{t("affiliates.step4")}</p>
             </CardContent>
         </Card>
     </div>
