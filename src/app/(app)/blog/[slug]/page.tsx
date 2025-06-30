@@ -5,20 +5,14 @@ import { notFound } from 'next/navigation';
 
 // This function generates the static paths for each blog post at build time.
 // It MUST be exported from the page.tsx file.
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return sampleBlogPosts.map((post) => ({
     slug: post.slug,
   }));
 }
 
-// Props type for a dynamic page in Next.js App Router
-interface BlogPostPageProps {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
 // The page component itself is now a Server Component
-export default function BlogPostPage({ params }: BlogPostPageProps) {
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const slug = params.slug;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = postIndex !== -1 ? sampleBlogPosts[postIndex] : null;
