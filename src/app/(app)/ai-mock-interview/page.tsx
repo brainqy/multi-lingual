@@ -45,6 +45,7 @@ declare global {
 
 const logger = {
   info: (message: string, ...args: any[]) => console.log(`[AIMockInterviewPage INFO] ${message}`, ...args),
+  warn: (message: string, ...args: any[]) => console.warn(`[AIMockInterviewPage WARN] ${message}`, ...args),
   error: (message: string, ...args: any[]) => console.error(`[AIMockInterviewPage ERROR] ${message}`, ...args),
   debug: (message: string, ...args: any[]) => console.debug(`[AIMockInterviewPage DEBUG] ${message}`, ...args),
 };
