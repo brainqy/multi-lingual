@@ -264,7 +264,7 @@ export interface BlogPost {
   bookmarkedBy?: string[];
 }
 
-export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR'] as const;
+export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR', 'Situational', 'Problem-Solving'] as const;
 export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
 
 export interface UserProfile extends AlumniProfile {
