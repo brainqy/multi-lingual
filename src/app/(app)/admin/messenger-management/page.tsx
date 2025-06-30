@@ -71,7 +71,7 @@ export default function MessengerManagementPage() {
   const [currentStepOptions, setCurrentStepOptions] = useState<NewSurveyOption[]>([]);
   const [currentStepDropdownOptions, setCurrentStepDropdownOptions] = useState<{tempId: string, label: string, value: string}[]>([]);
 
-  if (currentUser.role !== 'admin') {
+  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
     return <AccessDeniedMessage />;
   }
   
