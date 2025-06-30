@@ -673,6 +673,7 @@ export interface MockInterviewSession {
   status: 'pending' | 'in-progress' | 'completed';
   createdAt: string;
   timerPerQuestion?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
   questionCategories?: InterviewQuestionCategory[];
   recordingReferences?: RecordingReference[];
 }
