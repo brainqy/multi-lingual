@@ -263,5 +263,11 @@
     "english": "अंग्रेजी",
     "marathi": "मराठी",
     "hindi": "हिन्दी"
+  },
+  "activityLog": {
+    "title": "गतिविधि लॉग",
+    "recentActivities": "हाल की गतिविधियाँ",
+    "description": "ResumeMatch AI के भीतर आपकी हाल की क्रियाओं और सिस्टम घटनाओं का एक लॉग।",
+    "noActivities": "अभी तक कोई गतिविधि दर्ज नहीं की गई है।"
   }
 }

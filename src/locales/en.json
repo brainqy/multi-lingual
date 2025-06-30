@@ -412,5 +412,11 @@
   },
   "bookmarks": {
     "title": "My Bookmarks"
+  },
+  "activityLog": {
+    "title": "Activity Log",
+    "recentActivities": "Recent Activities",
+    "description": "A log of your recent actions and system events within ResumeMatch AI.",
+    "noActivities": "No activities recorded yet."
   }
 }
