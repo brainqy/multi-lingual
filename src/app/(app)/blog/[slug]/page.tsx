@@ -4,18 +4,21 @@ import BlogPostClientView from '@/components/features/blog/BlogPostClientView';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import type { BlogPost } from '@/types';
 
 // This function generates the static paths for each blog post at build time.
 // It MUST be exported from the page.tsx file.
-export function generateStaticParams() {
+export async function generateStaticParams() {
   return sampleBlogPosts.map((post) => ({
     slug: post.slug,
   }));
 }
 
+interface BlogPostPageProps {
+  params: { slug: string };
+}
+
 // The page component itself is now a Server Component
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage({ params }: BlogPostPageProps) {
   const slug = params.slug;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = postIndex !== -1 ? sampleBlogPosts[postIndex] : null;
