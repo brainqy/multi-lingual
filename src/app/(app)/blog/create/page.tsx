@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -64,7 +65,7 @@ export default function CreateBlogPage() {
       toast({ title: t("blog.toastCreatedTitle", "Blog Post Created!"), description: t("blog.toastCreatedDesc", "Your post has been successfully submitted.") });
       reset();
       setIsLoading(false);
-      router.push(`/blog/${newPost.slug}`);
+      router.push(`/blog`);
     }, 1500);
   };
 

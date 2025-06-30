@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -95,10 +96,8 @@ export default function BlogPage() {
                 </div>
               )}
               <CardHeader>
-                <CardTitle className="text-xl leading-tight hover:text-primary transition-colors">
-                   <Link href={`/blog/${post.slug}`}>
-                     {post.title}
-                   </Link>
+                <CardTitle className="text-xl leading-tight">
+                   {post.title}
                 </CardTitle>
                 <div className="flex items-center space-x-4 text-xs text-muted-foreground pt-1">
                    <span className="flex items-center gap-1"><User className="h-3 w-3"/> {post.author}</span>
@@ -108,7 +107,7 @@ export default function BlogPage() {
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
               </CardContent>
-              <CardFooter className="flex justify-between items-center border-t pt-4 mt-auto">
+              <CardFooter className="border-t pt-4 mt-auto">
                  <div className="flex flex-wrap gap-1">
                    {post.tags?.slice(0, 2).map(tag => (
                      <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full flex items-center gap-1">
@@ -116,11 +115,6 @@ export default function BlogPage() {
                      </span>
                    ))}
                  </div>
-                 <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
-                   <Link href={`/blog/${post.slug}`}>
-                    {t("blog.readMore", "Read More")} <ArrowRight className="ml-1 h-4 w-4"/>
-                   </Link>
-                 </Button>
               </CardFooter>
             </Card>
           ))}
