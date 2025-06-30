@@ -538,7 +538,7 @@ export default function AiMockInterviewPage() {
                  return;
             }
         } else {
-            toast({ title: "No Audio Input", description: "Please enable your microphone to record the session audio.", variant: "warning" });
+            toast({ title: "No Audio Input", description: "Please enable your microphone to record the session audio.", variant: "default" });
             return;
         }
 
