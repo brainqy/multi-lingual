@@ -178,7 +178,7 @@ export default function MessengerManagementPage() {
     setCurrentStepConfig({});
     setCurrentStepOptions([]);
     setCurrentStepDropdownOptions([]);
-    toast({title: "Step Added", description: `Step "${stepToAdd.text.substring(0,20)}..." added to survey.`});
+    toast({title: "Step Added", description: `Step "${currentStepConfig.text.substring(0,20)}..." added to survey.`});
   };
 
   const addOptionField = (type: 'options' | 'dropdownOptions') => {
