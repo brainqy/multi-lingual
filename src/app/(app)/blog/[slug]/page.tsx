@@ -14,15 +14,8 @@ export function generateStaticParams() {
   }));
 }
 
-// Define explicit props type to help with type inference
-interface BlogPostPageProps {
-  params: {
-    slug: string;
-  };
-}
-
 // The page component itself is now a Server Component
-export default function BlogPostPage({ params }: BlogPostPageProps) {
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const slug = params.slug;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = postIndex !== -1 ? sampleBlogPosts[postIndex] : null;
