@@ -1,4 +1,3 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -56,9 +55,14 @@ export default function WalletPage() {
             amount: codeToRedeem.rewardValue,
             type: 'credit',
         });
-        setWallet({ coins: newBalance, transactions: newTransactions });
+        setWallet({
+            coins: newBalance,
+            transactions: newTransactions,
+            tenantId: wallet.tenantId,
+            userId: wallet.userId,
+        });
         toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} coins!` });
-        
+
         // Update sample data (for demo persistence)
         sampleWalletBalance.coins = newBalance;
         sampleWalletBalance.transactions = newTransactions;
