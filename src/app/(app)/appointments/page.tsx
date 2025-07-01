@@ -410,7 +410,7 @@ export default function AppointmentsPage() {
 
       <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
         <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle")}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", { user: appointmentForFeedback?.withUser })}</CardDescription></DialogHeader>
+ <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle")}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", { user: appointmentForFeedback?.withUser || "" })}</CardDescription></DialogHeader>
             {appointmentForFeedback && (
                 <form onSubmit={handleFeedbackSubmit(onFeedbackSubmit)} className="space-y-4 py-4">
                     <div>

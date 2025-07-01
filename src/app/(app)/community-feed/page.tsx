@@ -669,7 +669,7 @@ export default function CommunityFeedPage() {
                                   <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
                                 </Button>
                               )}
-                            {post.assignedTo && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
+                            {post.assignedTo && post.status === 'assigned' && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
                             {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
                           </div>
                         )}

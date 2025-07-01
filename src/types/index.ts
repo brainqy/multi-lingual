@@ -185,7 +185,7 @@ export interface CommunityPost {
   attendees?: number;
   capacity?: number;
   assignedTo?: string;
-  status?: 'open' | 'assigned' | 'completed';
+  status?: 'open' | 'assigned' | 'completed' | 'in progress';
   moderationStatus: CommunityPostModerationStatus;
   flagCount: number;
   comments?: CommunityComment[];

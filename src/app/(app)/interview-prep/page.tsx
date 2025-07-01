@@ -103,7 +103,7 @@ export default function InterviewPracticeHubPage() {
   const [commentingQuestionId, setCommentingQuestionId] = useState<string | null>(null);
   const { control: commentFormControl, handleSubmit: handleCommentFormSubmit, reset: resetCommentForm, formState: { errors: commentFormErrors } } = useForm<CommentFormData>({
     resolver: zodResolver(commentFormSchema),
-    defaultValues: { commentText: '' }
+    defaultValues: { commentText: '' },
   });
 
   const [ratingQuestionId, setRatingQuestionId] = useState<string | null>(null);
@@ -314,7 +314,7 @@ export default function InterviewPracticeHubPage() {
                     (q.tags && q.tags.some(tag => tag.toLowerCase() === topic.toLowerCase()))
                 ))
                 .slice(0,5) 
-                .map(q => ({id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty, baseScore: q.baseScore || 10 })),
+                .map(q => ({id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty })),
         };
         sampleLiveInterviewSessions.unshift(newLiveSession); 
 
@@ -654,8 +654,7 @@ export default function InterviewPracticeHubPage() {
             questionText: q!.questionText, 
             category: q!.category, 
             difficulty: q!.difficulty, 
-            baseScore: q!.baseScore || 10 
-        })); 
+        }));
 
     const combinedQuestions = [...currentEditingQuestions];
     newQuestionsFromBank.forEach(newQ => {
@@ -1049,7 +1048,7 @@ export default function InterviewPracticeHubPage() {
                                  </Button>
                             )}
                              {q.approved === false && q.createdBy === currentUser.id && (
-                                <Badge variant="warning" className="mt-1">Awaiting Approval</Badge>
+                                <Badge variant="outline" className="mt-1">Awaiting Approval</Badge>
                             )}
 
 
@@ -1065,8 +1064,8 @@ export default function InterviewPracticeHubPage() {
                                             )}
                                          />
                                          <Button type="submit" size="sm" variant="outline" disabled={!!commentFormErrors.commentText || !commentFormControl.getValues('commentText')?.trim() }><Send className="h-3.5 w-3.5"/></Button>
-                                      </form>
-                                       {commentFormErrors.commentText && <p className="text-xs text-destructive mt-1">{commentFormErrors.commentText.message}</p>}
+                                      </form>ß
+                                       {commentFormErrors.commentText && <p className="text-xs text-destructive mt-1">{commentFormErrors.commentText.message}</p>}ß
                                     {q.userComments && q.userComments.length > 0 && (
                                     <ScrollArea className="h-24 pr-2 text-xs space-y-1.5">
                                         {q.userComments.map(comment => (
