@@ -54,10 +54,10 @@ const questionFormSchema = z.object({
 
 type QuestionFormData = z.infer<typeof questionFormSchema>;
 
-const commentFormSchema = z.object({
-    commentText: z.string().min(1, "Comment cannot be empty.").max(500, "Comment too long"),
+const commentSchema = z.object({
+    commentText: z.string().trim().min(1, "Comment cannot be empty.").max(500, "Comment too long"),
 });
-type CommentFormData = z.infer<typeof commentFormSchema>;
+type CommentFormData = z.infer<typeof commentSchema>;
 
 const friendEmailSchema = z.string().email("Please enter a valid email address.");
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -101,8 +101,9 @@ export default function InterviewPracticeHubPage() {
   const questionsPerPage = 10;
 
   const [commentingQuestionId, setCommentingQuestionId] = useState<string | null>(null);
-  const { control: commentFormControl, handleSubmit: handleCommentFormSubmit, reset: resetCommentForm, formState: { errors: commentFormErrors } } = useForm<CommentFormData>({
-    resolver: zodResolver(commentFormSchema),
+  const { control: commentFormControl, handleSubmit: handleCommentFormSubmit, reset: resetCommentForm, formState: { errors: commentFormErrors, isValid: isCommentFormValid } } = useForm<CommentFormData>({
+    resolver: zodResolver(commentSchema),
+    mode: 'onChange',
     defaultValues: { commentText: '' }
   });
 
@@ -1064,7 +1065,7 @@ export default function InterviewPracticeHubPage() {
                                                 <Input id={`comment-${q.id}`} placeholder="Add a public comment..." {...field} className="text-xs h-8 flex-grow"/>
                                             )}
                                          />
-                                         <Button type="submit" size="sm" variant="outline" disabled={!!commentFormErrors.commentText || !commentFormControl.getValues('commentText')?.trim() }><Send className="h-3.5 w-3.5"/></Button>
+                                         <Button type="submit" size="sm" variant="outline" disabled={!isCommentFormValid}><Send className="h-3.5 w-3.5"/></Button>
                                       </form>
                                        {commentFormErrors.commentText && <p className="text-xs text-destructive mt-1">{commentFormErrors.commentText.message}</p>}
                                     {q.userComments && q.userComments.length > 0 && (
