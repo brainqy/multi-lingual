@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, type FormEvent, useEffect, useMemo } from 'react';
@@ -17,7 +16,8 @@ import {
     ChevronsUpDown, ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, MessageSquare, ThumbsUp, Users, FileText, FileCheck2, EyeOff, Columns, Palette, CalendarDays,
     Target, ListX, Sparkles, RefreshCcw, UserRoundCog, WandSparkles, ClipboardCopy, Check, Save
 } from "lucide-react"; 
-import { analyzeResumeAndJobDescription, type AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/analyze-resume-and-job-description';
+import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
+import type { AnalyzeResumeAndJobDescriptionOutput } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { sampleResumeScanHistory as initialScanHistory, sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
 import type { ResumeScanHistoryItem, ResumeProfile, AtsFormattingIssue, IdentifyResumeIssuesOutput } from '@/types';
@@ -656,9 +656,9 @@ export default function ResumeAnalyzerPage() {
                           <div key={cat.label}>
                               <div className="flex justify-between text-sm mb-0.5 items-center">
                                   <span className="font-medium text-muted-foreground">{cat.label}</span>
-                                  {cat.issues > 0 && (
+                                  {(cat.issues ?? 0) > 0 && (
                                      <Button variant="link" size="sm" className="text-xs text-red-500 font-semibold p-0 h-auto" onClick={() => handleNavigateToIssue(cat.tabId, cat.sectionId)}>
-                                        {cat.issues} issue{cat.issues !== 1 ? 's' : ''}
+                                        {(cat.issues ?? 0)} issue{(cat.issues ?? 0) !== 1 ? 's' : ''}
                                     </Button>
                                   )}
                               </div>
