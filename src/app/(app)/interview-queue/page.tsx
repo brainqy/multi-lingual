@@ -57,9 +57,9 @@ export default function InterviewQueuePage() {
                       <CardTitle className="text-lg">{session.title}</CardTitle>
                       <Badge 
                         variant={
-                          session.status === 'Scheduled' ? 'info' :
-                          session.status === 'InProgress' ? 'warning' :
-                          session.status === 'Completed' ? 'success' :
+ session.status === 'Scheduled' ? 'secondary' :
+ session.status === 'In-Progress' ? 'default' :
+ session.status === 'Completed' ? 'default' :
                           'outline'
                         }
                       >
