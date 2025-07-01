@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { User, Mail, Briefcase, Sparkles, Upload, Save, CalendarDays, Users, HelpCircle, CheckSquare, Settings as SettingsIcon, Phone, MapPin, GraduationCap, Building, LinkIcon, Brain, Handshake, Clock, MessageCircle, Info, CheckCircle as CheckCircleIcon, XCircle, Edit3, Loader2, ThumbsUp, PlusCircle as PlusCircleIcon } from "lucide-react";
 import { sampleUserProfile, graduationYears, sampleTenants } from "@/lib/sample-data";
 import type { UserProfile, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought } from "@/types";
-import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, SupportTypesSought as SupportTypesSoughtOptions, Genders } from "@/types";
+import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, Genders, SupportTypesSought } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,7 +47,7 @@ const profileSchema = z.object({
   
   skills: z.string().optional(), 
   
-  areasOfSupport: z.array(z.string()).optional(), 
+  areasOfSupport: z.array(z.enum(AreasOfSupportOptions)).optional(), 
   timeCommitment: z.enum(TimeCommitments).optional(), 
   preferredEngagementMode: z.enum(EngagementModes).optional(), 
   otherComments: z.string().optional(),
@@ -152,6 +152,11 @@ export default function ProfilePage() {
       dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : undefined,
       skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
       areasOfSupport: data.areasOfSupport as SupportArea[] || [],
+      degreeProgram: data.degreeProgram,
+      industry: data.industry,
+      timeCommitment: data.timeCommitment,
+      preferredEngagementMode: data.preferredEngagementMode,
+      lookingForSupportType: data.lookingForSupportType,
     };
     setUserProfile(updatedProfileData);
 
@@ -467,7 +472,7 @@ export default function ProfilePage() {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="lookingForSupportType"><SelectValue placeholder="Select Support Type (Optional)" /></SelectTrigger>
                       <SelectContent>
-                        {SupportTypesSoughtOptions.map(st => <SelectItem key={st} value={st}>{st}</SelectItem>)}
+                        {SupportTypesSought.map(st => <SelectItem key={st} value={st}>{st}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   )} />
