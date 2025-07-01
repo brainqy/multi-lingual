@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { User, Mail, Briefcase, Sparkles, Upload, Save, CalendarDays, Users, HelpCircle, CheckSquare, Settings as SettingsIcon, Phone, MapPin, GraduationCap, Building, LinkIcon, Brain, Handshake, Clock, MessageCircle, Info, CheckCircle as CheckCircleIcon, XCircle, Edit3, Loader2, ThumbsUp, PlusCircle as PlusCircleIcon } from "lucide-react";
 import { sampleUserProfile, graduationYears, sampleTenants } from "@/lib/sample-data";
 import type { UserProfile, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought } from "@/types";
-import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, SupportTypesSought as SupportTypesSoughtOptions } from "@/types";
+import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, SupportTypesSought as SupportTypesSoughtOptions, Genders } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,23 +26,21 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
-// Removed useTranslations and useLocale
-
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   dateOfBirth: z.date().optional(),
-  gender: z.enum(['Male', 'Female', 'Prefer not to say']).optional(),
+  gender: z.enum(Genders).optional(),
   mobileNumber: z.string().optional(),
   currentAddress: z.string().optional(),
   
   graduationYear: z.string().optional(),
-  degreeProgram: z.string().optional(), 
+  degreeProgram: z.enum(DegreePrograms).optional(),
   department: z.string().optional(),
   
   currentJobTitle: z.string().optional(),
   currentOrganization: z.string().optional(),
-  industry: z.string().optional(), 
+  industry: z.enum(Industries).optional(),
   workLocation: z.string().optional(),
   linkedInProfile: z.string().url("Invalid URL").optional().or(z.literal('')),
   yearsOfExperience: z.string().optional(),
@@ -50,11 +48,11 @@ const profileSchema = z.object({
   skills: z.string().optional(), 
   
   areasOfSupport: z.array(z.string()).optional(), 
-  timeCommitment: z.string().optional(), 
-  preferredEngagementMode: z.string().optional(), 
+  timeCommitment: z.enum(TimeCommitments).optional(), 
+  preferredEngagementMode: z.enum(EngagementModes).optional(), 
   otherComments: z.string().optional(),
   
-  lookingForSupportType: z.string().optional(), 
+  lookingForSupportType: z.enum(SupportTypesSought).optional(),
   helpNeededDescription: z.string().optional(),
   
   shareProfileConsent: z.boolean().optional(),
@@ -77,8 +75,6 @@ export default function ProfilePage() {
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
   const [isProfileSavedDialogOpen, setIsProfileSavedDialogOpen] = useState(false);
   const { toast } = useToast();
-  // const t = useTranslations('ProfilePage'); // Removed
-  // const locale = useLocale(); // Removed
 
   const { control, handleSubmit, watch, reset, setValue, formState: { errors, isDirty } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -90,11 +86,11 @@ export default function ProfilePage() {
       mobileNumber: userProfile.mobileNumber || '',
       currentAddress: userProfile.currentAddress || '',
       graduationYear: userProfile.graduationYear || '',
-      degreeProgram: userProfile.degreeProgram || '',
+      degreeProgram: userProfile.degreeProgram,
       department: userProfile.department || '',
       currentJobTitle: userProfile.currentJobTitle || '',
       currentOrganization: userProfile.currentOrganization || '',
-      industry: userProfile.industry || '',
+      industry: userProfile.industry,
       workLocation: userProfile.workLocation || '',
       linkedInProfile: userProfile.linkedInProfile || '',
       yearsOfExperience: userProfile.yearsOfExperience || '',
@@ -155,7 +151,7 @@ export default function ProfilePage() {
       ...data,
       dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : undefined,
       skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
-      areasOfSupport: data.areasOfSupport || [],
+      areasOfSupport: data.areasOfSupport as SupportArea[] || [],
     };
     setUserProfile(updatedProfileData);
 
@@ -167,7 +163,7 @@ export default function ProfilePage() {
     setIsProfileSavedDialogOpen(true);
   };
   
-  const renderSectionHeader = (title: string, icon: React.ElementType, tooltipText?: string) => { // Changed titleKey to title, tooltipTextKey to tooltipText
+  const renderSectionHeader = (title: string, icon: React.ElementType, tooltipText?: string) => {
     const IconComponent = icon;
     return (
       <>
@@ -320,9 +316,7 @@ export default function ProfilePage() {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="gender"><SelectValue placeholder="Select Gender" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                        {Genders.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   )} />
