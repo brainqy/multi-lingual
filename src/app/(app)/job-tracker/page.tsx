@@ -40,6 +40,8 @@ const interviewSchema = z.object({
   date: z.string(),
   type: z.enum(['Phone Screen', 'Technical', 'Behavioral', 'On-site', 'Final Round']),
   interviewer: z.string(),
+  interviewerEmail: z.string().email().optional(),
+  interviewerMobile: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -70,7 +72,7 @@ const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; titleKey: string; description
 ];
 
 function JobCard({ application, onEdit, onDelete, onMove }: { application: JobApplication, onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
-  const { toast } = useToast();
+  const { t } = useI18n();
   return (
     <Card className="mb-3 shadow-md bg-card hover:shadow-lg transition-shadow duration-200 cursor-pointer" onClick={() => onEdit(application)}>
       <CardContent className="p-3 space-y-1">
@@ -88,34 +90,34 @@ function JobCard({ application, onEdit, onDelete, onMove }: { application: JobAp
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={() => onEdit(application)}>
-                <Edit3 className="mr-2 h-4 w-4" /> Edit
+                <Edit3 className="mr-2 h-4 w-4" /> {t("jobTracker.dialog.edit", { default: "Edit" })}
               </DropdownMenuItem>
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Move to</DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>{t("jobTracker.dialog.moveTo", { default: "Move to" })}</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
                     {KANBAN_COLUMNS_CONFIG.map(col => (
                        col.acceptedStatuses[0] !== application.status &&
                         <DropdownMenuItem key={col.id} onClick={() => onMove(application.id, col.acceptedStatuses[0])}>
-                          {col.titleKey.substring(col.titleKey.lastIndexOf('.')+1)}
+                          {t(col.titleKey, { default: col.id })}
                         </DropdownMenuItem>
                     ))}
                     {application.status !== 'Rejected' &&
-                        <DropdownMenuItem onClick={() => onMove(application.id, 'Rejected')}>Rejected</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onMove(application.id, 'Rejected')}>{t("jobTracker.statuses.Rejected", { default: "Rejected" })}</DropdownMenuItem>
                     }
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onDelete(application.id)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                <Trash2 className="mr-2 h-4 w-4" /> {t("jobTracker.dialog.delete", { default: "Delete" })}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         {application.reminderDate && (
             <p className="text-xs text-amber-600 flex items-center gap-1">
-                <Clock className="h-3 w-3" /> Reminder: {format(parseISO(application.reminderDate), 'MMM dd, yyyy')}
+                <Clock className="h-3 w-3" /> {t("jobTracker.dialog.reminder", { default: "Reminder" })}: {format(parseISO(application.reminderDate), 'MMM dd, yyyy')}
             </p>
         )}
       </CardContent>
@@ -124,6 +126,7 @@ function JobCard({ application, onEdit, onDelete, onMove }: { application: JobAp
 }
 
 function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { column: { id: KanbanColumnId; title: string; description: string; acceptedStatuses: JobApplicationStatus[] }, applications: JobApplication[], onEdit: (app: JobApplication) => void, onDelete: (id: string) => void, onMove: (appId: string, newStatus: JobApplicationStatus) => void }) {
+  const { t } = useI18n();
   return (
     <Card className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-secondary/50 shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 px-4">
@@ -133,7 +136,7 @@ function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { colu
       <ScrollArea className="flex-grow p-4 pt-0">
         {applications.length === 0 ? (
           <div className="border-2 border-dashed border-border rounded-md p-6 text-center text-muted-foreground h-24 flex items-center justify-center mt-4">
-            Drag jobs here
+            {t("jobTracker.dialog.dragJobsHere", { default: "Drag jobs here" })}
           </div>
         ) : (
           applications.map(app => (
@@ -187,14 +190,14 @@ export default function JobTrackerPage() {
     });
     setJobSearchResults(filtered);
     if (filtered.length === 0) {
-      toast({title: "No Jobs Found", description: "Try different keywords or location."});
+      toast({title: t("jobTracker.toast.noJobsFound.title"), description: t("jobTracker.toast.noJobsFound.description")});
     }
   };
 
   const handleAddSearchedJobToTracker = (job: JobOpening) => {
     const alreadyExists = applications.some(app => app.sourceJobOpeningId === job.id);
     if (alreadyExists) {
-      toast({ title: "Already in Tracker", description: "This job is already in your tracker.", variant: "default" });
+      toast({ title: t("jobTracker.toast.alreadyInTracker.title"), description: t("jobTracker.toast.alreadyInTracker.description"), variant: "default" });
       return;
     }
 
@@ -213,7 +216,7 @@ export default function JobTrackerPage() {
       applicationUrl: job.applicationLink,
     };
     setApplications(prevApps => [newApplication, ...prevApps]);
-    toast({ title: "Job Added to Saved", description: `${job.title} at ${job.company} added.` });
+    toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: job.company }) });
   };
 
   const onSubmit = (data: JobApplicationFormData) => {
@@ -221,11 +224,11 @@ export default function JobTrackerPage() {
 
     if (editingApplication) {
       setApplications(apps => apps.map(app => app.id === editingApplication.id ? { ...app, ...applicationData, status: data.status as JobApplicationStatus, salary: data.salary } : app));
-      toast({ title: "Application Updated", description: `${data.jobTitle} at ${data.companyName} updated.` });
+      toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
     } else {
       const newApp: JobApplication = { ...applicationData, id: String(Date.now()), status: data.status as JobApplicationStatus, tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id };
       setApplications(apps => [newApp, ...apps]);
-      toast({ title: "Application Added", description: `${data.jobTitle} at ${data.companyName} added.` });
+      toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
     }
     setIsDialogOpen(false);
   };
@@ -251,14 +254,14 @@ export default function JobTrackerPage() {
 
   const handleDelete = (id: string) => {
     setApplications(apps => apps.filter(app => app.id !== id));
-    toast({ title: "Application Deleted", description: "Job application removed." });
+    toast({ title: t("jobTracker.toast.appDeleted.title"), description: t("jobTracker.toast.appDeleted.description") });
   };
 
   const handleMoveApplication = (appId: string, newStatus: JobApplicationStatus) => {
     setApplications(prevApps => prevApps.map(app => app.id === appId ? { ...app, status: newStatus } : app));
     const app = applications.find(a => a.id === appId);
     if (app) {
-      toast({ title: "Application Moved", description: `${app.jobTitle} moved to ${newStatus === 'Interviewing' ? 'Interview' : newStatus}.` });
+      toast({ title: t("jobTracker.toast.appMoved.title"), description: t("jobTracker.toast.appMoved.description", { jobTitle: app.jobTitle, newStatus: t(`jobTracker.statuses.${newStatus}`) }) });
     }
   };
 
@@ -271,7 +274,7 @@ export default function JobTrackerPage() {
   
   const handleAddInterview = () => {
     if(!newInterview.date || !newInterview.interviewer) {
-        toast({title: "Missing Info", description: "Please provide at least a date and interviewer name.", variant: "destructive"});
+        toast({title: t("jobTracker.toast.missingInterviewInfo.title"), description: t("jobTracker.toast.missingInterviewInfo.description"), variant: "destructive"});
         return;
     }
     setCurrentInterviews(prev => [...prev, {id: `int-${Date.now()}`, ...newInterview}]);
@@ -289,49 +292,49 @@ export default function JobTrackerPage() {
   return (
     <div className="flex flex-col h-full space-y-4 p-0 -m-4 sm:-m-6 lg:-m-8"> 
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("jobTracker.title")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("jobTracker.title", { default: "Job Application Tracker" })}</h1>
         <Button onClick={openNewApplicationDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobTracker.addJob")}
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("jobTracker.addJob", { default: "Add Job" })}
         </Button>
       </div>
 
       <div className="flex flex-1 gap-4 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
         <Card className="w-full md:w-72 flex-shrink-0 shadow-lg h-full flex flex-col">
           <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-md font-semibold">{t("jobTracker.jobs")}</CardTitle>
+            <CardTitle className="text-md font-semibold">{t("jobTracker.jobs", { default: "Jobs" })}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 flex-grow flex flex-col">
             <div>
-              <Label htmlFor="search-job-keywords">{t("jobTracker.searchJob")}</Label>
+              <Label htmlFor="search-job-keywords">{t("jobTracker.searchJob", { default: "Search Jobs" })}</Label>
               <Input 
                 id="search-job-keywords" 
-                placeholder={t("jobTracker.keywordsPlaceholder")}
+                placeholder={t("jobTracker.keywordsPlaceholder", { default: "Keywords (e.g., 'React')" })}
                 value={searchKeywords}
                 onChange={(e) => setSearchKeywords(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="search-job-location">{t("jobTracker.location")}</Label>
+              <Label htmlFor="search-job-location">{t("jobTracker.location", { default: "Location" })}</Label>
               <Input 
                 id="search-job-location" 
-                placeholder={t("jobTracker.locationPlaceholder")}
+                placeholder={t("jobTracker.locationPlaceholder", { default: "e.g., 'Remote'" })}
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
               />
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleJobSearch}>
-              <Search className="mr-2 h-4 w-4" /> {t("jobTracker.search")}
+              <Search className="mr-2 h-4 w-4" /> {t("jobTracker.search", { default: "Search" })}
             </Button>
             
             <ScrollArea className="flex-grow mt-3 border-2 border-dashed border-border rounded-md p-2 min-h-[200px]">
               {hasSearched && jobSearchResults.length === 0 && (
                 <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-                  {t("jobTracker.noJobsFound")}
+                  {t("jobTracker.noJobsFound", { default: "No jobs found." })}
                 </div>
               )}
               {!hasSearched && jobSearchResults.length === 0 && (
                  <div className="h-full flex items-center justify-center text-muted-foreground text-center text-sm p-4">
-                  {t("jobTracker.searchHint")}
+                  {t("jobTracker.searchHint", { default: "Search for jobs on external platforms and add them to your tracker." })}
                 </div>
               )}
               {jobSearchResults.length > 0 && (
@@ -347,7 +350,7 @@ export default function JobTrackerPage() {
                         className="mt-1.5 w-full h-7 text-[10px] py-0.5"
                         onClick={() => handleAddSearchedJobToTracker(job)}
                       >
-                        {t("jobTracker.addToSaved")}
+                        {t("jobTracker.addToSaved", { default: "Add to Saved" })}
                       </Button>
                     </Card>
                   ))}
@@ -357,7 +360,7 @@ export default function JobTrackerPage() {
           </CardContent>
           <CardFooter className="p-4 border-t">
             <Button variant="outline" className="w-full" asChild>
-              <Link href="/job-board">{t("jobTracker.findMoreJobs")}</Link>
+              <Link href="/job-board">{t("jobTracker.findMoreJobs", { default: "Find More Jobs on Board" })}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -390,16 +393,16 @@ export default function JobTrackerPage() {
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader className="shrink-0">
-            <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob") : t("jobTracker.addNewJob")}</DialogTitle>
+            <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" })}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
             <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
               <TabsList className="grid w-full grid-cols-5 shrink-0">
-                <TabsTrigger value="jobDetails">Job Details</TabsTrigger>
-                <TabsTrigger value="resume">Resume</TabsTrigger>
-                <TabsTrigger value="coverLetter">Cover Letter</TabsTrigger>
-                <TabsTrigger value="interviews">Interviews</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
+                <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
+                <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
+                <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
+                <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
+                <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
               </TabsList>
               <ScrollArea className="flex-grow mt-4">
                 <div className="px-1 pr-4">
@@ -407,24 +410,24 @@ export default function JobTrackerPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="applicationUrl">Job Listing URL</Label>
-                          <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" placeholder="https://example.com/jobs/123" {...field} value={field.value ?? ''} />} />
+                          <Label htmlFor="applicationUrl">{t("jobTracker.dialog.jobUrl", { default: "Job Listing URL" })}</Label>
+                          <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" placeholder={t("jobTracker.dialog.jobUrlPlaceholder", { default: "https://example.com/jobs/123" })} {...field} value={field.value ?? ''} />} />
                         </div>
                         <div>
-                          <Label htmlFor="companyName">Company Name</Label>
+                          <Label htmlFor="companyName">{t("jobTracker.dialog.companyName", { default: "Company Name" })}</Label>
                           <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
                         </div>
                         <div>
-                          <Label htmlFor="jobTitle">Job Title</Label>
+                          <Label htmlFor="jobTitle">{t("jobTracker.dialog.jobTitle", { default: "Job Title" })}</Label>
                           <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="location">Location</Label>
+                            <Label htmlFor="location">{t("jobTracker.dialog.location", { default: "Location" })}</Label>
                             <Controller name="location" control={control} render={({ field }) => <Input id="location" {...field} value={field.value ?? ''} />} />
                           </div>
                           <div>
-                            <Label htmlFor="status">Status</Label>
+                            <Label htmlFor="status">{t("jobTracker.dialog.status", { default: "Status" })}</Label>
                             <Controller name="status" control={control} render={({ field }) => (
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -436,17 +439,17 @@ export default function JobTrackerPage() {
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="salary">Salary</Label>
-                          <Controller name="salary" control={control} render={({ field }) => <Input id="salary" placeholder="e.g., 7900000 or 120k - 140k" {...field} value={field.value ?? ''}/>} />
+                          <Label htmlFor="salary">{t("jobTracker.dialog.salary", { default: "Salary" })}</Label>
+                          <Controller name="salary" control={control} render={({ field }) => <Input id="salary" placeholder={t("jobTracker.dialog.salaryPlaceholder", { default: "e.g., 7900000 or 120k - 140k" })} {...field} value={field.value ?? ''}/>} />
                         </div>
                         <div>
-                          <Label htmlFor="dateApplied">Date</Label>
+                          <Label htmlFor="dateApplied">{t("jobTracker.dialog.date", { default: "Date" })}</Label>
                           <Controller name="dateApplied" control={control} render={({ field }) => <Input type="date" id="dateApplied" {...field} />} />
                         </div>
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="jobDescription">Job Description</Label>
+                          <Label htmlFor="jobDescription">{t("jobTracker.dialog.jobDescription", { default: "Job Description" })}</Label>
                           <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" rows={19} {...field} value={field.value ?? ''}/>} />
                         </div>
                       </div>
@@ -454,16 +457,16 @@ export default function JobTrackerPage() {
                   </TabsContent>
                    <TabsContent value="resume">
                       <div className="space-y-2">
-                        <Label htmlFor="resumeIdUsed">Select Resume Profile</Label>
+                        <Label htmlFor="resumeIdUsed">{t("jobTracker.dialog.selectResume", { default: "Select Resume Profile" })}</Label>
                         <Controller name="resumeIdUsed" control={control} render={({ field }) => (
                           <Select onValueChange={field.onChange} value={field.value || ''}>
-                            <SelectTrigger id="resumeIdUsed"><SelectValue placeholder="Select the resume you used"/></SelectTrigger>
+                            <SelectTrigger id="resumeIdUsed"><SelectValue placeholder={t("jobTracker.dialog.selectResumePlaceholder", { default: "Select the resume you used" })}/></SelectTrigger>
                             <SelectContent>
                               {resumes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         )} />
-                        <p className="text-xs text-muted-foreground">Link this application to one of your saved resumes from 'My Resumes'.</p>
+                        <p className="text-xs text-muted-foreground">{t("jobTracker.dialog.linkResume", { default: "Link this application to one of your saved resumes from 'My Resumes'." })}</p>
                       </div>
                   </TabsContent>
                   <TabsContent value="coverLetter">
@@ -476,7 +479,7 @@ export default function JobTrackerPage() {
         render={({ field }) => (
           <Textarea
             id="coverLetterText"
-            placeholder="Create a Cover Letter for this Job"
+            placeholder={t("jobTracker.dialog.createCoverLetter", { default: "Create a Cover Letter for this Job" })}
             rows={18}
             className="h-full min-h-[350px]"
             {...field}
@@ -488,18 +491,18 @@ export default function JobTrackerPage() {
     {/* Right: Info and AI Upgrade */}
     <div className="flex flex-col gap-4">
       <div className="bg-muted rounded-lg p-5 border">
-        <h3 className="font-semibold text-lg mb-1 text-muted-foreground">Create a Cover Letter</h3>
+        <h3 className="font-semibold text-lg mb-1 text-muted-foreground">{t("jobTracker.dialog.createCoverLetter", { default: "Create a Cover Letter" })}</h3>
         <p className="text-sm text-foreground">
-          Create a cover letter for this job opportunity. Need inspiration? You can reference our cover letter writing guide for more tips.
+          {t("jobTracker.dialog.referenceGuide", { default: "Create a cover letter for this job opportunity. Need inspiration? You can reference our cover letter writing guide for more tips." })}
         </p>
       </div>
       <div className="bg-muted rounded-lg p-5 border flex flex-col items-center">
-        <h4 className="font-semibold text-base mb-1 text-muted-foreground">Get a boost from AI</h4>
+        <h4 className="font-semibold text-base mb-1 text-muted-foreground">{t("jobTracker.dialog.aiBoost", { default: "Get a boost from AI" })}</h4>
         <p className="text-sm text-foreground mb-4 text-center">
-          Upgrade to Brainqy Premium to automatically generate personalized cover letters for your job applications.
+          {t("jobTracker.dialog.aiBoostDesc", { default: "Upgrade to Brainqy Premium to automatically generate personalized cover letters for your job applications." })}
         </p>
         <Button className="w-full bg-teal-400 text-white font-semibold text-lg" disabled>
-          Upgrade
+          {t("jobTracker.dialog.upgrade", { default: "Upgrade" })}
         </Button>
       </div>
     </div>
@@ -509,7 +512,7 @@ export default function JobTrackerPage() {
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
     {/* Left Column: Interview History */}
     <div className="space-y-4">
-      <h4 className="font-medium">Interview History</h4>
+      <h4 className="font-medium">{t("jobTracker.dialog.interviewHistory", { default: "Interview History" })}</h4>
       {currentInterviews.length > 0 ? (
         <div className="space-y-2">
           {currentInterviews.map(interview => (
@@ -532,19 +535,19 @@ export default function JobTrackerPage() {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground text-center py-4">No interviews logged yet.</p>
+        <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noInterviews", { default: "No interviews logged yet." })}</p>
       )}
     </div>
     {/* Right Column: Interview Form */}
     <div className="space-y-4">
-      <h5 className="font-medium text-sm">Add New Interview</h5>
+      <h5 className="font-medium text-sm">{t("jobTracker.dialog.addNewInterview", { default: "Add New Interview" })}</h5>
       <div className="space-y-2">
         <div>
-          <Label htmlFor="interview-date">Date & Time</Label>
+          <Label htmlFor="interview-date">{t("jobTracker.dialog.interviewDate", { default: "Date & Time" })}</Label>
           <Input id="interview-date" type="datetime-local" value={newInterview.date} onChange={(e) => setNewInterview(p => ({...p, date: e.target.value}))}/>
         </div>
         <div>
-          <Label htmlFor="interview-type">Type</Label>
+          <Label htmlFor="interview-type">{t("jobTracker.dialog.interviewType", { default: "Type" })}</Label>
           <Select value={newInterview.type} onValueChange={(val) => setNewInterview(p => ({...p, type: val as any}))}>
             <SelectTrigger id="interview-type"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -557,23 +560,23 @@ export default function JobTrackerPage() {
           </Select>
         </div>
         <div>
-          <Label htmlFor="interviewer-name">Interviewer Name(s)</Label>
-          <Input id="interviewer-name" placeholder="e.g., Jane Doe, John Smith" value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
+          <Label htmlFor="interviewer-name">{t("jobTracker.dialog.interviewerName", { default: "Interviewer Name(s)" })}</Label>
+          <Input id="interviewer-name" placeholder={t("jobTracker.dialog.interviewerNamePlaceholder", { default: "e.g., Jane Doe, John Smith" })} value={newInterview.interviewer} onChange={(e) => setNewInterview(p => ({...p, interviewer: e.target.value}))} />
         </div>
         <div>
-          <Label htmlFor="interviewer-mobile">Interviewer Mobile Number</Label>
-          <Input id="interviewer-mobile" placeholder="e.g., +1234567890" value={newInterview.interviewerMobile || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerMobile: e.target.value}))} />
+          <Label htmlFor="interviewer-mobile">{t("jobTracker.dialog.interviewerMobile", { default: "Interviewer Mobile Number" })}</Label>
+          <Input id="interviewer-mobile" placeholder={t("jobTracker.dialog.interviewerMobilePlaceholder", { default: "e.g., +1234567890" })} value={newInterview.interviewerMobile || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerMobile: e.target.value}))} />
         </div>
         <div>
-          <Label htmlFor="interviewer-email">Interviewer Email</Label>
-          <Input id="interviewer-email" placeholder="e.g., jane.doe@email.com" value={newInterview.interviewerEmail || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerEmail: e.target.value}))} />
+          <Label htmlFor="interviewer-email">{t("jobTracker.dialog.interviewerEmail", { default: "Interviewer Email" })}</Label>
+          <Input id="interviewer-email" placeholder={t("jobTracker.dialog.interviewerEmailPlaceholder", { default: "e.g., jane.doe@email.com" })} value={newInterview.interviewerEmail || ''} onChange={(e) => setNewInterview(p => ({...p, interviewerEmail: e.target.value}))} />
         </div>
         <div>
-          <Label htmlFor="interview-notes">Notes</Label>
-          <Textarea id="interview-notes" placeholder="e.g., Discussed project X, asked about system design..." value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
+          <Label htmlFor="interview-notes">{t("jobTracker.dialog.interviewNotes", { default: "Notes" })}</Label>
+          <Textarea id="interview-notes" placeholder={t("jobTracker.dialog.interviewNotesPlaceholder", { default: "e.g., Discussed project X, asked about system design..." })} value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
         </div>
         <div className="flex justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>Add Interview</Button>
+          <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>{t("jobTracker.dialog.addInterview", { default: "Add Interview" })}</Button>
         </div>
       </div>
     </div>
@@ -583,17 +586,17 @@ export default function JobTrackerPage() {
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
     {/* Left Column: Notes History */}
     <div className="space-y-4">
-      <h4 className="font-medium">Notes History</h4>
+      <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
       {/* Sample Notes */}
       <div className="space-y-2">
         <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-01:</strong> Had a call with recruiter, discussed company culture and next steps.
+          <strong>2024-05-01:</strong> {t("jobTracker.dialog.notesHistorySample1", { default: "Had a call with recruiter, discussed company culture and next steps." })}
         </div>
         <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-10:</strong> Completed technical assessment. Focused on React and system design.
+          <strong>2024-05-10:</strong> {t("jobTracker.dialog.notesHistorySample2", { default: "Completed technical assessment. Focused on React and system design." })}
         </div>
         <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-15:</strong> Scheduled interview with engineering manager for next week.
+          <strong>2024-05-15:</strong> {t("jobTracker.dialog.notesHistorySample3", { default: "Scheduled interview with engineering manager for next week." })}
         </div>
       </div>
       {/* Existing application notes */}
@@ -602,19 +605,19 @@ export default function JobTrackerPage() {
           {editingApplication.notes}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground text-center py-4">No notes yet.</p>
+        <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
       )}
     </div>
     {/* Right Column: Notes Form */}
     <div className="space-y-2">
-      <Label htmlFor="notes">Add/Edit Notes</Label>
+      <Label htmlFor="notes">{t("jobTracker.dialog.addEditNotes", { default: "Add/Edit Notes" })}</Label>
       <Controller
         name="notes"
         control={control}
         render={({ field }) => (
           <Textarea
             id="notes"
-            placeholder="Contacts, interview details, thoughts..."
+            placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })}
             rows={15}
             {...field}
             value={field.value ?? ''}
@@ -628,8 +631,8 @@ export default function JobTrackerPage() {
               </ScrollArea>
             </Tabs>
             <DialogFooter className="pt-4 border-t shrink-0">
-              <DialogClose asChild><Button type="button" variant="outline">Close</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">Save</Button>
+              <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

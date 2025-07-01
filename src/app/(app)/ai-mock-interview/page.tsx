@@ -34,6 +34,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useI18n } from '@/hooks/use-i18n';
 
 
 declare global {
@@ -58,6 +59,7 @@ const formatTime = (seconds: number): string => {
 
 
 export default function AiMockInterviewPage() {
+  const { t } = useI18n();
   const [currentUiStepId, setCurrentUiStepId] = useState<MockInterviewStepId>('setup');
   const [session, setSession] = useState<MockInterviewSession | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -128,13 +130,13 @@ export default function AiMockInterviewPage() {
     };
     recognitionRef.current.onerror = (event: any) => {
       logger.error('Speech recognition error', event.error);
-      toast({ title: "Speech Error", description: `Error: ${event.error}. Please try typing.`, variant: "destructive" });
+      toast({ title: t("aiMockInterview.toast.speechError.title"), description: t("aiMockInterview.toast.speechError.description", { error: event.error }), variant: "destructive" });
       setIsSpeechRecording(false);
     };
     recognitionRef.current.onend = () => {
       // setIsSpeechRecording(false); // Often, you want to keep it active if stop wasn't explicit
     };
-  }, [toast]);
+  }, [toast, t]);
 
   // Initialize MediaRecorder check
    useEffect(() => {
@@ -213,7 +215,7 @@ export default function AiMockInterviewPage() {
         await interviewContainerRef.current.requestFullscreen();
         logger.info("Entered fullscreen.");
       } catch (err) {
-        toast({ title: "Fullscreen Error", description: `Could not enter fullscreen: ${(err as Error).message}`, variant: "destructive" });
+        toast({ title: t("aiMockInterview.toast.fullscreenError.title"), description: t("aiMockInterview.toast.fullscreenError.description", { message: (err as Error).message }), variant: "destructive" });
         logger.error("Fullscreen request error:", err);
       }
     } else {
@@ -221,11 +223,11 @@ export default function AiMockInterviewPage() {
         await document.exitFullscreen();
         logger.info("Exited fullscreen.");
       } catch (err) {
-         toast({ title: "Fullscreen Error", description: `Could not exit fullscreen: ${(err as Error).message}`, variant: "destructive" });
+         toast({ title: t("aiMockInterview.toast.fullscreenError.title"), description: t("aiMockInterview.toast.fullscreenError.description", { message: (err as Error).message }), variant: "destructive" });
          logger.error("Exit fullscreen error:", err);
       }
     }
-  }, [toast]);
+  }, [toast, t]);
 
   // Timer logic
   useEffect(() => {
@@ -235,7 +237,7 @@ export default function AiMockInterviewPage() {
         setTimeLeft(prevTime => {
           if (prevTime <= 1) {
             clearInterval(timerIntervalRef.current!);
-            toast({ title: "Time's Up!", description: "Please submit your answer.", variant: "default" });
+            toast({ title: t("aiMockInterview.toast.timesUp.title"), description: t("aiMockInterview.toast.timesUp.description"), variant: "default" });
             return 0;
           }
           return prevTime - 1;
@@ -243,14 +245,14 @@ export default function AiMockInterviewPage() {
       }, 1000);
     }
     return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current); };
-  }, [timeLeft, session?.timerPerQuestion, isEvaluatingAnswer, currentUiStepId, currentQuestion, toast]);
+  }, [timeLeft, session?.timerPerQuestion, isEvaluatingAnswer, currentUiStepId, currentQuestion, toast, t]);
 
   const startVideoStream = useCallback(async () => {
     logger.info("Attempting to start video stream...");
     if (!navigator.mediaDevices?.getUserMedia) {
       setHasCameraPermission(false);
       setIsVideoActive(false);
-      toast({ title: "Camera Error", description: "Camera access not supported.", variant: "destructive" });
+      toast({ title: t("aiMockInterview.toast.cameraError.title"), description: t("aiMockInterview.toast.cameraError.description"), variant: "destructive" });
       return null;
     }
     try {
@@ -274,10 +276,10 @@ export default function AiMockInterviewPage() {
       logger.error("Error accessing camera:", err);
       setHasCameraPermission(false);
       setIsVideoActive(false);
-      toast({ title: "Camera Access Denied", description: "Please enable camera permissions.", variant: "destructive" });
+      toast({ title: t("aiMockInterview.toast.cameraDenied.title"), description: t("aiMockInterview.toast.cameraDenied.description"), variant: "destructive" });
       return null;
     }
-  }, [isMicMuted, toast, cameraStream]);
+  }, [isMicMuted, toast, cameraStream, t]);
 
   const handleSetupComplete = async (config: GenerateMockInterviewQuestionsInput) => {
     setIsLoading(true);
@@ -288,7 +290,7 @@ export default function AiMockInterviewPage() {
       logger.info("Received questions from AI:", genQuestions);
 
       if (!genQuestions || genQuestions.length === 0) {
-        toast({ title: "Setup Failed", description: "The AI could not generate any questions for this topic/JD. Please try adjusting your setup or ensure the topic is specific enough.", variant: "destructive", duration: 7000 });
+        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: t("aiMockInterview.toast.setupFailed.description"), variant: "destructive", duration: 7000 });
         setIsLoading(false);
         setCurrentUiStepId('setup');
         router.replace('/ai-mock-interview', undefined);
@@ -318,7 +320,7 @@ export default function AiMockInterviewPage() {
         setTimeLeft(0);
       }
       setCurrentUiStepId('interview');
-      toast({ title: "Interview Ready!", description: `${genQuestions.length} questions generated. Let's begin!` });
+      toast({ title: t("aiMockInterview.toast.interviewReady.title"), description: t("aiMockInterview.toast.interviewReady.description", { count: genQuestions.length }) });
       await startVideoStream();
 
     } catch (error: any) {
@@ -326,13 +328,13 @@ export default function AiMockInterviewPage() {
       const errorMessage = (error.message || String(error)).toLowerCase();
       if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
           toast({
-              title: "API Usage Limit Exceeded",
-              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              title: t("aiMockInterview.toast.apiQuotaError.title"),
+              description: t("aiMockInterview.toast.apiQuotaError.description"),
               variant: "destructive",
               duration: 9000,
           });
       } else {
-        toast({ title: "Setup Failed", description: error.message || "Could not generate interview questions.", variant: "destructive" });
+        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: error.message || "Could not generate interview questions.", variant: "destructive" });
       }
     } finally {
       setIsLoading(false);
@@ -382,13 +384,13 @@ export default function AiMockInterviewPage() {
       const errorMessage = (error.message || String(error)).toLowerCase();
       if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
           toast({
-              title: "API Usage Limit Exceeded",
-              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              title: t("aiMockInterview.toast.apiQuotaError.title"),
+              description: t("aiMockInterview.toast.apiQuotaError.description"),
               variant: "destructive",
               duration: 9000,
           });
       } else {
-        toast({ title: "Evaluation Failed", description: error.message || "Could not evaluate your answer.", variant: "destructive" });
+        toast({ title: t("aiMockInterview.toast.evaluationFailed.title"), description: error.message || "Could not evaluate your answer.", variant: "destructive" });
       }
     } finally {
       setIsEvaluatingAnswer(false);
@@ -410,13 +412,13 @@ export default function AiMockInterviewPage() {
 
   const handleCompleteInterview = async () => {
     if (!session || !session.answers) {
-      toast({ title: "Interview Issue", description: "No session data or answers recorded.", variant: "destructive" });
+      toast({ title: t("aiMockInterview.toast.sessionIssue.title"), description: t("aiMockInterview.toast.sessionIssue.description"), variant: "destructive" });
       setCurrentUiStepId('setup');
       router.replace('/ai-mock-interview', undefined);
       return;
     }
      if (session.answers.length === 0 && session.questions.length > 0) {
-      toast({ title: "No Answers Provided", description: "Please answer at least one question to get overall feedback.", variant: "default" });
+      toast({ title: t("aiMockInterview.toast.noAnswers.title"), description: t("aiMockInterview.toast.noAnswers.description"), variant: "default" });
       return;
     }
 
@@ -441,7 +443,7 @@ export default function AiMockInterviewPage() {
         recordingReferences: localRecordingReferences,
       }) : null);
       setCurrentUiStepId('feedback');
-      toast({ title: "Interview Complete!", description: "Your overall feedback is ready." });
+      toast({ title: t("aiMockInterview.toast.interviewComplete.title"), description: t("aiMockInterview.toast.interviewComplete.description") });
       if (isInterviewFullScreen && document.fullscreenElement) {
         document.exitFullscreen();
       }
@@ -451,13 +453,13 @@ export default function AiMockInterviewPage() {
         const errorMessage = (error.message || String(error)).toLowerCase();
         if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
             toast({
-                title: "API Usage Limit Exceeded",
-                description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+                title: t("aiMockInterview.toast.apiQuotaError.title"),
+                description: t("aiMockInterview.toast.apiQuotaError.description"),
                 variant: "destructive",
                 duration: 9000,
             });
         } else {
-          toast({ title: "Feedback Generation Failed", description: error.message || "Could not generate overall interview feedback.", variant: "destructive" });
+          toast({ title: t("aiMockInterview.toast.feedbackFailed.title"), description: error.message || "Could not generate overall interview feedback.", variant: "destructive" });
         }
     } finally {
         setIsLoading(false);
@@ -496,12 +498,12 @@ export default function AiMockInterviewPage() {
     if (cameraStream) {
       cameraStream.getAudioTracks().forEach(track => track.enabled = !newMutedState);
     }
-    toast({ title: newMutedState ? "Mic Muted" : "Mic Unmuted", duration: 1500 });
+    toast({ title: newMutedState ? t("aiMockInterview.toast.micMuted.title") : t("aiMockInterview.toast.micUnmuted.title"), duration: 1500 });
   };
 
   const toggleSpeechRecording = () => {
     if (!speechApiSupported) {
-      toast({ title: "Not Supported", description: "Speech recognition isn't supported here. Please type.", variant: "destructive" });
+      toast({ title: t("aiMockInterview.toast.notSupported.title"), description: t("aiMockInterview.toast.notSupported.description"), variant: "destructive" });
       return;
     }
     if (isSpeechRecording) {
@@ -516,7 +518,7 @@ export default function AiMockInterviewPage() {
 
   const toggleSessionAudioRecording = async () => {
     if (!browserSupportsMediaRecording) {
-        toast({ title: "Recording Not Supported", description: "Your browser does not support session audio recording.", variant: "destructive" });
+        toast({ title: t("aiMockInterview.toast.recordingNotSupported.title"), description: t("aiMockInterview.toast.recordingNotSupported.description"), variant: "destructive" });
         return;
     }
     if (isSessionAudioRecording) {
@@ -534,16 +536,16 @@ export default function AiMockInterviewPage() {
                 logger.info("Started audio-only stream for recording.");
             } catch (err) {
                  logger.error("Failed to get audio-only stream for recording:", err);
-                 toast({ title: "Mic Error", description: "Could not access microphone for recording.", variant: "destructive"});
+                 toast({ title: t("aiMockInterview.toast.micError.title"), description: t("aiMockInterview.toast.micError.description"), variant: "destructive"});
                  return;
             }
         } else {
-            toast({ title: "No Audio Input", description: "Please enable your microphone to record the session audio.", variant: "default" });
+            toast({ title: t("aiMockInterview.toast.noAudioInput.title"), description: t("aiMockInterview.toast.noAudioInput.description"), variant: "default" });
             return;
         }
 
         if (!streamToRecord || streamToRecord.getAudioTracks().length === 0) {
-            toast({ title: "Recording Error", description: "No active audio stream to record.", variant: "destructive"});
+            toast({ title: t("aiMockInterview.toast.recordingError.title"), description: t("aiMockInterview.toast.recordingError.description"), variant: "destructive"});
             return;
         }
 
@@ -576,15 +578,15 @@ export default function AiMockInterviewPage() {
                     fileName: `ai_mock_interview_audio_${session!.id}_${new Date().toISOString().replace(/:/g,'-')}.${finalMimeType.split('/')[1].split(';')[0] || 'webm'}` 
                 };
                 setLocalRecordingReferences(prev => [...prev, newRecRef]);
-                toast({ title: "Audio Recording Stopped", description: `Audio recording saved (mock).`, duration: 5000 });
+                toast({ title: t("aiMockInterview.toast.recordingStopped.title"), description: t("aiMockInterview.toast.recordingStopped.description"), duration: 5000 });
                 setIsSessionAudioRecording(false); 
             };
             mediaRecorderRef.current.start();
             setIsSessionAudioRecording(true);
-            toast({ title: "Session Audio Recording Started" });
+            toast({ title: t("aiMockInterview.toast.recordingStarted.title") });
         } catch (err) {
             logger.error("MediaRecorder init error for audio:", err);
-            toast({ title: "Recording Error", description: "Could not start session audio recording.", variant: "destructive" });
+            toast({ title: t("aiMockInterview.toast.recordingInitError.title"), description: t("aiMockInterview.toast.recordingInitError.description"), variant: "destructive" });
             setIsSessionAudioRecording(false);
         }
     }
@@ -596,17 +598,17 @@ export default function AiMockInterviewPage() {
         <CardHeader className="flex flex-row justify-between items-center py-2 px-2 md:py-3 md:px-4">
           <div className="flex-1 flex items-center gap-2">
             <Bot className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            <CardTitle className="text-md md:text-xl font-bold tracking-tight text-foreground">AI Mock Interview</CardTitle>
+            <CardTitle className="text-md md:text-xl font-bold tracking-tight text-foreground">{t("aiMockInterview.title")}</CardTitle>
             {!(currentUiStepId === 'interview' && isInterviewFullScreen) && <AiMockInterviewStepper currentStep={currentUiStepId} />}
           </div>
           <div className="flex items-center gap-1 md:gap-2">
              {currentUiStepId === 'interview' && (
-                <Button onClick={toggleInterviewFullScreen} variant="ghost" size="icon" title={isInterviewFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"} className="h-7 w-7 md:h-8 md:w-8">
+                <Button onClick={toggleInterviewFullScreen} variant="ghost" size="icon" title={isInterviewFullScreen ? t("aiMockInterview.exitFullscreen") : t("aiMockInterview.enterFullscreen")} className="h-7 w-7 md:h-8 md:w-8">
                     {isInterviewFullScreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
                 </Button>
             )}
             {currentUiStepId !== 'setup' && (
-                <Button onClick={handleRestartInterview} variant="outline" size="sm" className="text-xs h-7 md:h-8 px-2"><RefreshCw className="mr-1 h-3 w-3"/>Restart</Button>
+                <Button onClick={handleRestartInterview} variant="outline" size="sm" className="text-xs h-7 md:h-8 px-2"><RefreshCw className="mr-1 h-3 w-3"/>{t("aiMockInterview.restart")}</Button>
             )}
           </div>
         </CardHeader>
@@ -624,7 +626,7 @@ export default function AiMockInterviewPage() {
           {isLoading && currentUiStepId !== 'interview' && (
               <div className="flex flex-col items-center justify-center h-64">
               <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-primary" />
-              <p className="mt-2 md:mt-3 text-muted-foreground">Loading, please wait...</p>
+              <p className="mt-2 md:mt-3 text-muted-foreground">{t("aiMockInterview.loadingMessage")}</p>
               </div>
           )}
 
@@ -637,13 +639,13 @@ export default function AiMockInterviewPage() {
                         <div className="text-center p-4">
                             <Bot className="h-12 w-12 md:h-16 md:w-16 text-slate-400 mx-auto mb-2" />
                             <p className="text-sm md:text-base text-slate-300">
-                              {isEvaluatingAnswer ? "AI is thinking..." : 
-                               currentAnswerFeedback ? "See feedback in the panel ->" : 
-                               `AI Interviewer${session.topic ? `: ${session.topic}` : ''}`}
+                              {isEvaluatingAnswer ? t("aiMockInterview.aiThinking") : 
+                               currentAnswerFeedback ? t("aiMockInterview.feedbackReady") : 
+                               t("aiMockInterview.interviewerTitle", { topic: session.topic ? `: ${session.topic}` : '' })}
                             </p>
-                            {isLoading && <p className="text-xs text-slate-400 mt-1">Loading question...</p>}
+                            {isLoading && <p className="text-xs text-slate-400 mt-1">{t("aiMockInterview.loadingQuestion")}</p>}
                         </div>
-                        {currentAnswerFeedback && <div className="absolute top-1 md:top-2 left-1 md:left-2 text-xs p-1 bg-black/30 rounded text-white">Feedback for Q{currentQuestionIndex}</div>}
+                        {currentAnswerFeedback && <div className="absolute top-1 md:top-2 left-1 md:left-2 text-xs p-1 bg-black/30 rounded text-white">{t("aiMockInterview.feedbackFor", { qNum: currentQuestionIndex })}</div>}
                     </div>
                     {/* Self-View */}
                     <div className="absolute top-1 right-1 md:top-2 md:right-2 w-28 h-auto md:w-32 lg:w-40 aspect-video bg-slate-900 rounded shadow-md overflow-hidden border border-slate-600">
@@ -655,21 +657,21 @@ export default function AiMockInterviewPage() {
                     )}
                     {hasCameraPermission === false && isVideoActive && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-0.5 md:p-1">
-                            <Alert variant="destructive" className="text-[8px] md:text-[9px] p-1"><AlertTriangle className="h-3 w-3" /><AlertTitle className="text-[9px] md:text-[10px]">Cam Denied</AlertTitle><AlertDescription className="text-[7px] md:text-[8px]">Enable in browser.</AlertDescription></Alert>
+                            <Alert variant="destructive" className="text-[8px] md:text-[9px] p-1"><AlertTriangle className="h-3 w-3" /><AlertTitle className="text-[9px] md:text-[10px]">{t("aiMockInterview.camDeniedTitle")}</AlertTitle><AlertDescription className="text-[7px] md:text-[8px]">{t("aiMockInterview.camDeniedDesc")}</AlertDescription></Alert>
                         </div>
                     )}
-                    <p className="absolute bottom-0.5 left-0.5 text-[8px] md:text-[10px] bg-black/50 px-0.5 py-px md:px-1 md:py-0.5 rounded text-white">{currentUser.name} (You)</p>
+                    <p className="absolute bottom-0.5 left-0.5 text-[8px] md:text-[10px] bg-black/50 px-0.5 py-px md:px-1 md:py-0.5 rounded text-white">{currentUser.name} ({t("aiMockInterview.youLabel")})</p>
                     </div>
                     {/* Controls */}
                     <div className="flex justify-center items-center gap-1 md:gap-2 p-1 md:p-2 bg-slate-900/70 backdrop-blur-sm rounded-md">
-                      <Button variant={isMicMuted ? "destructive" : "outline"} size="icon" onClick={handleToggleMic} title={isMicMuted ? "Unmute" : "Mute"} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><Mic className="h-4 w-4 md:h-5 md:w-5" /></Button>
-                      <Button variant={!isVideoActive ? "destructive" : "outline"} size="icon" onClick={handleToggleVideo} title={isVideoActive ? "Stop Video" : "Start Video"} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><VideoIcon className="h-4 w-4 md:h-5 md:w-5" /></Button>
+                      <Button variant={isMicMuted ? "destructive" : "outline"} size="icon" onClick={handleToggleMic} title={isMicMuted ? t("aiMockInterview.unmute") : t("aiMockInterview.mute")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><Mic className="h-4 w-4 md:h-5 md:w-5" /></Button>
+                      <Button variant={!isVideoActive ? "destructive" : "outline"} size="icon" onClick={handleToggleVideo} title={isVideoActive ? t("aiMockInterview.stopVideo") : t("aiMockInterview.startVideo")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><VideoIcon className="h-4 w-4 md:h-5 md:w-5" /></Button>
                       {browserSupportsMediaRecording && (
-                          <Button variant={isSessionAudioRecording ? "destructive" : "outline"} size="icon" onClick={toggleSessionAudioRecording} title={isSessionAudioRecording ? "Stop Session Recording" : "Record Session Audio"} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9">
+                          <Button variant={isSessionAudioRecording ? "destructive" : "outline"} size="icon" onClick={toggleSessionAudioRecording} title={isSessionAudioRecording ? t("aiMockInterview.stopRecording") : t("aiMockInterview.startRecording")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9">
                           {isSessionAudioRecording ? <Square className="h-4 w-4 md:h-5 md:w-5 animate-pulse fill-current"/> : <Radio className="h-4 w-4 md:h-5 md:w-5 text-red-400"/>}
                           </Button>
                       )}
-                      <Button variant="destructive" size="sm" onClick={handleCompleteInterview} className="px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm h-8 md:h-9"><VideoOff className="mr-0.5 md:mr-1 h-4 w-4 md:h-5 md:w-5" /> <span className="hidden md:inline">End & Report</span><span className="md:hidden">End</span></Button>
+                      <Button variant="destructive" size="sm" onClick={handleCompleteInterview} className="px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm h-8 md:h-9"><VideoOff className="mr-0.5 md:mr-1 h-4 w-4 md:h-5 md:w-5" /> <span className="hidden md:inline">{t("aiMockInterview.endAndReport")}</span><span className="md:hidden">{t("aiMockInterview.end")}</span></Button>
                     </div>
                 </div>
 
@@ -677,7 +679,7 @@ export default function AiMockInterviewPage() {
                 <Card className={cn("lg:col-span-1 flex flex-col shadow-xl", isInterviewFullScreen && "h-full")}>
                     <CardHeader className="pb-1 md:pb-2 pt-2 px-2 md:pt-3 md:px-3">
                         <div className="flex justify-between items-center">
-                            <CardTitle className="text-sm md:text-md font-medium">Question {currentQuestionIndex + 1}/{session.questions.length}</CardTitle>
+                            <CardTitle className="text-sm md:text-md font-medium">{t("aiMockInterview.questionHeader", { current: currentQuestionIndex + 1, total: session.questions.length })}</CardTitle>
                             {session.timerPerQuestion && session.timerPerQuestion > 0 && <Label className="text-sm font-medium text-primary">{formatTime(timeLeft)}</Label>}
                         </div>
                         <Progress value={((currentQuestionIndex + 1) / session.questions.length) * 100} className="w-full h-1 md:h-1.5 mt-1 [&>div]:bg-primary" />
@@ -686,37 +688,37 @@ export default function AiMockInterviewPage() {
                     <CardContent className="space-y-2 md:space-y-3 pt-1 md:pt-2 px-2 md:px-3">
                         <div className="p-2 md:p-3 border rounded-md bg-secondary/40">
                           <p className="text-sm md:text-md font-semibold text-foreground whitespace-pre-line">{currentQuestion.questionText}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">Category: {currentQuestion.category} | Difficulty: {currentQuestion.difficulty}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">{t("aiMockInterview.questionCategory", { category: currentQuestion.category, difficulty: currentQuestion.difficulty })}</p>
                         </div>
                         {!currentAnswerFeedback ? (
                         <>
                             <div>
-                              <Label htmlFor="userAnswerAIM" className="text-xs md:text-sm">Your Answer:</Label>
-                              <Textarea id="userAnswerAIM" value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} placeholder={isSpeechRecording ? "Listening..." : "Type or record your answer..."} rows={4} disabled={isEvaluatingAnswer || isSpeechRecording} className="mt-1 text-sm"/>
+                              <Label htmlFor="userAnswerAIM" className="text-xs md:text-sm">{t("aiMockInterview.yourAnswerLabel")}</Label>
+                              <Textarea id="userAnswerAIM" value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} placeholder={isSpeechRecording ? t("aiMockInterview.listeningPlaceholder") : t("aiMockInterview.answerPlaceholder")} rows={4} disabled={isEvaluatingAnswer || isSpeechRecording} className="mt-1 text-sm"/>
                             </div>
                             <div className="flex gap-1 md:gap-2">
                               <Button onClick={toggleSpeechRecording} disabled={!speechApiSupported || isEvaluatingAnswer || (timeLeft === 0 && !!session.timerPerQuestion)} variant={isSpeechRecording ? "secondary" : "outline"} className="flex-1 text-xs h-8 md:h-9">
-                                  {isSpeechRecording ? <Square className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-ping"/> : <Mic className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} {isSpeechRecording ? 'Stop' : 'Record'}
+                                  {isSpeechRecording ? <Square className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-ping"/> : <Mic className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} {isSpeechRecording ? t("aiMockInterview.stopRecord") : t("aiMockInterview.record")}
                               </Button>
                               <Button onClick={handleAnswerSubmit} disabled={!userAnswer.trim() || isEvaluatingAnswer} className="flex-1 bg-primary hover:bg-primary/90 text-xs h-8 md:h-9">
-                                  {isEvaluatingAnswer ? <Loader2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-spin"/> : <Send className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} Submit
+                                  {isEvaluatingAnswer ? <Loader2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-spin"/> : <Send className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} {t("aiMockInterview.submit")}
                               </Button>
                             </div>
                         </>
                         ) : (
                         <Card className="bg-primary/5 border-primary/20 p-2 md:p-3 space-y-1 md:space-y-2">
-                            <h4 className="font-semibold text-primary text-xs md:text-sm">Feedback on Your Answer:</h4>
-                            <p className="text-xs text-muted-foreground">Score: <span className="font-bold text-primary">{currentAnswerFeedback.aiScore}/100</span></p>
+                            <h4 className="font-semibold text-primary text-xs md:text-sm">{t("aiMockInterview.feedbackTitle")}</h4>
+                            <p className="text-xs text-muted-foreground">{t("aiMockInterview.scoreLabel")}: <span className="font-bold text-primary">{currentAnswerFeedback.aiScore}/100</span></p>
                             <ScrollArea className="h-[80px] md:h-[100px]"><p className="text-xs text-muted-foreground whitespace-pre-line">{currentAnswerFeedback.aiFeedback}</p></ScrollArea>
-                            {currentAnswerFeedback.strengths && currentAnswerFeedback.strengths.length > 0 && <p className="text-xs"><strong className="text-green-600">Strengths:</strong> {currentAnswerFeedback.strengths.join(', ')}</p>}
-                            {currentAnswerFeedback.areasForImprovement && currentAnswerFeedback.areasForImprovement.length > 0 && <p className="text-xs"><strong className="text-yellow-600">Areas for Improvement:</strong> {currentAnswerFeedback.areasForImprovement.join(', ')}</p>}
+                            {currentAnswerFeedback.strengths && currentAnswerFeedback.strengths.length > 0 && <p className="text-xs"><strong className="text-green-600">{t("aiMockInterview.strengthsLabel")}:</strong> {currentAnswerFeedback.strengths.join(', ')}</p>}
+                            {currentAnswerFeedback.areasForImprovement && currentAnswerFeedback.areasForImprovement.length > 0 && <p className="text-xs"><strong className="text-yellow-600">{t("aiMockInterview.improvementsLabel")}:</strong> {currentAnswerFeedback.areasForImprovement.join(', ')}</p>}
                             <Button onClick={handleNextQuestion} className="w-full mt-1 md:mt-2 text-xs h-8 md:h-9" size="sm">
-                                {currentQuestionIndex < session.questions.length - 1 ? "Next Question" : "View Overall Report"}
+                                {currentQuestionIndex < session.questions.length - 1 ? t("aiMockInterview.nextQuestion") : t("aiMockInterview.viewOverallReport")}
                             </Button>
                         </Card>
                         )}
                         {timeLeft === 0 && session.timerPerQuestion && session.timerPerQuestion > 0 && !isEvaluatingAnswer && !currentAnswerFeedback && (
-                            <Alert variant="destructive" className="text-xs p-2"><AlertTriangle className="h-3 w-3 md:h-4 md:w-4" /> <AlertDescription>Time's up! Please submit.</AlertDescription></Alert>
+                            <Alert variant="destructive" className="text-xs p-2"><AlertTriangle className="h-3 w-3 md:h-4 md:w-4" /> <AlertDescription>{t("aiMockInterview.timesUpAlert")}</AlertDescription></Alert>
                         )}
                     </CardContent>
                     </ScrollArea>
