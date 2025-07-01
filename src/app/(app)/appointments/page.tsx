@@ -352,7 +352,7 @@ export default function AppointmentsPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">{t("appointments.status")}: <Badge variant="info">{post.status}</Badge></p>
+                      <p className="text-sm text-muted-foreground">{t("appointments.status")}: <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">{post.status}</Badge></p>
                        {post.tags && post.tags.length > 0 && <p className="text-xs mt-2 text-muted-foreground">{t("appointments.tags")}: {post.tags.join(', ')}</p>}
                     </CardContent>
                      <CardFooter className="flex justify-end">
