@@ -1197,7 +1197,6 @@ export default function InterviewPracticeHubPage() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-xl text-center font-semibold">
-              {console.log("[InterviewPrep] DialogContent rendering. dialogStep:", dialogStep, "isSetupDialogOpen:", isSetupDialogOpen)}
               {dialogStep === 'selectType' && "Select Interview Type"}
               {dialogStep === 'selectTopics' && `Select Practice Topics for ${practiceSessionConfig.type === 'ai' ? 'AI Interview' : 'Expert Session'}`}
               {dialogStep === 'selectTimeSlot' && "Choose Date & Time"}

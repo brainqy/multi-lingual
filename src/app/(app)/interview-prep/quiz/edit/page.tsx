@@ -50,8 +50,8 @@ export default function EditQuizPage() {
       const questionIdsParam = new URLSearchParams(window.location.search).get('questions');
       const questionIds = questionIdsParam ? questionIdsParam.split(',') : [];
       const preselectedQuestions = sampleInterviewQuestions
-        .filter(q => questionIds.includes(q.id) && q.isMCQ && q.mcqOptions && q.correctAnswer)
-        .map(q => ({ id: q.id, questionText: q.question, category: q.category, difficulty: q.difficulty }));
+        .filter(q => questionIds.includes(q.id) && q.isMCQ && q.mcqOptions && q.correctAnswer && q.questionText)
+        .map(q => ({ id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty }));
 
       setQuizDetails({ // Initialize a new quiz structure
           id: `quiz-${Date.now()}`, // Temporary ID, real ID assigned on save
@@ -83,7 +83,7 @@ export default function EditQuizPage() {
 
       const matchesCategory = selectedBankCategories.length === 0 || selectedBankCategories.includes(q.category);
       const matchesSearch = bankSearchTerm === '' ||
-                            q.question.toLowerCase().includes(bankSearchTerm.toLowerCase()) ||
+                            q.questionText.toLowerCase().includes(bankSearchTerm.toLowerCase()) ||
                             (q.tags && q.tags.some(tag => tag.toLowerCase().includes(bankSearchTerm.toLowerCase())));
       return matchesCategory && matchesSearch;
     });
@@ -98,7 +98,7 @@ export default function EditQuizPage() {
     const questionsToAdd = Array.from(selectedQuestionsToAdd)
       .map(id => allBankQuestions.find(q => q.id === id))
       .filter(q => q !== undefined)
-      .map(q => ({ id: q!.id, questionText: q!.question, category: q!.category, difficulty: q!.difficulty }));
+      .map(q => ({ id: q!.id, questionText: q!.questionText, category: q!.category, difficulty: q!.difficulty }));
     
     setQuizQuestions(prev => [...prev, ...questionsToAdd]);
     setSelectedQuestionsToAdd(new Set()); // Clear selection
@@ -265,7 +265,7 @@ export default function EditQuizPage() {
                             className="mt-0.5"
                           />
                           <Label htmlFor={`bank-q-${q.id}`} className="font-normal flex-1 cursor-pointer">
-                            {q.question}
+                            {q.questionText}
                             <div className="flex items-center gap-1 text-muted-foreground/80 mt-0.5">
                                 {getCategoryIcon(q.category)} {q.category}
                                 {q.difficulty && <Badge variant="outline" className="text-[10px] px-1 py-0">{q.difficulty}</Badge>}
