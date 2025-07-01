@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Mic, ListChecks, Search, ChevronLeft, ChevronRight, Tag, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, Edit3, Play, PlusCircle, Star as StarIcon, Send, Bookmark as BookmarkIcon, Video, Trash2, ListFilter, ChevronDown, User as UserIcon, XCircle as XCircleIcon, Calendar, MessageSquare, Users as UsersGroupIcon, Brain as BrainIcon, CheckCircle as CheckCircleIcon, Timer } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 import { sampleUserProfile, samplePracticeSessions, sampleInterviewQuestions, sampleCreatedQuizzes, SAMPLE_DATA_BASE_DATE, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import type { PracticeSession, InterviewQuestion, InterviewQuestionCategory, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionUserComment, InterviewQuestionDifficulty, PracticeFocusArea, BankQuestionSortOrder, BankQuestionFilterView, GenerateMockInterviewQuestionsInput, PracticeSessionStatus, PracticeSessionType, LiveInterviewSession } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS } from '@/types';
@@ -1072,7 +1072,7 @@ export default function InterviewPracticeHubPage() {
                                         {q.userComments.map(comment => (
                                         <div key={comment.id} className="p-1.5 bg-secondary rounded">
                                             <p className="font-semibold">{comment.userName} <span className="text-muted-foreground/70 text-[10px] ml-1">{format(parseISO(comment.timestamp), 'PPp')}</span></p>
-                                            <p>{comment.text}</p>
+                                            <p>{comment.comment}</p>
                                         </div>
                                         ))}
                                     </ScrollArea>
