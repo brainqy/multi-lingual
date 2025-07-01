@@ -36,20 +36,20 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
       <DialogContent className="sm:max-w-md bg-card text-card-foreground p-0 overflow-hidden">
         <div className="bg-gray-800 text-white p-6 rounded-t-lg">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-bold text-center">{t("dailyStreakPopup.title")}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center">{t("dailyStreakPopup.title", { default: "Daily Streak!" })}</DialogTitle>
           </DialogHeader>
 
           <div className="flex justify-around items-center mb-6 text-center">
             <div>
               <p className="text-4xl font-bold">{userProfile.dailyStreak || 0}</p>
-              <p className="text-sm text-gray-300">{t("dailyStreakPopup.currentStreakLabel")}</p>
+              <p className="text-sm text-gray-300">{t("dailyStreakPopup.currentStreakLabel", { default: "Current Streak" })}</p>
             </div>
             <div>
               <p className="text-4xl font-bold flex items-center justify-center">
                 {userProfile.longestStreak || 0}
                 <Trophy className="ml-2 h-7 w-7 text-yellow-400" />
               </p>
-              <p className="text-sm text-gray-300">{t("dailyStreakPopup.longestStreakLabel")}</p>
+              <p className="text-sm text-gray-300">{t("dailyStreakPopup.longestStreakLabel", { default: "Longest Streak" })}</p>
             </div>
           </div>
 
@@ -75,18 +75,20 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
           </div>
 
           <p className="text-center text-lg font-semibold">
-            {t("dailyStreakPopup.totalActiveDaysLabel")} {userProfile.totalActiveDays || 0}
+            {t("dailyStreakPopup.totalActiveDaysLabel", { default: "Total Active Days:" })} {userProfile.totalActiveDays || 0}
           </p>
         </div>
         
         <DialogFooter className="p-6 bg-card border-t border-border">
           <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-            {t("dailyStreakPopup.keepItUpButton")}
+            {t("dailyStreakPopup.keepItUpButton", { default: "Keep it Up!" })}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    
 
     

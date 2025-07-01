@@ -137,8 +137,8 @@ export default function UserDashboard() {
         if (appt.requesterUserId === user.id || appt.alumniUserId === user.id) {
             if (appt.reminderDate && isToday(parseISO(appt.reminderDate))) {
                 toast({
-                    title: t("userDashboard.toast.appointmentReminder.title"),
-                    description: t("userDashboard.toast.appointmentReminder.description", {title: appt.title, user: appt.withUser, time: format(parseISO(appt.dateTime), 'p')}),
+                    title: t("userDashboard.toast.appointmentReminder.title", { default: "Appointment Reminder" }),
+                    description: t("userDashboard.toast.appointmentReminder.description", { default: "You have an appointment for \"{title}\" with {user} today at {time}.", title: appt.title, user: appt.withUser, time: format(parseISO(appt.dateTime), 'p')}),
                     duration: 10000,
                 });
             }
@@ -248,7 +248,7 @@ export default function UserDashboard() {
   const handleSaveCustomization = () => {
     setVisibleWidgetIds(tempVisibleWidgetIds);
     setIsCustomizeDialogOpen(false);
-    toast({ title: t("userDashboard.toast.dashboardUpdated.title"), description: t("userDashboard.toast.dashboardUpdated.description") });
+    toast({ title: t("userDashboard.toast.dashboardUpdated.title", { default: "Dashboard Updated" }), description: t("userDashboard.toast.dashboardUpdated.description", { default: "Your dashboard widget preferences have been saved for this session." }) });
   };
 
   const openCustomizeDialog = () => {
@@ -273,27 +273,27 @@ export default function UserDashboard() {
         onClose={() => setShowUserTour(false)}
         tourKey="userDashboardTourSeen"
         steps={userDashboardTourSteps}
-        title={t("userDashboard.welcomeTour.title")}
+        title={t("userDashboard.welcomeTour.title", { default: "Welcome to Your Dashboard!" })}
       />
       <div className="space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("userDashboard.title")}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("userDashboard.title", { default: "My Dashboard" })}</h1>
           <Button variant="outline" onClick={openCustomizeDialog}>
-            <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton")}
+            <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton", { default: "Customize" })}
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 shadow-lg">
             <CardHeader>
-              <CardTitle>{t("userDashboard.progress.title")}</CardTitle>
+              <CardTitle>{t("userDashboard.progress.title", { default: "Your Progress Overview" })}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                 <div className="bg-background shadow-inner flex flex-col justify-center p-4 rounded-lg border h-full">
                   <h3 className="text-base font-semibold flex items-center justify-between">
-                    <span>{t("userDashboard.progress.level", { level: xpLevel })}</span>
-                    <span className="text-sm font-medium text-muted-foreground">{t("userDashboard.progress.totalXp", { xp: user.xpPoints || 0 })}</span>
+                    <span>{t("userDashboard.progress.level", { default: "Level {level}", level: xpLevel })}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{t("userDashboard.progress.totalXp", { default: "Total XP: {xp}", xp: user.xpPoints || 0 })}</span>
                   </h3>
                   <Progress value={progressPercentage} className="w-full h-2 my-2" />
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -305,12 +305,12 @@ export default function UserDashboard() {
                   <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
                     <Flame className="h-7 w-7 text-orange-500 mb-1" />
                     <p className="text-xl font-bold">{user.dailyStreak || 0}</p>
-                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak")}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.dayStreak", { default: "Day Streak" })}</p>
                   </div>
                   <div className="bg-background shadow-inner text-center p-3 flex flex-col items-center justify-center h-full rounded-lg border">
                     <Award className="h-7 w-7 text-yellow-500 mb-1" />
                     <p className="text-xl font-bold">{user.earnedBadges?.length || 0}</p>
-                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned")}</p>
+                    <p className="text-xs text-muted-foreground">{t("userDashboard.progress.badgesEarned", { default: "Badges" })}</p>
                   </div>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function UserDashboard() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <Puzzle className="h-4 w-4 text-primary" />
-                  {t("userDashboard.dailyChallenge.title")}
+                  {t("userDashboard.dailyChallenge.title", { default: "Today's Daily Challenge" })}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
@@ -331,7 +331,7 @@ export default function UserDashboard() {
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
-                  <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton")}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton", { default: "View Challenge" })}<ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -407,8 +407,8 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('jobApplicationStatusChart') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>{t("userDashboard.charts.jobApplicationStatus.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.charts.jobApplicationStatus.description")}</CardDescription>
+                <CardTitle>{t("userDashboard.charts.jobApplicationStatus.title", { default: "Job Application Status" })}</CardTitle>
+                <CardDescription>{t("userDashboard.charts.jobApplicationStatus.description", { default: "A visual breakdown of your current job application pipeline." })}</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -442,8 +442,8 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('matchScoreOverTimeChart') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>{t("userDashboard.charts.matchScoreOverTime.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.charts.matchScoreOverTime.description")}</CardDescription>
+                <CardTitle>{t("userDashboard.charts.matchScoreOverTime.title", { default: "Match Score Over Time" })}</CardTitle>
+                <CardDescription>{t("userDashboard.charts.matchScoreOverTime.description", { default: "Track your average resume match score from your analysis history." })}</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -465,12 +465,12 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('jobAppReminders') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>{t("userDashboard.reminders.jobApp.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardDescription>
+                <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>{t("userDashboard.reminders.jobApp.title", { default: "Upcoming Job App Reminders" })}</CardTitle>
+                <CardDescription>{t("userDashboard.reminders.jobApp.description", { default: "Follow-ups and deadlines for your applications." })}</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingReminders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.reminders.jobApp.noReminders")}</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.reminders.jobApp.noReminders", { default: "No upcoming reminders." })}</p>
                 ) : (
                   <ul className="space-y-3">
                     {upcomingReminders.map(app => (
@@ -481,10 +481,10 @@ export default function UserDashboard() {
                               <p className="text-sm font-medium text-foreground">{app.jobTitle} at {app.companyName}</p>
                               <p className="text-xs text-amber-700 dark:text-amber-500">
                                 Reminder: {format(parseISO(app.reminderDate!), 'MMM dd, yyyy')}
-                                {differenceInDays(parseISO(app.reminderDate!), new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel")}`}
+                                {differenceInDays(parseISO(app.reminderDate!), new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel", { default: "(Today!)" })}`}
                               </p>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-xs text-primary">{t("userDashboard.reminders.jobApp.viewButton")}</Button>
+                            <Button variant="ghost" size="sm" className="text-xs text-primary">{t("userDashboard.reminders.jobApp.viewButton", { default: "View" })}</Button>
                           </div>
                         </Link>
                       </li>
@@ -498,12 +498,12 @@ export default function UserDashboard() {
           {visibleWidgetIds.has('upcomingAppointments') && (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarCheck2 className="h-5 w-5 text-primary"/>{t("userDashboard.upcomingSessions.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.upcomingSessions.description")}</CardDescription>
+                <CardTitle className="flex items-center gap-2"><CalendarCheck2 className="h-5 w-5 text-primary"/>{t("userDashboard.upcomingSessions.title", { default: "Upcoming Sessions" })}</CardTitle>
+                <CardDescription>{t("userDashboard.upcomingSessions.description", { default: "Your scheduled appointments and practice interviews." })}</CardDescription>
               </CardHeader>
               <CardContent>
                 {upcomingAppointmentsAndSessions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.upcomingSessions.noSessions")}</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.upcomingSessions.noSessions", { default: "No upcoming sessions." })}</p>
                 ) : (
                   <ul className="space-y-3">
                     {upcomingAppointmentsAndSessions.map(item => (
@@ -514,15 +514,15 @@ export default function UserDashboard() {
                                 {item.title}
                                 {item.isPractice && <Badge variant="outline">Practice</Badge>}
                               </p>
-                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.typeLabel")}: {item.type}</p>
-                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.withLabel")}: {item.with}</p>
+                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.typeLabel", { default: "Type" })}: {item.type}</p>
+                              <p className="text-xs text-muted-foreground">{t("userDashboard.upcomingSessions.withLabel", { default: "With" })}: {item.with}</p>
                               <p className="text-xs text-blue-600 dark:text-blue-400">
-                                {t("userDashboard.upcomingSessions.dateLabel")}: {format(item.date, 'MMM dd, yyyy, p')}
-                                {differenceInDays(item.date, new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel")}`}
+                                {t("userDashboard.upcomingSessions.dateLabel", { default: "Date" })}: {format(item.date, 'MMM dd, yyyy, p')}
+                                {differenceInDays(item.date, new Date()) === 0 && ` ${t("userDashboard.upcomingSessions.todayLabel", { default: "(Today!)" })}`}
                               </p>
                             </div>
                             <Button asChild variant="ghost" size="sm" className="text-xs text-primary">
-                              <Link href={item.link}>{t("userDashboard.reminders.jobApp.viewButton")}</Link>
+                              <Link href={item.link}>{t("userDashboard.reminders.jobApp.viewButton", { default: "View" })}</Link>
                             </Button>
                           </div>
                       </li>
@@ -537,12 +537,12 @@ export default function UserDashboard() {
         {visibleWidgetIds.has('recentActivities') && (
           <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><HistoryIcon className="h-5 w-5 text-primary" />{t("userDashboard.recentActivities.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.recentActivities.description")}</CardDescription>
+                <CardTitle className="flex items-center gap-2"><HistoryIcon className="h-5 w-5 text-primary" />{t("userDashboard.recentActivities.title", { default: "Recent Activity" })}</CardTitle>
+                <CardDescription>{t("userDashboard.recentActivities.description", { default: "A summary of your recent actions on the platform." })}</CardDescription>
               </CardHeader>
               <CardContent>
                 {recentUserActivities.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.recentActivities.noActivities")}</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.recentActivities.noActivities", { default: "No recent activities to show." })}</p>
                 ) : (
                   <ScrollArea className="h-[250px] pr-3">
                     <ul className="space-y-3">
@@ -561,7 +561,7 @@ export default function UserDashboard() {
               </CardContent>
               <CardFooter>
                   <Button variant="link" asChild>
-                      <Link href="/activity-log">{t("userDashboard.recentActivities.viewAllButton")}</Link>
+                      <Link href="/activity-log">{t("userDashboard.recentActivities.viewAllButton", { default: "View All Activity" })}</Link>
                   </Button>
               </CardFooter>
             </Card>
@@ -571,9 +571,9 @@ export default function UserDashboard() {
       <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("userDashboard.customizeDialog.title")}</DialogTitle>
+            <DialogTitle>{t("userDashboard.customizeDialog.title", { default: "Customize Your Dashboard" })}</DialogTitle>
             <DialogUIDescription>
-              {t("userDashboard.customizeDialog.description")}
+              {t("userDashboard.customizeDialog.description", { default: "Select the widgets you want to see on your dashboard." })}
             </DialogUIDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] p-1 -mx-1">
@@ -586,15 +586,15 @@ export default function UserDashboard() {
                     onCheckedChange={(checked) => handleCustomizeToggle(widget.id, Boolean(checked))}
                   />
                   <Label htmlFor={`widget-toggle-${widget.id}`} className="font-normal text-sm flex-1 cursor-pointer">
-                    {t(`userDashboard.widgets.${widget.id}` as any, {defaultValue: widget.title})} 
+                    {t(`userDashboard.widgets.${widget.id}`, {defaultValue: widget.title})} 
                   </Label>
                 </div>
               ))}
             </div>
           </ScrollArea>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>{t("userDashboard.customizeDialog.cancelButton")}</Button>
-            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">{t("userDashboard.customizeDialog.saveButton")}</Button>
+            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>{t("userDashboard.customizeDialog.cancelButton", { default: "Cancel" })}</Button>
+            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">{t("userDashboard.customizeDialog.saveButton", { default: "Save Preferences" })}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -602,3 +602,4 @@ export default function UserDashboard() {
   );
 }
 
+    

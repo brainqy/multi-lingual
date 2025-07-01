@@ -70,14 +70,14 @@ export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, tit
         <DialogFooter className="mt-4 gap-2 sm:justify-between">
           {!isSingleStepInfo && (
             <Button variant="outline" onClick={handlePrevious} disabled={currentStepIndex === 0}>
-              {t("welcomeTour.previousButton")}
+              {t("welcomeTour.previousButton", { default: "Previous" })}
             </Button>
           )}
           <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-primary-foreground">
             {isSingleStepInfo || currentStepIndex === steps.length - 1 ? (
-              <> <CheckCircle className="mr-2 h-4 w-4" /> {t("welcomeTour.finishButton")} </>
+              <> <CheckCircle className="mr-2 h-4 w-4" /> {t("welcomeTour.finishButton", { default: "Got it!" })} </>
             ) : (
-              t("welcomeTour.nextButton")
+              t("welcomeTour.nextButton", { default: "Next" })
             )}
           </Button>
         </DialogFooter>
@@ -85,5 +85,7 @@ export default function WelcomeTourDialog({ isOpen, onClose, tourKey, steps, tit
     </Dialog>
   );
 }
+
+    
 
     

@@ -42,7 +42,16 @@
   "validation": {
     "email": "कृपया एक मान्य ईमेल पता दर्ज करें।",
     "required": "यह फ़ील्ड आवश्यक है।",
-    "termsRequired": "आपको नियमों और शर्तों को स्वीकार करना होगा।"
+    "termsRequired": "आपको नियमों और शर्तों को स्वीकार करना होगा।",
+    "tenantNameMin": "किरायेदार का नाम कम से कम 3 अक्षर का होना चाहिए।",
+    "invalidUrl": "कृपया एक मान्य यूआरएल दर्ज करें।",
+    "invalidColor": "कृपया एक मान्य एचएसएल या हेक्स रंग कोड दर्ज करें।",
+    "adminEmailInvalid": "कृपया एक मान्य व्यवस्थापक ईमेल पता दर्ज करें।",
+    "adminNameRequired": "व्यवस्थापक का नाम आवश्यक है।",
+    "adminPasswordMin": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए।",
+    "titleMin": "शीर्षक कम से कम {count} अक्षर का होना चाहिए।",
+    "contentMin": "सामग्री कम से कम {count} अक्षर की होनी चाहिए।",
+    "startDateRequired": "प्रारंभ तिथि आवश्यक है।"
   },
   "forgotPassword": {
     "title": "पासवर्ड भूल गए?",
@@ -90,16 +99,206 @@
     "dismiss": "घोषणा खारिज करें"
   },
   "tenantOnboarding": {
-    "title": "किरायेदार ऑनबोर्डिंग विज़ार्ड"
+    "title": "किरायेदार ऑनबोर्डिंग विज़ार्ड",
+    "toast": {
+      "tenantCreated": {
+        "title": "किरायेदार बनाया गया!",
+        "description": "{tenantName} को सफलतापूर्वक ऑनबोर्ड कर लिया गया है।"
+      }
+    },
+    "steps": {
+      "basicInfo": "मूल जानकारी",
+      "branding": "ब्रांडिंग",
+      "features": "विशेषताएँ",
+      "adminUser": "व्यवस्थापक उपयोगकर्ता",
+      "review": "समीक्षा करें और बनाएं"
+    },
+    "currentStep": "चरण {current} का {total}",
+    "formLabels": {
+      "tenantName": "किरायेदार का नाम (उदा., विश्वविद्यालय का नाम, कंपनी)",
+      "tenantDomain": "किरायेदार डोमेन (वैकल्पिक)",
+      "tenantDomainPlaceholder": "उदा., myuni.resumematch.ai",
+      "customLogoUrl": "कस्टम लोगो यूआरएल (वैकल्पिक)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (एचएसएल या हेक्स)",
+      "primaryColorPlaceholder": "उदा., hsl(180 100% 25%) या #008080",
+      "accentColor": "एक्सेंट रंग (एचएसएल या हेक्स)",
+      "accentColorPlaceholder": "उदा., hsl(180 100% 30%) या #009999",
+      "coreFeaturesTitle": "मुख्य विशेषताएँ",
+      "featureCommunityFeed": "सामुदायिक फ़ीड",
+      "featureJobBoard": "जॉब बोर्ड",
+      "featureGamification": "गेमिफिकेशन (एक्सपी और बैज)",
+      "featureWallet": "डिजिटल वॉलेट (सिक्के)",
+      "featureEventRegistration": "कार्यक्रम पंजीकरण",
+      "signupTitle": "साइनअप सेटिंग्स",
+      "allowPublicSignup": "सार्वजनिक साइनअप की अनुमति दें",
+      "adminFullName": "प्रारंभिक व्यवस्थापक का पूरा नाम",
+      "adminEmail": "व्यवस्थापक ईमेल",
+      "adminPassword": "व्यवस्थापक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "विवरण की समीक्षा करें",
+      "nameLabel": "नाम:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो यूआरएल:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "एक्सेंट रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "सक्षम विशेषताएँ:",
+      "initialAdminUserTitle": "प्रारंभिक व्यवस्थापक उपयोगकर्ता",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "पिछला",
+      "next": "अगला",
+      "createTenant": "किरायेदार बनाएं"
+    }
   },
   "announcementsAdmin": {
-    "title": "घोषणा प्रबंधन"
+    "title": "घोषणा प्रबंधन",
+    "manageTenant": "{tenantId} के लिए घोषणाएँ प्रबंधित करें",
+    "createNewButton": "नई घोषणा बनाएँ",
+    "managePlatform": "संपूर्ण प्लेटफ़ॉर्म के लिए घोषणाएँ प्रबंधित करें।",
+    "currentAnnouncementsTitle": "वर्तमान घोषणाएँ",
+    "noAnnouncementsTenant": "आपके किरायेदार के लिए कोई घोषणाएँ नहीं मिलीं।",
+    "noAnnouncementsPlatform": "अभी तक कोई घोषणा नहीं की गई है।",
+    "audienceTargetDisplay": "(लक्ष्य: {target})",
+    "audiencePlatformWide": "(प्लेटफ़ॉर्म-व्यापी)",
+    "endDateOngoing": "जारी है",
+    "dialog": {
+      "editTitle": "घोषणा संपादित करें",
+      "createTitle": "नई घोषणा बनाएँ",
+      "titleLabel": "शीर्षक",
+      "contentLabel": "सामग्री",
+      "contentPlaceholder": "यहाँ घोषणा सामग्री दर्ज करें (मार्कडाउन समर्थित)।",
+      "startDateLabel": "प्रारंभ तिथि",
+      "endDateLabel": "समाप्ति तिथि (वैकल्पिक)",
+      "audienceLabel": "दर्शक",
+      "audienceAllUsers": "सभी उपयोगकर्ता (प्लेटफ़ॉर्म-व्यापी)",
+      "audienceSpecificTenant": "विशिष्ट किरायेदार",
+      "audienceSpecificRole": "विशिष्ट भूमिका",
+      "targetTenantLabel": "लक्षित किरायेदार",
+      "selectTenantPlaceholder": "एक किरायेदार चुनें",
+      "targetRoleLabel": "लक्षित भूमिका",
+      "selectRolePlaceholder": "एक भूमिका चुनें",
+      "roleUser": "उपयोगकर्ता",
+      "roleManager": "प्रबंधक",
+      "roleAdmin": "व्यवस्थापक",
+      "statusLabel": "स्थिति",
+      "statusDraft": "मसौदा",
+      "statusPublished": "प्रकाशित",
+      "statusArchived": "संग्रहीत",
+      "cancelButton": "रद्द करें",
+      "saveChangesButton": "बदलाव सहेजें",
+      "createButton": "घोषणा बनाएँ"
+    },
+    "table": {
+      "title": "शीर्षक",
+      "status": "स्थिति",
+      "audience": "दर्शक",
+      "startDate": "प्रारंभ तिथि",
+      "endDate": "समाप्ति तिथि",
+      "actions": "क्रियाएँ"
+    },
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "अनुमति अस्वीकृत",
+        "description": "आपको इस घोषणा को संपादित करने की अनुमति नहीं है।"
+      },
+      "announcementUpdated": {
+        "title": "घोषणा अद्यतन",
+        "description": "घोषणा '{title}' अद्यतन कर दी गई है।"
+      },
+      "announcementCreated": {
+        "title": "घोषणा बनाई गई",
+        "description": "घोषणा '{title}' बना दी गई है।"
+      },
+      "permissionDeniedDelete": {
+        "title": "अनुमति अस्वीकृत",
+        "description": "आपको इस घोषणा को हटाने की अनुमति नहीं है।"
+      },
+      "announcementDeleted": {
+        "title": "घोषणा हटाई गई",
+        "description": "घोषणा हटा दी गई है।"
+      }
+    }
   },
   "contentModeration": {
-    "title": "सामग्री मॉडरेशन"
+    "title": "सामग्री मॉडरेशन",
+    "descriptionTenant": "अपने किरायेदार के भीतर ध्वजांकित सामग्री की समीक्षा करें और प्रबंधित करें: {tenantId}।",
+    "descriptionPlatform": "पूरे प्लेटफ़ॉर्म से ध्वजांकित सामग्री की समीक्षा करें और प्रबंधित करें।",
+    "flaggedPostsTitle": "समीक्षा के लिए ध्वजांकित पोस्ट",
+    "noFlaggedPostsTenant": "आपके किरायेदार में समीक्षा के लिए कोई पोस्ट ध्वजांकित नहीं की गई है।",
+    "noFlaggedPostsPlatform": "प्लेटफ़ॉर्म पर समीक्षा के लिए कोई पोस्ट ध्वजांकित नहीं की गई है।",
+    "viewOnFeedTitle": "फ़ीड पर पोस्ट देखें",
+    "toast": {
+      "postApproved": {
+        "title": "पोस्ट स्वीकृत",
+        "description": "पोस्ट अब सामुदायिक फ़ीड पर दिखाई दे रहा है।"
+      },
+      "postRemoved": {
+        "title": "पोस्ट हटाया गया",
+        "description": "ध्वजांकित पोस्ट फ़ीड से हटा दिया गया है।"
+      }
+    },
+    "table": {
+      "author": "लेखक",
+      "contentSnippet": "सामग्री स्निपेट",
+      "flagCount": "ध्वज संख्या",
+      "dateFlagged": "ध्वजांकित तिथि",
+      "actions": "क्रियाएँ"
+    }
   },
   "blogSettingsAdmin": {
-    "title": "एआई ब्लॉग सेटिंग्स"
+    "title": "एआई ब्लॉग सेटिंग्स",
+    "description": "स्वचालित ब्लॉग पोस्ट निर्माण को कॉन्फ़िगर करें और एआई के साथ मैन्युअल रूप से पोस्ट बनाएँ।",
+    "automationSettingsTitle": "स्वचालन सेटिंग्स",
+    "generationIntervalLabel": "निर्माण अंतराल (घंटे)",
+    "generationIntervalHelp": "स्वचालित रूप से उत्पन्न ब्लॉग पोस्ट के बीच का समय घंटों में (उदा., दैनिक के लिए 24)।",
+    "topicsLabel": "स्वचालन के लिए विषय",
+    "topicsPlaceholder": "करियर सलाह, साक्षात्कार युक्तियाँ, नेटवर्किंग...",
+    "topicsHelp": "अल्पविराम से अलग किए गए विषयों की सूची जिनसे एआई स्वचालित पोस्ट के लिए चयन करेगा।",
+    "styleLabel": "लेखन शैली",
+    "stylePlaceholder": "एक लेखन शैली चुनें...",
+    "styleInformative": "सूचनात्मक",
+    "styleCasual": "अनौपचारिक",
+    "styleFormal": "औपचारिक",
+    "styleTechnical": "तकनीकी",
+    "styleStorytelling": "कहानी सुनाना",
+    "saveAutomationButton": "स्वचालन सेटिंग्स सहेजें",
+    "manualGenerationTitle": "मैन्युअल निर्माण",
+    "lastGeneratedPrefix": "पिछली बार उत्पन्न:",
+    "lastGeneratedNever": "कभी नहीं",
+    "selectTopicManualLabel": "विषय चुनें या कस्टम दर्ज करें",
+    "selectTopicManualPlaceholder": "एक पूर्वनिर्धारित विषय चुनें",
+    "customTopicPlaceholder": "या एक कस्टम विषय दर्ज करें...",
+    "generatingButton": "उत्पन्न हो रहा है...",
+    "generateNowButton": "अभी उत्पन्न करें",
+    "importantNoteTitle": "एआई उपयोग पर महत्वपूर्ण नोट",
+    "importantNoteContent": "मैन्युअल और स्वचालित ब्लॉग पोस्ट निर्माण दोनों एआई एपीआई क्रेडिट का उपभोग करते हैं। सुनिश्चित करें कि आपके एपीआई कुंजी में पर्याप्त कोटा है। एपीआई त्रुटि का सामना करने पर स्वचालित निर्माण रुक जाएगा।",
+    "validation": {
+      "intervalMin": "अंतराल कम से कम 1 घंटा होना चाहिए।",
+      "intervalMax": "अंतराल 720 घंटे (30 दिन) से अधिक नहीं हो सकता।",
+      "topicsRequired": "कम से कम एक विषय आवश्यक है।"
+    },
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्स सहेजी गईं",
+        "description": "ब्लॉग स्वचालन सेटिंग्स अपडेट की गई हैं।"
+      },
+      "noTopicSelected": {
+        "title": "कोई विषय नहीं चुना गया",
+        "description": "कृपया एक ब्लॉग पोस्ट उत्पन्न करने के लिए एक विषय चुनें या दर्ज करें।"
+      },
+      "postGenerated": {
+        "title": "पोस्ट उत्पन्न हुआ!",
+        "description": "नया ब्लॉग पोस्ट '{title}' सफलतापूर्वक बनाया गया।"
+      },
+      "generationFailed": {
+        "title": "निर्माण विफल",
+        "description": "ब्लॉग पोस्ट उत्पन्न नहीं किया जा सका। कृपया पुनः प्रयास करें।"
+      }
+    }
   },
   "welcomeTour": {
     "previousButton": "पिछला",
@@ -524,3 +723,5 @@
       "amount": "Amount"
   }
 }
+
+    
