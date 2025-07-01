@@ -32,22 +32,22 @@ const DailyInterviewChallengePage: React.FC = () => {
     }
 
     toast({
-      title: t("dailyChallenge.toast.newChallenge.title"),
-      description: t("dailyChallenge.toast.newChallenge.description"),
+      title: t("dailyChallenge.toast.newChallenge.title", { default: "New Challenge Loaded" }),
+      description: t("dailyChallenge.toast.newChallenge.description", { default: "A new technical challenge has been fetched for you." }),
     });
   };
 
   const handleShowHint = () => {
     if (standardChallenge?.solution) {
       toast({
-        title: t("dailyChallenge.toast.showHint.title"),
+        title: t("dailyChallenge.toast.showHint.title", { default: "Hint" }),
         description: standardChallenge.solution,
         duration: 10000,
       });
     } else {
       toast({
-        title: t("dailyChallenge.toast.showHint.title"),
-        description: t("dailyChallenge.toast.showHint.noHint"),
+        title: t("dailyChallenge.toast.showHint.title", { default: "Hint" }),
+        description: t("dailyChallenge.toast.showHint.noHint", { default: "No specific hint available for this question." }),
         variant: "default",
       });
     }
@@ -55,8 +55,8 @@ const DailyInterviewChallengePage: React.FC = () => {
   
   const handleSubmit = () => {
     toast({
-      title: t("dailyChallenge.toast.submitMock.title"),
-      description: t("dailyChallenge.toast.submitMock.description"),
+      title: t("dailyChallenge.toast.submitMock.title", { default: "Submission Received (Mock)" }),
+      description: t("dailyChallenge.toast.submitMock.description", { default: "In a real app, your answer would be evaluated. This feature is coming soon!" }),
     });
   };
 
@@ -73,15 +73,15 @@ const DailyInterviewChallengePage: React.FC = () => {
         <p className="text-foreground/90 mb-4">{challenge.description}</p>
         <textarea
           className="w-full min-h-[100px] border rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder={t("dailyChallenge.yourAnswer")}
+          placeholder={t("dailyChallenge.yourAnswer", { default: "Type your answer here..." })}
         />
       </CardContent>
       <CardFooter className="flex justify-between items-center mt-auto border-t pt-4">
         <Button variant="outline" size="sm" onClick={handleShowHint}>
           <Lightbulb className="mr-2 h-4 w-4" />
-          {t("dailyChallenge.showHint")}
+          {t("dailyChallenge.showHint", { default: "Show Hint" })}
         </Button>
-        <Button onClick={handleSubmit}>{t("dailyChallenge.submit")}</Button>
+        <Button onClick={handleSubmit}>{t("dailyChallenge.submit", { default: "Submit" })}</Button>
       </CardFooter>
     </Card>
   );
@@ -113,7 +113,7 @@ const DailyInterviewChallengePage: React.FC = () => {
             </div>
         </CardContent>
         <CardFooter className="flex justify-end mt-auto border-t pt-4">
-          <Button onClick={handleSubmit}>{t("dailyChallenge.completeTasksButton")}</Button>
+          <Button onClick={handleSubmit}>{t("dailyChallenge.completeTasksButton", { default: "Complete Tasks to Earn XP" })}</Button>
         </CardFooter>
     </Card>
   );
@@ -123,9 +123,9 @@ const DailyInterviewChallengePage: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-7 w-7 text-primary" />
-          {t("dailyChallenge.title")}
+          {t("dailyChallenge.title", { default: "Daily Interview Challenge" })}
         </h1>
-        <Button variant="ghost" size="icon" onClick={handleRefresh} title={t("dailyChallenge.refresh")}>
+        <Button variant="ghost" size="icon" onClick={handleRefresh} title={t("dailyChallenge.refresh", { default: "Get New Challenge" })}>
           <RefreshCw className="h-5 w-5" />
         </Button>
       </div>
@@ -136,7 +136,7 @@ const DailyInterviewChallengePage: React.FC = () => {
       </div>
 
       <div className="mt-8 text-center text-muted-foreground text-xs">
-        {t("dailyChallenge.footerNote")}
+        {t("dailyChallenge.footerNote", { default: "A new challenge is posted every day. Practice regularly to improve your interview skills!" })}
       </div>
     </div>
   );

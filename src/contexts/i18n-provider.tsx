@@ -13,7 +13,7 @@ import hiTranslations from '@/locales/hi.json';
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
+  t: (key: string, options?: { default?: string; [key: string]: string | number; }) => string;
   availableLocales: Record<Locale, string>;
 }
 
@@ -53,28 +53,41 @@ export function I18nProvider({ children }: I18nProviderProps) {
     }
   }, []);
 
-  const t = useCallback((key: string, replacements?: Record<string, string | number>): string => {
-    const keys = key.split('.');
-    let current: string | Translations | NestedTranslations = translationsData[locale] || translationsData[defaultLocale];
-
-    for (const k of keys) {
-      if (typeof current === 'object' && current !== null && k in current) {
-        current = (current as NestedTranslations)[k];
-      } else {
-        return key; // Key not found
+  const t = useCallback((key: string, options?: { default?: string; [key: string]: string | number; }): string => {
+    const findTranslation = (data: Translations) => {
+      const keys = key.split('.');
+      let current: string | Translations | NestedTranslations = data;
+      for (const k of keys) {
+        if (typeof current === 'object' && current !== null && k in current) {
+          current = (current as NestedTranslations)[k];
+        } else {
+          return undefined;
+        }
       }
+      return typeof current === 'string' ? current : undefined;
+    };
+    
+    let result = findTranslation(translationsData[locale]);
+    
+    if (result === undefined) {
+      result = findTranslation(translationsData[defaultLocale]);
+    }
+
+    if (result === undefined) {
+      result = options?.default ?? key;
+    }
+
+    // Handle replacements
+    if (options) {
+      result = Object.entries(options).reduce((acc, [placeholder, value]) => {
+        if (placeholder === 'default') return acc;
+        return acc.replace(`{${placeholder}}`, String(value));
+      }, result);
     }
     
-    if (typeof current === 'string') {
-      if (replacements) {
-        return Object.entries(replacements).reduce((acc, [placeholder, value]) => {
-          return acc.replace(`{${placeholder}}`, String(value));
-        }, current);
-      }
-      return current;
-    }
-    return key; // Should be a string if found
+    return result;
   }, [locale]);
+
 
   return (
     <I18nContext.Provider value={{ locale, setLocale, t, availableLocales }}>

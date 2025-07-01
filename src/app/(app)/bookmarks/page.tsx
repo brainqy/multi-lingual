@@ -93,18 +93,18 @@ export default function BookmarksPage() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">{t("bookmarks.title")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("bookmarks.title", { default: "My Bookmarks" })}</h1>
         <div className="w-full sm:w-56">
           <Select value={filter} onValueChange={v => setFilter(v as any)}>
             <SelectTrigger>
-              <SelectValue placeholder={t("bookmarks.filter")} />
+              <SelectValue placeholder={t("bookmarks.filter", { default: "Filter bookmarks" })} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("bookmarks.all")}</SelectItem>
-              <SelectItem value="posts">{t("bookmarks.posts")}</SelectItem>
-              <SelectItem value="blogs">{t("bookmarks.blogs")}</SelectItem>
-              <SelectItem value="questions">{t("bookmarks.questions")}</SelectItem>
-              <SelectItem value="resumeScans">{t("bookmarks.resumeScans")}</SelectItem>
+              <SelectItem value="all">{t("bookmarks.all", { default: "All Bookmarks" })}</SelectItem>
+              <SelectItem value="posts">{t("bookmarks.posts", { default: "Community Posts" })}</SelectItem>
+              <SelectItem value="blogs">{t("bookmarks.blogs", { default: "Blog Posts" })}</SelectItem>
+              <SelectItem value="questions">{t("bookmarks.questions", { default: "Interview Questions" })}</SelectItem>
+              <SelectItem value="resumeScans">{t("bookmarks.resumeScans", { default: "Resume Scans" })}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -113,11 +113,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "posts") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" />{t("bookmarks.posts")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" />{t("bookmarks.posts", { default: "Community Posts" })}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedPosts.length === 0 ? (
-              <CardDescription>{t("bookmarks.noPosts")}</CardDescription>
+              <CardDescription>{t("bookmarks.noPosts", { default: "You haven't bookmarked any community posts yet." })}</CardDescription>
             ) : (
               <ul className="space-y-2">
                 {bookmarkedPosts.map(post => (
@@ -139,11 +139,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "blogs") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />{t("bookmarks.blogs")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" />{t("bookmarks.blogs", { default: "Blog Posts" })}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedBlogs.length === 0 ? (
-              <CardDescription>{t("bookmarks.noBlogs")}</CardDescription>
+              <CardDescription>{t("bookmarks.noBlogs", { default: "You haven't bookmarked any blog articles yet." })}</CardDescription>
             ) : (
               <ul className="space-y-2">
                 {bookmarkedBlogs.map(blog => (
@@ -165,11 +165,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "questions") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" />{t("bookmarks.questions")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" />{t("bookmarks.questions", { default: "Interview Questions" })}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedQuestions.length === 0 ? (
-              <CardDescription>{t("bookmarks.noQuestions")}</CardDescription>
+              <CardDescription>{t("bookmarks.noQuestions", { default: "You haven't bookmarked any interview questions yet." })}</CardDescription>
             ) : (
               <Accordion type="multiple" className="w-full space-y-2">
                 {bookmarkedQuestions.map(q => (
@@ -221,11 +221,11 @@ export default function BookmarksPage() {
       {(filter === "all" || filter === "resumeScans") && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" />{t("bookmarks.resumeScans")}</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" />{t("bookmarks.resumeScans", { default: "Resume Scans" })}</CardTitle>
           </CardHeader>
           <CardContent>
             {bookmarkedResumeScans.length === 0 ? (
-              <CardDescription>{t("bookmarks.noResumeScans")}</CardDescription>
+              <CardDescription>{t("bookmarks.noResumeScans", { default: "You haven't bookmarked any resume scan reports yet." })}</CardDescription>
             ) : (
               <div className="space-y-3">
                 {bookmarkedResumeScans.map(scan => (

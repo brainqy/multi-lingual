@@ -12,22 +12,22 @@ export default function ActivityLogPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("activityLog.title")}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("activityLog.title", { default: "Activity Log" })}</h1>
       
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart2 className="h-6 w-6 text-primary"/>
-            {t("activityLog.recentActivities")}
+            {t("activityLog.recentActivities", { default: "Recent Activities" })}
           </CardTitle>
           <CardDescription>
-            {t("activityLog.description")}
+            {t("activityLog.description", { default: "A log of your recent actions and system events within ResumeMatch AI." })}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {sampleActivities.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              {t("activityLog.noActivities")}
+              {t("activityLog.noActivities", { default: "No activities recorded yet." })}
             </p>
           ) : (
             <ScrollArea className="h-[500px] pr-4">

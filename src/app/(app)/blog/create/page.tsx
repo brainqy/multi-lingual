@@ -60,7 +60,7 @@ export default function CreateBlogPage() {
         comments: [],
       };
       sampleBlogPosts.unshift(newPost);
-      toast({ title: t("blog.toastCreatedTitle"), description: t("blog.toastCreatedDesc") });
+      toast({ title: t("blog.toastCreatedTitle", { default: "Post Created!" }), description: t("blog.toastCreatedDesc", { default: "Your blog post has been published." }) });
       reset();
       setIsLoading(false);
       router.push(`/blog/${newPost.slug}`);
@@ -70,50 +70,50 @@ export default function CreateBlogPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <BookOpen className="h-8 w-8" /> {t("blog.createNewPost")}
+        <BookOpen className="h-8 w-8" /> {t("blog.createNewPost", { default: "Create New Post" })}
       </h1>
-      <CardDescription>{t("blog.createPageDescription")}</CardDescription>
+      <CardDescription>{t("blog.createPageDescription", { default: "Share your knowledge and insights with the community. Write a blog post on a topic relevant to career development, networking, or your industry." })}</CardDescription>
 
       <Card className="shadow-xl">
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle>{t("blog.newPostDetails")}</CardTitle>
+            <CardTitle>{t("blog.newPostDetails", { default: "New Post Details" })}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="blog-title">{t("blog.titleLabel")} *</Label>
-              <Controller name="title" control={control} render={({ field }) => <Input id="blog-title" {...field} placeholder={t("blog.titlePlaceholder")} />} />
+              <Label htmlFor="blog-title">{t("blog.titleLabel", { default: "Title" })} *</Label>
+              <Controller name="title" control={control} render={({ field }) => <Input id="blog-title" {...field} placeholder={t("blog.titlePlaceholder", { default: "e.g., 5 Tips for a Killer Resume" })} />} />
               {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-excerpt">{t("blog.excerptLabel")} *</Label>
-              <Controller name="excerpt" control={control} render={({ field }) => <Textarea id="blog-excerpt" {...field} rows={2} placeholder={t("blog.excerptPlaceholder")} />} />
+              <Label htmlFor="blog-excerpt">{t("blog.excerptLabel", { default: "Excerpt / Short Summary" })} *</Label>
+              <Controller name="excerpt" control={control} render={({ field }) => <Textarea id="blog-excerpt" {...field} rows={2} placeholder={t("blog.excerptPlaceholder", { default: "A brief, catchy summary of your post (150-200 characters)." })} />} />
               {errors.excerpt && <p className="text-sm text-destructive mt-1">{errors.excerpt.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-content">{t("blog.contentLabel")} *</Label>
+              <Label htmlFor="blog-content">{t("blog.contentLabel", { default: "Content (Markdown Supported)" })} *</Label>
               <Controller name="content" control={control} render={({ field }) => (
-                <Textarea id="blog-content" {...field} rows={10} placeholder={t("blog.contentPlaceholder")} />
+                <Textarea id="blog-content" {...field} rows={10} placeholder={t("blog.contentPlaceholder", { default: "Write your full blog post here. Use Markdown for formatting like ## Headings and **bold** text." })} />
               )} />
               {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-imageUrl" className="flex items-center gap-1"><ImageIcon className="h-4 w-4 text-muted-foreground"/>{t("blog.imageUrlLabel")}</Label>
+              <Label htmlFor="blog-imageUrl" className="flex items-center gap-1"><ImageIcon className="h-4 w-4 text-muted-foreground"/>{t("blog.imageUrlLabel", { default: "Feature Image URL (Optional)" })}</Label>
               <Controller name="imageUrl" control={control} render={({ field }) => <Input id="blog-imageUrl" type="url" {...field} placeholder="https://example.com/image.jpg" />} />
               {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
             </div>
             <div>
-              <Label htmlFor="blog-tags">{t("blog.tagsLabel")}</Label>
-              <Controller name="tags" control={control} render={({ field }) => <Input id="blog-tags" {...field} placeholder={t("blog.tagsPlaceholder")} />} />
+              <Label htmlFor="blog-tags">{t("blog.tagsLabel", { default: "Tags (comma-separated)" })}</Label>
+              <Controller name="tags" control={control} render={({ field }) => <Input id="blog-tags" {...field} placeholder={t("blog.tagsPlaceholder", { default: "e.g., career, resume, advice" })} />} />
               {errors.tags && <p className="text-sm text-destructive mt-1">{errors.tags.message}</p>}
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isLoading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("blog.submitting")}</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("blog.submitting", { default: "Submitting..." })}</>
               ) : (
-                <><Send className="mr-2 h-4 w-4" /> {t("blog.submitPost")}</>
+                <><Send className="mr-2 h-4 w-4" /> {t("blog.submitPost", { default: "Submit Post" })}</>
               )}
             </Button>
           </CardFooter>
