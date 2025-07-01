@@ -390,7 +390,7 @@ export default function AlumniConnectPage() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {t("alumniConnect.bookTitle", { name: alumniToBook?.name })}
+              {t("alumniConnect.bookTitle", { name: alumniToBook?.name || '' })}
             </DialogTitle>
             <CardDescription>
               {t("alumniConnect.bookDesc")}
