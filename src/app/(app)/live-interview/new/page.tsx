@@ -50,7 +50,7 @@ export default function NewLiveInterviewPage() {
                     questionText: questionFromBank.questionText, 
                     category: questionFromBank.category, 
                     difficulty: questionFromBank.difficulty,
-                    baseScore: questionFromBank.baseScore || 10 
+                    baseScore: 10 
                 };
             }
             return null; 
@@ -63,11 +63,11 @@ export default function NewLiveInterviewPage() {
       tenantId: currentUser.tenantId, 
       title: title,
       participants: [
-        { userId: currentUser.id, name: currentUser.name, role: 'interviewer', profilePictureUrl: currentUser.profilePictureUrl },
+        { userId: currentUser.id, name: currentUser.name, role: "interviewer" as "interviewer", profilePictureUrl: currentUser.profilePictureUrl },
         ...emails.map((email, index) => ({
             userId: `participant-temp-${index}-${Date.now()}`,
             name: email.split('@')[0] || `Participant ${index + 1}`, 
-            role: 'candidate',
+            role: "candidate" as "candidate",
             profilePictureUrl: `https://avatar.vercel.sh/${email}.png`
         }))
       ],
