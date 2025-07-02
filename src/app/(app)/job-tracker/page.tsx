@@ -24,7 +24,7 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
-  DropdownMenu,
+  DropdownMenu, DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuPortal,
@@ -35,6 +35,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+interface Note {
+  date: string;
+  content: string;
+ editable?: boolean; // Add editable flag
+}
 const interviewSchema = z.object({
   id: z.string(),
   date: z.string(),
@@ -43,6 +48,7 @@ const interviewSchema = z.object({
   interviewerEmail: z.string().email().optional(),
   interviewerMobile: z.string().optional(),
   notes: z.string().optional(),
+ opened: z.boolean().optional(), // Add opened state for modal
 });
 
 const jobApplicationSchema = z.object({
@@ -51,7 +57,7 @@ const jobApplicationSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   status: z.enum(JOB_APPLICATION_STATUSES as [JobApplicationStatus, ...JobApplicationStatus[]]),
   dateApplied: z.string().min(1, "Date applied is required").refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date"}),
-  notes: z.string().optional(),
+  notes: z.array(z.string()).optional(), // Changed to array of strings
   jobDescription: z.string().optional(),
   location: z.string().optional(),
   applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
@@ -162,6 +168,9 @@ export default function JobTrackerPage() {
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
   const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '',
   interviewerEmail: '', notes: ''});
+  const [currentNotes, setCurrentNotes] = useState<Note[]>([]);
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
 
   const { control, handleSubmit, reset, setValue } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
@@ -240,7 +249,7 @@ export default function JobTrackerPage() {
         jobTitle: app.jobTitle,
         status: app.status,
         dateApplied: app.dateApplied,
-        notes: app.notes || '',
+        // notes are handled separately now
         jobDescription: app.jobDescription || '',
         location: app.location || '',
         applicationUrl: app.applicationUrl || '',
@@ -249,6 +258,11 @@ export default function JobTrackerPage() {
         coverLetterText: app.coverLetterText || '',
     });
     setCurrentInterviews(app.interviews || []);
+    // Initialize notes, adding sample notes if no notes exist for the application
+    const initialNotes = app.notes && app.notes.length > 0
+      ? app.notes.map(noteContent => ({ date: format(new Date(), 'yyyy-MM-dd'), content: noteContent, editable: false })) // Assuming existing notes don't have dates, adding today's date and editable false
+      : addSampleNotes([]); // Add sample notes if no notes exist for this application
+    setCurrentNotes(initialNotes);
     setIsDialogOpen(true);
   };
 
@@ -268,7 +282,7 @@ export default function JobTrackerPage() {
   const openNewApplicationDialog = () => {
     setEditingApplication(null);
     reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: '' });
-    setCurrentInterviews([]);
+    setCurrentInterviews([]); // Reset interviews for new application
     setIsDialogOpen(true);
   };
   
@@ -278,14 +292,51 @@ export default function JobTrackerPage() {
         return;
     }
     setCurrentInterviews(prev => [...prev, {id: `int-${Date.now()}`, ...newInterview}]);
-    setNewInterview({ date: '', type: 'Phone Screen', interviewer: '', notes: ''});
+    setNewInterview({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '', interviewerEmail: '', notes: ''});
   };
 
   const handleRemoveInterview = (interviewId: string) => {
     setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
   }
 
-  const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[] }): JobApplication[] => {
+  const handleOpenInterviewModal = (interview: Interview) => {
+    // You might want to set a state here to hold the specific interview details
+    // that you want to display in the modal, if the modal is generic.
+    setIsInterviewModalOpen(true);
+  }
+  
+  const handleAddNote = () => {
+    if (newNoteContent.trim()) {
+      const newNote: Note = {
+        date: format(new Date(), 'yyyy-MM-dd'),
+        content: newNoteContent.trim(),
+        editable: false,
+      };
+      setCurrentNotes(prev => [newNote, ...prev]);
+      setNewNoteContent('');
+    }
+  };
+
+  const handleEditNote = (index: number) => {
+    setCurrentNotes(prev => prev.map((note, i) => i === index ? { ...note, editable: true } : note));
+  };
+
+  const handleSaveNote = (index: number, newContent: string) => {
+    setCurrentNotes(prev => prev.map((note, i) => i === index ? { ...note, content: newContent, editable: false } : note));
+  };
+
+  const handleRemoveNote = (index: number) => {
+    setCurrentNotes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Function to add sample notes
+ const addSampleNotes = (existingNotes: Note[]): Note[] => {
+ return [...existingNotes,
+      { date: "2024-05-01", content: t("jobTracker.dialog.notesHistorySample1", { default: "Had a call with recruiter, discussed company culture and next steps." }), editable: false },
+      { date: "2024-05-10", content: t("jobTracker.dialog.notesHistorySample2", { default: "Completed technical assessment. Focused on React and system design." }), editable: false },
+      { date: "2024-05-15", content: t("jobTracker.dialog.notesHistorySample3", { default: "Scheduled interview with engineering manager for next week." }), editable: false }, ]; };
+
+  const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[]; }): JobApplication[] => {
     return applications.filter(app => column.acceptedStatuses.includes(app.status));
   };
 
@@ -328,7 +379,7 @@ export default function JobTrackerPage() {
             
             <ScrollArea className="flex-grow mt-3 border-2 border-dashed border-border rounded-md p-2 min-h-[200px]">
               {hasSearched && jobSearchResults.length === 0 && (
-                <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+ <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
                   {t("jobTracker.noJobsFound", { default: "No jobs found." })}
                 </div>
               )}
@@ -388,7 +439,7 @@ export default function JobTrackerPage() {
         if (!isOpen) {
             setEditingApplication(null);
             reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
-            setCurrentInterviews([]);
+ setCurrentInterviews([]); // Reset interviews
         }
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
@@ -397,7 +448,7 @@ export default function JobTrackerPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
             <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
-              <TabsList className="grid w-full grid-cols-5 shrink-0">
+              <TabsList className="grid w-full grid-cols-5 shrink-0 h-10"> {/* Adjusted height */}
                 <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
                 <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
                 <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
@@ -517,7 +568,7 @@ export default function JobTrackerPage() {
         <div className="space-y-2">
           {currentInterviews.map(interview => (
             <Card key={interview.id} className="p-2 bg-secondary/50">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center cursor-pointer" onClick={() => handleOpenInterviewModal(interview)}> {/* Make the card clickable */}
                 <p className="text-sm font-semibold">{interview.type} with {interview.interviewer}</p>
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveInterview(interview.id)}>
                   <Trash2 className="h-4 w-4"/>
@@ -587,42 +638,48 @@ export default function JobTrackerPage() {
     {/* Left Column: Notes History */}
     <div className="space-y-4">
       <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
-      {/* Sample Notes */}
       <div className="space-y-2">
-        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-01:</strong> {t("jobTracker.dialog.notesHistorySample1", { default: "Had a call with recruiter, discussed company culture and next steps." })}
-        </div>
-        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-10:</strong> {t("jobTracker.dialog.notesHistorySample2", { default: "Completed technical assessment. Focused on React and system design." })}
-        </div>
-        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          <strong>2024-05-15:</strong> {t("jobTracker.dialog.notesHistorySample3", { default: "Scheduled interview with engineering manager for next week." })}
-        </div>
-      </div>
-      {/* Existing application notes */}
-      {editingApplication && editingApplication.notes ? (
-        <div className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line">
-          {editingApplication.notes}
-        </div>
+        {currentNotes.length > 0 ? (
+          currentNotes.map((note, index) => (
+            <div key={index} className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line flex flex-col">
+              <div className="flex justify-between items-start">
+                <span className="font-semibold text-xs text-muted-foreground">{note.date}:</span>
+                <div className="flex gap-1">
+                  {!note.editable && (
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/70" onClick={() => handleEditNote(index)}>
+                      <Edit3 className="h-3 w-3"/>
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => handleRemoveNote(index)}>
+                    <Trash2 className="h-3 w-3"/>
+                  </Button>
+                </div>
+              </div>
+              {note.editable ? (
+                <Textarea
+                  value={note.content}
+                  onChange={(e) => setCurrentNotes(prev => prev.map((n, i) => i === index ? { ...n, content: e.target.value } : n))}
+                  rows={3}
+                  className="mt-2 text-sm"
+                />
+              ) : (
+                <p className="mt-1 text-foreground">{note.content}</p>
+              )}
+              {note.editable && (
+                <div className="flex justify-end mt-2">
+                  <Button variant="secondary" size="sm" onClick={() => handleSaveNote(index, currentNotes[index].content)}>{t("jobTracker.dialog.saveNote", { default: "Save Note" })}</Button>
+                </div>
+              )}
+            </div>
+          ))
       ) : (
         <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
       )}
     </div>
     {/* Right Column: Notes Form */}
     <div className="space-y-2">
-      <Label htmlFor="notes">{t("jobTracker.dialog.addEditNotes", { default: "Add/Edit Notes" })}</Label>
-      <Controller
-        name="notes"
-        control={control}
-        render={({ field }) => (
-          <Textarea
-            id="notes"
-            placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })}
-            rows={15}
-            {...field}
-            value={field.value ?? ''}
-          />
-        )}
+      <Label htmlFor="new-note">{t("jobTracker.dialog.addNotes", { default: "Add Notes" })}</Label>
+      <Textarea id="new-note" placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })} rows={15} value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)}/>
       />
     </div>
   </div>
@@ -635,6 +692,19 @@ export default function JobTrackerPage() {
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+       {/* Interview Detail Modal */}
+      <Dialog open={isInterviewModalOpen} onOpenChange={setIsInterviewModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Interview Details</DialogTitle>
+            {/* Display selected interview details here */}
+          </DialogHeader>
+          <div className="py-4">
+            <p>More details about the interview will go here.</p>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
