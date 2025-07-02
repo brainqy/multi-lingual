@@ -75,7 +75,7 @@ export default function NumberMatchGamePage() {
         sampleWalletBalance.coins += WIN_REWARD;
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        const prize = Math.floor(Math.random() * 6) + 4; // Random prize between 4 and 9
+        const prize = Math.floor(Math.random() * 5) + 1; // Random prize between 1 and 5
         sampleWalletBalance.coins += prize;
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
@@ -107,7 +107,7 @@ export default function NumberMatchGamePage() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      {isClient && isWinner && <Confetti />}
+      {isClient && !isGameActive && <Confetti />}
       <Card className="w-full max-w-md text-center shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight text-primary flex items-center justify-center gap-2">
@@ -118,41 +118,52 @@ export default function NumberMatchGamePage() {
             Match the number 777 to win a big prize!
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="relative p-8 bg-muted rounded-lg shadow-inner bg-gradient-to-br from-secondary to-muted">
-            {showPrize && (
-              <div
-                key={attemptsLeft}
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-50 slide-in-from-bottom-10 duration-700"
-              >
-                <span className="text-2xl font-bold text-green-500 drop-shadow-lg [text-shadow:_0_2px_4px_rgb(0_0_0_/_20%)]">
-                  +{lastPrize} <span className="text-xl">Coins!</span>
-                </span>
+        <CardContent>
+          {(!isGameActive && !isWinner) ? (
+            <div className="text-center py-8">
+              <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4 animate-bounce" />
+              <h2 className="text-3xl font-bold">Game Over!</h2>
+              <p className="text-muted-foreground mt-2">You won a total consolation prize of:</p>
+              <p className="text-5xl font-bold text-primary my-2">{totalConsolationPrize} Coins</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="relative p-8 bg-muted rounded-lg shadow-inner bg-gradient-to-br from-secondary to-muted">
+                {showPrize && (
+                  <div
+                    key={attemptsLeft}
+                    className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-50 slide-in-from-bottom-10 duration-700"
+                  >
+                    <span className="text-2xl font-bold text-green-500 drop-shadow-lg [text-shadow:_0_2px_4px_rgb(0_0_0_/_20%)]">
+                      +{lastPrize} <span className="text-xl">Coins!</span>
+                    </span>
+                  </div>
+                )}
+                <p
+                  className={cn(
+                    "text-6xl font-mono font-bold tracking-widest transition-colors duration-300",
+                    isWinner ? "text-green-500" : "text-foreground",
+                    !isGameActive && !isWinner ? "text-destructive" : ""
+                  )}
+                >
+                  {generatedNumber}
+                </p>
               </div>
-            )}
-            <p
-              className={cn(
-                "text-6xl font-mono font-bold tracking-widest transition-colors duration-300",
-                isWinner ? "text-green-500" : "text-foreground",
-                !isGameActive && !isWinner ? "text-destructive" : ""
-              )}
-            >
-              {generatedNumber}
-            </p>
-          </div>
-          <div className="text-lg font-medium text-muted-foreground h-6">
-            {message}
-          </div>
-          <div className="flex justify-around items-center text-sm">
-            <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-yellow-500" />
-              <span>Cost: {GAME_COST} Coins</span>
+              <div className="text-lg font-medium text-muted-foreground h-6">
+                {message}
+              </div>
+              <div className="flex justify-around items-center text-sm">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-yellow-500" />
+                  <span>Cost: {GAME_COST} Coins</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Repeat className="h-5 w-5 text-blue-500" />
+                  <span>Attempts Left: {attemptsLeft}</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Repeat className="h-5 w-5 text-blue-500" />
-              <span>Attempts Left: {attemptsLeft}</span>
-            </div>
-          </div>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
           <Button onClick={handlePlay} disabled={!isGameActive || isRolling} size="lg" className="w-full bg-primary hover:bg-primary/90">
