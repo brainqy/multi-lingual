@@ -815,6 +815,16 @@
       "date": "Date",
       "description": "Description",
       "amount": "Amount"
+  },
+  "spreadTheWord": {
+    "title": "Spread the Word!",
+    "description": "Love using our platform? Share it with your friends and network, and help our community grow.",
+    "toast": {
+      "copied": {
+        "title": "Link Copied!",
+        "description": "Your unique referral link is ready to share."
+      }
+    }
   }
 }
 

@@ -493,8 +493,8 @@
   "activityLog": {
     "title": "गतिविधि लॉग",
     "recentActivities": "हाल की गतिविधियाँ",
-    "description": "ResumeMatch AI के भीतर आपकी हाल की क्रियाओं और सिस्टम घटनाओं का एक लॉग।",
-    "noActivities": "अभी तक कोई गतिविधि दर्ज नहीं की गई है।"
+    "description": "ResumeMatch AI मधील तुमच्या अलीकडील क्रिया आणि सिस्टम इव्हेंटचा लॉग.",
+    "noActivities": "अद्याप कोणतेही क्रियाकलाप रेकॉर्ड केलेले नाहीत."
   },
   "appointments": {
     "assignedCommunityRequests": "Assigned Community Requests",
@@ -721,6 +721,16 @@
       "date": "Date",
       "description": "Description",
       "amount": "Amount"
+  },
+  "spreadTheWord": {
+    "title": "Spread the Word!",
+    "description": "Love using our platform? Share it with your friends and network, and help our community grow.",
+    "toast": {
+      "copied": {
+        "title": "Link Copied!",
+        "description": "Your unique referral link is ready to share."
+      }
+    }
   }
 }
 

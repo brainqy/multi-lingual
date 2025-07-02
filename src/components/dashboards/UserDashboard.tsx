@@ -25,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import SpreadTheWordCard from "@/components/features/SpreadTheWordCard";
 
 
 const jobApplicationStatusData = sampleJobApplications.reduce((acc, curr) => {
@@ -317,25 +318,28 @@ export default function UserDashboard() {
             </CardContent>
           </Card>
 
-          {dailyChallenge && (
-            <Card className="lg:col-span-1 shadow-lg flex flex-col">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Puzzle className="h-4 w-4 text-primary" />
-                  {t("userDashboard.dailyChallenge.title", { default: "Today's Daily Challenge" })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground line-clamp-3">{dailyChallenge.title}</p>
-                <Badge variant="outline" className="mt-2">{dailyChallenge.category}</Badge>
-              </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
-                  <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton", { default: "View Challenge" })}<ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
+          <div className="lg:col-span-1 space-y-6">
+            {dailyChallenge && (
+              <Card className="shadow-lg flex flex-col">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Puzzle className="h-4 w-4 text-primary" />
+                    {t("userDashboard.dailyChallenge.title", { default: "Today's Daily Challenge" })}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-sm text-muted-foreground line-clamp-3">{dailyChallenge.title}</p>
+                  <Badge variant="outline" className="mt-2">{dailyChallenge.category}</Badge>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
+                    <Link href="/daily-interview-challenge">{t("userDashboard.dailyChallenge.viewButton", { default: "View Challenge" })}<ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+            <SpreadTheWordCard user={user} />
+          </div>
         </div>
         
         {visibleWidgetIds.has('promotionCard') && activePromotions.length > 0 && (
@@ -601,5 +605,3 @@ export default function UserDashboard() {
     </>
   );
 }
-
-    

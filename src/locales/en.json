@@ -1,6 +1,6 @@
 
 {
-  "appName": "Bhasha Setu",
+  "appName": "ResumeMatch AI",
   "dashboard": {
     "navigation": {
       "overview": "Overview",
@@ -571,6 +571,9 @@
       "promoCodeMgt": "Promo Codes"
     }
   },
+  "userDashboard": {
+    "title": "My Dashboard"
+  },
   "translateTool": {
     "title": "Translation Tool",
     "enterTextLabel": "Enter Text to Translate",
@@ -870,6 +873,16 @@
       "date": "Date",
       "description": "Description",
       "amount": "Amount"
+  },
+  "spreadTheWord": {
+    "title": "Spread the Word!",
+    "description": "Love using our platform? Share it with your friends and network, and help our community grow.",
+    "toast": {
+      "copied": {
+        "title": "Link Copied!",
+        "description": "Your unique referral link is ready to share."
+      }
+    }
   }
 }
 
