@@ -1,5 +1,6 @@
 import { SAMPLE_TENANT_ID } from "@/lib/sample-data";
 import * as z from "zod";
+import type { Locale } from '@/locales';
 
 export type Translations = {
   [key: string]: string | NestedTranslations;
@@ -182,7 +183,7 @@ export interface CommunityComment {
   userName: string;
   userAvatar?: string;
   timestamp: string;
-  text: string;
+  comment: string;
 }
 
 export interface CommunityPost {
@@ -1128,29 +1129,6 @@ export interface LiveInterviewSession {
     percentage: number;
     reportNotes?: string;
   };
-}
-
-export type Locale = 'en' | 'hi' | 'mr';
-export const locales: Locale[] = ['en', 'hi', 'mr'];
-export const localePrefix = 'as-needed'; // Or 'always', 'never'
-export const defaultLocale: Locale = 'en';
-
-export const localeDisplayNames: Record<Locale, string> = {
-  en: 'English',
-  hi: 'हिन्दी',
-  mr: 'मराठी',
-};
-
-export type SystemAlertType = 'error' | 'warning' | 'info' | 'success';
-export interface SystemAlert {
-  id: string;
-  type: SystemAlertType;
-  title: string;
-  message: string;
-  timestamp: string; // ISO date string
-  linkTo?: string;
-  linkText?: string;
-  isRead?: boolean;
 }
 
 export const UserInputActionSchema = z.object({
