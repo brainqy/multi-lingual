@@ -14,7 +14,6 @@ const GAME_COST = 100;
 const MAX_ATTEMPTS = 10;
 const WINNING_NUMBER = 777;
 const WIN_REWARD = 500;
-const ATTEMPT_REWARD = 5;
 
 export default function NumberMatchGamePage() {
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS);
@@ -25,6 +24,9 @@ export default function NumberMatchGamePage() {
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
   const [isRolling, setIsRolling] = useState(false);
+  const [totalConsolationPrize, setTotalConsolationPrize] = useState(0);
+  const [lastPrize, setLastPrize] = useState(0);
+  const [showPrize, setShowPrize] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -43,10 +45,10 @@ export default function NumberMatchGamePage() {
       return;
     }
 
-    // Deduct coins (mock)
     sampleWalletBalance.coins -= GAME_COST;
     setIsRolling(true);
     setMessage("Rolling...");
+    setShowPrize(false);
 
     let rollCount = 0;
     const maxRolls = 15;
@@ -57,31 +59,36 @@ export default function NumberMatchGamePage() {
         clearInterval(rollInterval);
         finishRoll();
       }
-    }, 50); // Roll every 50ms
+    }, 50);
 
     const finishRoll = () => {
       const newNumber = Math.floor(100 + Math.random() * 900);
       setGeneratedNumber(String(newNumber));
-      setAttemptsLeft(prev => prev - 1);
+      const newAttemptsLeft = attemptsLeft - 1;
+      setAttemptsLeft(newAttemptsLeft);
       setIsRolling(false);
 
       if (newNumber === WINNING_NUMBER) {
         setMessage(`It's 777! You won ${WIN_REWARD} coins!`);
         setIsWinner(true);
         setIsGameActive(false);
-        // Award prize (mock)
         sampleWalletBalance.coins += WIN_REWARD;
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        // Player didn't win, give attempt reward
-        sampleWalletBalance.coins += ATTEMPT_REWARD;
-        if (attemptsLeft - 1 <= 0) {
-          setMessage(`Game Over! You received ${ATTEMPT_REWARD} coins for your last attempt.`);
+        const prize = Math.floor(Math.random() * 55) + 5; // Random prize between 5 and 59
+        sampleWalletBalance.coins += prize;
+        const updatedTotalConsolation = totalConsolationPrize + prize;
+        setTotalConsolationPrize(updatedTotalConsolation);
+        
+        setLastPrize(prize);
+        setShowPrize(true);
+        setTimeout(() => setShowPrize(false), 1500);
+
+        if (newAttemptsLeft <= 0) {
+          setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
           setIsGameActive(false);
-          toast({ title: "Game Over", description: `You received ${ATTEMPT_REWARD} coins for your final attempt.` });
         } else {
-          setMessage(`Not a match. You received ${ATTEMPT_REWARD} coins for trying!`);
-           toast({ title: "Nice Try!", description: `You received ${ATTEMPT_REWARD} coins as a consolation prize.` });
+          setMessage("Not a match. Better luck next time!");
         }
       }
     };
@@ -94,6 +101,8 @@ export default function NumberMatchGamePage() {
     setIsGameActive(true);
     setIsWinner(false);
     setIsRolling(false);
+    setTotalConsolationPrize(0);
+    setShowPrize(false);
   };
 
   return (
@@ -110,7 +119,17 @@ export default function NumberMatchGamePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="p-8 bg-muted rounded-lg shadow-inner">
+          <div className="relative p-8 bg-muted rounded-lg shadow-inner bg-gradient-to-br from-secondary to-muted">
+            {showPrize && (
+              <div
+                key={attemptsLeft}
+                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-50 slide-in-from-bottom-10 duration-700"
+              >
+                <span className="text-2xl font-bold text-green-500 drop-shadow-lg [text-shadow:_0_2px_4px_rgb(0_0_0_/_20%)]">
+                  +{lastPrize} <span className="text-xl">Coins!</span>
+                </span>
+              </div>
+            )}
             <p
               className={cn(
                 "text-6xl font-mono font-bold tracking-widest transition-colors duration-300",
