@@ -1,0 +1,4 @@
+name,email,role,tenantId
+John Doe,john.doe@example.com,user,Brainqy
+Jane Smith,jane.smith@example.com,user,tenant-2
+Manager Mike,mike.manager@example.com,manager,tenant-2

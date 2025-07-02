@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
 import { samplePlatformUsers, sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
@@ -451,8 +451,14 @@ export default function UserManagementPage() {
               {csvFile && <p className="text-xs text-muted-foreground mt-1">Selected: {csvFile.name}</p>}
               {csvError && <p className="text-sm text-destructive mt-1">{csvError}</p>}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Example format: <br/>
+            <Button asChild variant="link" className="p-0 h-auto -mt-2">
+              <a href="/sample-users.csv" download="sample-users.csv">
+                <Download className="mr-2 h-4 w-4" />
+                Download Sample CSV File
+              </a>
+            </Button>
+            <p className="text-xs text-muted-foreground pt-2">
+              <strong>Example Format:</strong> <br/>
               `John Doe,john@example.com,user,tenant-1` <br/>
               `Jane Smith,jane@example.com,user,tenant-2`
             </p>
