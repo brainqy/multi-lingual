@@ -387,6 +387,13 @@ export type Appointment = {
   reminderDate?: string;
 };
 
+export interface FlashCoinBatch {
+  id: string;
+  amount: number;
+  expiresAt: string; // ISO date string
+  source: string; // e.g., "Daily Login Bonus", "Special Promotion"
+}
+
 export type WalletTransaction = {
   id: string;
   tenantId: string;
@@ -401,6 +408,7 @@ export type Wallet = {
   tenantId: string;
   userId: string;
   coins: number;
+  flashCoins?: FlashCoinBatch[];
   transactions: WalletTransaction[];
 };
 

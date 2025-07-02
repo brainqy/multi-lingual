@@ -1,21 +1,42 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift } from "lucide-react";
+import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History } from "lucide-react";
 import { sampleWalletBalance, samplePromoCodes } from "@/lib/sample-data";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { format, isPast, parseISO } from "date-fns";
+import { format, isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
+import type { Wallet } from "@/types";
 
 export default function WalletPage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const [wallet, setWallet] = useState(sampleWalletBalance);
+  const [wallet, setWallet] = useState<Wallet>(sampleWalletBalance);
   const [promoCodeInput, setPromoCodeInput] = useState('');
+
+  // Augment wallet with flash coins on component mount for demo purposes
+  useEffect(() => {
+    // This ensures we only add flash coins once and don't modify the original sample data import
+    if (!wallet.flashCoins) {
+      setWallet(currentWallet => ({
+        ...currentWallet,
+        flashCoins: [
+          { id: 'fc1', amount: 20, expiresAt: new Date(Date.now() + 86400000 * 3).toISOString(), source: 'Daily Login Bonus' },
+          { id: 'fc2', amount: 50, expiresAt: new Date(Date.now() + 86400000 * 7).toISOString(), source: 'Special Promotion' },
+          { id: 'fc3', amount: 10, expiresAt: new Date(Date.now() - 86400000 * 1).toISOString(), source: 'Expired Offer' },
+        ]
+      }));
+    }
+  }, [wallet.flashCoins]);
+
+  const totalFlashCoins = useMemo(() => {
+    return wallet.flashCoins?.filter(fc => !isPast(parseISO(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0) || 0;
+  }, [wallet.flashCoins]);
 
   const handleRedeemCode = () => {
     if (!promoCodeInput.trim()) {
@@ -56,10 +77,9 @@ export default function WalletPage() {
             type: 'credit',
         });
         setWallet({
+            ...wallet, // Preserve other properties like flashCoins
             coins: newBalance,
             transactions: newTransactions,
-            tenantId: wallet.tenantId,
-            userId: wallet.userId,
         });
         toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} coins!` });
 
@@ -93,22 +113,56 @@ export default function WalletPage() {
         </Button>
       </div>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-6 w-6 text-primary" />
-            {t("wallet.currentBalance")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-5xl font-bold text-primary">
-            {wallet.coins} <span className="text-2xl text-muted-foreground">{t("wallet.coins")}</span>
-          </p>
-          <CardDescription className="mt-1">
-            {t("wallet.usageHint")}
-          </CardDescription>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Coins className="h-6 w-6 text-primary" />
+                        Main Wallet Balance
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-5xl font-bold text-primary">
+                        {wallet.coins} <span className="text-2xl text-muted-foreground">{t("wallet.coins")}</span>
+                    </p>
+                    <CardDescription className="mt-1">
+                        {t("wallet.usageHint")}
+                    </CardDescription>
+                </CardContent>
+            </Card>
+
+            <Card className="shadow-lg bg-primary/5">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Gift className="h-5 w-5 text-primary" />
+                        Flash Coins
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-5xl font-bold text-primary">
+                        {totalFlashCoins} <span className="text-2xl text-muted-foreground">Flash</span>
+                    </p>
+                    <CardDescription className="mt-1">
+                        Limited-time promotional coins. Used automatically before regular coins.
+                    </CardDescription>
+                </CardContent>
+                <CardFooter>
+                    <ul className="space-y-1 text-xs text-muted-foreground w-full">
+                        {wallet.flashCoins?.map(fc => (
+                            <li key={fc.id} className={`flex justify-between items-center ${isPast(parseISO(fc.expiresAt)) ? 'line-through opacity-50' : ''}`}>
+                                <span>+ {fc.amount} coins from {fc.source}</span>
+                                <span>
+                                    {isPast(parseISO(fc.expiresAt)) 
+                                        ? 'Expired' 
+                                        : `Expires in ${formatDistanceToNowStrict(parseISO(fc.expiresAt))}`
+                                    }
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </CardFooter>
+            </Card>
+        </div>
       
       <Card className="shadow-lg">
         <CardHeader>
@@ -127,7 +181,7 @@ export default function WalletPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("wallet.transactionHistory")}</CardTitle>
+          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.transactionHistory")}</CardTitle>
           <CardDescription>{t("wallet.recentActivity")}</CardDescription>
         </CardHeader>
         <CardContent>
