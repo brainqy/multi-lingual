@@ -36,7 +36,7 @@ export function SignupForm() {
     email: z.string().email({ message: t("validation.email") }),
     password: z.string().min(1, { message: t("validation.required") }),
     referralCode: z.string().optional(),
-    agreeToTerms: z.boolean().refine(val => val === true, {
+    agreeToTerms: z.boolean().refine(val => val === true, { 
       message: t("validation.termsRequired", "You must accept the terms and conditions."),
     }),
   });

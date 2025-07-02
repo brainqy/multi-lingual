@@ -687,8 +687,8 @@ export default function AiMockInterviewPage() {
                     <ScrollArea className={cn("flex-grow", isInterviewFullScreen ? "max-h-[calc(100%-150px)]" : "max-h-[400px] md:max-h-[500px]")}>
                     <CardContent className="space-y-2 md:space-y-3 pt-1 md:pt-2 px-2 md:px-3">
                         <div className="p-2 md:p-3 border rounded-md bg-secondary/40">
-                          <p className="text-sm md:text-md font-semibold text-foreground whitespace-pre-line">{currentQuestion.questionText}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">{t("aiMockInterview.questionCategory", { category: currentQuestion.category, difficulty: currentQuestion.difficulty })}</p>
+ <p className="text-sm md:text-md font-semibold text-foreground whitespace-pre-line">{currentQuestion.questionText}</p>
+ <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">{t("aiMockInterview.questionCategory", { category: currentQuestion.category ?? '', difficulty: currentQuestion.difficulty ?? '' })}</p>
                         </div>
                         {!currentAnswerFeedback ? (
                         <>
