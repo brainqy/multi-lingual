@@ -75,7 +75,7 @@ export default function NumberMatchGamePage() {
         sampleWalletBalance.coins += WIN_REWARD;
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        const prize = Math.floor(Math.random() * 55) + 5; // Random prize between 5 and 59
+        const prize = Math.floor(Math.random() * 6) + 4; // Random prize between 4 and 9
         sampleWalletBalance.coins += prize;
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
