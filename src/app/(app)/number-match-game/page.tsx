@@ -45,7 +45,18 @@ export default function NumberMatchGamePage() {
       return;
     }
 
+    // Debit cost and add transaction
     sampleWalletBalance.coins -= GAME_COST;
+    sampleWalletBalance.transactions.unshift({
+      id: `txn-gamecost-${Date.now()}`,
+      tenantId: sampleUserProfile.tenantId,
+      userId: sampleUserProfile.id,
+      date: new Date().toISOString(),
+      description: "Number Match Game Fee",
+      amount: -GAME_COST,
+      type: 'debit',
+    });
+
     setIsRolling(true);
     setMessage("Rolling...");
     setShowPrize(false);
@@ -73,10 +84,28 @@ export default function NumberMatchGamePage() {
         setIsWinner(true);
         setIsGameActive(false);
         sampleWalletBalance.coins += WIN_REWARD;
+        sampleWalletBalance.transactions.unshift({
+            id: `txn-gamewin-${Date.now()}`,
+            tenantId: sampleUserProfile.tenantId,
+            userId: sampleUserProfile.id,
+            date: new Date().toISOString(),
+            description: "Number Match Game Jackpot!",
+            amount: WIN_REWARD,
+            type: 'credit',
+        });
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        const prize = Math.floor(Math.random() * 5) + 1; // Random prize between 1 and 5
+        const prize = Math.floor(Math.random() * (GAME_COST * 0.06 - 1)) + 1; // Random prize between 1 and 5
         sampleWalletBalance.coins += prize;
+        sampleWalletBalance.transactions.unshift({
+            id: `txn-gameprize-${Date.now()}`,
+            tenantId: sampleUserProfile.tenantId,
+            userId: sampleUserProfile.id,
+            date: new Date().toISOString(),
+            description: "Number Match Game Consolation Prize",
+            amount: prize,
+            type: 'credit',
+        });
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
         
@@ -107,7 +136,7 @@ export default function NumberMatchGamePage() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      {isClient && !isGameActive && <Confetti />}
+      {isClient && isWinner && <Confetti />}
       <Card className="w-full max-w-md text-center shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight text-primary flex items-center justify-center gap-2">
