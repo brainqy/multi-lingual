@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format, isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
 import type { Wallet } from "@/types";
+import { cn } from "@/lib/utils";
 
 export default function WalletPage() {
   const { t } = useI18n();
@@ -161,12 +162,35 @@ export default function WalletPage() {
                         Limited-time promotional coins. Used automatically before regular coins.
                     </CardDescription>
                 </CardContent>
-                <CardFooter>
-                    <ul className="space-y-1 text-xs text-muted-foreground w-full">
-                        {wallet.flashCoins?.map(fc => (
-                            <li key={fc.id} className={`flex justify-between items-center ${isPast(parseISO(fc.expiresAt)) ? 'line-through opacity-50' : ''}`}>
-                                <span>+ {fc.amount} coins from {fc.source}</span>
-                                <span>
+            </Card>
+        </div>
+
+        {wallet.flashCoins && wallet.flashCoins.length > 0 && (
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <History className="h-5 w-5" />
+                        Flash Coin History
+                    </CardTitle>
+                    <CardDescription>
+                        A log of your promotional flash coins and their expiration dates.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-2 text-sm text-muted-foreground w-full">
+                        {wallet.flashCoins.map(fc => (
+                            <li key={fc.id} className={cn(
+                                "flex justify-between items-center p-2 rounded-md",
+                                isPast(parseISO(fc.expiresAt)) ? 'bg-secondary/50 opacity-60' : 'bg-secondary'
+                            )}>
+                                <div>
+                                    <span className="font-medium text-foreground">+ {fc.amount} coins</span>
+                                    <span className="text-xs italic ml-2">from {fc.source}</span>
+                                </div>
+                                <span className={cn(
+                                    "text-xs font-semibold",
+                                    isPast(parseISO(fc.expiresAt)) ? 'text-red-500' : 'text-foreground'
+                                )}>
                                     {isPast(parseISO(fc.expiresAt)) 
                                         ? 'Expired' 
                                         : `Expires in ${formatDistanceToNowStrict(parseISO(fc.expiresAt))}`
@@ -175,9 +199,9 @@ export default function WalletPage() {
                             </li>
                         ))}
                     </ul>
-                </CardFooter>
+                </CardContent>
             </Card>
-        </div>
+        )}
       
       <Card className="shadow-lg">
         <CardHeader>
