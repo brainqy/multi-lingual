@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Linkedin, Share2, Twitter } from "lucide-react";
+import { Copy, Linkedin, Share2, Twitter, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile } from "@/types";
 import { useI18n } from "@/hooks/use-i18n";
@@ -27,7 +27,7 @@ export default function SpreadTheWordCard({ user }: SpreadTheWordCardProps) {
     });
   };
 
-  const handleSocialShare = (platform: 'twitter' | 'linkedin') => {
+  const handleSocialShare = (platform: 'twitter' | 'linkedin' | 'whatsapp') => {
     let url = '';
     const encodedText = encodeURIComponent(shareText);
     const encodedUrl = encodeURIComponent(referralLink);
@@ -36,6 +36,8 @@ export default function SpreadTheWordCard({ user }: SpreadTheWordCardProps) {
       url = `https://twitter.com/intent/tweet?text=${encodedText}`;
     } else if (platform === 'linkedin') {
       url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodeURIComponent(`Join me on ${t("appName", { default: "ResumeMatch AI" })}`)}&summary=${encodedText}`;
+    } else if (platform === 'whatsapp') {
+      url = `https://wa.me/?text=${encodedText}`;
     }
 
     if (url) {
@@ -60,6 +62,9 @@ export default function SpreadTheWordCard({ user }: SpreadTheWordCardProps) {
         </Button>
         <Button variant="outline" size="sm" onClick={() => handleSocialShare('linkedin')} className="flex-1 min-w-[100px]">
           <Linkedin className="mr-2 h-4 w-4 text-blue-600" /> LinkedIn
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => handleSocialShare('whatsapp')} className="flex-1 min-w-[100px]">
+          <MessageSquare className="mr-2 h-4 w-4 text-green-500" /> WhatsApp
         </Button>
         <Button variant="outline" size="sm" onClick={handleCopyToClipboard} className="flex-1 min-w-[100px]">
           <Copy className="mr-2 h-4 w-4" /> Copy Link
