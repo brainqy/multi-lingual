@@ -95,23 +95,27 @@ export default function NumberMatchGamePage() {
         });
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        const prize = Math.floor(Math.random() * (GAME_COST * 0.06 - 1)) + 1; // Random prize between 1 and 5
+        const prize = Math.floor(Math.random() * (GAME_COST * 0.05)); // Random prize up to 5% of cost
         sampleWalletBalance.coins += prize;
-        sampleWalletBalance.transactions.unshift({
-            id: `txn-gameprize-${Date.now()}`,
-            tenantId: sampleUserProfile.tenantId,
-            userId: sampleUserProfile.id,
-            date: new Date().toISOString(),
-            description: "Number Match Game Consolation Prize",
-            amount: prize,
-            type: 'credit',
-        });
+        if (prize > 0) { // Only record a transaction if a prize was actually won
+            sampleWalletBalance.transactions.unshift({
+                id: `txn-gameprize-${Date.now()}`,
+                tenantId: sampleUserProfile.tenantId,
+                userId: sampleUserProfile.id,
+                date: new Date().toISOString(),
+                description: "Number Match Game Consolation Prize",
+                amount: prize,
+                type: 'credit',
+            });
+        }
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
         
         setLastPrize(prize);
-        setShowPrize(true);
-        setTimeout(() => setShowPrize(false), 1500);
+        if (prize > 0) {
+            setShowPrize(true);
+            setTimeout(() => setShowPrize(false), 1500);
+        }
 
         if (newAttemptsLeft <= 0) {
           setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
@@ -136,7 +140,7 @@ export default function NumberMatchGamePage() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      {isClient && isWinner && <Confetti />}
+      {isClient && !isGameActive && <Confetti recycle={isWinner} />}
       <Card className="w-full max-w-md text-center shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight text-primary flex items-center justify-center gap-2">
