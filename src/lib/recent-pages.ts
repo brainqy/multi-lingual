@@ -70,6 +70,7 @@ const PATH_LABEL_MAP: Record<string, string> = {
   '/referrals': 'Referrals',
   '/affiliates': 'Affiliates Program',
   '/blog': 'Blog',
+  '/number-match-game': 'Number Match Game',
   '/admin/tenants': 'Tenant Management',
   '/admin/tenant-onboarding': 'Tenant Onboarding',
   '/admin/user-management': 'User Management',

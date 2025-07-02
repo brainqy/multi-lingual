@@ -412,7 +412,7 @@
     "title": "दैनिक स्ट्रीक!",
     "currentStreakLabel": "सध्याची स्ट्रीक",
     "longestStreakLabel": "सर्वात लांब स्ट्रीक",
-    "totalActiveDaysLabel": "एकूण सक्रिय दिवस:",
+    "totalActiveDaysLabel": "एकूण सक्रिय दिन:",
     "keepItUpButton": "चालू ठेवा!",
     "dayLabels": { "S": "र", "M": "सो", "T": "मं", "W": "बु", "Th": "गु", "F": "शु", "Sa": "श" }
   },
@@ -455,6 +455,7 @@
     "referrals": "संदर्भ",
     "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
     "blog": "ब्लॉग",
+    "numberMatchGame": "नंबर मॅच गेम",
     "adminDashboard": "प्रशासक डॅशबोर्ड",
     "tenantManagement": "भाडेकरू व्यवस्थापन",
     "tenantOnboarding": "भाडेकरू ऑनबोर्डिंग",
