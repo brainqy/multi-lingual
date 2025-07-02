@@ -60,6 +60,82 @@ const commentSchema = z.object({
 });
 type CommentFormData = z.infer<typeof commentSchema>;
 
+// Helper function to render text with @mentions
+const renderCommentWithMentions = (text: string) => {
+  const parts = text.split(/(@\w+)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('@')) {
+      return <strong key={i} className="text-primary font-semibold">{part}</strong>;
+    }
+    return part;
+  });
+};
+
+const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level }: {
+  comment: CommunityComment;
+  allComments: CommunityComment[];
+  onReply: (commentId: string | null) => void;
+  onCommentSubmit: (postId: string, parentId?: string) => void;
+  level: number;
+}) => {
+  const replies = allComments.filter(c => c.parentId === comment.id);
+  const { commentingOnPostId, setCommentingOnPostId, newCommentText, setNewCommentText } = useCommunityFeedContext();
+
+  return (
+    <div className={cn("flex items-start space-x-2", level > 0 && "ml-6 mt-2")}>
+      <Avatar className="h-7 w-7">
+        <AvatarImage src={comment.userAvatar} alt={comment.userName} data-ai-hint="person face" />
+        <AvatarFallback><UserIcon className="h-3.5 w-3.5" /></AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <div className="bg-secondary/40 p-2 rounded-md">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
+            <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</p>
+          </div>
+          <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
+        </div>
+        <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id)}>Reply</Button>
+        {commentingOnPostId === comment.id && (
+           <div className="flex items-center gap-2 pt-2">
+              <Avatar className="h-8 w-8">
+                  <AvatarImage src={sampleUserProfile.profilePictureUrl} alt={sampleUserProfile.name} data-ai-hint="person face" />
+                  <AvatarFallback>{sampleUserProfile.name.substring(0, 1)}</AvatarFallback>
+              </Avatar>
+              <Textarea
+                  placeholder={`Replying to ${comment.userName}...`}
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  rows={1}
+                  className="flex-1 min-h-[40px] text-sm"
+              />
+              <Button size="sm" onClick={() => onCommentSubmit(comment.postId!, comment.id)} disabled={!newCommentText.trim()}>
+                  <Send className="h-4 w-4" />
+              </Button>
+          </div>
+        )}
+        {replies.map(reply => (
+            <CommentThread key={reply.id} comment={reply} allComments={allComments} onReply={onReply} onCommentSubmit={onCommentSubmit} level={level + 1} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CommunityFeedContext = React.createContext<{
+    commentingOnPostId: string | null;
+    setCommentingOnPostId: React.Dispatch<React.SetStateAction<string | null>>;
+    newCommentText: string;
+    setNewCommentText: React.Dispatch<React.SetStateAction<string>>;
+}>({
+    commentingOnPostId: null,
+    setCommentingOnPostId: () => {},
+    newCommentText: '',
+    setNewCommentText: () => {},
+});
+
+const useCommunityFeedContext = () => React.useContext(CommunityFeedContext);
+
 export default function CommunityFeedPage() {
   const [posts, setPosts] = useState<CommunityPost[]>(sampleCommunityPosts);
   const [filter, setFilter] = useState<'all' | 'text' | 'poll' | 'event' | 'request' | 'my_posts' | 'flagged'>('all');
@@ -69,7 +145,7 @@ export default function CommunityFeedPage() {
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
 
   const [newCommentText, setNewCommentText] = useState("");
-  const [commentingOnPostId, setCommentingOnPostId] = useState<string | null>(null);
+  const [commentingOnPostId, setCommentingOnPostId] = useState<string | null>(null); // For top-level comments
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -167,18 +243,20 @@ export default function CommunityFeedPage() {
     setEditingPost(null);
   };
 
-  const handleCommentSubmit = (postId: string) => {
+  const handleCommentSubmit = (postId: string, parentId?: string) => {
     if (!newCommentText.trim()) {
       toast({ title: "Empty Comment", description: "Cannot submit an empty comment.", variant: "destructive" });
       return;
     }
     const newComment: CommunityComment = {
       id: `comment-${Date.now()}`,
+      postId,
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
       timestamp: new Date().toISOString(),
       comment: newCommentText.trim(),
+      parentId: parentId,
     };
 
     const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
@@ -394,7 +472,7 @@ export default function CommunityFeedPage() {
   }, [posts, filter, currentUser.id, currentUser.role, currentUser.tenantId]);
 
   return (
-    <>
+    <CommunityFeedContext.Provider value={{ commentingOnPostId, setCommentingOnPostId, newCommentText, setNewCommentText }}>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Community Feed</h1>
          <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -619,7 +697,7 @@ export default function CommunityFeedPage() {
                         <p className="text-sm text-muted-foreground italic">This post has been removed by a moderator.</p>
                     ) : (
                       <>
-                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{post.content}</p>}
+                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{renderCommentWithMentions(post.content)}</p>}
                         
                         {post.type === 'text' && post.imageUrl && (
                             <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
@@ -717,24 +795,13 @@ export default function CommunityFeedPage() {
                         </div>
                         {commentingOnPostId === post.id && (
                           <div className="w-full mt-3 pt-3 border-t space-y-3">
-                            {post.comments && post.comments.length > 0 && (
-                              <ScrollArea className="max-h-48 pr-2">
+                            <ScrollArea className="max-h-48 pr-2">
                                 <div className="space-y-2.5">
-                                {post.comments.map(comment => (
-                                  <div key={comment.id} className="flex items-start space-x-2 p-2 bg-secondary/40 rounded-md">
-                                    <Avatar className="h-7 w-7">
-                                      <AvatarImage src={comment.userAvatar} alt={comment.userName} data-ai-hint="person face"/>
-                                      <AvatarFallback><UserIcon className="h-3.5 w-3.5"/></AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="text-xs font-semibold text-foreground">{comment.userName} <span className="text-muted-foreground/70 text-[10px] ml-1">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</span></p>
-                                      <p className="text-sm mt-0.5">{comment.comment}</p>
-                                    </div>
-                                  </div>
+                                {post.comments?.filter(c => !c.parentId).map(comment => (
+                                    <CommentThread key={comment.id} comment={comment} allComments={post.comments!} onReply={setCommentingOnPostId} onCommentSubmit={handleCommentSubmit} level={0} />
                                 ))}
                                 </div>
-                              </ScrollArea>
-                            )}
+                            </ScrollArea>
                             {post.comments?.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No comments yet. Be the first!</p>}
 
                             <div className="flex items-center gap-2 pt-2">
@@ -798,6 +865,6 @@ export default function CommunityFeedPage() {
           </Card>
         </aside>
       </div>
-    </>
+    </CommunityFeedContext.Provider>
   );
 }

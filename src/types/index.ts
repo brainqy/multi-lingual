@@ -189,11 +189,14 @@ export type CommunityPostModerationStatus = 'visible' | 'flagged' | 'removed';
 
 export interface CommunityComment {
   id: string;
+  postId: string; // To associate comment with a post
   userId: string;
   userName: string;
   userAvatar?: string;
   timestamp: string;
   comment: string;
+  parentId?: string; // For threaded replies
+  replies?: CommunityComment[]; // For nesting, though client-side filtering is often used
 }
 
 export interface CommunityPost {
