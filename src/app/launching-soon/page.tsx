@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -50,8 +51,8 @@ export default function LaunchingSoonPage() {
 
   // Effect for the countdown timer
   useEffect(() => {
-    const launchDate = new Date();
-    launchDate.setDate(launchDate.getDate() + 30);
+    // Set a fixed future date for the launch
+    const launchDate = new Date("2025-08-01T12:00:00Z");
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
