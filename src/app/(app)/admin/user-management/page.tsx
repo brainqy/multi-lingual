@@ -15,12 +15,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { samplePlatformUsers, sampleTenants, ensureFullUserProfile } from "@/lib/sample-data";
+import { samplePlatformUsers, sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-import { useAuth } from "@/hooks/use-auth";
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -35,7 +34,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function UserManagementPage() {
-  const { user: currentUser, isLoading } = useAuth();
+  const currentUser = sampleUserProfile;
   const { toast } = useToast();
   const { t } = useI18n();
   
@@ -71,14 +70,6 @@ export default function UserManagementPage() {
       (user.tenantId && user.tenantId.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [usersToDisplay, searchTerm]);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
   
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
