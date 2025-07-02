@@ -25,7 +25,7 @@ const promoCodeSchema = z.object({
   id: z.string().optional(),
   code: z.string().min(3, "Code must be at least 3 characters").max(20, "Code cannot exceed 20 characters").transform(val => val.toUpperCase()),
   description: z.string().min(5, "Description must be at least 5 characters"),
-  rewardType: z.enum(['coins', 'xp', 'premium_days']),
+  rewardType: z.enum(['coins', 'xp', 'premium_days', 'flash_coins']),
   rewardValue: z.coerce.number().min(1, "Reward value must be at least 1"),
   expiresAt: z.date().optional(),
   usageLimit: z.coerce.number().min(0, "Usage limit cannot be negative").default(0),
@@ -186,6 +186,7 @@ export default function PromoCodeManagementPage() {
                     <SelectTrigger><SelectValue placeholder="Select type"/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="coins">Coins</SelectItem>
+                      <SelectItem value="flash_coins">Flash Coins</SelectItem>
                       <SelectItem value="xp">XP</SelectItem>
                       <SelectItem value="premium_days">Premium Days</SelectItem>
                     </SelectContent>
@@ -223,4 +224,3 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
-

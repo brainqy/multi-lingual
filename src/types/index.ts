@@ -1202,7 +1202,7 @@ export interface PromoCode {
   id: string;
   code: string;
   description: string;
-  rewardType: 'coins' | 'xp' | 'premium_days';
+  rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins';
   rewardValue: number;
   expiresAt?: string;
   usageLimit: number;

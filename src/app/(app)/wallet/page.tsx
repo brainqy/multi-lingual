@@ -62,7 +62,6 @@ export default function WalletPage() {
         return;
     }
     
-    // Simulate reward
     let newBalance = wallet.coins;
     let newTransactions = [...wallet.transactions];
     if (codeToRedeem.rewardType === 'coins') {
@@ -77,18 +76,34 @@ export default function WalletPage() {
             type: 'credit',
         });
         setWallet({
-            ...wallet, // Preserve other properties like flashCoins
+            ...wallet,
             coins: newBalance,
             transactions: newTransactions,
         });
         toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} coins!` });
 
-        // Update sample data (for demo persistence)
         sampleWalletBalance.coins = newBalance;
         sampleWalletBalance.transactions = newTransactions;
         codeToRedeem.timesUsed = (codeToRedeem.timesUsed || 0) + 1;
-    } else {
-        toast({ title: "Reward Type Not Supported", description: `This app currently only supports 'coins' rewards. Reward type was '${codeToRedeem.rewardType}'.` });
+    } else if (codeToRedeem.rewardType === 'flash_coins') {
+        const newFlashCoins = [
+            ...(wallet.flashCoins || []),
+            {
+                id: `fc-promo-${Date.now()}`,
+                amount: codeToRedeem.rewardValue,
+                expiresAt: new Date(Date.now() + 86400000 * 30).toISOString(), // Expires in 30 days
+                source: `Promo Code: ${codeToRedeem.code}`,
+            }
+        ];
+        setWallet(prevWallet => ({
+            ...prevWallet,
+            flashCoins: newFlashCoins,
+        }));
+        toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} Flash Coins!` });
+        codeToRedeem.timesUsed = (codeToRedeem.timesUsed || 0) + 1;
+    }
+    else {
+        toast({ title: "Reward Type Not Supported", description: `The reward type '${codeToRedeem.rewardType}' is not redeemable at this time.` });
     }
 
     setPromoCodeInput('');
