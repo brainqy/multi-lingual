@@ -2,17 +2,17 @@
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2 } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
 import { samplePlatformUsers, sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
@@ -33,6 +33,14 @@ const userSchema = z.object({
 
 type UserFormData = z.infer<typeof userSchema>;
 
+type CsvUser = {
+  name: string;
+  email: string;
+  role: UserRole;
+  tenantId: string;
+};
+
+
 export default function UserManagementPage() {
   const currentUser = sampleUserProfile;
   const { toast } = useToast();
@@ -42,6 +50,10 @@ export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvError, setCsvError] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -145,6 +157,86 @@ export default function UserManagementPage() {
     toast({ title: "User Deleted", description: "The user has been removed from the system.", variant: "destructive" });
   };
 
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCsvFile(file);
+      setCsvError(null);
+    }
+  };
+
+  const handleProcessCsv = () => {
+    if (!csvFile) {
+      setCsvError("Please select a CSV file to upload.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      try {
+        const rows = text.split('\n').map(row => row.trim()).filter(row => row);
+        if (rows.length < 2) throw new Error("CSV file must have a header and at least one data row.");
+
+        const header = rows[0].split(',').map(h => h.trim().toLowerCase());
+        const requiredHeaders = ['name', 'email', 'role', 'tenantid'];
+        if (!requiredHeaders.every(h => header.includes(h))) {
+          throw new Error(`CSV header must contain: ${requiredHeaders.join(', ')}.`);
+        }
+        
+        const nameIndex = header.indexOf('name');
+        const emailIndex = header.indexOf('email');
+        const roleIndex = header.indexOf('role');
+        const tenantIdIndex = header.indexOf('tenantid');
+        
+        let addedCount = 0;
+        const newUsers: UserProfile[] = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const values = rows[i].split(',').map(v => v.trim());
+          const newUserCsv: Partial<CsvUser> = {
+            name: values[nameIndex],
+            email: values[emailIndex],
+            role: values[roleIndex] as UserRole,
+            tenantId: values[tenantIdIndex],
+          };
+
+          if (newUserCsv.email && !allUsers.some(u => u.email === newUserCsv.email)) {
+            const fullUserProfile = ensureFullUserProfile({
+              name: newUserCsv.name,
+              email: newUserCsv.email,
+              role: newUserCsv.role,
+              tenantId: newUserCsv.tenantId,
+              status: 'active'
+            });
+            newUsers.push(fullUserProfile);
+            addedCount++;
+          }
+        }
+        
+        // Batch update state and sample data
+        setAllUsers(prev => [...newUsers, ...prev]);
+        samplePlatformUsers.unshift(...newUsers);
+
+        toast({
+          title: "Users Uploaded",
+          description: `${addedCount} new users were successfully added from the CSV file.`,
+        });
+        
+        setIsUploadDialogOpen(false);
+        setCsvFile(null);
+
+      } catch (err: any) {
+        setCsvError(err.message || "An error occurred while processing the file.");
+      }
+    };
+    reader.onerror = () => {
+      setCsvError("Failed to read the file.");
+    };
+    reader.readAsText(csvFile);
+  };
+
+
   const getStatusClass = (status?: UserStatus) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-700';
@@ -161,14 +253,19 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <UserCog className="h-8 w-8" /> 
           {currentUser.role === 'manager' ? `Tenant User Management (${getTenantName(currentUser.tenantId)})` : 'User Management'}
         </h1>
-        <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> Add New User
-        </Button>
+        <div className="flex gap-2">
+           <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline">
+            <UploadCloud className="mr-2 h-4 w-4"/> Bulk Upload
+          </Button>
+          <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New User
+          </Button>
+        </div>
       </div>
       <CardDescription>
         {currentUser.role === 'manager' ? 
@@ -330,6 +427,40 @@ export default function UserManagementPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* CSV Upload Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bulk Upload Users</DialogTitle>
+            <DialogUIDescription>
+              Upload a CSV file to add multiple users at once. The file must contain the header row: `name,email,role,tenantId`.
+            </DialogUIDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
+              <Label htmlFor="csv-upload">CSV File</Label>
+              <Input
+                id="csv-upload"
+                type="file"
+                accept=".csv"
+                onChange={handleFileSelect}
+              />
+              {csvFile && <p className="text-xs text-muted-foreground mt-1">Selected: {csvFile.name}</p>}
+              {csvError && <p className="text-sm text-destructive mt-1">{csvError}</p>}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Example format: <br/>
+              `John Doe,john@example.com,user,tenant-1` <br/>
+              `Jane Smith,jane@example.com,user,tenant-2`
+            </p>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleProcessCsv}>Upload & Process File</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
