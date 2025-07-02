@@ -8,11 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import SpreadTheWordCard from '@/components/features/SpreadTheWordCard';
+import type { UserProfile } from '@/types';
 
 
 export default function LaunchingSoonPage() {
   const [email, setEmail] = useState('');
   const { toast } = useToast();
+  const [isWaitlistJoined, setIsWaitlistJoined] = useState(false);
+  const [waitlistUser, setWaitlistUser] = useState<UserProfile | null>(null);
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -81,6 +85,24 @@ export default function LaunchingSoonPage() {
         title: "You're on the list!",
         description: `We've added ${email} to our waiting list. We'll notify you on launch!`,
       });
+      
+      const mockUser: UserProfile = {
+        id: 'waitlist-user',
+        name: 'A Future User',
+        email: email,
+        referralCode: 'WAITLIST25',
+        tenantId: 'platform',
+        role: 'user',
+        currentJobTitle: '',
+        company: '',
+        shortBio: '',
+        university: '',
+        skills: [],
+        bio: ''
+      };
+
+      setWaitlistUser(mockUser);
+      setIsWaitlistJoined(true);
       setEmail('');
     } else {
       toast({
@@ -116,38 +138,49 @@ export default function LaunchingSoonPage() {
         <TimeUnit value={timeLeft.seconds} label="Seconds" />
       </div>
 
-      <p className="text-muted-foreground mb-6">
-        Be the first to know when we launch. Join our waiting list!
-      </p>
-
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader>
-          <CardTitle>Join the Waitlist</CardTitle>
-          <CardDescription>Get notified when ResumeMatch AI goes live.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleJoinWaitlist} className="flex flex-col sm:flex-row items-center gap-2">
-            <Label htmlFor="email-waitlist" className="sr-only">
-              Email
-            </Label>
-            <div className="relative w-full">
-               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-               <Input
-                id="email-waitlist"
-                type="email"
-                placeholder="you@example.com"
-                required
-                className="pl-10"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
-              Notify Me
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {isWaitlistJoined && waitlistUser ? (
+        <div className="w-full max-w-md">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Thank You for Joining!</h2>
+            <p className="text-muted-foreground mb-4">
+                While you wait, why not share the excitement with your friends?
+            </p>
+            <SpreadTheWordCard user={waitlistUser} />
+        </div>
+      ) : (
+        <>
+            <p className="text-muted-foreground mb-6">
+                Be the first to know when we launch. Join our waiting list!
+            </p>
+            <Card className="w-full max-w-md shadow-2xl">
+                <CardHeader>
+                <CardTitle>Join the Waitlist</CardTitle>
+                <CardDescription>Get notified when ResumeMatch AI goes live.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <form onSubmit={handleJoinWaitlist} className="flex flex-col sm:flex-row items-center gap-2">
+                    <Label htmlFor="email-waitlist" className="sr-only">
+                    Email
+                    </Label>
+                    <div className="relative w-full">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        id="email-waitlist"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                        className="pl-10"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    </div>
+                    <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+                    Notify Me
+                    </Button>
+                </form>
+                </CardContent>
+            </Card>
+        </>
+      )}
     </div>
   );
 }
