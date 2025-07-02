@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Locale } from "@/types";
+import { Locale } from "@/locales";
 
 export function LanguageSwitcher() {
   const { locale, setLocale, availableLocales, t } = useI18n();

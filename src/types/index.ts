@@ -175,6 +175,16 @@ export interface Activity {
   userId?: string;
 }
 
+export type SystemAlert = {
+  id: string;
+  type: 'error' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  timestamp: string;
+  linkTo?: string;
+  linkText?: string;
+  isRead?: boolean;
+};
 export type CommunityPostModerationStatus = 'visible' | 'flagged' | 'removed';
 
 export interface CommunityComment {

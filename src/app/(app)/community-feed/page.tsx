@@ -178,7 +178,7 @@ export default function CommunityFeedPage() {
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
       timestamp: new Date().toISOString(),
-      text: newCommentText.trim(),
+      comment: newCommentText.trim(),
     };
 
     const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
@@ -728,7 +728,7 @@ export default function CommunityFeedPage() {
                                     </Avatar>
                                     <div>
                                       <p className="text-xs font-semibold text-foreground">{comment.userName} <span className="text-muted-foreground/70 text-[10px] ml-1">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</span></p>
-                                      <p className="text-sm mt-0.5">{comment.text}</p>
+                                      <p className="text-sm mt-0.5">{comment.comment}</p>
                                     </div>
                                   </div>
                                 ))}

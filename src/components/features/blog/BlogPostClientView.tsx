@@ -61,7 +61,7 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
       timestamp: new Date().toISOString(),
-      text: commentText.trim(),
+      comment: commentText.trim(),
     };
 
     // Update the sampleBlogPosts array (in a real app, this would be an API call)
@@ -138,7 +138,7 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
                         <p className="text-sm font-semibold text-foreground">{comment.userName}</p>
                         <p className="text-xs text-muted-foreground">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</p>
                       </div>
-                      <p className="text-sm mt-0.5 text-foreground/90">{comment.text}</p>
+                      <p className="text-sm mt-0.5 text-foreground/90">{comment.comment}</p>
                     </div>
                   </div>
                 ))

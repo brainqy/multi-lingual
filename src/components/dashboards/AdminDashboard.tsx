@@ -19,7 +19,7 @@ import {
 } from "@/lib/sample-data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Tenant, UserProfile, SystemAlert, SystemAlertType } from "@/types"; 
+import type { Tenant, UserProfile, SystemAlert } from "@/types"; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const getAlertIcon = (type: SystemAlertType) => {
+  const getAlertIcon = (type: SystemAlert['type']) => {
     switch (type) {
       case 'error': return <AlertTriangle className="h-5 w-5 text-destructive" />;
       case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;

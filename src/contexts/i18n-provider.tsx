@@ -3,8 +3,8 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import type { Locale, Translations, NestedTranslations } from '@/types';
-import { defaultLocale, locales as availableLocales } from '@/locales';
+import type { Translations, NestedTranslations } from '@/types';
+import { defaultLocale, locales as availableLocales, Locale } from '@/locales';
 
 import enTranslations from '@/locales/en.json';
 import mrTranslations from '@/locales/mr.json';
@@ -48,7 +48,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   }, [locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
-    if (availableLocales[newLocale]) {
+    if (availableLocales[newLocale as keyof typeof availableLocales]) {
       setLocaleState(newLocale);
     }
   }, []);
