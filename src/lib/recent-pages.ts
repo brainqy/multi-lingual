@@ -99,4 +99,6 @@ export function getLabelForPath(path: string): string {
     const quizId = new URLSearchParams(pathWithoutLocale.split('?')[1]).get('quizId');
     return quizId ? `Quiz: ${quizId.substring(0,8)}...` : 'Take Quiz';
   }
+  // Default: use the mapping or fallback to the path itself
+  return PATH_LABEL_MAP[pathWithoutLocale] || pathWithoutLocale;
 }

@@ -1,3 +1,4 @@
+import { SAMPLE_TENANT_ID } from "@/lib/sample-data";
 import * as z from "zod";
 
 export type Translations = {
@@ -30,13 +31,30 @@ export const DegreePrograms = [
   "Master of Science (M.Sc)",
   "Bachelor of Arts (B.A)",
   "Master of Arts (M.A)",
-  "MBA",
-  "PhD",
+  "Doctor of Philosophy (Ph.D)",
+  "Master of Business Administration (MBA)",
+  "Bachelor of Business Administration (BBA)", // <-- Add this line
   "Diploma",
   "Other"
 ] as const;
-export type DegreeProgram = typeof DegreePrograms[number];
-
+export type DegreeProgram =
+  | "Bachelor of Technology (B.Tech)"
+  | "Master of Technology (M.Tech)"
+  | "Bachelor of Science (B.Sc)"
+  | "Master of Science (M.Sc)"
+  | "Bachelor of Arts (B.A)"
+  | "Master of Arts (M.A)"
+  | "Doctor of Philosophy (Ph.D)"
+  | "Master of Business Administration (MBA)"
+  | "Bachelor of Business Administration (BBA)" // <-- Add this line
+  | "Diploma"                // <-- Add this
+  | "Other"                  // <-- And this
+  | undefined;
+export type RecentPageItem = {
+  path: string;
+  label: string;
+  timestamp: number;
+};
 export const Industries = [
   "IT/Software",
   "Finance/Banking",
@@ -583,6 +601,15 @@ export interface InterviewQuestionUserRating {
   rating: number; // 1-5
 }
 
+ export type ChallengeAction =
+  | "refer"
+  | "attend_interview"
+  | "take_interview"
+  | "analyze_resume"
+  | "post_job"
+  | "power_edit_resume"
+  | "create_quiz"
+  | "book_appointment";
 export interface DailyChallenge {
   id: string;
   type: 'standard' | 'flip';
@@ -595,7 +622,7 @@ export interface DailyChallenge {
   xpReward?: number;
   tasks?: {
     description: string;
-    action: 'refer' | 'attend_interview' | 'take_interview' | 'analyze_resume' | 'post_job';
+    action: ChallengeAction;
     target: number;
   }[];
 }
@@ -607,6 +634,7 @@ export interface InterviewQuestion {
   questionText: string;
   isMCQ?: boolean;
   mcqOptions?: string[];
+  baseScore?: number;
   correctAnswer?: string;
   answerOrTip: string;
   tags?: string[];
@@ -673,7 +701,7 @@ export interface MockInterviewSession {
   status: 'pending' | 'in-progress' | 'completed';
   createdAt: string;
   timerPerQuestion?: number;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
   questionCategories?: InterviewQuestionCategory[];
   recordingReferences?: RecordingReference[];
 }

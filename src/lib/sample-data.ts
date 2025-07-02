@@ -1,5 +1,3 @@
-
-
 import type { JobApplication, AlumniProfile, Activity, CommunityPost, FeatureRequest, GalleryEvent, JobOpening, UserProfile, UserRole, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought, ResumeScanHistoryItem, Appointment, Wallet, ResumeProfile, Tenant, Badge, BlogPost, ReferralHistoryItem, GamificationRule, UserStatus, SurveyResponse, Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, SurveyStep, ResumeTemplate, TourStep, CommunityComment, InterviewQuestion, InterviewQuestionCategory, BlogGenerationSettings, MockInterviewSession, InterviewQuestionDifficulty, InterviewQuestionUserComment, PracticeSession, PracticeSessionStatus, JobApplicationStatus, KanbanColumnId, PlatformSettings, Announcement, AnnouncementStatus, AnnouncementAudience, MockInterviewQuestion as AIMockQuestionType, LiveInterviewSession, LiveInterviewParticipant, RecordingReference, LiveInterviewSessionStatus, InterviewerScore, SystemAlert, DailyChallenge, PromotionalContent, PromoCode, Interview } from '@/types';
 import { AreasOfSupport, AppointmentStatuses, Genders, DegreePrograms, Industries, TimeCommitments, EngagementModes, SupportTypesSought, JOB_APPLICATION_STATUSES, KANBAN_COLUMNS_CONFIG, PREDEFINED_INTERVIEW_TOPICS, PRACTICE_FOCUS_AREAS, ALL_CATEGORIES, ALL_DIFFICULTIES, MOCK_INTERVIEW_STEPS, RESUME_BUILDER_STEPS, PreferredTimeSlots, AnnouncementStatuses, AnnouncementAudiences, LiveInterviewSessionStatuses } from '@/types'; 
 
@@ -180,7 +178,7 @@ export let sampleCommunityPosts: CommunityPost[] = [
     content: 'Looking for a mentor in the Product Management space. Any alumni willing to connect?', 
     type: 'request', 
     tags: ['mentorship', 'productmanagement'], 
-    status: 'request', // <-- changed from 'open' to 'request'
+    status: 'open', // <-- changed from 'request' to 'open' to match allowed types
     moderationStatus: 'visible', 
     flagCount: 0,
     comments: [] 
@@ -503,34 +501,34 @@ Projects
     email: 'manager.mike@tenant2.com', 
     status: 'active',
     lastLogin: new Date().toISOString(),
-    dateOfBirth: '1985-08-15', 
-    gender: 'Male', 
-    mobileNumber: '+15552223333', 
-    currentAddress: '123 Corporate Ave, Business City, TX, USA', 
-    graduationYear: '2007', 
-    degreeProgram: 'Bachelor of Business Administration (BBA)', 
-    department: 'Management', 
-    currentJobTitle: 'Engagement Lead', 
-    company: 'Corporate Partner Inc.', 
-    currentOrganization: 'Corporate Partner Inc.', 
-    industry: 'Consulting', 
-    workLocation: 'Dallas, TX', 
-    linkedInProfile: 'https://linkedin.com/in/managermike', 
-    yearsOfExperience: '15', 
-    skills: ['Team Leadership', 'Project Management', 'Alumni Relations', 'Strategic Planning', 'Communication'], 
-    areasOfSupport: ['Mentoring Students', 'Sharing Job Referrals', 'Organizing Alumni Events'], 
-    timeCommitment: '3-5 hours', 
-    preferredEngagementMode: 'Online', 
-    otherComments: 'Leading engagement initiatives and fostering alumni connections for Corporate Partner Inc.', 
-    lookingForSupportType: 'General Networking', 
-    helpNeededDescription: 'Interested in connecting with other managers and sharing best practices for alumni engagement.', 
-    shareProfileConsent: true, 
+    dateOfBirth: '1985-08-15',
+    gender: 'Male',
+    mobileNumber: '+15552223333',
+    currentAddress: '123 Corporate Ave, Business City, TX, USA',
+    graduationYear: '2007',
+    degreeProgram: 'Bachelor of Business Administration (BBA)',
+    department: 'Management',
+    currentJobTitle: 'Engagement Lead',
+    company: 'Corporate Partner Inc.',
+    currentOrganization: 'Corporate Partner Inc.',
+    industry: 'Consulting',
+    workLocation: 'Dallas, TX',
+    linkedInProfile: 'https://linkedin.com/in/managermike',
+    yearsOfExperience: '15',
+    skills: ['Team Leadership', 'Project Management', 'Alumni Relations', 'Strategic Planning', 'Communication'],
+    areasOfSupport: ['Mentoring Students', 'Sharing Job Referrals', 'Organizing Alumni Events'],
+    timeCommitment: '3-5 hours',
+    preferredEngagementMode: 'Online',
+    otherComments: 'Leading engagement initiatives and fostering alumni connections for Corporate Partner Inc.',
+    lookingForSupportType: 'General Networking',
+    helpNeededDescription: 'Interested in connecting with other managers and sharing best practices for alumni engagement.',
+    shareProfileConsent: true,
     featureInSpotlightConsent: false,
-    shortBio: 'Dedicated Engagement Lead at Corporate Partner Inc., focused on maximizing alumni potential and fostering a strong professional network within Tenant-2. My expertise includes team leadership, project management, and strategic planning for alumni relations. Committed to creating valuable connections and opportunities for our members.', 
-    university: 'Business School of Excellence', 
-    profilePictureUrl: 'https://avatar.vercel.sh/managermike.png', 
-    interests: ['Leadership Development', 'Corporate Strategy', 'Golf'], 
-    offersHelpWith: [AreasOfSupport[0], AreasOfSupport[2], AreasOfSupport[8]], 
+    shortBio: 'Dedicated Engagement Lead at Corporate Partner Inc., focused on maximizing alumni potential and fostering a strong professional network within Tenant-2. My expertise includes team leadership, project management, and strategic planning for alumni relations. Committed to creating valuable connections and opportunities for our members.',
+    university: 'Business School of Excellence',
+    profilePictureUrl: 'https://avatar.vercel.sh/managermike.png',
+    interests: ['Leadership Development', 'Corporate Strategy', 'Golf'],
+    offersHelpWith: [AreasOfSupport[0], AreasOfSupport[2], AreasOfSupport[8]],
     appointmentCoinCost: 0,
     resumeText: `Manager Mike
 Email: manager.mike@tenant2.com | LinkedIn: linkedin.com/in/managermike | Mobile: +15552223333
@@ -555,21 +553,22 @@ Bachelor of Business Administration (BBA), Business School of Excellence (2003 -
 Skills:
 Team Leadership, Project Management, Alumni Relations, Strategic Planning, Stakeholder Management, Event Management, Communication, Public Speaking, Data Analysis (for engagement tracking).
 `, 
-    careerInterests: 'Executive Leadership, Organizational Development, Alumni Network Growth', 
-    xpPoints: 3200, 
-    dailyStreak: 15, 
-    longestStreak: 40, 
-    totalActiveDays: 200, 
-    weeklyActivity: [true, false, true, true, false, true, true], 
+    careerInterests: 'Executive Leadership, Organizational Development, Alumni Network Growth',
+    xpPoints: 3200,
+    dailyStreak: 15,
+    longestStreak: 40,
+    totalActiveDays: 200,
+    weeklyActivity: [true, false, true, true, false, true, true],
     referralCode: 'MANAGERMIKE1',
-    earnedBadges: ['networker', 'contributor', 'profile-pro'], 
+    earnedBadges: ['networker', 'contributor', 'profile-pro'],
     affiliateCode: 'AFFMIKE789',
-    pastInterviewSessions: [], 
-    interviewCredits: 5, 
-    createdAt: new Date(Date.now() - 86400000 * 90).toISOString(), 
+    pastInterviewSessions: [],
+    interviewCredits: 5,
+    createdAt: new Date(Date.now() - 86400000 * 90).toISOString(),
     isDistinguished: false,
     userApiKey: '',
     sessionId: undefined,
+    bio: "Dedicated Engagement Lead at Corporate Partner Inc., focused on maximizing alumni potential and fostering a strong professional network within Tenant-2.",
   },
 ];
 
@@ -1436,7 +1435,6 @@ export let sampleInterviewQuestions: InterviewQuestion[] = [
     id: 'mcq1',
     category: 'Technical',
     questionText: "Which of the following is NOT a valid HTTP method?",
-    baseScore: 5,
     isMCQ: true,
     mcqOptions: ["GET", "POST", "PUSH", "DELETE"],
     correctAnswer: "PUSH",
@@ -1598,7 +1596,7 @@ export const sampleMockInterviewSessions: MockInterviewSession[] = [
     timerPerQuestion: 0, 
     questionCategories: ['Technical'],
     difficulty: 'Medium'
-  }
+  },
 ];
 
 export let sampleCreatedQuizzes: MockInterviewSession[] = [ 

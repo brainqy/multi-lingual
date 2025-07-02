@@ -13,7 +13,7 @@ import hiTranslations from '@/locales/hi.json';
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string, options?: { default?: string; [key: string]: string | number; }) => string;
+  t: (key: string, options?: { default?: string } & Record<string, string | number>) => string;
   availableLocales: Record<Locale, string>;
 }
 
@@ -53,7 +53,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
     }
   }, []);
 
-  const t = useCallback((key: string, options?: { default?: string; [key: string]: string | number; }): string => {
+  const t = useCallback((key: string, options?: ({ default?: string } & Record<string, string | number>)): string => {
     const findTranslation = (data: Translations) => {
       const keys = key.split('.');
       let current: string | Translations | NestedTranslations = data;

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -126,13 +125,15 @@ const Carousel = React.forwardRef<
         value={{
           carouselRef,
           api: api,
-          opts,
+          opts: opts ?? {},
           orientation:
             orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
           scrollPrev,
           scrollNext,
           canScrollPrev,
           canScrollNext,
+          plugins: plugins ?? [], // ensure plugins is always an array
+          setApi: setApi ?? (() => {}), // always provide a function
         }}
       >
         <div

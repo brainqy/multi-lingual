@@ -414,7 +414,7 @@ export default function LiveInterviewClientView() {
     }
      const emails = reportRecipientEmails.split(',').map(e => e.trim()).filter(e => e);
     if (isInterviewer && emails.length === 0) {
-      toast({ title: "No Recipients", description: "Please enter email addresses to send the report.", variant: "warning" });
+      toast({ title: "No Recipients", description: "Please enter email addresses to send the report.", variant: "default" });
       return;
     }
 
@@ -473,7 +473,7 @@ export default function LiveInterviewClientView() {
     let streamToRecord: MediaStream | null = null;
     let recordingType: 'video' | 'audio' = 'audio';
 
-    if (activeStreamType === 'screen' && screenStream?.getVideoTracks().length > 0) {
+    if (activeStreamType === 'screen' && screenStream && screenStream.getVideoTracks().length > 0) {
         const videoTracks = screenStream.getVideoTracks();
         const audioTracks = (cameraStream && !isMicMuted) ? cameraStream.getAudioTracks() : [];
         streamToRecord = new MediaStream([...videoTracks, ...audioTracks]);

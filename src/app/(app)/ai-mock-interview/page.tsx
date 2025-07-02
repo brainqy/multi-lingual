@@ -297,6 +297,8 @@ export default function AiMockInterviewPage() {
         return;
       }
 
+      // Map difficulty to capitalized form
+      const difficultyMap = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
       const newSession: MockInterviewSession = {
         id: `session-ai-${Date.now()}`,
         userId: currentUser.id,
@@ -307,7 +309,7 @@ export default function AiMockInterviewPage() {
         status: 'in-progress',
         createdAt: new Date().toISOString(),
         timerPerQuestion: config.timerPerQuestion,
-        difficulty: config.difficulty,
+        difficulty: config.difficulty ? difficultyMap[config.difficulty] : undefined,
         questionCategories: config.questionCategories,
         recordingReferences: [],
       };

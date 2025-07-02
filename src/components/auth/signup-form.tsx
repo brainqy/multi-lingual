@@ -36,8 +36,8 @@ export function SignupForm() {
     email: z.string().email({ message: t("validation.email") }),
     password: z.string().min(1, { message: t("validation.required") }),
     referralCode: z.string().optional(),
-    agreeToTerms: z.boolean().refine(val => val === true, { 
-      message: t("validation.termsRequired", "You must accept the terms and conditions."),
+    agreeToTerms: z.boolean().refine(val => val === true, {
+      message: t("validation.termsRequired", { default: "You must accept the terms and conditions." }),
     }),
   });
 
@@ -128,11 +128,11 @@ export function SignupForm() {
               name="referralCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-foreground/80">{t("signup.referralCodeLabel", "Referral Code (Optional)")}</FormLabel>
+                  <FormLabel className="text-foreground/80">{t("signup.referralCodeLabel", { default: "Referral Code (Optional)" })}</FormLabel>
                   <div className="relative">
                     <Gift className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <FormControl>
-                      <Input placeholder={t("signup.referralCodePlaceholder", "Enter referral code")} {...field} className="pl-10"/>
+                      <Input placeholder={t("signup.referralCodePlaceholder", { default: "Enter referral code" })} {...field} className="pl-10"/>
                     </FormControl>
                   </div>
                   <FormMessage />
@@ -152,11 +152,11 @@ export function SignupForm() {
                    </FormControl>
                    <div className="space-y-1 leading-none">
                      <FormLabel>
-                       {t("signup.agreeToTermsLabel", "Agree to our terms and conditions")}
+                       {t("signup.agreeToTermsLabel", { default: "Agree to our terms and conditions" })}
                      </FormLabel>
                      <FormDescription>
-                        {t("signup.agreeToTermsDescription", "By signing up, you agree to our")}{" "}
-                        <Link href="/terms" className="text-primary hover:underline">{t("signup.termsLink", "Terms of Service")}</Link> & <Link href="/privacy" className="text-primary hover:underline">{t("signup.privacyLink", "Privacy Policy")}</Link>.
+                        {t("signup.agreeToTermsDescription", { default: "By signing up, you agree to our" })}{" "}
+                        <Link href="/terms" className="text-primary hover:underline">{t("signup.termsLink", { default: "Terms of Service" })}</Link> & <Link href="/privacy" className="text-primary hover:underline">{t("signup.privacyLink", { default: "Privacy Policy" })}</Link>.
                      </FormDescription>
                      <FormMessage />
                    </div>

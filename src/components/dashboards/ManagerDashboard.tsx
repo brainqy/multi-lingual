@@ -244,7 +244,7 @@ export default function ManagerDashboard() {
               </Button>
               <Button asChild variant="outline">
                 <Link href="/admin/promo-codes">
-                    <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", "Promo Codes")}
+                    <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", { defaultValue: "Promo Codes" })}
                 </Link>
               </Button>
             </CardContent>

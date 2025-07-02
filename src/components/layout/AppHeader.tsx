@@ -26,8 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
 import { useState, useEffect } from 'react'; 
 import { getRecentPages } from '@/lib/recent-pages'; 
-import type { RecentPageItem } from '@/types'; 
+
 import { usePathname, useRouter } from "next/navigation"; 
+import { RecentPageItem } from "@/types";
 
 export function AppHeader() {
   const { toast } = useToast();
