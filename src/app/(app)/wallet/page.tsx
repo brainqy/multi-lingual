@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { format, isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
 import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function WalletPage() {
   const { t } = useI18n();
@@ -163,14 +164,82 @@ export default function WalletPage() {
                     </CardDescription>
                 </CardContent>
             </Card>
-        </div>
-
-        {wallet.flashCoins && wallet.flashCoins.length > 0 && (
+      </div>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>Redeem a Promo Code</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="flex flex-col sm:flex-row items-end gap-2">
+                <div className="flex-grow w-full">
+                    <Label htmlFor="promo-code-input">Enter Code</Label>
+                    <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
+                </div>
+                <Button onClick={handleRedeemCode} className="w-full sm:w-auto">Redeem</Button>
+            </div>
+        </CardContent>
+      </Card>
+      
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="transactions">Transaction History</TabsTrigger>
+          <TabsTrigger value="flash_coins">Flash Coin History</TabsTrigger>
+        </TabsList>
+        <TabsContent value="transactions">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.transactionHistory")}</CardTitle>
+              <CardDescription>{t("wallet.recentActivity")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {wallet.transactions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  {t("wallet.noTransactions")}
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("wallet.date")}</TableHead>
+                      <TableHead>{t("wallet.description")}</TableHead>
+                      <TableHead className="text-right">{t("wallet.amount")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {wallet.transactions.map((txn) => (
+                      <TableRow key={txn.id}>
+                        <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{txn.description}</TableCell>
+                        <TableCell
+                          className={`text-right font-medium ${
+                            txn.type === "credit" ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            {txn.type === "credit" ? (
+                              <ArrowUpCircle className="h-4 w-4" />
+                            ) : (
+                              <ArrowDownCircle className="h-4 w-4" />
+                            )}
+                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t("wallet.coins")}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="flash_coins">
+           {wallet.flashCoins && wallet.flashCoins.length > 0 && (
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <History className="h-5 w-5" />
-                        Flash Coin History
+                        Flash Coin Details
                     </CardTitle>
                     <CardDescription>
                         A log of your promotional flash coins and their expiration dates.
@@ -201,68 +270,10 @@ export default function WalletPage() {
                     </ul>
                 </CardContent>
             </Card>
-        )}
-      
-      <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>Redeem a Promo Code</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div className="flex flex-col sm:flex-row items-end gap-2">
-                <div className="flex-grow w-full">
-                    <Label htmlFor="promo-code-input">Enter Code</Label>
-                    <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
-                </div>
-                <Button onClick={handleRedeemCode} className="w-full sm:w-auto">Redeem</Button>
-            </div>
-        </CardContent>
-      </Card>
+           )}
+        </TabsContent>
+      </Tabs>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.transactionHistory")}</CardTitle>
-          <CardDescription>{t("wallet.recentActivity")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {wallet.transactions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              {t("wallet.noTransactions")}
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("wallet.date")}</TableHead>
-                  <TableHead>{t("wallet.description")}</TableHead>
-                  <TableHead className="text-right">{t("wallet.amount")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {wallet.transactions.map((txn) => (
-                  <TableRow key={txn.id}>
-                    <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
-                    <TableCell>{txn.description}</TableCell>
-                    <TableCell
-                      className={`text-right font-medium ${
-                        txn.type === "credit" ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {txn.type === "credit" ? (
-                          <ArrowUpCircle className="h-4 w-4" />
-                        ) : (
-                          <ArrowDownCircle className="h-4 w-4" />
-                        )}
-                        {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t("wallet.coins")}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
