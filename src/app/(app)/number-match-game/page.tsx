@@ -10,10 +10,11 @@ import { Coins, Dices, Gift, Repeat, Trophy, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Confetti from "react-confetti";
 
-const GAME_COST = 10;
+const GAME_COST = 100;
 const MAX_ATTEMPTS = 10;
 const WINNING_NUMBER = 777;
 const WIN_REWARD = 500;
+const ATTEMPT_REWARD = 5;
 
 export default function NumberMatchGamePage() {
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS);
@@ -72,11 +73,15 @@ export default function NumberMatchGamePage() {
         sampleWalletBalance.coins += WIN_REWARD;
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
+        // Player didn't win, give attempt reward
+        sampleWalletBalance.coins += ATTEMPT_REWARD;
         if (attemptsLeft - 1 <= 0) {
-          setMessage("Game Over! Better luck next time.");
+          setMessage(`Game Over! You received ${ATTEMPT_REWARD} coins for your last attempt.`);
           setIsGameActive(false);
+          toast({ title: "Game Over", description: `You received ${ATTEMPT_REWARD} coins for your final attempt.` });
         } else {
-          setMessage("Not a match. Try again!");
+          setMessage(`Not a match. You received ${ATTEMPT_REWARD} coins for trying!`);
+           toast({ title: "Nice Try!", description: `You received ${ATTEMPT_REWARD} coins as a consolation prize.` });
         }
       }
     };
