@@ -2,7 +2,7 @@
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
-import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, Wallet, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, Server, Megaphone, PlusCircle } from "lucide-react";
+import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sampleUserProfile, samplePlatformSettings } from "@/lib/sample-data";
@@ -40,7 +40,7 @@ const navItems = [
 
 const utilityItems = [
   { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
-  { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: Wallet },
+  { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: WalletCards },
   { href: "/feature-requests", labelKey: "sideMenu.featureRequests", adminOnly: true },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
@@ -71,7 +71,7 @@ const adminItems = [
    { href: "/admin/gallery-management", labelKey: "sideMenu.galleryMgt", icon: GalleryVerticalEnd },
    { href: "/admin/blog-settings", labelKey: "sideMenu.blogSettings", icon: Settings2Icon },
    { href: "/admin/promotional-content", labelKey: "sideMenu.promotionalContentMgt", icon: Megaphone },
-   { href: "/admin/platform-settings", labelKey: "sideMenu.platformSettings", icon: Server },
+   { href: "/admin/platform-settings", labelKey: "sideMenu.platformSettings", icon: ServerIcon },
 ];
 
 export function AppSidebar() {
