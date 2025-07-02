@@ -496,7 +496,7 @@ Projects
   { 
     id: 'managerUser1', 
     tenantId: 'tenant-2', 
-    role: 'user', 
+    role: 'admin', 
     name: 'Manager Mike', 
     email: 'manager.mike@tenant2.com', 
     status: 'active',
