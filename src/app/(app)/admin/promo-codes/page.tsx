@@ -47,7 +47,7 @@ export default function PromoCodeManagementPage() {
     defaultValues: { rewardType: 'coins', isActive: true, usageLimit: 0 },
   });
 
-  if (currentUser.role !== 'admin') {
+  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
     return <AccessDeniedMessage />;
   }
 
