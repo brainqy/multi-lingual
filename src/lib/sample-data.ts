@@ -163,8 +163,14 @@ export let sampleCommunityPosts: CommunityPost[] = [
     moderationStatus: 'visible', 
     flagCount: 0,
     comments: [
-      { id: 'comment1-1', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString(), comment: 'Focus on clean code and clear documentation for your solution. Good luck!' },
-      { id: 'comment1-2', userId: 'alumni4', userName: 'Diana Prince', userAvatar: 'https://picsum.photos/seed/diana/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), comment: 'Great question! I usually allocate specific time blocks for each part of the assignment.' },
+      {
+        id: 'comment1-1', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString(), comment: 'Focus on clean code and clear documentation for your solution. Good luck!',
+        postId: ''
+      },
+      {
+        id: 'comment1-2', userId: 'alumni4', userName: 'Diana Prince', userAvatar: 'https://picsum.photos/seed/diana/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), comment: 'Great question! I usually allocate specific time blocks for each part of the assignment.',
+        postId: ''
+      },
     ],
      bookmarkedBy: ['managerUser1'] 
   },
@@ -201,7 +207,10 @@ export let sampleCommunityPosts: CommunityPost[] = [
     moderationStatus: 'visible', 
     flagCount: 0,
     comments: [
-       { id: 'comment3-1', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), comment: 'Sounds interesting! Will there be a recording?' },
+       {
+         id: 'comment3-1', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), comment: 'Sounds interesting! Will there be a recording?',
+         postId: ''
+       },
     ]
   },
   { 
