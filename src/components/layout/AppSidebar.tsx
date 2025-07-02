@@ -77,7 +77,7 @@ const adminItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const currentUser = sampleUserProfile;
-  const platformName = samplePlatformSettings.platformName || "ResumeMatch";
+  const platformName = samplePlatformSettings.platformName;
   const { t } = useI18n(); // <-- Use the translation hook
 
   const renderMenuItem = (item: any, isSubItem = false) => {

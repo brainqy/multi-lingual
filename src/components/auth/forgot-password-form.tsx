@@ -27,10 +27,10 @@ export function ForgotPasswordForm() {
   const { t } = useI18n();
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const platformName = samplePlatformSettings.platformName || "Bhasha Setu";
+  const platformName = samplePlatformSettings.platformName;
 
   const formSchema = z.object({
-    email: z.string().email({ message: t("validation.email") }),
+    email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address."}) }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({

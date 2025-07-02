@@ -28,11 +28,11 @@ export function LoginForm() {
   const { login } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
-  const platformName = samplePlatformSettings.platformName || "Bhasha Setu";
+  const platformName = samplePlatformSettings.platformName;
 
   const formSchema = z.object({
-    email: z.string().email({ message: t("validation.email") }),
-    password: z.string().min(1, { message: t("validation.required") }),
+    email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address." }) }),
+    password: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),
     rememberMe: z.boolean().default(false).optional(),
   });
 
@@ -130,9 +130,9 @@ export function LoginForm() {
           </form>
         </Form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t("login.signupPrompt")}{" "}
+          {t("signup.loginPrompt")}{" "}
           <Link href="/auth/signup" className="font-medium text-primary hover:underline">
-            {t("login.signupLink")}
+            {t("signup.loginLink")}
           </Link>
         </p>
       </CardContent>

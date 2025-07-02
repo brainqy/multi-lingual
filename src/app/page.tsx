@@ -9,9 +9,11 @@ import Link from "next/link";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
+import { samplePlatformSettings } from "@/lib/sample-data";
 
 export default function LandingPage() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const platformName = samplePlatformSettings.platformName;
 
   const stats = [
     { name: "Resumes Analyzed", value: "10,000+", icon: FileText },
@@ -68,7 +70,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
             <FileText className="h-7 w-7" />
-            ResumeMatch AI
+            {platformName}
           </Link>
           <nav className="space-x-2 sm:space-x-4">
             <Link href="/auth/login">
@@ -245,8 +247,8 @@ export default function LandingPage() {
           <div className="flex justify-center mb-4">
             <FileText className="h-8 w-8 text-primary" />
           </div>
-          <p className="font-semibold text-foreground mb-1">ResumeMatch AI</p>
-          <p className="text-sm">&copy; {new Date().getFullYear()} ResumeMatch AI. All rights reserved.</p>
+          <p className="font-semibold text-foreground mb-1">{platformName}</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} {platformName}. All rights reserved.</p>
           <div className="mt-3 space-x-4 text-sm">
             <Link href="/privacy" className="hover:text-primary">Privacy Policy</Link>
             <span className="text-gray-400">|</span>
