@@ -62,6 +62,7 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
       userAvatar: currentUser.profilePictureUrl,
       timestamp: new Date().toISOString(),
       comment: commentText.trim(),
+      postId: ''
     };
 
     // Update the sampleBlogPosts array (in a real app, this would be an API call)
