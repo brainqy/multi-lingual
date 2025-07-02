@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
-import { Coins, Dices, Gift, Repeat, Trophy } from "lucide-react";
+import { Coins, Dices, Gift, Repeat, Trophy, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Confetti from "react-confetti";
 
@@ -23,14 +23,17 @@ export default function NumberMatchGamePage() {
   const [isWinner, setIsWinner] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+  const [isRolling, setIsRolling] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const handlePlay = () => {
-    if (!isGameActive) {
-      toast({ title: "Game Over", description: "Please reset to play again.", variant: "destructive" });
+    if (isRolling || !isGameActive) {
+      if (!isGameActive) {
+        toast({ title: "Game Over", description: "Please reset to play again.", variant: "destructive" });
+      }
       return;
     }
 
@@ -41,26 +44,42 @@ export default function NumberMatchGamePage() {
 
     // Deduct coins (mock)
     sampleWalletBalance.coins -= GAME_COST;
+    setIsRolling(true);
+    setMessage("Rolling...");
 
-    const newNumber = Math.floor(100 + Math.random() * 900);
-    setGeneratedNumber(String(newNumber));
-    setAttemptsLeft(prev => prev - 1);
-
-    if (newNumber === WINNING_NUMBER) {
-      setMessage(`It's 777! You won ${WIN_REWARD} coins!`);
-      setIsWinner(true);
-      setIsGameActive(false);
-      // Award prize (mock)
-      sampleWalletBalance.coins += WIN_REWARD;
-      toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
-    } else {
-      if (attemptsLeft - 1 <= 0) {
-        setMessage("Game Over! Better luck next time.");
-        setIsGameActive(false);
-      } else {
-        setMessage("Not a match. Try again!");
+    let rollCount = 0;
+    const maxRolls = 15;
+    const rollInterval = setInterval(() => {
+      setGeneratedNumber(String(Math.floor(100 + Math.random() * 900)));
+      rollCount++;
+      if (rollCount >= maxRolls) {
+        clearInterval(rollInterval);
+        finishRoll();
       }
-    }
+    }, 50); // Roll every 50ms
+
+    const finishRoll = () => {
+      const newNumber = Math.floor(100 + Math.random() * 900);
+      setGeneratedNumber(String(newNumber));
+      setAttemptsLeft(prev => prev - 1);
+      setIsRolling(false);
+
+      if (newNumber === WINNING_NUMBER) {
+        setMessage(`It's 777! You won ${WIN_REWARD} coins!`);
+        setIsWinner(true);
+        setIsGameActive(false);
+        // Award prize (mock)
+        sampleWalletBalance.coins += WIN_REWARD;
+        toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
+      } else {
+        if (attemptsLeft - 1 <= 0) {
+          setMessage("Game Over! Better luck next time.");
+          setIsGameActive(false);
+        } else {
+          setMessage("Not a match. Try again!");
+        }
+      }
+    };
   };
 
   const handleReset = () => {
@@ -69,6 +88,7 @@ export default function NumberMatchGamePage() {
     setMessage("Click 'Play' to start a new game!");
     setIsGameActive(true);
     setIsWinner(false);
+    setIsRolling(false);
   };
 
   return (
@@ -96,7 +116,7 @@ export default function NumberMatchGamePage() {
               {generatedNumber}
             </p>
           </div>
-          <div className="text-lg font-medium text-muted-foreground">
+          <div className="text-lg font-medium text-muted-foreground h-6">
             {message}
           </div>
           <div className="flex justify-around items-center text-sm">
@@ -111,8 +131,9 @@ export default function NumberMatchGamePage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button onClick={handlePlay} disabled={!isGameActive} size="lg" className="w-full bg-primary hover:bg-primary/90">
-            <Dices className="mr-2 h-5 w-5" /> Play Now
+          <Button onClick={handlePlay} disabled={!isGameActive || isRolling} size="lg" className="w-full bg-primary hover:bg-primary/90">
+            {isRolling ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Dices className="mr-2 h-5 w-5" />}
+            {isRolling ? "Rolling..." : "Play Now"}
           </Button>
           <Button onClick={handleReset} variant="outline" className="w-full">
             Reset Game
