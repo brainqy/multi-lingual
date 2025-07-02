@@ -259,7 +259,7 @@ export default function JobTrackerPage() {
     });
     setCurrentInterviews(app.interviews || []);
     // Initialize notes, adding sample notes if no notes exist for the application
-    const initialNotes = app.notes && app.notes.length > 0
+    const initialNotes = app.notes && Array.isArray(app.notes) && app.notes.length > 0
       ? app.notes.map(noteContent => ({ date: format(new Date(), 'yyyy-MM-dd'), content: noteContent, editable: false })) // Assuming existing notes don't have dates, adding today's date and editable false
       : addSampleNotes([]); // Add sample notes if no notes exist for this application
     setCurrentNotes(initialNotes);
@@ -281,7 +281,7 @@ export default function JobTrackerPage() {
 
   const openNewApplicationDialog = () => {
     setEditingApplication(null);
-    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: '' });
+    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: '' });
     setCurrentInterviews([]); // Reset interviews for new application
     setIsDialogOpen(true);
   };
@@ -438,7 +438,7 @@ export default function JobTrackerPage() {
         setIsDialogOpen(isOpen);
         if (!isOpen) {
             setEditingApplication(null);
-            reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: '', jobDescription: '', location: '', applicationUrl: '', salary: '' });
+            reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '' });
  setCurrentInterviews([]); // Reset interviews
         }
       }}>
@@ -634,56 +634,56 @@ export default function JobTrackerPage() {
   </div>
 </TabsContent>
                   <TabsContent value="notes">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {/* Left Column: Notes History */}
-    <div className="space-y-4">
-      <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
-      <div className="space-y-2">
-        {currentNotes.length > 0 ? (
-          currentNotes.map((note, index) => (
-            <div key={index} className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line flex flex-col">
-              <div className="flex justify-between items-start">
-                <span className="font-semibold text-xs text-muted-foreground">{note.date}:</span>
-                <div className="flex gap-1">
-                  {!note.editable && (
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/70" onClick={() => handleEditNote(index)}>
-                      <Edit3 className="h-3 w-3"/>
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => handleRemoveNote(index)}>
-                    <Trash2 className="h-3 w-3"/>
-                  </Button>
-                </div>
-              </div>
-              {note.editable ? (
-                <Textarea
-                  value={note.content}
-                  onChange={(e) => setCurrentNotes(prev => prev.map((n, i) => i === index ? { ...n, content: e.target.value } : n))}
-                  rows={3}
-                  className="mt-2 text-sm"
-                />
-              ) : (
-                <p className="mt-1 text-foreground">{note.content}</p>
-              )}
-              {note.editable && (
-                <div className="flex justify-end mt-2">
-                  <Button variant="secondary" size="sm" onClick={() => handleSaveNote(index, currentNotes[index].content)}>{t("jobTracker.dialog.saveNote", { default: "Save Note" })}</Button>
-                </div>
-              )}
-            </div>
-          ))
-      ) : (
-        <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
-      )}
-    </div>
-    {/* Right Column: Notes Form */}
-    <div className="space-y-2">
-      <Label htmlFor="new-note">{t("jobTracker.dialog.addNotes", { default: "Add Notes" })}</Label>
-      <Textarea id="new-note" placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })} rows={15} value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)}/>
-      />
-    </div>
-  </div>
-</TabsContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Left Column: Notes History */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
+                        <div className="space-y-2">
+                          {currentNotes.length > 0 ? (
+                            currentNotes.map((note, index) => (
+                              <div key={index} className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line flex flex-col">
+                                <div className="flex justify-between items-start">
+                                  <span className="font-semibold text-xs text-muted-foreground">{note.date}:</span>
+                                  <div className="flex gap-1">
+                                    {!note.editable && (
+                                      <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/70" onClick={() => handleEditNote(index)}>
+                                        <Edit3 className="h-3 w-3"/>
+                                      </Button>
+                                    )}
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => handleRemoveNote(index)}>
+                                      <Trash2 className="h-3 w-3"/>
+                                    </Button>
+                                  </div>
+                                </div>
+                                {note.editable ? (
+                                  <Textarea
+                                    value={note.content}
+                                    onChange={(e) => setCurrentNotes(prev => prev.map((n, i) => i === index ? { ...n, content: e.target.value } : n))}
+                                    rows={3}
+                                    className="mt-2 text-sm"
+                                  />
+                                ) : (
+                                  <p className="mt-1 text-foreground">{note.content}</p>
+                                )}
+                                {note.editable && (
+                                  <div className="flex justify-end mt-2">
+                                    <Button variant="secondary" size="sm" onClick={() => handleSaveNote(index, currentNotes[index].content)}>{t("jobTracker.dialog.saveNote", { default: "Save Note" })}</Button>
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
+                        )}
+                      </div>
+                      </div>
+                      {/* Right Column: Notes Form */}
+                      <div className="space-y-2">
+                        <Label htmlFor="new-note">{t("jobTracker.dialog.addNotes", { default: "Add Notes" })}</Label>
+                        <Textarea id="new-note" placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })} rows={15} value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)}/>
+                      </div>
+                    </div>
+                  </TabsContent>
                 </div>
               </ScrollArea>
             </Tabs>
@@ -725,3 +725,5 @@ ${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + ".
 Thank you for your consideration.
 `;
 }
+
+    
