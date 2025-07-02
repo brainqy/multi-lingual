@@ -1,4 +1,6 @@
-
+// This file is intentionally being overwritten to attempt to resolve a server startup error
+// caused by an invalid file path. If this error persists, this file may need to be
+// manually deleted from the project file system.
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -28,7 +30,7 @@ export default function ContentModerationPage() {
         ? sampleCommunityPosts 
         : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
     );
-  }, [currentUser.role, currentUser.tenantId]); 
+  }, [currentUser.role, currentUser.tenantId]);
 
 
   const flaggedPosts = useMemo(() => {
@@ -36,22 +38,21 @@ export default function ContentModerationPage() {
   }, [posts]);
 
   const handleApprove = (postId: string) => {
-    const updateGlobalAndLocal = (updater: (p: CommunityPost) => CommunityPost) => {
-        setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
-        const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalIndex !== -1) sampleCommunityPosts[globalIndex] = updater(sampleCommunityPosts[globalIndex]);
-    };
-    updateGlobalAndLocal(p => ({...p, moderationStatus: 'visible', flagCount: 0}));
+    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'visible', flagCount: 0} : p));
+    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
+    if (globalIndex !== -1) {
+        sampleCommunityPosts[globalIndex].moderationStatus = 'visible';
+        sampleCommunityPosts[globalIndex].flagCount = 0;
+    }
     toast({ title: t("contentModeration.toast.postApproved.title", { default: "Post Approved" }), description: t("contentModeration.toast.postApproved.description", { default: "The post is now visible on the community feed." }) });
   };
 
   const handleRemove = (postId: string) => {
-     const updateGlobalAndLocal = (updater: (p: CommunityPost) => CommunityPost) => {
-        setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
-        const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalIndex !== -1) sampleCommunityPosts[globalIndex] = updater(sampleCommunityPosts[globalIndex]);
-    };
-    updateGlobalAndLocal(p => ({...p, moderationStatus: 'removed'}));
+    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'removed'} : p));
+    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
+    if (globalIndex !== -1) {
+        sampleCommunityPosts[globalIndex].moderationStatus = 'removed';
+    }
     toast({ title: t("contentModeration.toast.postRemoved.title", { default: "Post Removed" }), description: t("contentModeration.toast.postRemoved.description", { default: "The flagged post has been removed from the feed." }), variant: "destructive" });
   };
 
@@ -129,7 +130,3 @@ export default function ContentModerationPage() {
     </div>
   );
 }
-
-    
-
-    

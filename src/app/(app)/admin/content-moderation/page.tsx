@@ -20,11 +20,7 @@ export default function ContentModerationPage() {
   const { toast } = useToast();
   const { t } = useI18n();
   
-  const [posts, setPosts] = useState<CommunityPost[]>(
-    currentUser.role === 'admin' 
-      ? sampleCommunityPosts 
-      : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
-  );
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
      setPosts(
@@ -32,7 +28,7 @@ export default function ContentModerationPage() {
         ? sampleCommunityPosts 
         : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
     );
-  }, []); 
+  }, [currentUser.role, currentUser.tenantId]);
 
 
   const flaggedPosts = useMemo(() => {
@@ -40,23 +36,22 @@ export default function ContentModerationPage() {
   }, [posts]);
 
   const handleApprove = (postId: string) => {
-    const updateGlobalAndLocal = (updater: (p: CommunityPost) => CommunityPost) => {
-        const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalIndex !== -1) sampleCommunityPosts[globalIndex] = updater(sampleCommunityPosts[globalIndex]);
-        setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
-    };
-    updateGlobalAndLocal(p => ({...p, moderationStatus: 'visible', flagCount: 0}));
-    toast({ title: t("contentModeration.toast.postApproved.title"), description: t("contentModeration.toast.postApproved.description") });
+    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'visible', flagCount: 0} : p));
+    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
+    if (globalIndex !== -1) {
+        sampleCommunityPosts[globalIndex].moderationStatus = 'visible';
+        sampleCommunityPosts[globalIndex].flagCount = 0;
+    }
+    toast({ title: t("contentModeration.toast.postApproved.title", { default: "Post Approved" }), description: t("contentModeration.toast.postApproved.description", { default: "The post is now visible on the community feed." }) });
   };
 
   const handleRemove = (postId: string) => {
-     const updateGlobalAndLocal = (updater: (p: CommunityPost) => CommunityPost) => {
-        const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalIndex !== -1) sampleCommunityPosts[globalIndex] = updater(sampleCommunityPosts[globalIndex]);
-        setPosts(prev => prev.map(p => p.id === postId ? updater(p) : p));
-    };
-    updateGlobalAndLocal(p => ({...p, moderationStatus: 'removed'}));
-    toast({ title: t("contentModeration.toast.postRemoved.title"), description: t("contentModeration.toast.postRemoved.description"), variant: "destructive" });
+    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'removed'} : p));
+    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
+    if (globalIndex !== -1) {
+        sampleCommunityPosts[globalIndex].moderationStatus = 'removed';
+    }
+    toast({ title: t("contentModeration.toast.postRemoved.title", { default: "Post Removed" }), description: t("contentModeration.toast.postRemoved.description", { default: "The flagged post has been removed from the feed." }), variant: "destructive" });
   };
 
 
@@ -68,31 +63,31 @@ export default function ContentModerationPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
         <ShieldAlert className="h-8 w-8" /> 
-        {t("contentModeration.title")}
-        {currentUser.role === 'manager' && ` (${t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "Your Tenant" }).substring(t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "Your Tenant" }).indexOf(':') + 1).trim()})`}
+        {t("contentModeration.title", { default: "Content Moderation" })}
+        {currentUser.role === 'manager' && ` (${t("contentModeration.descriptionTenant", { default: "Manage content for {tenantId}", tenantId: currentUser.tenantId || "Your Tenant" }).substring(t("contentModeration.descriptionTenant", { default: "Manage content for {tenantId}" }).indexOf(':') + 1).trim()})`}
       </h1>
       <CardDescription>
-        {currentUser.role === 'manager' ? t("contentModeration.descriptionTenant", { tenantId: currentUser.tenantId || "your tenant"}) : t("contentModeration.descriptionPlatform")}
+        {currentUser.role === 'manager' ? t("contentModeration.descriptionTenant", { default: "Review and manage flagged content within your tenant: {tenantId}.", tenantId: currentUser.tenantId || "your tenant"}) : t("contentModeration.descriptionPlatform", { default: "Review and manage flagged content from across the platform." })}
       </CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("contentModeration.flaggedPostsTitle")}</CardTitle>
+          <CardTitle>{t("contentModeration.flaggedPostsTitle", { default: "Flagged Posts for Review" })}</CardTitle>
         </CardHeader>
         <CardContent>
           {flaggedPosts.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              {currentUser.role === 'manager' ? t("contentModeration.noFlaggedPostsTenant") : t("contentModeration.noFlaggedPostsPlatform")}
+              {currentUser.role === 'manager' ? t("contentModeration.noFlaggedPostsTenant", { default: "No posts have been flagged for review in your tenant." }) : t("contentModeration.noFlaggedPostsPlatform", { default: "No posts have been flagged for review on the platform." })}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("contentModeration.table.author")}</TableHead>
-                  <TableHead>{t("contentModeration.table.contentSnippet")}</TableHead>
-                  <TableHead>{t("contentModeration.table.flagCount")}</TableHead>
-                  <TableHead>{t("contentModeration.table.dateFlagged")}</TableHead>
-                  <TableHead className="text-right">{t("contentModeration.table.actions")}</TableHead>
+                  <TableHead>{t("contentModeration.table.author", { default: "Author" })}</TableHead>
+                  <TableHead>{t("contentModeration.table.contentSnippet", { default: "Content Snippet" })}</TableHead>
+                  <TableHead>{t("contentModeration.table.flagCount", { default: "Flag Count" })}</TableHead>
+                  <TableHead>{t("contentModeration.table.dateFlagged", { default: "Date Flagged" })}</TableHead>
+                  <TableHead className="text-right">{t("contentModeration.table.actions", { default: "Actions" })}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -112,7 +107,7 @@ export default function ContentModerationPage() {
                     <TableCell>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/community-feed#post-${post.id}`} title={t("contentModeration.viewOnFeedTitle")}>
+                        <Link href={`/community-feed#post-${post.id}`} title={t("contentModeration.viewOnFeedTitle", { default: "View Post on Feed" })}>
                            <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -133,5 +128,3 @@ export default function ContentModerationPage() {
     </div>
   );
 }
-
-    
