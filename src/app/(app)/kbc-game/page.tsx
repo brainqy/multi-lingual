@@ -21,6 +21,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 const KBC_QUESTION_COUNT = 10;
 const XP_LEVELS = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000];
 const GAME_COST = 500;
+const techTopics = ['Python', 'Java', 'Angular', 'React', 'SpringBoot', 'AWS'];
+
 
 export default function KBCGamePage() {
   const { t } = useI18n();
@@ -29,7 +31,7 @@ export default function KBCGamePage() {
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'gameOver'>('setup');
   const [allQuestions, setAllQuestions] = useState<InterviewQuestion[]>([]);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<InterviewQuestionCategory | 'All'>('All');
+  const [selectedTopic, setSelectedTopic] = useState<string>('All');
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -74,14 +76,14 @@ export default function KBCGamePage() {
         return;
     }
 
-    const filteredQuestions = selectedCategory === 'All'
+    const filteredQuestions = selectedTopic === 'All'
       ? allQuestions
-      : allQuestions.filter(q => q.category === selectedCategory);
+      : allQuestions.filter(q => q.tags?.some(tag => tag.toLowerCase() === selectedTopic.toLowerCase()));
       
     if (filteredQuestions.length < 5) {
         toast({
             title: "Not Enough Questions",
-            description: `There aren't enough questions in the "${selectedCategory}" category to start a game. Please select another topic or 'All'.`,
+            description: `There aren't enough questions tagged with "${selectedTopic}" to start a game. Please select another topic or 'All'.`,
             variant: "destructive",
             duration: 5000,
         });
@@ -95,7 +97,7 @@ export default function KBCGamePage() {
         tenantId: sampleUserProfile.tenantId,
         userId: sampleUserProfile.id,
         date: new Date().toISOString(),
-        description: `Fee for KBC Game (${selectedCategory})`,
+        description: `Fee for KBC Game (${selectedTopic})`,
         amount: -GAME_COST,
         type: 'debit',
     });
@@ -379,20 +381,20 @@ export default function KBCGamePage() {
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
            <Button
-                variant={selectedCategory === 'All' ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory('All')}
+                variant={selectedTopic === 'All' ? 'default' : 'outline'}
+                onClick={() => setSelectedTopic('All')}
                 className="h-16 text-md"
             >
                 All Topics
             </Button>
-            {ALL_CATEGORIES.map(category => (
+            {techTopics.map(topic => (
             <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category)}
+                key={topic}
+                variant={selectedTopic === topic ? 'default' : 'outline'}
+                onClick={() => setSelectedTopic(topic)}
                 className="h-16 text-md"
             >
-                {category}
+                {topic}
             </Button>
             ))}
         </CardContent>
