@@ -12,34 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, X, Send } from 'lucide-react';
 import type { SurveyStep, SurveyOption } from '@/types';
 import { cn } from '@/lib/utils';
-import { profileCompletionSurveyDefinition } from '@/lib/sample-data'; // Import the new survey
-
-
-const initialFeedbackSurvey: SurveyStep[] = [
-  { id: 'start', type: 'botMessage', text: 'Hi there! 👋 Welcome to ResumeMatch AI. We\'d love to hear your thoughts.', nextStepId: 'q_experience' },
-  { id: 'q_experience', type: 'botMessage', text: 'How has your experience been using our platform so far?', nextStepId: 'ans_experience' },
-  { id: 'ans_experience', type: 'userOptions', options: [
-    { text: '🚀 Amazing!', value: 'amazing', nextStepId: 'feedback_positive' },
-    { text: '😐 It\'s okay', value: 'okay', nextStepId: 'feedback_neutral' },
-    { text: '😕 Needs improvement', value: 'needs_improvement', nextStepId: 'feedback_negative' },
-  ]},
-  { id: 'feedback_positive', type: 'botMessage', text: 'That\'s great to hear! What feature do you find most helpful?', nextStepId: 'input_positive_feature' },
-  { id: 'input_positive_feature', type: 'userInput', placeholder: 'Type your favorite feature...', variableName: 'loved_feature', nextStepId: 'q_referral' },
-  { id: 'feedback_neutral', type: 'botMessage', text: 'Thanks for the honesty. What\'s one thing we could improve to make it better for you?', nextStepId: 'input_neutral_feedback'},
-  { id: 'input_neutral_feedback', type: 'userInput', placeholder: 'Tell us what to improve...', variableName: 'improvement_suggestion', nextStepId: 'q_referral' },
-  { id: 'feedback_negative', type: 'botMessage', text: 'We\'re sorry to hear that. Could you please tell us more about what wasn\'t working or what you found frustrating?', nextStepId: 'input_negative_feedback'},
-  { id: 'input_negative_feedback', type: 'userInput', placeholder: 'Describe your concerns...', variableName: 'frustration_details', nextStepId: 'q_referral' },
-  { id: 'q_referral', type: 'botMessage', text: 'Thank you for sharing! One last thing: how likely are you to recommend ResumeMatch AI to a friend or colleague?', nextStepId: 'ans_referral_dropdown' },
-  { id: 'ans_referral_dropdown', type: 'userDropdown', dropdownOptions: [
-      { label: 'Very Likely', value: 'very_likely' },
-      { label: 'Likely', value: 'likely' },
-      { label: 'Neutral', value: 'neutral' },
-      { label: 'Unlikely', value: 'unlikely' },
-      { label: 'Very Unlikely', value: 'very_unlikely' },
-    ], variableName: 'referral_likelihood', nextStepId: 'thank_you'
-  },
-  { id: 'thank_you', type: 'botMessage', text: 'Thank you for your valuable feedback! We appreciate you taking the time. Have a great day! 😊', isLastStep: true },
-];
+import { initialFeedbackSurvey, profileCompletionSurveyDefinition } from '@/lib/sample-data';
 
 
 // A map of available survey definitions
@@ -310,3 +283,5 @@ export default function FloatingMessenger() {
     </div>
   );
 }
+
+    
