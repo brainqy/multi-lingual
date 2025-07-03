@@ -20,8 +20,8 @@ export let sampleJobApplications: JobApplication[] = [
     resumeIdUsed: 'resume1',
     coverLetterText: 'Dear Innovate LLC Hiring Manager...',
     interviews: [
-      { id: 'int1', date: new Date(Date.now() - 86400000 * 10).toISOString(), type: 'Phone Screen', interviewer: 'John Smith', notes: 'Went well, discussed React hooks.' },
-      { id: 'int2', date: new Date(Date.now() + 86400000 * 10).toISOString(), type: 'Technical', interviewer: 'Jane Doe', notes: 'Live coding challenge on component design.' }
+      { id: 'int1', date: new Date(Date.now() - 86400000 * 10).toISOString(), type: 'Phone Screen', interviewer: 'John Smith', notes: ['Went well, discussed React hooks.'] },
+      { id: 'int2', date: new Date(Date.now() + 86400000 * 10).toISOString(), type: 'Technical', interviewer: 'Jane Doe', notes: ['Live coding challenge on component design.'] }
     ]
   },
   { id: '3', tenantId: 'Brainqy', userId: 'managerUser1', companyName: 'Data Corp', jobTitle: 'Data Analyst', status: 'Offer', dateApplied: '2024-06-15', notes: 'Received offer, considering.', location: 'San Francisco, CA', reminderDate: new Date(Date.now() + 86400000 * 3).toISOString(), applicationUrl: 'https://example.com/apply/job3', salary: '110000' }, 
@@ -42,8 +42,8 @@ export let sampleJobApplications: JobApplication[] = [
     applicationUrl: 'https://example.com/websolutions/apply', 
     salary: '125000',
     interviews: [
-      { id: 'int3', date: new Date(Date.now() - 86400000 * 2).toISOString(), type: 'Phone Screen', interviewer: 'Emily White', notes: 'Positive initial call. Discussed React experience and portfolio. Seemed impressed with the live coding challenge solution.' },
-      { id: 'int4', date: new Date(Date.now() + 86400000 * 4).toISOString(), type: 'Technical', interviewer: 'David Green', notes: 'Upcoming technical deep dive on state management and performance optimization.' },
+      { id: 'int3', date: new Date(Date.now() - 86400000 * 2).toISOString(), type: 'Phone Screen', interviewer: 'Emily White', notes: ['Positive initial call. Discussed React experience and portfolio. Seemed impressed with the live coding challenge solution.'] },
+      { id: 'int4', date: new Date(Date.now() + 86400000 * 4).toISOString(), type: 'Technical', interviewer: 'David Green', notes: ['Upcoming technical deep dive on state management and performance optimization.'] },
     ]
   },
 ];
