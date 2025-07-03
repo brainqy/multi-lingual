@@ -11,11 +11,13 @@ import { sampleAffiliates, sampleAffiliateClicks, sampleAffiliateSignups, sample
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import AffiliateStatCards from "@/components/features/affiliate-management/AffiliateStatCards";
 import AffiliateTable from "@/components/features/affiliate-management/AffiliateTable";
+import { useI18n } from "@/hooks/use-i18n";
 
 export default function AffiliateManagementPage() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>(sampleAffiliates);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { t } = useI18n();
   const currentUser = sampleUserProfile;
 
   useEffect(() => {
@@ -37,8 +39,8 @@ export default function AffiliateManagementPage() {
     
     const affiliate = affiliates.find(a => a.id === affiliateId);
     toast({
-      title: `Affiliate ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
-      description: `Affiliate ${affiliate?.name || affiliateId} has been ${newStatus}.`,
+      title: t("affiliateManagement.toast.statusUpdate.title", { status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }),
+      description: t("affiliateManagement.toast.statusUpdate.description", { name: affiliate?.name || affiliateId, status: newStatus }),
     });
   };
 
@@ -71,18 +73,18 @@ export default function AffiliateManagementPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Target className="h-8 w-8" /> Affiliate Management
+        <Target className="h-8 w-8" /> {t("affiliateManagement.title")}
       </h1>
-      <CardDescription>Oversee and manage affiliate partners, their performance, and applications.</CardDescription>
+      <CardDescription>{t("affiliateManagement.description")}</CardDescription>
 
       <AffiliateStatCards stats={affiliateStats} />
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Affiliate List</CardTitle>
+          <CardTitle>{t("affiliateManagement.affiliateList")}</CardTitle>
           <div className="mt-2">
             <Input
-              placeholder="Search affiliates (name, email, code)..."
+              placeholder={t("affiliateManagement.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"

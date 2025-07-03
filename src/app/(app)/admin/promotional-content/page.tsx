@@ -85,13 +85,13 @@ export default function PromotionalContentPage() {
       if (globalIndex !== -1) {
         samplePromotionalContent[globalIndex] = { ...samplePromotionalContent[globalIndex], ...data };
       }
-      toast({ title: "Content Updated", description: `"${data.title}" has been saved.` });
+      toast({ title: t("promotionalContent.toast.updated.title"), description: t("promotionalContent.toast.updated.description", { title: data.title }) });
     } else {
       const newItem: PromotionalContent = { ...data, id: `promo-${Date.now()}` };
       const updatedItems = [newItem, ...contentItems];
       setContentItems(updatedItems);
       samplePromotionalContent.unshift(newItem);
-      toast({ title: "Content Created", description: `"${data.title}" has been added.` });
+      toast({ title: t("promotionalContent.toast.created.title"), description: t("promotionalContent.toast.created.description", { title: data.title }) });
     }
     setIsDialogOpen(false);
   };
@@ -102,7 +102,7 @@ export default function PromotionalContentPage() {
     if (globalIndex !== -1) {
       samplePromotionalContent.splice(globalIndex, 1);
     }
-    toast({ title: "Content Deleted", description: "The promotional card has been deleted.", variant: "destructive" });
+    toast({ title: t("promotionalContent.toast.deleted.title"), description: t("promotionalContent.toast.deleted.description"), variant: "destructive" });
   };
   
   return (
@@ -110,28 +110,28 @@ export default function PromotionalContentPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <Megaphone className="h-8 w-8 text-primary" />
-          Promotional Content Management
+          {t("promotionalContent.title")}
         </h1>
         <Button onClick={openNewDialog}>
             <PlusCircle className="mr-2 h-4 w-4"/>
-            Create New Card
+            {t("promotionalContent.createNewButton")}
         </Button>
       </div>
       <CardDescription>
-        Manage the promotional spotlight cards shown on the user dashboard. Active cards will auto-slide.
+        {t("promotionalContent.description")}
       </CardDescription>
 
       <Card>
           <CardHeader>
-              <CardTitle>Current Promotional Cards</CardTitle>
+              <CardTitle>{t("promotionalContent.currentCardsTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
               <Table>
                   <TableHeader>
                       <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t("promotionalContent.table.title")}</TableHead>
+                          <TableHead>{t("promotionalContent.table.status")}</TableHead>
+                          <TableHead className="text-right">{t("promotionalContent.table.actions")}</TableHead>
                       </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -140,7 +140,7 @@ export default function PromotionalContentPage() {
                               <TableCell className="font-medium">{item.title}</TableCell>
                               <TableCell>
                                 <span className={`px-2 py-0.5 text-xs rounded-full ${item.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                                  {item.isActive ? 'Active' : 'Inactive'}
+                                  {item.isActive ? t("promotionalContent.status.active") : t("promotionalContent.status.inactive")}
                                 </span>
                               </TableCell>
                               <TableCell className="text-right space-x-2">
@@ -157,41 +157,41 @@ export default function PromotionalContentPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                  <DialogTitle>{editingContent ? 'Edit' : 'Create'} Promotional Card</DialogTitle>
+                  <DialogTitle>{editingContent ? t("promotionalContent.dialog.editTitle") : t("promotionalContent.dialog.createTitle")}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
                   <div>
-                      <Label htmlFor="title">Title</Label>
+                      <Label htmlFor="title">{t("promotionalContent.form.titleLabel")}</Label>
                       <Controller name="title" control={control} render={({ field }) => <Input id="title" {...field} />} />
                   </div>
                   <div>
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">{t("promotionalContent.form.descriptionLabel")}</Label>
                       <Controller name="description" control={control} render={({ field }) => <Textarea id="description" {...field} rows={3} />} />
                   </div>
                   <div>
-                      <Label htmlFor="imageUrl">Image URL</Label>
+                      <Label htmlFor="imageUrl">{t("promotionalContent.form.imageUrlLabel")}</Label>
                       <Controller name="imageUrl" control={control} render={({ field }) => <Input id="imageUrl" {...field} />} />
                   </div>
                   <div>
-                      <Label htmlFor="imageAlt">Image Alt Text</Label>
+                      <Label htmlFor="imageAlt">{t("promotionalContent.form.imageAltLabel")}</Label>
                       <Controller name="imageAlt" control={control} render={({ field }) => <Input id="imageAlt" {...field} />} />
                   </div>
                   <div>
-                      <Label htmlFor="buttonText">Button Text</Label>
+                      <Label htmlFor="buttonText">{t("promotionalContent.form.buttonTextLabel")}</Label>
                       <Controller name="buttonText" control={control} render={({ field }) => <Input id="buttonText" {...field} />} />
                   </div>
                   <div>
-                      <Label htmlFor="buttonLink">Button Link URL</Label>
+                      <Label htmlFor="buttonLink">{t("promotionalContent.form.buttonLinkLabel")}</Label>
                       <Controller name="buttonLink" control={control} render={({ field }) => <Input id="buttonLink" {...field} />} />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />
-                    <Label htmlFor="isActive">Show on Dashboard</Label>
+                    <Label htmlFor="isActive">{t("promotionalContent.form.showOnDashboardLabel")}</Label>
                   </div>
 
                   <DialogFooter>
-                      <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                      <Button type="submit"><Save className="mr-2 h-4 w-4" /> Save</Button>
+                      <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+                      <Button type="submit"><Save className="mr-2 h-4 w-4" /> {t("promotionalContent.dialog.saveButton")}</Button>
                   </DialogFooter>
               </form>
           </DialogContent>

@@ -44,6 +44,7 @@ type XpRuleFormData = z.infer<typeof xpRuleSchema>;
 
 
 export default function GamificationRulesPage() {
+  const { t } = useI18n();
   const [badges, setBadges] = useState<Badge[]>(initialBadges);
   const [xpRules, setXpRules] = useState<GamificationRule[]>(initialXpRules);
   const [isBadgeDialogOpen, setIsBadgeDialogOpen] = useState(false);
@@ -80,11 +81,11 @@ export default function GamificationRulesPage() {
   const onBadgeFormSubmit = (data: BadgeFormData) => {
     if (editingBadge) {
       setBadges(prev => prev.map(b => b.id === editingBadge.id ? { ...b, ...data } : b));
-      toast({ title: "Badge Updated", description: `Badge "${data.name}" updated.` });
+      toast({ title: t("gamificationRules.toast.badgeUpdated.title"), description: t("gamificationRules.toast.badgeUpdated.description", { name: data.name }) });
     } else {
       const newBadge: Badge = { ...data, id: `badge-${Date.now()}` };
       setBadges(prev => [newBadge, ...prev]);
-      toast({ title: "Badge Created", description: `Badge "${data.name}" created.` });
+      toast({ title: t("gamificationRules.toast.badgeCreated.title"), description: t("gamificationRules.toast.badgeCreated.description", { name: data.name }) });
     }
     setIsBadgeDialogOpen(false);
     resetBadgeForm();
@@ -94,15 +95,15 @@ export default function GamificationRulesPage() {
   const onXpRuleFormSubmit = (data: XpRuleFormData) => {
     if (editingXpRule) {
         setXpRules(prev => prev.map(r => r.actionId === editingXpRule.actionId ? { ...r, description: data.description, xpPoints: data.xpPoints } : r));
-        toast({ title: "XP Rule Updated", description: `Rule "${data.description}" updated.` });
+        toast({ title: t("gamificationRules.toast.xpRuleUpdated.title"), description: t("gamificationRules.toast.xpRuleUpdated.description", { description: data.description }) });
     } else {
         if (xpRules.some(r => r.actionId === data.actionId)) {
-            toast({ title: "Error", description: `Action ID "${data.actionId}" already exists. Choose a unique ID.`, variant: "destructive" });
+            toast({ title: t("gamificationRules.toast.error.title"), description: t("gamificationRules.toast.error.description", { actionId: data.actionId }), variant: "destructive" });
             return;
         }
         const newRule: GamificationRule = { ...data };
         setXpRules(prev => [newRule, ...prev]);
-        toast({ title: "XP Rule Created", description: `Rule "${data.description}" created.` });
+        toast({ title: t("gamificationRules.toast.xpRuleCreated.title"), description: t("gamificationRules.toast.xpRuleCreated.description", { description: data.description }) });
     }
     setIsXpRuleDialogOpen(false);
     resetXpRuleForm();
@@ -129,7 +130,7 @@ export default function GamificationRulesPage() {
 
   const handleDeleteBadge = (badgeId: string) => {
     setBadges(prev => prev.filter(b => b.id !== badgeId));
-    toast({ title: "Badge Deleted", description: "Badge configuration removed.", variant: "destructive" });
+    toast({ title: t("gamificationRules.toast.badgeDeleted.title"), description: t("gamificationRules.toast.badgeDeleted.description"), variant: "destructive" });
   };
 
   const openNewXpRuleDialog = () => {
@@ -148,7 +149,7 @@ export default function GamificationRulesPage() {
 
   const handleDeleteXpRule = (actionId: string) => {
     setXpRules(prev => prev.filter(r => r.actionId !== actionId));
-    toast({ title: "XP Rule Deleted", description: "XP rule removed.", variant: "destructive" });
+    toast({ title: t("gamificationRules.toast.xpRuleDeleted.title"), description: t("gamificationRules.toast.xpRuleDeleted.description"), variant: "destructive" });
   };
 
   function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.LucideProps) {
@@ -161,33 +162,33 @@ export default function GamificationRulesPage() {
     <TooltipProvider>
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <ListChecks className="h-8 w-8" /> Gamification Rules
+        <ListChecks className="h-8 w-8" /> {t("gamificationRules.title")}
       </h1>
-      <CardDescription>Define and manage badges and XP points awarded for user actions.</CardDescription>
+      <CardDescription>{t("gamificationRules.description")}</CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2"><Award className="h-6 w-6 text-primary"/> Badge Configuration</CardTitle>
-            <CardDescription>Create, edit, or delete badges awarded to users.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Award className="h-6 w-6 text-primary"/> {t("gamificationRules.badgeConfig.title")}</CardTitle>
+            <CardDescription>{t("gamificationRules.badgeConfig.description")}</CardDescription>
           </div>
           <Button onClick={openNewBadgeDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <PlusCircle className="mr-2 h-5 w-5" /> Create Badge
+            <PlusCircle className="mr-2 h-5 w-5" /> {t("gamificationRules.badgeConfig.createButton")}
           </Button>
         </CardHeader>
         <CardContent>
           {badges.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No badges configured yet.</p>
+            <p className="text-center text-muted-foreground py-8">{t("gamificationRules.badgeConfig.noBadges")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Icon</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>XP Reward</TableHead>
-                  <TableHead>Trigger</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("gamificationRules.table.icon")}</TableHead>
+                  <TableHead>{t("gamificationRules.table.name")}</TableHead>
+                  <TableHead>{t("gamificationRules.table.description")}</TableHead>
+                  <TableHead>{t("gamificationRules.table.xpReward")}</TableHead>
+                  <TableHead>{t("gamificationRules.table.trigger")}</TableHead>
+                  <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -217,24 +218,24 @@ export default function GamificationRulesPage() {
       <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
            <div>
-             <CardTitle className="flex items-center gap-2"><Star className="h-6 w-6 text-primary"/> XP Point Rules</CardTitle>
-             <CardDescription>Define how many XP points users earn for specific actions.</CardDescription>
+             <CardTitle className="flex items-center gap-2"><Star className="h-6 w-6 text-primary"/> {t("gamificationRules.xpRules.title")}</CardTitle>
+             <CardDescription>{t("gamificationRules.xpRules.description")}</CardDescription>
            </div>
            <Button onClick={openNewXpRuleDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-             <PlusCircle className="mr-2 h-5 w-5" /> Create XP Rule
+             <PlusCircle className="mr-2 h-5 w-5" /> {t("gamificationRules.xpRules.createButton")}
            </Button>
         </CardHeader>
         <CardContent>
           {xpRules.length === 0 ? (
-             <p className="text-center text-muted-foreground py-8">No XP rules configured yet.</p>
+             <p className="text-center text-muted-foreground py-8">{t("gamificationRules.xpRules.noRules")}</p>
           ) : (
              <Table>
                <TableHeader>
                  <TableRow>
-                   <TableHead>Action ID</TableHead>
-                   <TableHead>Description</TableHead>
-                   <TableHead>XP Points</TableHead>
-                   <TableHead className="text-right">Actions</TableHead>
+                   <TableHead>{t("gamificationRules.table.actionId")}</TableHead>
+                   <TableHead>{t("gamificationRules.table.description")}</TableHead>
+                   <TableHead>{t("gamificationRules.table.xpPoints")}</TableHead>
+                   <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
                  </TableRow>
                </TableHeader>
                <TableBody>
@@ -263,64 +264,64 @@ export default function GamificationRulesPage() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">
-              <Award className="h-6 w-6 text-primary"/> {editingBadge ? "Edit Badge" : "Create New Badge"}
+              <Award className="h-6 w-6 text-primary"/> {editingBadge ? t("gamificationRules.dialog.editBadgeTitle") : t("gamificationRules.dialog.createBadgeTitle")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleBadgeSubmit(onBadgeFormSubmit)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="badge-name" className="flex items-center gap-1">Badge Name
+              <Label htmlFor="badge-name" className="flex items-center gap-1">{t("gamificationRules.dialog.badgeNameLabel")}
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent><p>A short, descriptive name for the badge.</p></TooltipContent>
+                  <TooltipContent><p>{t("gamificationRules.dialog.badgeNameTooltip")}</p></TooltipContent>
                 </Tooltip>
               </Label>
               <Controller name="name" control={badgeControl} render={({ field }) => <Input id="badge-name" {...field} />} />
               {badgeErrors.name && <p className="text-sm text-destructive mt-1">{badgeErrors.name.message}</p>}
             </div>
             <div>
-              <Label htmlFor="badge-description" className="flex items-center gap-1">Description
+              <Label htmlFor="badge-description" className="flex items-center gap-1">{t("gamificationRules.dialog.descriptionLabel")}
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent><p>What this badge represents and how it's earned.</p></TooltipContent>
+                  <TooltipContent><p>{t("gamificationRules.dialog.descriptionTooltip")}</p></TooltipContent>
                 </Tooltip>
               </Label>
               <Controller name="description" control={badgeControl} render={({ field }) => <Textarea id="badge-description" {...field} />} />
                {badgeErrors.description && <p className="text-sm text-destructive mt-1">{badgeErrors.description.message}</p>}
             </div>
              <div>
-              <Label htmlFor="badge-icon" className="flex items-center gap-1">Icon Name (from Lucide)
+              <Label htmlFor="badge-icon" className="flex items-center gap-1">{t("gamificationRules.dialog.iconNameLabel")}
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent><p>Enter a valid icon name from lucide.dev/icons. Example: UserCheck, Award.</p></TooltipContent>
+                  <TooltipContent><p>{t("gamificationRules.dialog.iconNameTooltip")}</p></TooltipContent>
                 </Tooltip>
               </Label>
-              <Controller name="icon" control={badgeControl} render={({ field }) => <Input id="badge-icon" placeholder="e.g., UserCheck, Award" {...field} />} />
+              <Controller name="icon" control={badgeControl} render={({ field }) => <Input id="badge-icon" placeholder={t("gamificationRules.dialog.iconNamePlaceholder")} {...field} />} />
               {badgeErrors.icon && <p className="text-sm text-destructive mt-1">{badgeErrors.icon.message}</p>}
-              <p className="text-xs text-muted-foreground mt-1">Enter a valid icon name from <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="underline">lucide.dev/icons</a>.</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("gamificationRules.dialog.iconNameHelpText")} <a href="https://lucide.dev/icons/" target="_blank" rel="noopener noreferrer" className="underline">lucide.dev/icons</a>.</p>
             </div>
             <div>
-              <Label htmlFor="badge-xpReward" className="flex items-center gap-1">XP Reward
+              <Label htmlFor="badge-xpReward" className="flex items-center gap-1">{t("gamificationRules.dialog.xpRewardLabel")}
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent><p>Optional XP points awarded when this badge is earned.</p></TooltipContent>
+                  <TooltipContent><p>{t("gamificationRules.dialog.xpRewardTooltip")}</p></TooltipContent>
                 </Tooltip>
               </Label>
               <Controller name="xpReward" control={badgeControl} render={({ field }) => <Input id="badge-xpReward" type="number" min="0" {...field} />} />
                {badgeErrors.xpReward && <p className="text-sm text-destructive mt-1">{badgeErrors.xpReward.message}</p>}
             </div>
             <div>
-              <Label htmlFor="badge-triggerCondition" className="flex items-center gap-1">Trigger Condition
+              <Label htmlFor="badge-triggerCondition" className="flex items-center gap-1">{t("gamificationRules.dialog.triggerConditionLabel")}
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent><p>Describe the specific action or achievement that earns this badge.</p></TooltipContent>
+                  <TooltipContent><p>{t("gamificationRules.dialog.triggerConditionTooltip")}</p></TooltipContent>
                 </Tooltip>
               </Label>
-              <Controller name="triggerCondition" control={badgeControl} render={({ field }) => <Textarea id="badge-triggerCondition" placeholder="Describe how this badge is earned..." {...field} />} />
+              <Controller name="triggerCondition" control={badgeControl} render={({ field }) => <Textarea id="badge-triggerCondition" placeholder={t("gamificationRules.dialog.triggerConditionPlaceholder")} {...field} />} />
                {badgeErrors.triggerCondition && <p className="text-sm text-destructive mt-1">{badgeErrors.triggerCondition.message}</p>}
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingBadge ? "Save Changes" : "Create Badge"}</Button>
+              <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingBadge ? t("gamificationRules.dialog.saveChangesButton") : t("gamificationRules.dialog.createButton")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -330,44 +331,44 @@ export default function GamificationRulesPage() {
         <DialogContent className="sm:max-w-[525px]">
            <DialogHeader>
              <DialogTitle className="text-2xl flex items-center gap-2">
-               <Star className="h-6 w-6 text-primary"/> {editingXpRule ? "Edit XP Rule" : "Create New XP Rule"}
+               <Star className="h-6 w-6 text-primary"/> {editingXpRule ? t("gamificationRules.dialog.editXpRuleTitle") : t("gamificationRules.dialog.createXpRuleTitle")}
             </DialogTitle>
           </DialogHeader>
            <form onSubmit={handleXpRuleSubmit(onXpRuleFormSubmit)} className="space-y-4 py-4">
              <div>
-               <Label htmlFor="xp-actionId" className="flex items-center gap-1">Action ID
+               <Label htmlFor="xp-actionId" className="flex items-center gap-1">{t("gamificationRules.dialog.actionIdLabel")}
                  <Tooltip>
                     <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                    <TooltipContent><p>A unique system identifier for the action (e.g., profile_complete). Cannot be changed after creation.</p></TooltipContent>
+                    <TooltipContent><p>{t("gamificationRules.dialog.actionIdTooltip")}</p></TooltipContent>
                  </Tooltip>
                </Label>
-               <Controller name="actionId" control={xpRuleControl} render={({ field }) => <Input id="xp-actionId" placeholder="e.g., profile_complete" {...field} disabled={!!editingXpRule} />} />
+               <Controller name="actionId" control={xpRuleControl} render={({ field }) => <Input id="xp-actionId" placeholder={t("gamificationRules.dialog.actionIdPlaceholder")} {...field} disabled={!!editingXpRule} />} />
                {xpRuleErrors.actionId && <p className="text-sm text-destructive mt-1">{xpRuleErrors.actionId.message}</p>}
-               {!editingXpRule && <p className="text-xs text-muted-foreground mt-1">Unique identifier for the action (cannot be changed later).</p>}
+               {!editingXpRule && <p className="text-xs text-muted-foreground mt-1">{t("gamificationRules.dialog.actionIdHelpText")}</p>}
              </div>
              <div>
-               <Label htmlFor="xp-description" className="flex items-center gap-1">Description
+               <Label htmlFor="xp-description" className="flex items-center gap-1">{t("gamificationRules.dialog.ruleDescriptionLabel")}
                 <Tooltip>
                     <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                    <TooltipContent><p>User-friendly description of the action (e.g., Complete Your Profile).</p></TooltipContent>
+                    <TooltipContent><p>{t("gamificationRules.dialog.ruleDescriptionTooltip")}</p></TooltipContent>
                  </Tooltip>
                </Label>
-               <Controller name="description" control={xpRuleControl} render={({ field }) => <Input id="xp-description" placeholder="e.g., Complete Your Profile" {...field} />} />
+               <Controller name="description" control={xpRuleControl} render={({ field }) => <Input id="xp-description" placeholder={t("gamificationRules.dialog.ruleDescriptionPlaceholder")} {...field} />} />
                 {xpRuleErrors.description && <p className="text-sm text-destructive mt-1">{xpRuleErrors.description.message}</p>}
              </div>
              <div>
-               <Label htmlFor="xp-xpPoints" className="flex items-center gap-1">XP Points Awarded
+               <Label htmlFor="xp-xpPoints" className="flex items-center gap-1">{t("gamificationRules.dialog.xpPointsLabel")}
                  <Tooltip>
                     <TooltipTrigger asChild><HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" /></TooltipTrigger>
-                    <TooltipContent><p>The number of experience points awarded when this action is completed.</p></TooltipContent>
+                    <TooltipContent><p>{t("gamificationRules.dialog.xpPointsTooltip")}</p></TooltipContent>
                  </Tooltip>
                </Label>
                <Controller name="xpPoints" control={xpRuleControl} render={({ field }) => <Input id="xp-xpPoints" type="number" min="0" {...field} />} />
                 {xpRuleErrors.xpPoints && <p className="text-sm text-destructive mt-1">{xpRuleErrors.xpPoints.message}</p>}
              </div>
              <DialogFooter>
-               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingXpRule ? "Save Changes" : "Create Rule"}</Button>
+               <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingXpRule ? t("gamificationRules.dialog.saveChangesButton") : t("gamificationRules.dialog.createButton")}</Button>
              </DialogFooter>
            </form>
          </DialogContent>

@@ -729,5 +729,8 @@
         "description": "Your unique referral link is ready to share."
       }
     }
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard"
   }
 }

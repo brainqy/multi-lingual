@@ -39,6 +39,7 @@ type GalleryEventFormData = z.infer<typeof galleryEventSchema>;
 export default function GalleryManagementPage() {
   const currentUser = sampleUserProfile;
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const [events, setEvents] = useState<GalleryEvent[]>(
     currentUser.role === 'admin'
@@ -82,11 +83,11 @@ export default function GalleryManagementPage() {
       setEvents(prev => prev.map(e => e.id === editingEvent.id ? eventData : e));
       const globalIndex = sampleEvents.findIndex(e => e.id === editingEvent.id);
       if (globalIndex !== -1) sampleEvents[globalIndex] = eventData;
-      toast({ title: "Gallery Event Updated", description: `Event "${data.title}" has been updated.` });
+      toast({ title: t("galleryManagement.toast.updated.title"), description: t("galleryManagement.toast.updated.description", { title: data.title }) });
     } else {
       setEvents(prev => [eventData, ...prev]);
       sampleEvents.unshift(eventData);
-      toast({ title: "Gallery Event Created", description: `Event "${data.title}" has been added.` });
+      toast({ title: t("galleryManagement.toast.created.title"), description: t("galleryManagement.toast.created.description", { title: data.title }) });
     }
     setIsFormDialogOpen(false);
     reset({ title: '', imageUrls: '', description: '', dataAiHint: '', isPlatformGlobal: false });
@@ -114,7 +115,7 @@ export default function GalleryManagementPage() {
     setEvents(prev => prev.filter(e => e.id !== eventId));
     const globalIndex = sampleEvents.findIndex(e => e.id === eventId);
     if (globalIndex !== -1) sampleEvents.splice(globalIndex, 1);
-    toast({ title: "Gallery Event Deleted", description: "Event removed from gallery.", variant: "destructive" });
+    toast({ title: t("galleryManagement.toast.deleted.title"), description: t("galleryManagement.toast.deleted.description"), variant: "destructive" });
   };
 
 
@@ -122,13 +123,13 @@ export default function GalleryManagementPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <GalleryVerticalEnd className="h-8 w-8" /> Event Gallery Management {currentUser.role === 'manager' && `(Tenant: ${currentUser.tenantId})`}
+          <GalleryVerticalEnd className="h-8 w-8" /> {t("galleryManagement.title")} {currentUser.role === 'manager' && `(${t("galleryManagement.tenantLabel", { tenantId: currentUser.tenantId })})`}
         </h1>
         <Button onClick={openNewEventDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> Add New Event
+          <PlusCircle className="mr-2 h-5 w-5" /> {t("galleryManagement.addNewButton")}
         </Button>
       </div>
-      <CardDescription>Manage images and details for past events showcased in the gallery.</CardDescription>
+      <CardDescription>{t("galleryManagement.description")}</CardDescription>
 
       <Dialog open={isFormDialogOpen} onOpenChange={(isOpen) => {
         if (!isOpen) {
@@ -140,26 +141,26 @@ export default function GalleryManagementPage() {
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">
-              {editingEvent ? "Edit Gallery Event" : "Add New Gallery Event"}
+              {editingEvent ? t("galleryManagement.dialog.editTitle") : t("galleryManagement.dialog.addTitle")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="event-title">Event Title</Label>
+              <Label htmlFor="event-title">{t("galleryManagement.dialog.eventTitleLabel")}</Label>
               <Controller name="title" control={control} render={({ field }) => <Input id="event-title" {...field} />} />
               {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="event-date">Event Date</Label>
+              <Label htmlFor="event-date">{t("galleryManagement.dialog.eventDateLabel")}</Label>
               <Controller name="date" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
               {errors.date && <p className="text-sm text-destructive mt-1">{errors.date.message}</p>}
             </div>
             <div>
-              <Label htmlFor="event-imageUrls">Image URLs (comma-separated)</Label>
+              <Label htmlFor="event-imageUrls">{t("galleryManagement.dialog.imageUrlsLabel")}</Label>
               <Controller name="imageUrls" control={control} render={({ field }) => 
                 <Textarea 
                   id="event-imageUrls" 
-                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg" 
+                  placeholder={t("galleryManagement.dialog.imageUrlsPlaceholder")} 
                   {...field} 
                   rows={3}
                 />
@@ -167,12 +168,12 @@ export default function GalleryManagementPage() {
               {errors.imageUrls && <p className="text-sm text-destructive mt-1">{errors.imageUrls.message}</p>}
             </div>
             <div>
-              <Label htmlFor="event-description">Description (Optional)</Label>
+              <Label htmlFor="event-description">{t("galleryManagement.dialog.descriptionLabel")}</Label>
               <Controller name="description" control={control} render={({ field }) => <Textarea id="event-description" rows={3} {...field} />} />
             </div>
             <div>
-              <Label htmlFor="event-dataAiHint">AI Hint for Images (Optional)</Label>
-              <Controller name="dataAiHint" control={control} render={({ field }) => <Input id="event-dataAiHint" placeholder="e.g., conference students" {...field} />} />
+              <Label htmlFor="event-dataAiHint">{t("galleryManagement.dialog.aiHintLabel")}</Label>
+              <Controller name="dataAiHint" control={control} render={({ field }) => <Input id="event-dataAiHint" placeholder={t("galleryManagement.dialog.aiHintPlaceholder")} {...field} />} />
             </div>
             {currentUser.role === 'admin' && (
                 <div className="flex items-center space-x-2">
@@ -180,14 +181,14 @@ export default function GalleryManagementPage() {
                     <Checkbox id="isPlatformGlobal" checked={field.value} onCheckedChange={field.onChange} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
                 )} />
                 <Label htmlFor="isPlatformGlobal" className="font-normal">
-                    Show this event globally (not tied to specific tenant)
+                    {t("galleryManagement.dialog.globalCheckbox")}
                 </Label>
                 </div>
             )}
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                {editingEvent ? "Save Changes" : "Add Event"}
+                {editingEvent ? t("galleryManagement.dialog.saveButton") : t("galleryManagement.dialog.addButton")}
               </Button>
             </DialogFooter>
           </form>
@@ -196,20 +197,20 @@ export default function GalleryManagementPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Current Gallery Events</CardTitle>
+          <CardTitle>{t("galleryManagement.currentEventsTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No gallery events added yet{currentUser.role === 'manager' && ' for your tenant'}.</p>
+            <p className="text-center text-muted-foreground py-8">{t("galleryManagement.noEventsText")} {currentUser.role === 'manager' && t("galleryManagement.forYourTenant")}.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Preview</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Date</TableHead>
-                  {currentUser.role === 'admin' && <TableHead>Tenant / Scope</TableHead>}
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("galleryManagement.table.preview")}</TableHead>
+                  <TableHead>{t("galleryManagement.table.title")}</TableHead>
+                  <TableHead>{t("galleryManagement.table.date")}</TableHead>
+                  {currentUser.role === 'admin' && <TableHead>{t("galleryManagement.table.scope")}</TableHead>}
+                  <TableHead className="text-right">{t("galleryManagement.table.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -220,13 +221,13 @@ export default function GalleryManagementPage() {
                          {event.imageUrls && event.imageUrls.length > 0 ? (
                             <Image src={event.imageUrls[0]} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.dataAiHint || "event photo"} />
                          ) : (
-                            <div className="w-full h-full bg-muted flex items-center justify-center text-xs text-muted-foreground">No Image</div>
+                            <div className="w-full h-full bg-muted flex items-center justify-center text-xs text-muted-foreground">{t("galleryManagement.table.noImage")}</div>
                          )}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{event.title}</TableCell>
                     <TableCell>{format(parseISO(event.date), "MMM dd, yyyy")}</TableCell>
-                    {currentUser.role === 'admin' && <TableCell>{event.tenantId === 'platform' ? 'Platform Global' : `Tenant: ${event.tenantId}`}</TableCell>}
+                    {currentUser.role === 'admin' && <TableCell>{event.tenantId === 'platform' ? t("galleryManagement.table.platformGlobal") : `${t("galleryManagement.table.tenantPrefix")}: ${event.tenantId}`}</TableCell>}
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" onClick={() => openEditEventDialog(event)}>
                         <Edit3 className="h-4 w-4" />

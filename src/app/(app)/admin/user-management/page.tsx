@@ -121,10 +121,10 @@ export default function UserManagementPage() {
       setAllUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUser : u));
       const globalIndex = samplePlatformUsers.findIndex(u => u.id === editingUser.id);
       if (globalIndex !== -1) samplePlatformUsers[globalIndex] = updatedUser;
-      toast({ title: "User Updated", description: `Details for ${data.name} have been updated.` });
+      toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
     } else {
       if (!data.password || data.password.length < 8) {
-        toast({ title: "Password Required", description: "A password of at least 8 characters is required for new users.", variant: "destructive" });
+        toast({ title: t("userManagement.toast.passwordRequired.title"), description: t("userManagement.toast.passwordRequired.description"), variant: "destructive" });
         return;
       }
       const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
@@ -140,7 +140,7 @@ export default function UserManagementPage() {
       });
       setAllUsers(prev => [newUser, ...prev]);
       samplePlatformUsers.push(newUser); 
-      toast({ title: "User Created", description: `User ${data.name} has been created.` });
+      toast({ title: t("userManagement.toast.created.title"), description: t("userManagement.toast.created.description", { name: data.name }) });
     }
     setIsFormDialogOpen(false);
     setEditingUser(null);
@@ -148,13 +148,13 @@ export default function UserManagementPage() {
 
   const handleDeleteUser = (userId: string) => {
     if (userId === currentUser?.id) {
-        toast({ title: "Action Forbidden", description: "You cannot delete your own account.", variant: "destructive" });
+        toast({ title: t("userManagement.toast.deleteSelf.title"), description: t("userManagement.toast.deleteSelf.description"), variant: "destructive" });
         return;
     }
     setAllUsers(prev => prev.filter(u => u.id !== userId));
     const globalIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (globalIndex !== -1) samplePlatformUsers.splice(globalIndex, 1);
-    toast({ title: "User Deleted", description: "The user has been removed from the system.", variant: "destructive" });
+    toast({ title: t("userManagement.toast.deleted.title"), description: t("userManagement.toast.deleted.description"), variant: "destructive" });
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +167,7 @@ export default function UserManagementPage() {
 
   const handleProcessCsv = () => {
     if (!csvFile) {
-      setCsvError("Please select a CSV file to upload.");
+      setCsvError(t("userManagement.bulkUpload.errorNoFile"));
       return;
     }
 
@@ -176,12 +176,12 @@ export default function UserManagementPage() {
       const text = e.target?.result as string;
       try {
         const rows = text.split('\n').map(row => row.trim()).filter(row => row);
-        if (rows.length < 2) throw new Error("CSV file must have a header and at least one data row.");
+        if (rows.length < 2) throw new Error(t("userManagement.bulkUpload.errorCsvFormat"));
 
         const header = rows[0].split(',').map(h => h.trim().toLowerCase());
         const requiredHeaders = ['name', 'email', 'role', 'tenantid'];
         if (!requiredHeaders.every(h => header.includes(h))) {
-          throw new Error(`CSV header must contain: ${requiredHeaders.join(', ')}.`);
+          throw new Error(t("userManagement.bulkUpload.errorCsvHeader", { headers: requiredHeaders.join(', ') }));
         }
         
         const nameIndex = header.indexOf('name');
@@ -219,19 +219,19 @@ export default function UserManagementPage() {
         samplePlatformUsers.unshift(...newUsers);
 
         toast({
-          title: "Users Uploaded",
-          description: `${addedCount} new users were successfully added from the CSV file.`,
+          title: t("userManagement.toast.uploaded.title"),
+          description: t("userManagement.toast.uploaded.description", { count: addedCount }),
         });
         
         setIsUploadDialogOpen(false);
         setCsvFile(null);
 
       } catch (err: any) {
-        setCsvError(err.message || "An error occurred while processing the file.");
+        setCsvError(err.message || t("userManagement.bulkUpload.errorProcessing"));
       }
     };
     reader.onerror = () => {
-      setCsvError("Failed to read the file.");
+      setCsvError(t("userManagement.bulkUpload.errorReading"));
     };
     reader.readAsText(csvFile);
   };
@@ -256,30 +256,30 @@ export default function UserManagementPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <UserCog className="h-8 w-8" /> 
-          {currentUser.role === 'manager' ? `Tenant User Management (${getTenantName(currentUser.tenantId)})` : 'User Management'}
+          {currentUser.role === 'manager' ? t("userManagement.titleManager", { tenantName: getTenantName(currentUser.tenantId) }) : t("userManagement.titleAdmin")}
         </h1>
         <div className="flex gap-2">
            <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline">
-            <UploadCloud className="mr-2 h-4 w-4"/> Bulk Upload
+            <UploadCloud className="mr-2 h-4 w-4"/> {t("userManagement.bulkUploadButton")}
           </Button>
           <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <PlusCircle className="mr-2 h-5 w-5" /> Add New User
+            <PlusCircle className="mr-2 h-5 w-5" /> {t("userManagement.addNewButton")}
           </Button>
         </div>
       </div>
       <CardDescription>
         {currentUser.role === 'manager' ? 
-          `View, create, and manage users within your tenant (${getTenantName(currentUser.tenantId)}).` :
-          'View, create, edit, and manage all user accounts on the platform.'
+          t("userManagement.descriptionManager", { tenantName: getTenantName(currentUser.tenantId) }) :
+          t("userManagement.descriptionAdmin")
         }
       </CardDescription>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>{t("userManagement.allUsersTitle")}</CardTitle>
           <div className="mt-2">
             <Input
-              placeholder="Search users (name, email, tenant ID)..."
+              placeholder={t("userManagement.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -290,11 +290,11 @@ export default function UserManagementPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                {currentUser.role === 'admin' && <TableHead>Tenant</TableHead>}
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("userManagement.table.user")}</TableHead>
+                <TableHead>{t("userManagement.table.role")}</TableHead>
+                {currentUser.role === 'admin' && <TableHead>{t("userManagement.table.tenant")}</TableHead>}
+                <TableHead>{t("userManagement.table.status")}</TableHead>
+                <TableHead className="text-right">{t("userManagement.table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -331,14 +331,14 @@ export default function UserManagementPage() {
                        </AlertDialogTrigger>
                        <AlertDialogContent>
                          <AlertDialogHeader>
-                           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                           <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
                            <AlertDialogDescription>
-                             This action cannot be undone. This will permanently delete the user account for {user.name}.
+                             {t("userManagement.deleteDialog.description", { name: user.name })}
                            </AlertDialogDescription>
                          </AlertDialogHeader>
                          <AlertDialogFooter>
-                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                           <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Delete User</AlertDialogAction>
+                           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                           <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
                          </AlertDialogFooter>
                        </AlertDialogContent>
                      </AlertDialog>
@@ -353,51 +353,51 @@ export default function UserManagementPage() {
       <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{editingUser ? "Edit User" : "Add New User"}</DialogTitle>
+            <DialogTitle className="text-2xl">{editingUser ? t("userManagement.dialog.editTitle") : t("userManagement.dialog.addTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t("userManagement.form.nameLabel")}</Label>
               <Controller name="name" control={control} render={({ field }) => <Input id="name" {...field} />} />
               {errors.name && <p className="text-sm text-destructive mt-1">{errors.name.message}</p>}
             </div>
             <div>
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{t("userManagement.form.emailLabel")}</Label>
               <Controller name="email" control={control} render={({ field }) => <Input id="email" type="email" {...field} />} />
               {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
             </div>
             {!editingUser && (
               <div>
-                <Label htmlFor="password">Initial Password</Label>
+                <Label htmlFor="password">{t("userManagement.form.passwordLabel")}</Label>
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
-                <p className="text-xs text-muted-foreground mt-1">Required for new users. Must be at least 8 characters.</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelp")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role">{t("userManagement.form.roleLabel")}</Label>
                 <Controller name="role" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
                     <SelectTrigger id="role"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      {currentUser.role === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
+                      <SelectItem value="user">{t("userManagement.roles.user")}</SelectItem>
+                      <SelectItem value="manager">{t("userManagement.roles.manager")}</SelectItem>
+                      {currentUser.role === 'admin' && <SelectItem value="admin">{t("userManagement.roles.admin")}</SelectItem>}
                     </SelectContent>
                   </Select>
                 )} />
               </div>
               <div>
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">{t("userManagement.form.statusLabel")}</Label>
                 <Controller name="status" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger id="status"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="active">{t("userManagement.statuses.active")}</SelectItem>
+                      <SelectItem value="inactive">{t("userManagement.statuses.inactive")}</SelectItem>
+                      <SelectItem value="suspended">{t("userManagement.statuses.suspended")}</SelectItem>
+                      <SelectItem value="pending">{t("userManagement.statuses.pending")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
@@ -405,10 +405,10 @@ export default function UserManagementPage() {
             </div>
             {currentUser.role === 'admin' && (
               <div>
-                <Label htmlFor="tenantId">Tenant</Label>
+                <Label htmlFor="tenantId">{t("userManagement.form.tenantLabel")}</Label>
                 <Controller name="tenantId" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
-                    <SelectTrigger id="tenantId"><SelectValue placeholder="Select a tenant for this user" /></SelectTrigger>
+                    <SelectTrigger id="tenantId"><SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} /></SelectTrigger>
                     <SelectContent>
                       {sampleTenants.map(tenant => (
                         <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
@@ -421,9 +421,9 @@ export default function UserManagementPage() {
             )}
 
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                {editingUser ? "Save Changes" : "Create User"}
+                {editingUser ? t("userManagement.dialog.saveButton") : t("userManagement.dialog.createButton")}
               </Button>
             </DialogFooter>
           </form>
@@ -434,38 +434,38 @@ export default function UserManagementPage() {
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bulk Upload Users</DialogTitle>
+            <DialogTitle>{t("userManagement.bulkUpload.title")}</DialogTitle>
             <DialogUIDescription>
-              Upload a CSV file to add multiple users at once. The file must contain the header row: `name,email,role,tenantId`.
+              {t("userManagement.bulkUpload.description")}
             </DialogUIDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div>
-              <Label htmlFor="csv-upload">CSV File</Label>
+              <Label htmlFor="csv-upload">{t("userManagement.bulkUpload.csvLabel")}</Label>
               <Input
                 id="csv-upload"
                 type="file"
                 accept=".csv"
                 onChange={handleFileSelect}
               />
-              {csvFile && <p className="text-xs text-muted-foreground mt-1">Selected: {csvFile.name}</p>}
+              {csvFile && <p className="text-xs text-muted-foreground mt-1">{t("userManagement.bulkUpload.selectedFile")}: {csvFile.name}</p>}
               {csvError && <p className="text-sm text-destructive mt-1">{csvError}</p>}
             </div>
             <Button asChild variant="link" className="p-0 h-auto -mt-2">
               <a href="/sample-users.csv" download="sample-users.csv">
                 <Download className="mr-2 h-4 w-4" />
-                Download Sample CSV File
+                {t("userManagement.bulkUpload.downloadSample")}
               </a>
             </Button>
             <p className="text-xs text-muted-foreground pt-2">
-              <strong>Example Format:</strong> <br/>
+              <strong>{t("userManagement.bulkUpload.exampleFormat")}:</strong> <br/>
               `John Doe,john@example.com,user,tenant-1` <br/>
               `Jane Smith,jane@example.com,user,tenant-2`
             </p>
           </div>
           <DialogFooter>
-            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-            <Button onClick={handleProcessCsv}>Upload & Process File</Button>
+            <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+            <Button onClick={handleProcessCsv}>{t("userManagement.bulkUpload.uploadButton")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

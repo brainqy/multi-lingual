@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import type { Affiliate, AffiliateStatus } from "@/types";
 import { CheckCircle, XCircle } from "lucide-react";
+import { useI18n } from "@/hooks/use-i18n";
 
 interface AffiliateTableProps {
   affiliates: Affiliate[];
@@ -19,22 +20,24 @@ export default function AffiliateTable({
   getAffiliateSignupsCount, 
   getAffiliateEarnedAmount 
 }: AffiliateTableProps) {
+  const { t } = useI18n();
+  
   if (affiliates.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">No affiliates found matching your criteria.</p>;
+    return <p className="text-center text-muted-foreground py-8">{t("affiliateManagement.table.noResults")}</p>;
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Affiliate Code</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-center">Signups</TableHead>
-          <TableHead className="text-right">Earned</TableHead>
-          <TableHead className="text-right">Rate</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>{t("affiliateManagement.table.name")}</TableHead>
+          <TableHead>{t("affiliateManagement.table.email")}</TableHead>
+          <TableHead>{t("affiliateManagement.table.code")}</TableHead>
+          <TableHead>{t("affiliateManagement.table.status")}</TableHead>
+          <TableHead className="text-center">{t("affiliateManagement.table.signups")}</TableHead>
+          <TableHead className="text-right">{t("affiliateManagement.table.earned")}</TableHead>
+          <TableHead className="text-right">{t("affiliateManagement.table.rate")}</TableHead>
+          <TableHead className="text-right">{t("affiliateManagement.table.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -67,10 +70,10 @@ export default function AffiliateTable({
                 </>
               )}
               {affiliate.status === 'approved' && (
-                 <Button variant="outline" size="sm" disabled>Approved</Button>
+                 <Button variant="outline" size="sm" disabled>{t("affiliateManagement.table.approved")}</Button>
               )}
                {affiliate.status === 'rejected' && (
-                 <Button variant="outline" size="sm" disabled>Rejected</Button>
+                 <Button variant="outline" size="sm" disabled>{t("affiliateManagement.table.rejected")}</Button>
               )}
             </TableCell>
           </TableRow>

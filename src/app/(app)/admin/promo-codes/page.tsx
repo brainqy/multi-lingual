@@ -52,6 +52,7 @@ export default function PromoCodeManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCode, setEditingCode] = useState<PromoCode | null>(null);
   const { toast } = useToast();
+  const { t } = useI18n();
   const currentUser = sampleUserProfile;
 
   const [isGeneratorDialogOpen, setIsGeneratorDialogOpen] = useState(false);
@@ -102,10 +103,10 @@ export default function PromoCodeManagementPage() {
       setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
       const globalIndex = samplePromoCodes.findIndex(c => c.id === editingCode.id);
       if (globalIndex !== -1) samplePromoCodes[globalIndex] = updatedCode;
-      toast({ title: "Promo Code Updated", description: `Code "${data.code}" has been updated.` });
+      toast({ title: t("promoCodes.toast.updated.title"), description: t("promoCodes.toast.updated.description", { code: data.code }) });
     } else {
        if (promoCodes.some(c => c.code === data.code)) {
-        toast({ title: "Code Exists", description: `The code "${data.code}" is already in use. Please choose another.`, variant: "destructive" });
+        toast({ title: t("promoCodes.toast.exists.title"), description: t("promoCodes.toast.exists.description", { code: data.code }), variant: "destructive" });
         return;
       }
       const newCode: PromoCode = {
@@ -116,7 +117,7 @@ export default function PromoCodeManagementPage() {
       };
       setPromoCodes(prev => [newCode, ...prev]);
       samplePromoCodes.unshift(newCode);
-      toast({ title: "Promo Code Created", description: `Code "${data.code}" has been created.` });
+      toast({ title: t("promoCodes.toast.created.title"), description: t("promoCodes.toast.created.description", { code: data.code }) });
     }
     setIsDialogOpen(false);
   };
@@ -125,7 +126,7 @@ export default function PromoCodeManagementPage() {
     setPromoCodes(prev => prev.filter(c => c.id !== id));
     const index = samplePromoCodes.findIndex(c => c.id === id);
     if (index > -1) samplePromoCodes.splice(index, 1);
-    toast({ title: "Promo Code Deleted", variant: "destructive" });
+    toast({ title: t("promoCodes.toast.deleted.title"), variant: "destructive" });
   };
 
   const onGeneratorSubmit = (data: GeneratorFormData) => {
@@ -153,12 +154,12 @@ export default function PromoCodeManagementPage() {
     setGeneratedCodes(newCodeStrings);
     setIsGeneratorDialogOpen(false);
     setIsResultsDialogOpen(true);
-    toast({ title: `${data.count} Promo Codes Generated`, description: "The new codes have been added to the list." });
+    toast({ title: t("promoCodes.toast.generated.title", { count: data.count }), description: t("promoCodes.toast.generated.description") });
   };
   
   const handleCopyGeneratedCodes = () => {
     navigator.clipboard.writeText(generatedCodes.join('\n'));
-    toast({ title: "Copied!", description: "All generated codes have been copied to your clipboard." });
+    toast({ title: t("promoCodes.toast.copied.title"), description: t("promoCodes.toast.copied.description") });
   };
 
 
@@ -166,36 +167,36 @@ export default function PromoCodeManagementPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <Gift className="h-8 w-8" /> Promo Code Management
+          <Gift className="h-8 w-8" /> {t("promoCodes.title")}
         </h1>
         <div className="flex gap-2">
           <Button onClick={() => setIsGeneratorDialogOpen(true)} variant="outline">
-            <Wand2 className="mr-2 h-4 w-4"/> Generate One-Time Codes
+            <Wand2 className="mr-2 h-4 w-4"/> {t("promoCodes.generateButton")}
           </Button>
           <Button onClick={openNewDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <PlusCircle className="mr-2 h-5 w-5" /> Create New Code
+            <PlusCircle className="mr-2 h-5 w-5" /> {t("promoCodes.createButton")}
           </Button>
         </div>
       </div>
       <CardDescription>
-        Manage promotional codes for rewards like bonus coins, XP, or premium access.
+        {t("promoCodes.description")}
       </CardDescription>
 
       <Card>
         <CardHeader>
-          <CardTitle>Current Promo Codes</CardTitle>
+          <CardTitle>{t("promoCodes.currentCodesTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Reward</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Usage</TableHead>
-                <TableHead>Expires</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("promoCodes.table.code")}</TableHead>
+                <TableHead>{t("promoCodes.table.description")}</TableHead>
+                <TableHead>{t("promoCodes.table.reward")}</TableHead>
+                <TableHead>{t("promoCodes.table.status")}</TableHead>
+                <TableHead>{t("promoCodes.table.usage")}</TableHead>
+                <TableHead>{t("promoCodes.table.expires")}</TableHead>
+                <TableHead className="text-right">{t("promoCodes.table.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -206,11 +207,11 @@ export default function PromoCodeManagementPage() {
                   <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                      {code.isActive ? 'Active' : 'Inactive'}
+                      {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
                     </span>
                   </TableCell>
                   <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
-                  <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : 'Never'}</TableCell>
+                  <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>
@@ -225,58 +226,58 @@ export default function PromoCodeManagementPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingCode ? 'Edit' : 'Create'} Promo Code</DialogTitle>
+            <DialogTitle>{editingCode ? t("promoCodes.dialog.editTitle") : t("promoCodes.dialog.createTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="code">Promo Code</Label>
-              <Controller name="code" control={control} render={({ field }) => <Input id="code" {...field} placeholder="e.g., WELCOME50" disabled={!!editingCode} />} />
+              <Label htmlFor="code">{t("promoCodes.form.codeLabel")}</Label>
+              <Controller name="code" control={control} render={({ field }) => <Input id="code" {...field} placeholder={t("promoCodes.form.codePlaceholder")} disabled={!!editingCode} />} />
               {errors.code && <p className="text-sm text-destructive mt-1">{errors.code.message}</p>}
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
-              <Controller name="description" control={control} render={({ field }) => <Input id="description" {...field} placeholder="e.g., Grants 50 bonus coins" />} />
+              <Label htmlFor="description">{t("promoCodes.form.descriptionLabel")}</Label>
+              <Controller name="description" control={control} render={({ field }) => <Input id="description" {...field} placeholder={t("promoCodes.form.descriptionPlaceholder")} />} />
               {errors.description && <p className="text-sm text-destructive mt-1">{errors.description.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="rewardType">Reward Type</Label>
+                <Label htmlFor="rewardType">{t("promoCodes.form.rewardTypeLabel")}</Label>
                 <Controller name="rewardType" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Select type"/></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("promoCodes.form.rewardTypePlaceholder")}/></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="coins">Coins</SelectItem>
-                      <SelectItem value="flash_coins">Flash Coins</SelectItem>
-                      <SelectItem value="xp">XP</SelectItem>
-                      <SelectItem value="premium_days">Premium Days</SelectItem>
+                      <SelectItem value="coins">{t("promoCodes.rewardTypes.coins")}</SelectItem>
+                      <SelectItem value="flash_coins">{t("promoCodes.rewardTypes.flash_coins")}</SelectItem>
+                      <SelectItem value="xp">{t("promoCodes.rewardTypes.xp")}</SelectItem>
+                      <SelectItem value="premium_days">{t("promoCodes.rewardTypes.premium_days")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
               </div>
               <div>
-                <Label htmlFor="rewardValue">Reward Value</Label>
+                <Label htmlFor="rewardValue">{t("promoCodes.form.rewardValueLabel")}</Label>
                 <Controller name="rewardValue" control={control} render={({ field }) => <Input id="rewardValue" type="number" {...field} />} />
                 {errors.rewardValue && <p className="text-sm text-destructive mt-1">{errors.rewardValue.message}</p>}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
                <div>
-                <Label htmlFor="usageLimit">Usage Limit (0 for unlimited)</Label>
+                <Label htmlFor="usageLimit">{t("promoCodes.form.usageLimitLabel")}</Label>
                 <Controller name="usageLimit" control={control} render={({ field }) => <Input id="usageLimit" type="number" {...field} />} />
                 {errors.usageLimit && <p className="text-sm text-destructive mt-1">{errors.usageLimit.message}</p>}
               </div>
               <div>
-                <Label htmlFor="expiresAt">Expiration Date (Optional)</Label>
-                <Controller name="expiresAt" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder="No Expiration"/>} />
+                <Label htmlFor="expiresAt">{t("promoCodes.form.expirationDateLabel")}</Label>
+                <Controller name="expiresAt" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder={t("promoCodes.form.expirationDatePlaceholder")}/>} />
               </div>
             </div>
             <div className="flex items-center space-x-2">
               <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />
-              <Label htmlFor="isActive">Active</Label>
+              <Label htmlFor="isActive">{t("promoCodes.form.activeLabel")}</Label>
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit">{editingCode ? 'Save Changes' : 'Create Code'}</Button>
+              <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+              <Button type="submit">{editingCode ? t("promoCodes.dialog.saveButton") : t("promoCodes.dialog.createButton")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -286,46 +287,46 @@ export default function PromoCodeManagementPage() {
       <Dialog open={isGeneratorDialogOpen} onOpenChange={setIsGeneratorDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5"/> Generate One-Time Use Codes</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5"/> {t("promoCodes.generatorDialog.title")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleGeneratorSubmit(onGeneratorSubmit)} className="space-y-4 py-4">
             <div>
-                <Label htmlFor="prefix">Code Prefix</Label>
-                <Controller name="prefix" control={generatorControl} render={({ field }) => <Input id="prefix" {...field} placeholder="e.g., ONETIME" />} />
+                <Label htmlFor="prefix">{t("promoCodes.generatorDialog.prefixLabel")}</Label>
+                <Controller name="prefix" control={generatorControl} render={({ field }) => <Input id="prefix" {...field} placeholder={t("promoCodes.generatorDialog.prefixPlaceholder")} />} />
                 {generatorErrors.prefix && <p className="text-sm text-destructive mt-1">{generatorErrors.prefix.message}</p>}
             </div>
              <div>
-                <Label htmlFor="count">Number of Codes to Generate</Label>
+                <Label htmlFor="count">{t("promoCodes.generatorDialog.countLabel")}</Label>
                 <Controller name="count" control={generatorControl} render={({ field }) => <Input id="count" type="number" min="1" max="100" {...field} />} />
                 {generatorErrors.count && <p className="text-sm text-destructive mt-1">{generatorErrors.count.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="gen-rewardType">Reward Type</Label>
+                <Label htmlFor="gen-rewardType">{t("promoCodes.form.rewardTypeLabel")}</Label>
                 <Controller name="rewardType" control={generatorControl} render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger><SelectValue placeholder="Select type"/></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("promoCodes.form.rewardTypePlaceholder")}/></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="coins">Coins</SelectItem>
-                      <SelectItem value="flash_coins">Flash Coins</SelectItem>
-                      <SelectItem value="xp">XP</SelectItem>
+                      <SelectItem value="coins">{t("promoCodes.rewardTypes.coins")}</SelectItem>
+                      <SelectItem value="flash_coins">{t("promoCodes.rewardTypes.flash_coins")}</SelectItem>
+                      <SelectItem value="xp">{t("promoCodes.rewardTypes.xp")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
               </div>
               <div>
-                <Label htmlFor="gen-rewardValue">Reward Value</Label>
+                <Label htmlFor="gen-rewardValue">{t("promoCodes.form.rewardValueLabel")}</Label>
                 <Controller name="rewardValue" control={generatorControl} render={({ field }) => <Input id="gen-rewardValue" type="number" {...field} />} />
                 {generatorErrors.rewardValue && <p className="text-sm text-destructive mt-1">{generatorErrors.rewardValue.message}</p>}
               </div>
             </div>
             <div>
-              <Label htmlFor="gen-expiresAt">Expiration Date (Optional)</Label>
-              <Controller name="expiresAt" control={generatorControl} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder="No Expiration"/>} />
+              <Label htmlFor="gen-expiresAt">{t("promoCodes.form.expirationDateLabel")}</Label>
+              <Controller name="expiresAt" control={generatorControl} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} placeholder={t("promoCodes.form.expirationDatePlaceholder")}/>} />
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit">Generate Codes</Button>
+              <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
+              <Button type="submit">{t("promoCodes.generatorDialog.generateButton")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -335,7 +336,7 @@ export default function PromoCodeManagementPage() {
       <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Generated Codes ({generatedCodes.length})</DialogTitle>
+                <DialogTitle>{t("promoCodes.resultsDialog.title", { count: generatedCodes.length })}</DialogTitle>
             </DialogHeader>
             <div className="py-4">
                 <ScrollArea className="h-64 border rounded p-2">
@@ -343,8 +344,8 @@ export default function PromoCodeManagementPage() {
                 </ScrollArea>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={handleCopyGeneratedCodes}><Copy className="mr-2 h-4 w-4"/> Copy Codes</Button>
-                <DialogClose asChild><Button>Close</Button></DialogClose>
+                <Button variant="outline" onClick={handleCopyGeneratedCodes}><Copy className="mr-2 h-4 w-4"/> {t("promoCodes.resultsDialog.copyButton")}</Button>
+                <DialogClose asChild><Button>{t("promoCodes.resultsDialog.closeButton")}</Button></DialogClose>
             </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -352,5 +353,3 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
-
-    
