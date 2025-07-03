@@ -120,7 +120,7 @@ export interface Interview {
   interviewer: string;
   interviewerMobile?: string;
   interviewerEmail?: string;
-  notes?: string;
+  notes?: string[];
 }
 
 export interface JobApplication {

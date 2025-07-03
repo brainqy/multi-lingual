@@ -167,7 +167,7 @@ export default function JobTrackerPage() {
   // State for Interviews tab within the dialog
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
   const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '',
-  interviewerEmail: '', notes: ''});
+  interviewerEmail: '', notes: []});
   const [currentNotes, setCurrentNotes] = useState<Note[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
@@ -232,10 +232,27 @@ export default function JobTrackerPage() {
     const applicationData = { ...data, interviews: currentInterviews };
 
     if (editingApplication) {
-      setApplications(apps => apps.map(app => app.id === editingApplication.id ? { ...app, ...applicationData, status: data.status as JobApplicationStatus, salary: data.salary } : app));
+      setApplications(apps => apps.map(app => 
+        app.id === editingApplication.id 
+          ? { 
+              ...app, 
+              ...applicationData, 
+              status: data.status as JobApplicationStatus, 
+              salary: data.salary,
+              notes: Array.isArray(applicationData.notes) ? applicationData.notes.join('\n') : applicationData.notes
+            } 
+          : app
+      ));
       toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
     } else {
-      const newApp: JobApplication = { ...applicationData, id: String(Date.now()), status: data.status as JobApplicationStatus, tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id };
+      const newApp: JobApplication = { 
+        ...applicationData, 
+        notes: Array.isArray(applicationData.notes) ? applicationData.notes.join('\n') : applicationData.notes, 
+        id: String(Date.now()), 
+        status: data.status as JobApplicationStatus, 
+        tenantId: sampleUserProfile.tenantId, 
+        userId: sampleUserProfile.id 
+      };
       setApplications(apps => [newApp, ...apps]);
       toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
     }
@@ -259,9 +276,12 @@ export default function JobTrackerPage() {
     });
     setCurrentInterviews(app.interviews || []);
     // Initialize notes, adding sample notes if no notes exist for the application
-    const initialNotes = app.notes && Array.isArray(app.notes) && app.notes.length > 0
-      ? app.notes.map(noteContent => ({ date: format(new Date(), 'yyyy-MM-dd'), content: noteContent, editable: false })) // Assuming existing notes don't have dates, adding today's date and editable false
-      : addSampleNotes([]); // Add sample notes if no notes exist for this application
+    const initialNotes = app.notes && app.notes.length > 0
+      ? (Array.isArray(app.notes)
+          ? app.notes.map(noteContent => ({ date: format(new Date(), 'yyyy-MM-dd'), content: noteContent, editable: false }))
+          : [{ date: format(new Date(), 'yyyy-MM-dd'), content: app.notes, editable: false }]
+        )
+      : addSampleNotes([]);
     setCurrentNotes(initialNotes);
     setIsDialogOpen(true);
   };
@@ -292,7 +312,7 @@ export default function JobTrackerPage() {
         return;
     }
     setCurrentInterviews(prev => [...prev, {id: `int-${Date.now()}`, ...newInterview}]);
-    setNewInterview({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '', interviewerEmail: '', notes: ''});
+    setNewInterview({ date: '', type: 'Phone Screen', interviewer: '', interviewerMobile: '', interviewerEmail: '', notes: []});
   };
 
   const handleRemoveInterview = (interviewId: string) => {
@@ -624,7 +644,7 @@ export default function JobTrackerPage() {
         </div>
         <div>
           <Label htmlFor="interview-notes">{t("jobTracker.dialog.interviewNotes", { default: "Notes" })}</Label>
-          <Textarea id="interview-notes" placeholder={t("jobTracker.dialog.interviewNotesPlaceholder", { default: "e.g., Discussed project X, asked about system design..." })} value={newInterview.notes || ''} onChange={(e) => setNewInterview(p => ({...p, notes: e.target.value}))} rows={3}/>
+          <Textarea id="interview-notes" placeholder={t("jobTracker.dialog.interviewNotesPlaceholder", { default: "e.g., Discussed project X, asked about system design..." })} value={Array.isArray(newInterview.notes) ? newInterview.notes.join('\n') : ''} onChange={(e) => setNewInterview(p => ({...p, notes: [e.target.value]}))} rows={3}/>
         </div>
         <div className="flex justify-end">
           <Button type="button" variant="outline" size="sm" onClick={handleAddInterview}>{t("jobTracker.dialog.addInterview", { default: "Add Interview" })}</Button>
@@ -634,56 +654,56 @@ export default function JobTrackerPage() {
   </div>
 </TabsContent>
                   <TabsContent value="notes">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Left Column: Notes History */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
-                        <div className="space-y-2">
-                          {currentNotes.length > 0 ? (
-                            currentNotes.map((note, index) => (
-                              <div key={index} className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line flex flex-col">
-                                <div className="flex justify-between items-start">
-                                  <span className="font-semibold text-xs text-muted-foreground">{note.date}:</span>
-                                  <div className="flex gap-1">
-                                    {!note.editable && (
-                                      <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/70" onClick={() => handleEditNote(index)}>
-                                        <Edit3 className="h-3 w-3"/>
-                                      </Button>
-                                    )}
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => handleRemoveNote(index)}>
-                                      <Trash2 className="h-3 w-3"/>
-                                    </Button>
-                                  </div>
-                                </div>
-                                {note.editable ? (
-                                  <Textarea
-                                    value={note.content}
-                                    onChange={(e) => setCurrentNotes(prev => prev.map((n, i) => i === index ? { ...n, content: e.target.value } : n))}
-                                    rows={3}
-                                    className="mt-2 text-sm"
-                                  />
-                                ) : (
-                                  <p className="mt-1 text-foreground">{note.content}</p>
-                                )}
-                                {note.editable && (
-                                  <div className="flex justify-end mt-2">
-                                    <Button variant="secondary" size="sm" onClick={() => handleSaveNote(index, currentNotes[index].content)}>{t("jobTracker.dialog.saveNote", { default: "Save Note" })}</Button>
-                                  </div>
-                                )}
-                              </div>
-                            ))
-                        ) : (
-                          <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
-                        )}
-                      </div>
-                      </div>
-                      {/* Right Column: Notes Form */}
-                      <div className="space-y-2">
-                        <Label htmlFor="new-note">{t("jobTracker.dialog.addNotes", { default: "Add Notes" })}</Label>
-                        <Textarea id="new-note" placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })} rows={15} value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)}/>
-                      </div>
-                    </div>
-                  </TabsContent>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Left Column: Notes History */}
+    <div className="space-y-4">
+      <h4 className="font-medium">{t("jobTracker.dialog.notesHistory", { default: "Notes History" })}</h4>
+      <div className="space-y-2">
+        {currentNotes.length > 0 ? (
+          currentNotes.map((note, index) => (
+            <div key={index} className="bg-secondary/50 rounded-md p-3 text-sm whitespace-pre-line flex flex-col">
+              <div className="flex justify-between items-start">
+                <span className="font-semibold text-xs text-muted-foreground">{note.date}:</span>
+                <div className="flex gap-1">
+                  {!note.editable && (
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/70" onClick={() => handleEditNote(index)}>
+                      <Edit3 className="h-3 w-3"/>
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => handleRemoveNote(index)}>
+                    <Trash2 className="h-3 w-3"/>
+                  </Button>
+                </div>
+              </div>
+              {note.editable ? (
+                <Textarea
+                  value={note.content}
+                  onChange={(e) => setCurrentNotes(prev => prev.map((n, i) => i === index ? { ...n, content: e.target.value } : n))}
+                  rows={3}
+                  className="mt-2 text-sm"
+                />
+              ) : (
+                <p className="mt-1 text-foreground">{note.content}</p>
+              )}
+              {note.editable && (
+                <div className="flex justify-end mt-2">
+                  <Button variant="secondary" size="sm" onClick={() => handleSaveNote(index, currentNotes[index].content)}>{t("jobTracker.dialog.saveNote", { default: "Save Note" })}</Button>
+                </div>
+              )}
+            </div>
+          ))
+      ) : (
+        <p className="text-sm text-muted-foreground text-center py-4">{t("jobTracker.dialog.noNotes", { default: "No notes yet." })}</p>
+      )}
+      </div>
+    </div>
+    {/* Right Column: Notes Form */}
+    <div className="space-y-2">
+      <Label htmlFor="new-note">{t("jobTracker.dialog.addNotes", { default: "Add Notes" })}</Label>
+      <Textarea id="new-note" placeholder={t("jobTracker.dialog.notesPlaceholder", { default: "Contacts, interview details, thoughts..." })} rows={15} value={newNoteContent} onChange={(e) => setNewNoteContent(e.target.value)}/>
+    </div>
+  </div>
+</TabsContent>
                 </div>
               </ScrollArea>
             </Tabs>
@@ -725,5 +745,3 @@ ${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + ".
 Thank you for your consideration.
 `;
 }
-
-    
