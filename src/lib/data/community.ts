@@ -1,5 +1,5 @@
 
-import type { CommunityPost, FeatureRequest, Announcement, Activity, PromotionalContent } from '@/types';
+import type { CommunityPost, FeatureRequest, Activity, PromotionalContent } from '@/types';
 import { sampleUserProfile, samplePlatformUsers } from './users';
 
 export let sampleCommunityPosts: CommunityPost[] = [
@@ -153,49 +153,6 @@ export const sampleFeatureRequests: FeatureRequest[] = [
   { id: 'fr1', tenantId: 'Brainqy', userId: 'alumni1', userName: 'Alice Wonderland', userAvatar: 'https://picsum.photos/seed/alice/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), title: 'Integrate with LinkedIn for profile import', description: 'It would be great to automatically pull resume data from LinkedIn.', status: 'Pending', upvotes: 15 },
   { id: 'fr2', tenantId: 'Brainqy', userId: 'alumni2', userName: 'Bob The Builder', userAvatar: 'https://picsum.photos/seed/bob/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(), title: 'Dark mode for the dashboard', description: 'A dark theme option would be easier on the eyes.', status: 'In Progress', upvotes: 28 },
   { id: 'fr3', tenantId: 'tenant-2', userId: 'managerUser1', userName: 'Manager Mike', userAvatar: 'https://avatar.vercel.sh/managermike.png', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), title: 'Tenant-specific branding options', description: 'Allow tenant managers to customize logos and color schemes.', status: 'Completed', upvotes: 42 },
-];
-
-export let sampleAnnouncements: Announcement[] = [
-  {
-    id: 'announce-1',
-    tenantId: 'platform',
-    title: 'New Feature: AI Mock Interview!',
-    content: 'We are excited to launch our new AI Mock Interview feature. Practice common interview questions and get instant feedback. Find it under "Interview Prep" in the sidebar.',
-    startDate: new Date(Date.now() - 86400000 * 2).toISOString(),
-    endDate: new Date(Date.now() + 86400000 * 10).toISOString(),
-    audience: 'All Users',
-    status: 'Published',
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-    createdBy: 'alumni1',
-  },
-  {
-    id: 'announce-2',
-    tenantId: 'platform',
-    title: 'Platform Maintenance Scheduled',
-    content: 'We will be performing scheduled maintenance on Sunday from 2 AM to 4 AM PST. The platform may be temporarily unavailable during this time.',
-    startDate: new Date(Date.now() + 86400000 * 3).toISOString(),
-    endDate: new Date(Date.now() + 86400000 * 3 + (2 * 60 * 60 * 1000)).toISOString(),
-    audience: 'All Users',
-    status: 'Published',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdBy: 'alumni1',
-  },
-  {
-    id: 'announce-3',
-    tenantId: 'tenant-2',
-    title: 'Tenant-2 Welcome Mixer!',
-    content: 'Welcome to the Corporate Partner Inc. alumni portal! Join us for a virtual welcome mixer next Friday at 5 PM. Check the community events for details.',
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 86400000 * 14).toISOString(),
-    audience: 'Specific Tenant',
-    audienceTarget: 'tenant-2',
-    status: 'Published',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdBy: 'managerUser1',
-  },
 ];
 
 export const sampleActivities: Activity[] = [
