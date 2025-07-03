@@ -1,6 +1,5 @@
 
 {
-  "appName": "भाषा सेतु",
   "dashboard": {
     "navigation": {
       "overview": "अवलोकन",
@@ -12,56 +11,6 @@
       "profile": "प्रोफ़ाइल",
       "logout": "लॉग आउट"
     }
-  },
-  "login": {
-    "title": "पुनः स्वागत है",
-    "emailLabel": "ईमेल",
-    "passwordLabel": "पासवर्ड",
-    "submitButton": "लॉग इन करें",
-    "signupPrompt": "खाता नहीं है?",
-    "signupLink": "साइन अप करें"
-  },
-  "signup": {
-    "title": "खाता बनाएं",
-    "nameLabel": "पूरा नाम",
-    "emailLabel": "ईमेल",
-    "passwordLabel": "पासवर्ड",
-    "roleLabel": "भूमिका",
-    "roleUser": "उपयोगकर्ता",
-    "roleAdmin": "एडमिन (डेमो के लिए)",
-    "submitButton": "साइन अप करें",
-    "loginPrompt": "पहले से ही खाता है?",
-    "loginLink": "लॉग इन करें",
-    "referralCodeLabel": "रेफ़रल कोड (वैकल्पिक)",
-    "referralCodePlaceholder": "रेफ़रल कोड दर्ज करें",
-    "agreeToTermsLabel": "हमारे नियमों और शर्तों से सहमत हों",
-    "agreeToTermsDescription": "साइन अप करके, आप हमारे",
-    "termsLink": "सेवा की शर्तें",
-    "privacyLink": "गोपनीयता नीति"
-  },
-  "validation": {
-    "email": "कृपया एक मान्य ईमेल पता दर्ज करें।",
-    "required": "यह फ़ील्ड आवश्यक है।",
-    "termsRequired": "आपको नियमों और शर्तों को स्वीकार करना होगा।",
-    "tenantNameMin": "किरायेदार का नाम कम से कम 3 अक्षर का होना चाहिए।",
-    "invalidUrl": "कृपया एक मान्य यूआरएल दर्ज करें।",
-    "invalidColor": "कृपया एक मान्य एचएसएल या हेक्स रंग कोड दर्ज करें।",
-    "adminEmailInvalid": "कृपया एक मान्य व्यवस्थापक ईमेल पता दर्ज करें।",
-    "adminNameRequired": "व्यवस्थापक का नाम आवश्यक है।",
-    "adminPasswordMin": "पासवर्ड कम से कम 8 अक्षर का होना चाहिए।",
-    "titleMin": "शीर्षक कम से कम {count} अक्षर का होना चाहिए।",
-    "contentMin": "सामग्री कम से कम {count} अक्षर की होनी चाहिए।",
-    "startDateRequired": "प्रारंभ तिथि आवश्यक है।"
-  },
-  "forgotPassword": {
-    "title": "पासवर्ड भूल गए?",
-    "description": "अपना ईमेल दर्ज करें और हम आपको पासवर्ड रीसेट करने के लिए निर्देश भेजेंगे।",
-    "submitButton": "रीसेट निर्देश भेजें",
-    "backToLogin": "लॉगिन पर वापस जाएं",
-    "toastSuccessTitle": "अपना ईमेल जांचें",
-    "toastSuccessDescription": "यदि {email} के लिए कोई खाता मौजूद है, तो आपको पासवर्ड रीसेट निर्देश प्राप्त होंगे।",
-    "submittedTitle": "निर्देश भेजे गए!",
-    "submittedDescription": "अगले चरणों के लिए कृपया {email} पर अपना इनबॉक्स जांचें।"
   },
   "platformSettings": {
     "title": "प्लेटफ़ॉर्म सेटिंग्स",
@@ -83,20 +32,6 @@
         "publicSignup": "सार्वजनिक साइनअप",
         "actions": "कार्रवाइयाँ"
     }
-  },
-  "errorPage": {
-    "title": "कुछ गलत हो गया",
-    "description": "हमें खेद है, लेकिन एक अप्रत्याशित त्रुटि हुई। कृपया पुनः प्रयास करें या यदि समस्या बनी रहती है तो सहायता से संपर्क करें।",
-    "detailsPrefix": "त्रुटि विवरण:",
-    "retryButton": "पुनः प्रयास करें"
-  },
-  "accessDenied": {
-    "title": "पहुंच निषिद्ध",
-    "message": "आपको यह पृष्ठ देखने या यह कार्रवाई करने की अनुमति नहीं है।",
-    "dashboardButton": "डैशबोर्ड पर जाएं"
-  },
-  "announcementBanner": {
-    "dismiss": "घोषणा खारिज करें"
   },
   "tenantOnboarding": {
     "title": "किरायेदार ऑनबोर्डिंग विज़ार्ड",
@@ -300,19 +235,6 @@
       }
     }
   },
-  "welcomeTour": {
-    "previousButton": "पिछला",
-    "nextButton": "अगला",
-    "finishButton": "समझ गया!"
-  },
-  "dailyStreakPopup": {
-    "title": "दैनिक स्ट्रीक!",
-    "currentStreakLabel": "वर्तमान स्ट्रीक",
-    "longestStreakLabel": "सबसे लंबी स्ट्रीक",
-    "totalActiveDaysLabel": "कुल सक्रिय दिन:",
-    "keepItUpButton": "जारी रखो!",
-    "dayLabels": { "S": "र", "M": "सो", "T": "मं", "W": "बु", "Th": "गु", "F": "शु", "Sa": "श" }
-  },
   "featureRequests": {
     "pageTitle": "सुविधा अनुरोध और सुझाव"
   },
@@ -324,71 +246,6 @@
   },
   "interviewPrep": {
     "pageTitle": "साक्षात्कार तैयारी केंद्र"
-  },
-    "sideMenu": {
-    "dashboard": "डैशबोर्ड",
-    "communityFeed": "कम्युनिटी फ़ीड",
-    "alumniNetwork": "पूर्व छात्र नेटवर्क",
-    "jobBoard": "जॉब बोर्ड",
-    "jobTracker": "जॉब ट्रैकर",
-    "practiceHub": "अभ्यास केंद्र",
-    "aiTools": "एआई उपकरण",
-    "resumeAnalyzer": "रिज्यूमे विश्लेषक",
-    "aiResumeWriter": "एआई रिज्यूमे राइटर",
-    "coverLetterGenerator": "कवर लेटर जेनरेटर",
-    "resumeTools": "रिज्यूमे उपकरण",
-    "myResumes": "मेरे रिज्यूमे",
-    "resumeBuilder": "रिज्यूमे बिल्डर",
-    "resumeTemplates": "रिज्यूमे टेम्पलेट्स",
-    "eventGallery": "इवेंट गैलरी",
-    "activityLog": "गतिविधि लॉग",
-    "myProfile": "मेरा प्रोफ़ाइल",
-    "appointments": "अपॉइंटमेंट्स",
-    "digitalWallet": "डिजिटल वॉलेट",
-    "featureRequests": "फ़ीचर अनुरोध",
-    "settings": "सेटिंग्स",
-    "documentation": "प्रलेखन",
-    "rewardsBadges": "पुरस्कार और बैज",
-    "referrals": "रेफरल",
-    "affiliatesProgram": "संबद्ध कार्यक्रम",
-    "blog": "ब्लॉग",
-    "numberMatchGame": "नंबर मैच गेम",
-    "adminDashboard": "एडमिन डैशबोर्ड",
-    "tenantManagement": "किरायेदार प्रबंधन",
-    "tenantOnboarding": "किरायेदार ऑनबोर्डिंग",
-    "userManagement": "उपयोगकर्ता प्रबंधन",
-    "gamificationRules": "गेमिफिकेशन नियम",
-    "contentModeration": "सामग्री मॉडरेशन",
-    "announcementsMgt": "घोषणा प्रबंधन",
-    "messengerMgt": "मैसेंजर प्रबंधन",
-    "affiliateMgt": "संबद्ध प्रबंधन",
-    "galleryMgt": "गैलरी प्रबंधन",
-    "blogSettings": "ब्लॉग सेटिंग्स",
-    "promotionalContentMgt": "प्रोमो सामग्री",
-    "platformSettings": "प्लेटफॉर्म सेटिंग्स",
-    "engagement": "सगाई",
-    "utilities": "उपयोगिताएँ",
-    "adminPanel": "एडमिन पैनल",
-    "managerPanel": "मैनेजर पैनल",
-    "tenant": "किरायेदार"
-  }
-  ,  
-    "appHeader": {
-    "notifications": "सूचनाएँ",
-    "profile": "प्रोफ़ाइल",
-    "myBookmarks": "मेरे बुकमार्क्स",
-    "recentPages": "हाल के पृष्ठ",
-    "jobTracker": "नौकरी ट्रैकर",
-    "rewardsBadges": "इनाम और बैज",
-    "wallet": "वॉलेट",
-    "resumeManager": "रिज़्यूमे प्रबंधक",
-    "settings": "सेटिंग्स",
-    "blog": "ब्लॉग",
-    "activity": "गतिविधि",
-    "logout": "लॉगआउट",
-    "dailyStreak": "दैनिक लॉगिन स्ट्रीक",
-    "totalXP": "कुल अनुभव अंक",
-    "coinBalance": "सिक्का शेष"
   },
   "dailyChallenge": {
     "title": "दैनिक साक्षात्कार चुनौती",
@@ -611,10 +468,6 @@
       "noQuestions": "You haven't bookmarked any interview questions yet.",
       "noResumeScans": "You haven't bookmarked any resume scan reports yet."
   },
-  "common": {
-      "cancel": "Cancel",
-      "submit": "Submit"
-  },
   "gallery": {
       "title": "Event Gallery",
       "pageDescription": "A visual journey through our past events, workshops, and meetups.",
@@ -726,6 +579,3 @@
     }
   }
 }
-
-    
-
