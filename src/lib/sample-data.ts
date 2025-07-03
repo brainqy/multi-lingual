@@ -11,3 +11,5 @@ export * from './data/monetization';
 export * from './data/surveys';
 export * from './data/announcements';
 export * from './data/promotions';
+export * from './data/requests';
+export * from './data/activities';
