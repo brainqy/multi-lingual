@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
-import { Coins, Dices, Gift, Repeat, Trophy, Loader2 } from "lucide-react";
+import { Coins, Dices, Gift, Repeat, Trophy, Loader2, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Confetti from "react-confetti";
+import Link from "next/link";
+
 
 const GAME_COST = 100;
 const MAX_ATTEMPTS = 10;
@@ -140,7 +141,7 @@ export default function NumberMatchGamePage() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      {isClient && !isGameActive && <Confetti recycle={isWinner} />}
+      {isClient && isWinner && <Confetti recycle={false} />}
       <Card className="w-full max-w-md text-center shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight text-primary flex items-center justify-center gap-2">
@@ -208,6 +209,18 @@ export default function NumberMatchGamePage() {
           </Button>
         </CardFooter>
       </Card>
+      
+      <Card className="w-full max-w-md mt-6">
+        <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2"><Puzzle className="h-5 w-5" /> Other Games</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Button asChild className="w-full">
+                <Link href="/kbc-game">Play KBC Quiz Game</Link>
+            </Button>
+        </CardContent>
+      </Card>
+
       <Card className="w-full max-w-md mt-6">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2"><Gift className="h-5 w-5" /> Prize</CardTitle>

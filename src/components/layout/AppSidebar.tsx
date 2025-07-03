@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
@@ -48,10 +47,11 @@ const utilityItems = [
 
 const gamificationItems = [
   { href: "/daily-interview-challenge", labelKey: "sideMenu.dailyChallenge", icon: PuzzleIcon },
+  { href: "/kbc-game", labelKey: "sideMenu.kbcGame", icon: Trophy },
+  { href: "/number-match-game", labelKey: "sideMenu.numberMatchGame", icon: Dices },
   { href: "/gamification", labelKey: "sideMenu.rewardsBadges", icon: Award },
   { href: "/referrals", labelKey: "sideMenu.referrals", icon: Gift },
   { href: "/affiliates", labelKey: "sideMenu.affiliatesProgram", icon: Target },
-  { href: "/number-match-game", labelKey: "sideMenu.numberMatchGame", icon: Dices },
 ];
 
 const blogItems = [

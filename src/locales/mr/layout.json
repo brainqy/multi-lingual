@@ -1,3 +1,4 @@
+
 {
   "sideMenu": {
     "dashboard": "डॅशबोर्ड",
@@ -26,6 +27,8 @@
     "referrals": "संदर्भ",
     "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
     "blog": "ब्लॉग",
+    "dailyChallenge": "दैनिक आव्हान",
+    "kbcGame": "केबीसी क्विझ गेम",
     "numberMatchGame": "नंबर मॅच गेम",
     "adminDashboard": "प्रशासक डॅशबोर्ड",
     "tenantManagement": "भाडेकरू व्यवस्थापन",
