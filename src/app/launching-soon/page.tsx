@@ -81,6 +81,14 @@ export default function LaunchingSoonPage() {
     e.preventDefault();
     if (email && email.includes('@')) {
       console.log('Waitlist submission:', email);
+      
+      const whatsappNumber = "919561402263";
+      const message = `New waitlist signup: ${email}`;
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+      
+      // Open WhatsApp in a new tab
+      window.open(whatsappUrl, '_blank');
+
       toast({
         title: "You're on the list!",
         description: `We've added ${email} to our waiting list. We'll notify you on launch!`,
