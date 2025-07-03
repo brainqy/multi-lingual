@@ -7,7 +7,7 @@ import { sampleInterviewQuestions } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize } from 'lucide-react';
+import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { useToast } from '@/hooks/use-toast';
