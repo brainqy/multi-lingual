@@ -552,6 +552,7 @@
       "submit": "Submit",
       "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!",
       "completeTasksButton": "Complete Tasks to Earn XP",
+      "flipChallengeTitle": "Flip Challenge",
       "toast": {
         "newChallenge": {
           "title": "New Challenge Loaded",
@@ -567,14 +568,6 @@
         }
       }
     },
-  "managerDashboard": {
-    "quickActions": {
-      "promoCodeMgt": "Promo Codes"
-    }
-  },
-  "userDashboard": {
-    "title": "My Dashboard"
-  },
   "translateTool": {
     "title": "Translation Tool",
     "enterTextLabel": "Enter Text to Translate",
@@ -888,3 +881,4 @@
 }
 
     
+
