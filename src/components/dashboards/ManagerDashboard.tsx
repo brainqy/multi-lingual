@@ -11,7 +11,6 @@ import {
     samplePlatformUsers,
     sampleResumeScanHistory,
     sampleCommunityPosts,
-    sampleAppointments,
     sampleEvents,
 } from "@/lib/sample-data";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
+import { sampleAppointments } from "@/lib/data/appointments";
 
 type ManagerDashboardWidgetId =
   | 'activeUsersStat'

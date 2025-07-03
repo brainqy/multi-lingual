@@ -5,7 +5,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, Video, CheckCircle, Clock, XCircle, ThumbsUp, Filter, Edit3, CalendarPlus, MessageSquare as FeedbackIcon, Star as StarIcon, Users as UsersIcon } from "lucide-react";
-import { sampleAppointments, sampleAlumni, sampleUserProfile, sampleCommunityPosts } from "@/lib/sample-data";
+import {  sampleAlumni, sampleUserProfile, sampleCommunityPosts } from "@/lib/sample-data";
 import type { Appointment, AlumniProfile, AppointmentStatus, PreferredTimeSlot, CommunityPost } from "@/types";
 import { AppointmentStatuses, PreferredTimeSlots } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Badge } from '@/components/ui/badge';
+import { sampleAppointments } from "@/lib/data/appointments";
 
 const rescheduleSchema = z.object({
   preferredDate: z.date({ required_error: "New date is required." }),

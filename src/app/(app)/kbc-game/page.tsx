@@ -104,7 +104,6 @@ export default function KBCGamePage() {
     toast({
         title: `-${GAME_COST} Coins`,
         description: "Good luck in the game!",
-        icon: <Coins className="h-5 w-5 text-yellow-500" />,
     });
 
 
@@ -162,7 +161,6 @@ export default function KBCGamePage() {
          toast({
           title: "Correct Answer!",
           description: `You've secured ${nextXpLevel} XP!`,
-          icon: <Trophy className="h-6 w-6 text-yellow-500" />,
         });
       }
     } else {
@@ -249,9 +247,9 @@ export default function KBCGamePage() {
     <div className="bg-slate-900 text-white p-4 md:p-6 rounded-lg shadow-2xl border-4 border-slate-700 h-full flex flex-col">
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-2">
-          <Button onClick={useFiftyFifty} disabled={!lifelines.fiftyFifty || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto">50:50</Button>
-          <Button onClick={useAudiencePoll} disabled={!lifelines.audiencePoll || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Users className="h-5 w-5" /></Button>
-          <Button onClick={useExpertAdvice} disabled={!lifelines.expertAdvice || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Phone className="h-5 w-5" /></Button>
+          <Button onClick={useFiftyFifty} disabled={!!(!lifelines.fiftyFifty || lockedAnswer)} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto">50:50</Button>
+          <Button onClick={useAudiencePoll} disabled={!!(!lifelines.audiencePoll || lockedAnswer)} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Users className="h-5 w-5" /></Button>
+          <Button onClick={useExpertAdvice} disabled={!!(!lifelines.expertAdvice || lockedAnswer)} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Phone className="h-5 w-5" /></Button>
         </div>
         <div className="flex items-center gap-2">
             <div className="text-right">
@@ -295,7 +293,7 @@ export default function KBCGamePage() {
                   <Button
                     key={index}
                     onClick={() => handleAnswerSelect(option)}
-                    disabled={lockedAnswer !== null || isHidden}
+                    disabled={!!lockedAnswer || !!isHidden}
                     variant="outline"
                     className={cn(
                       "text-left justify-start h-auto py-2 px-4 whitespace-normal bg-slate-800 border-slate-600 hover:bg-slate-700",
