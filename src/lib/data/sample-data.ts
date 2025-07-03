@@ -14,3 +14,4 @@ export * from './data/promotions';
 export * from './data/requests';
 export * from './data/activities';
 export * from './data/questions';
+export * from './data/challenges';

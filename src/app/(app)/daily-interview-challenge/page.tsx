@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
-import sampleChallenges from '@/lib/sample-challenges';
+import { sampleChallenges } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
