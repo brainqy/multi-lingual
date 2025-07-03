@@ -1,0 +1,33 @@
+
+{
+  "appName": "ResumeMatch AI",
+  "validation": {
+    "email": "Please enter a valid email address.",
+    "required": "This field is required.",
+    "termsRequired": "You must accept the terms and conditions.",
+    "tenantNameMin": "Tenant name must be at least 3 characters.",
+    "invalidUrl": "Please enter a valid URL.",
+    "invalidColor": "Please enter a valid HSL or hex color code.",
+    "adminEmailInvalid": "Please enter a valid admin email address.",
+    "adminNameRequired": "Admin name is required.",
+    "adminPasswordMin": "Password must be at least 8 characters.",
+    "titleMin": "Title must be at least {count} characters.",
+    "contentMin": "Content must be at least {count} characters.",
+    "startDateRequired": "Start date is required."
+  },
+  "errorPage": {
+    "title": "Something Went Wrong",
+    "description": "We're sorry, but an unexpected error occurred. Please try again or contact support if the issue persists.",
+    "detailsPrefix": "Error Details:",
+    "retryButton": "Try Again"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "message": "You do not have permission to view this page or perform this action.",
+    "dashboardButton": "Go to Dashboard"
+  },
+  "common": {
+      "cancel": "Cancel",
+      "submit": "Submit"
+  }
+}

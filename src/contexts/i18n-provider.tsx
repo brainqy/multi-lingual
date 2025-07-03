@@ -6,9 +6,20 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { Translations, NestedTranslations } from '@/types';
 import { defaultLocale, locales as availableLocales, Locale } from '@/locales';
 
-import enTranslations from '@/locales/en.json';
+import enAuth from '@/locales/en/auth.json';
+import enCommon from '@/locales/en/common.json';
+import enLayout from '@/locales/en/layout.json';
+import enPages from '@/locales/en/pages.json';
+
 import mrTranslations from '@/locales/mr.json';
 import hiTranslations from '@/locales/hi.json';
+
+const enMergedTranslations: Translations = {
+  ...enAuth,
+  ...enCommon,
+  ...enLayout,
+  ...enPages,
+};
 
 interface I18nContextType {
   locale: Locale;
@@ -20,7 +31,7 @@ interface I18nContextType {
 export const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 const translationsData: Record<Locale, Translations> = {
-  en: enTranslations,
+  en: enMergedTranslations,
   mr: mrTranslations,
   hi: hiTranslations,
 };
