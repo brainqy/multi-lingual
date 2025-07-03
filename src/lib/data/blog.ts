@@ -1,0 +1,61 @@
+
+import type { BlogPost, BlogGenerationSettings } from '@/types';
+
+export let sampleBlogPosts: BlogPost[] = [
+  {
+    id: 'blog1',
+    tenantId: 'platform',
+    userId: 'system',
+    userName: 'ResumeMatch AI Team',
+    userAvatar: 'https://picsum.photos/seed/systemlogo/50/50',
+    title: 'Mastering the AI Resume Analysis',
+    slug: 'mastering-ai-resume-analysis',
+    author: 'ResumeMatch AI Team',
+    date: '2024-07-20T10:00:00Z',
+    imageUrl: 'https://placehold.co/800x400.png?text=AI+Resume+Analysis',
+    content: 'Learn how to leverage our AI analysis tool to its full potential. Understand match scores, keyword analysis, and how to use suggestions effectively...\n\nOur AI engine scans your resume against the provided job description, identifying key skills, experiences, and keywords. It then calculates a match score based on alignment.\n\n**Understanding the Score:**\n- **80%+:** Excellent match, likely a strong candidate.\n- **60-79%:** Good match, minor adjustments might be needed.\n- **Below 60%:** Significant gaps, consider tailoring your resume.\n\n**Using Suggestions:**\nThe AI provides suggestions for improvement. Focus on incorporating missing keywords naturally and highlighting relevant experiences mentioned in the job description. Remember, authenticity is key!\n\n*This is sample content. More details would follow in a real post.*',
+    excerpt: 'Learn how to leverage our AI analysis tool to its full potential. Understand match scores, keyword analysis...',
+    tags: ['resume', 'ai', 'jobsearch'],
+    comments: [],
+     bookmarkedBy: ['managerUser1'] ,
+  },
+  {
+    id: 'blog2',
+    tenantId: 'Brainqy',
+    userId: 'alumni1',
+    userName: 'Alice Wonderland',
+    userAvatar: 'https://picsum.photos/seed/alice/50/50',
+    title: 'Networking Success Stories from Brainqy University Alumni',
+    slug: 'brainqy-uni-networking-success',
+    author: 'Alumni Relations (Brainqy University)',
+    date: '2024-07-15T14:30:00Z',
+    imageUrl: 'https://placehold.co/800x400.png?text=Networking+Success',
+    content: 'Hear inspiring stories from fellow alumni who found opportunities through the ResumeMatch AI network. Discover tips for effective networking...\n\nAlice Wonderland (Class of \'15) shares how a connection made through the platform led to her current role at Google. "The recommendation feature pointed me towards someone I hadn\'t considered, and it turned out to be the perfect connection," she says.\n\nBob The Builder (Class of \'18) used the Alumni Directory filters to find mentors in Product Management. "Being able to filter by skills and industry was invaluable," Bob notes.\n\n**Networking Tips:**\n1. Personalize your connection requests.\n2. Be clear about what you\'re seeking (advice, referral, chat).\n3. Follow up respectfully.\n\n*This is sample content. More details would follow in a real post.*',
+    excerpt: 'Hear inspiring stories from fellow alumni who found opportunities through the ResumeMatch AI network...',
+    tags: ['networking', 'career', 'success stories', 'brainqy university'],
+    comments: [],
+  },
+  {
+    id: 'blog3',
+    tenantId: 'platform',
+    userId: 'system',
+    userName: 'ResumeMatch AI Team',
+    userAvatar: 'https://picsum.photos/seed/systemlogo/50/50',
+    title: 'The Power of Mentorship: Connecting Generations',
+    slug: 'power-of-mentorship',
+    author: 'ResumeMatch AI Team',
+    date: '2024-07-10T09:00:00Z',
+    imageUrl: 'https://placehold.co/800x400.png?text=Mentorship+Concept',
+    content: 'Explore the benefits of both being a mentor and finding a mentor within our community. How our platform facilitates these connections...\n\nMentorship provides invaluable guidance for career growth. Our platform makes it easy to identify alumni willing to offer support in specific areas.\n\n**Benefits for Mentees:**\n- Gain industry insights.\n- Receive personalized career advice.\n- Expand your professional network.\n\n**Benefits for Mentors:**\n- Develop leadership skills.\n- Give back to the community.\n- Stay connected with emerging talent.\n\nUse the Alumni Directory filters to find potential mentors or mentees based on your interests and needs.\n\n*This is sample content. More details would follow in a real post.*',
+    excerpt: 'Explore the benefits of both being a mentor and finding a mentor within our community...',
+    tags: ['mentorship', 'community', 'connections'],
+    comments: [],
+  },
+];
+
+export let sampleBlogGenerationSettings: BlogGenerationSettings = {
+  generationIntervalHours: 24,
+  topics: ['Career Advice', 'Resume Writing Tips', 'Interview Skills', 'Networking Strategies', 'Industry Trends'],
+  style: 'informative',
+  lastGenerated: undefined,
+};
