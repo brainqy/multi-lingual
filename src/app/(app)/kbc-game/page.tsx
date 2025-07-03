@@ -1,13 +1,15 @@
+
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
-import { sampleChallenges, sampleInterviewQuestions } from '@/lib/sample-data';
+import { sampleInterviewQuestions } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, CheckCircle, Diamond, ChevronsRight, Users, Phone, User, X, Check, Repeat, Zap, Loader2 } from 'lucide-react';
-import type { DailyChallenge, InterviewQuestion } from '@/types';
+import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize } from 'lucide-react';
+import type { InterviewQuestion, InterviewQuestionCategory } from '@/types';
+import { ALL_CATEGORIES } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
@@ -21,38 +23,73 @@ export default function KBCGamePage() {
   const { t } = useI18n();
   const { toast } = useToast();
 
+  const [gameState, setGameState] = useState<'setup' | 'playing' | 'gameOver'>('setup');
+  const [allQuestions, setAllQuestions] = useState<InterviewQuestion[]>([]);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<InterviewQuestionCategory | 'All'>('All');
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [lockedAnswer, setLockedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [isGameOver, setIsGameOver] = useState(false);
   const [gameMessage, setGameMessage] = useState("Select an answer and lock it!");
   const [lifelines, setLifelines] = useState({ fiftyFifty: true, audiencePoll: true, expertAdvice: true });
   const [fiftyFiftyOptions, setFiftyFiftyOptions] = useState<string[] | null>(null);
   const [audiencePollData, setAudiencePollData] = useState<{ name: string; votes: number }[] | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  
+  const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const currentQuestion = useMemo(() => questions[currentQuestionIndex], [questions, currentQuestionIndex]);
   const currentXpLevel = currentQuestionIndex > 0 ? XP_LEVELS[currentQuestionIndex - 1] : 0;
   const nextXpLevel = XP_LEVELS[currentQuestionIndex];
 
   useEffect(() => {
-    startNewGame();
+    // Load all potential questions once
+    const mcqQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length >= 2 && q.correctAnswer);
+    setAllQuestions(mcqQuestions);
   }, []);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsFullScreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+
   const startNewGame = () => {
-    const mcqQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length >= 2 && q.correctAnswer);
-    const shuffled = mcqQuestions.sort(() => 0.5 - Math.random());
+    const filteredQuestions = selectedCategory === 'All'
+      ? allQuestions
+      : allQuestions.filter(q => q.category === selectedCategory);
+      
+    if (filteredQuestions.length < 5) { // Need at least a few questions
+        toast({
+            title: "Not Enough Questions",
+            description: `There aren't enough questions in the "${selectedCategory}" category to start a game. Please select another topic or 'All'.`,
+            variant: "destructive",
+            duration: 5000,
+        });
+        return;
+    }
+
+    const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
     setQuestions(shuffled.slice(0, KBC_QUESTION_COUNT));
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setLockedAnswer(null);
     setShowResult(false);
-    setIsGameOver(false);
     setLifelines({ fiftyFifty: true, audiencePoll: true, expertAdvice: true });
     setFiftyFiftyOptions(null);
     setAudiencePollData(null);
     setGameMessage("Select an answer and lock it!");
+    setGameState('playing');
+    
+    if (gameContainerRef.current && !document.fullscreenElement) {
+        gameContainerRef.current.requestFullscreen().catch(err => {
+            console.error("Fullscreen request failed:", err);
+            toast({ title: "Fullscreen Mode", description: "Could not enter fullscreen automatically. You can try it manually.", variant: "default" });
+        });
+    }
   };
 
   const handleAnswerSelect = (option: string) => {
@@ -70,13 +107,13 @@ export default function KBCGamePage() {
     if (selectedAnswer === currentQuestion.correctAnswer) {
       if (currentQuestionIndex === questions.length - 1) {
         setGameMessage(`Correct! You've won ${nextXpLevel} XP! Game complete!`);
-        setIsGameOver(true);
+        setGameState('gameOver');
       } else {
         setGameMessage("Correct Answer! Click Next to continue.");
       }
     } else {
       setGameMessage(`Wrong Answer! The correct answer was: ${currentQuestion.correctAnswer}. You walk away with ${currentXpLevel} XP.`);
-      setIsGameOver(true);
+      setGameState('gameOver');
     }
   };
 
@@ -90,6 +127,13 @@ export default function KBCGamePage() {
       setAudiencePollData(null);
       setGameMessage("Select an answer and lock it!");
     }
+  };
+  
+  const handleEndGameAndRestart = () => {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    }
+    setGameState('setup');
   };
 
   const useFiftyFifty = () => {
@@ -126,6 +170,15 @@ export default function KBCGamePage() {
     setLifelines(prev => ({ ...prev, expertAdvice: false }));
   };
 
+  const toggleFullScreen = () => {
+    if (!gameContainerRef.current) return;
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else {
+        gameContainerRef.current.requestFullscreen();
+    }
+  }
+
   const KBCGame = () => (
     <div className="bg-slate-900 text-white p-4 md:p-6 rounded-lg shadow-2xl border-4 border-slate-700 h-full flex flex-col">
       {/* Top Section: Lifelines & XP */}
@@ -135,9 +188,14 @@ export default function KBCGamePage() {
           <Button onClick={useAudiencePoll} disabled={!lifelines.audiencePoll || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Users className="h-5 w-5" /></Button>
           <Button onClick={useExpertAdvice} disabled={!lifelines.expertAdvice || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto"><Phone className="h-5 w-5" /></Button>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-slate-400">Next Reward</p>
-          <p className="text-xl font-bold text-yellow-400 flex items-center gap-1 justify-end"><Zap className="h-5 w-5"/> {nextXpLevel?.toLocaleString()} XP</p>
+        <div className="flex items-center gap-2">
+            <div className="text-right">
+            <p className="text-sm text-slate-400">Next Reward</p>
+            <p className="text-xl font-bold text-yellow-400 flex items-center gap-1 justify-end"><Zap className="h-5 w-5"/> {nextXpLevel?.toLocaleString()} XP</p>
+            </div>
+            <Button onClick={toggleFullScreen} variant="ghost" size="icon" className="text-white">
+                {isFullScreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </Button>
         </div>
       </div>
       
@@ -202,20 +260,19 @@ export default function KBCGamePage() {
         <div className="mt-2">
           {!lockedAnswer ? (
             <Button onClick={handleLockAnswer} disabled={!selectedAnswer} size="lg" className="bg-blue-600 hover:bg-blue-500">Lock Answer</Button>
-          ) : !isGameOver ? (
+          ) : gameState !== 'gameOver' ? (
             <Button onClick={handleNextQuestion} size="lg" className="bg-green-600 hover:bg-green-500">Next Question <ChevronsRight /></Button>
           ) : (
-            <Button onClick={startNewGame} size="lg" className="bg-yellow-500 hover:bg-yellow-400 text-black">Play Again <Repeat className="ml-2"/></Button>
+            <Button onClick={handleEndGameAndRestart} size="lg" className="bg-yellow-500 hover:bg-yellow-400 text-black">Play Again <Repeat className="ml-2"/></Button>
           )}
         </div>
       </div>
     </div>
   );
 
-  const XPLevelItem = ({ level, xp, isCurrent, isNext, isPassed }: { level: number, xp: number, isCurrent: boolean, isNext: boolean, isPassed: boolean }) => (
+  const XPLevelItem = ({ level, xp, isCurrent, isPassed }: { level: number, xp: number, isCurrent: boolean, isPassed: boolean }) => (
     <div className={cn("flex items-center justify-between p-1.5 rounded", 
       isCurrent && "bg-orange-500 text-white font-bold ring-2 ring-white",
-      isNext && "bg-yellow-400 text-black",
       isPassed && "bg-green-600 text-white",
     )}>
       <span className={cn("text-sm", isCurrent && "font-bold")}>{level}</span>
@@ -223,7 +280,7 @@ export default function KBCGamePage() {
     </div>
   );
   
-  if (questions.length === 0) {
+  if (allQuestions.length === 0) {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -232,7 +289,41 @@ export default function KBCGamePage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl py-8 px-4">
+    <div ref={gameContainerRef} className="container mx-auto max-w-7xl py-8 px-4">
+    {gameState === 'setup' && (
+      <Card className="max-w-2xl mx-auto text-center">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold">Choose Your Topic</CardTitle>
+          <CardDescription>Select a category to start the KBC quiz game.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
+           <Button
+                variant={selectedCategory === 'All' ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory('All')}
+                className="h-16 text-md"
+            >
+                All Topics
+            </Button>
+            {ALL_CATEGORIES.map(category => (
+            <Button
+                key={category}
+                variant={selectedCategory === category ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory(category)}
+                className="h-16 text-md"
+            >
+                {category}
+            </Button>
+            ))}
+        </CardContent>
+        <CardFooter>
+          <Button onClick={startNewGame} size="lg" className="w-full bg-primary hover:bg-primary/90">
+            Start Game
+          </Button>
+        </CardFooter>
+      </Card>
+    )}
+    
+    {(gameState === 'playing' || gameState === 'gameOver') && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
           <KBCGame />
@@ -250,8 +341,7 @@ export default function KBCGamePage() {
                     key={index} 
                     level={index + 1} 
                     xp={xp} 
-                    isCurrent={index === currentQuestionIndex && !isGameOver}
-                    isNext={false}
+                    isCurrent={index === currentQuestionIndex && gameState === 'playing'}
                     isPassed={index < currentQuestionIndex}
                   />
                 ))}
@@ -270,6 +360,7 @@ export default function KBCGamePage() {
             </Card>
         </div>
       </div>
+    )}
     </div>
   );
 };
