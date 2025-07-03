@@ -16,7 +16,10 @@ import hiCommon from '@/locales/hi/common.json';
 import hiLayout from '@/locales/hi/layout.json';
 import hiPages from '@/locales/hi/pages.json';
 
-import mrTranslations from '@/locales/mr.json';
+import mrAuth from '@/locales/mr/auth.json';
+import mrCommon from '@/locales/mr/common.json';
+import mrLayout from '@/locales/mr/layout.json';
+import mrPages from '@/locales/mr/pages.json';
 
 const enMergedTranslations: Translations = {
   ...enAuth,
@@ -32,6 +35,14 @@ const hiMergedTranslations: Translations = {
   ...hiPages,
 };
 
+const mrMergedTranslations: Translations = {
+  ...mrAuth,
+  ...mrCommon,
+  ...mrLayout,
+  ...mrPages,
+};
+
+
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
@@ -43,7 +54,7 @@ export const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
 const translationsData: Record<Locale, Translations> = {
   en: enMergedTranslations,
-  mr: mrTranslations,
+  mr: mrMergedTranslations,
   hi: hiMergedTranslations,
 };
 
