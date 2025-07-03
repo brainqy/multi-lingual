@@ -1,3 +1,4 @@
+
 {
   "appName": "भाषा सेतू",
   "validation": {
@@ -26,7 +27,7 @@
     "dashboardButton": "डॅशबोर्डवर जा"
   },
   "common": {
-      "cancel": "Cancel",
-      "submit": "Submit"
+      "cancel": "रद्द करा",
+      "submit": "सबमिट करा"
   }
 }

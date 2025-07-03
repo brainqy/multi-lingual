@@ -27,7 +27,7 @@
     "dashboardButton": "डैशबोर्ड पर जाएं"
   },
   "common": {
-      "cancel": "Cancel",
-      "submit": "Submit"
+      "cancel": "रद्द करें",
+      "submit": "सबमिट करें"
   }
 }
