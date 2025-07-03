@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
-import { sampleInterviewQuestions } from '@/lib/sample-data';
+import { sampleInterviewQuestions, sampleUserProfile, sampleWalletBalance, sampleActivities } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond, XCircle } from 'lucide-react';
+import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond, XCircle, Coins } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 
 const KBC_QUESTION_COUNT = 10;
 const XP_LEVELS = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000];
+const GAME_COST = 500;
 
 export default function KBCGamePage() {
   const { t } = useI18n();
@@ -64,6 +65,15 @@ export default function KBCGamePage() {
 
 
   const startNewGame = () => {
+    if (sampleWalletBalance.coins < GAME_COST) {
+        toast({
+            title: "Insufficient Coins",
+            description: `You need ${GAME_COST} coins to play. Earn more through referrals or other activities!`,
+            variant: "destructive",
+        });
+        return;
+    }
+
     const filteredQuestions = selectedCategory === 'All'
       ? allQuestions
       : allQuestions.filter(q => q.category === selectedCategory);
@@ -77,6 +87,24 @@ export default function KBCGamePage() {
         });
         return;
     }
+
+    // Deduct cost and add transaction
+    sampleWalletBalance.coins -= GAME_COST;
+    sampleWalletBalance.transactions.unshift({
+        id: `txn-kbc-cost-${Date.now()}`,
+        tenantId: sampleUserProfile.tenantId,
+        userId: sampleUserProfile.id,
+        date: new Date().toISOString(),
+        description: `Fee for KBC Game (${selectedCategory})`,
+        amount: -GAME_COST,
+        type: 'debit',
+    });
+    toast({
+        title: `-${GAME_COST} Coins`,
+        description: "Good luck in the game!",
+        icon: <Coins className="h-5 w-5 text-yellow-500" />,
+    });
+
 
     const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
     setQuestions(shuffled.slice(0, KBC_QUESTION_COUNT));
@@ -116,6 +144,10 @@ export default function KBCGamePage() {
       setTimeout(() => setShowConfetti(false), 4000); 
 
       if (currentQuestionIndex === questions.length - 1) {
+        const totalXPWon = nextXpLevel;
+        sampleUserProfile.xpPoints = (sampleUserProfile.xpPoints || 0) + totalXPWon;
+        sampleActivities.unshift({ id: `act-kbc-win-${Date.now()}`, tenantId: 'platform', userId: sampleUserProfile.id, timestamp: new Date().toISOString(), description: `Won the KBC game and earned ${totalXPWon} XP!` });
+
         setGameMessage(`Congratulations! You've won the game with ${nextXpLevel} XP!`);
         toast({
           title: "You've Won!",
@@ -132,12 +164,17 @@ export default function KBCGamePage() {
         });
       }
     } else {
+      const totalXPWon = currentXpLevel;
+      if(totalXPWon > 0) {
+        sampleUserProfile.xpPoints = (sampleUserProfile.xpPoints || 0) + totalXPWon;
+        sampleActivities.unshift({ id: `act-kbc-loss-${Date.now()}`, tenantId: 'platform', userId: sampleUserProfile.id, timestamp: new Date().toISOString(), description: `Finished KBC game and earned ${totalXPWon} XP.` });
+      }
       setFeedbackMessage({
         correctAnswer: currentQuestion.correctAnswer || "Not provided",
         explanation: currentQuestion.answerOrTip
       });
       setIsGameOverDialogOpen(true);
-      setGameMessage(`Wrong Answer! You walk away with ${currentXpLevel} XP.`);
+      setGameMessage(`Wrong Answer! You walk away with ${totalXPWon} XP.`);
       setGameState('gameOver');
     }
   };
@@ -338,7 +375,7 @@ export default function KBCGamePage() {
       <Card className="max-w-2xl mx-auto text-center">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">Choose Your Topic</CardTitle>
-          <CardDescription>Select a category to start the KBC quiz game.</CardDescription>
+          <CardDescription>Select a category to start the KBC quiz game. It costs {GAME_COST} coins to play.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
            <Button

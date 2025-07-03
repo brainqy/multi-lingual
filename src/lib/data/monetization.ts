@@ -2,7 +2,7 @@
 import type { Wallet, PromoCode, Affiliate, AffiliateClick, AffiliateSignup, ReferralHistoryItem } from '@/types';
 import { sampleUserProfile } from './users';
 
-export const sampleWalletBalance: Wallet = {
+export let sampleWalletBalance: Wallet = {
     tenantId: sampleUserProfile.tenantId,
     userId: sampleUserProfile.id,
     coins: sampleUserProfile.role === 'manager' ? 500 : (sampleUserProfile.role === 'admin' ? 1000 : 150),
