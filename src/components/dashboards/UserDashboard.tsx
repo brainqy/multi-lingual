@@ -4,7 +4,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
-import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, sampleAppointments, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent, sampleChallenges } from "@/lib/sample-data";
+import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent, sampleChallenges } from "@/lib/sample-data";
+// import sampleAppointments from the correct file if it exists, e.g.:
+import { sampleAppointments } from "@/lib/data/appointments";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
