@@ -10,3 +10,4 @@ export * from './data/gamification';
 export * from './data/monetization';
 export * from './data/surveys';
 export * from './data/announcements';
+export * from './data/promotions';
