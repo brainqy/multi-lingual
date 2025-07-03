@@ -7,13 +7,15 @@ import { sampleInterviewQuestions } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond } from 'lucide-react';
+import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond, XCircle } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import Link from "next/link";
+import Confetti from "react-confetti";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
 
 
 const KBC_QUESTION_COUNT = 10;
@@ -37,6 +39,10 @@ export default function KBCGamePage() {
   const [fiftyFiftyOptions, setFiftyFiftyOptions] = useState<string[] | null>(null);
   const [audiencePollData, setAudiencePollData] = useState<{ name: string; votes: number }[] | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isGameOverDialogOpen, setIsGameOverDialogOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ correctAnswer: string; explanation: string } | null>(null);
   
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +51,7 @@ export default function KBCGamePage() {
   const nextXpLevel = XP_LEVELS[currentQuestionIndex];
 
   useEffect(() => {
-    // Load all potential questions once
+    setIsClient(true);
     const mcqQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length >= 2 && q.correctAnswer);
     setAllQuestions(mcqQuestions);
   }, []);
@@ -62,7 +68,7 @@ export default function KBCGamePage() {
       ? allQuestions
       : allQuestions.filter(q => q.category === selectedCategory);
       
-    if (filteredQuestions.length < 5) { // Need at least a few questions
+    if (filteredQuestions.length < 5) {
         toast({
             title: "Not Enough Questions",
             description: `There aren't enough questions in the "${selectedCategory}" category to start a game. Please select another topic or 'All'.`,
@@ -104,15 +110,34 @@ export default function KBCGamePage() {
     }
     setLockedAnswer(selectedAnswer);
     setShowResult(true);
+
     if (selectedAnswer === currentQuestion.correctAnswer) {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 4000); 
+
       if (currentQuestionIndex === questions.length - 1) {
-        setGameMessage(`Correct! You've won ${nextXpLevel} XP! Game complete!`);
+        setGameMessage(`Congratulations! You've won the game with ${nextXpLevel} XP!`);
+        toast({
+          title: "You've Won!",
+          description: "You've answered all questions correctly!",
+          duration: 5000,
+        });
         setGameState('gameOver');
       } else {
-        setGameMessage("Correct Answer! Click Next to continue.");
+        setGameMessage("Correct! Click 'Next Question' to continue.");
+         toast({
+          title: "Correct Answer!",
+          description: `You've secured ${nextXpLevel} XP!`,
+          icon: <Trophy className="h-6 w-6 text-yellow-500" />,
+        });
       }
     } else {
-      setGameMessage(`Wrong Answer! The correct answer was: ${currentQuestion.correctAnswer}. You walk away with ${currentXpLevel} XP.`);
+      setFeedbackMessage({
+        correctAnswer: currentQuestion.correctAnswer || "Not provided",
+        explanation: currentQuestion.answerOrTip
+      });
+      setIsGameOverDialogOpen(true);
+      setGameMessage(`Wrong Answer! You walk away with ${currentXpLevel} XP.`);
       setGameState('gameOver');
     }
   };
@@ -134,6 +159,8 @@ export default function KBCGamePage() {
         document.exitFullscreen();
     }
     setGameState('setup');
+    setIsGameOverDialogOpen(false);
+    setFeedbackMessage(null);
   };
 
   const useFiftyFifty = () => {
@@ -181,7 +208,6 @@ export default function KBCGamePage() {
 
   const KBCGame = () => (
     <div className="bg-slate-900 text-white p-4 md:p-6 rounded-lg shadow-2xl border-4 border-slate-700 h-full flex flex-col">
-      {/* Top Section: Lifelines & XP */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-2">
           <Button onClick={useFiftyFifty} disabled={!lifelines.fiftyFifty || lockedAnswer} variant="outline" className="bg-slate-800 border-slate-600 hover:bg-slate-700 text-white rounded-full aspect-square p-2 h-auto">50:50</Button>
@@ -199,7 +225,6 @@ export default function KBCGamePage() {
         </div>
       </div>
       
-      {/* Main content */}
       <div className="flex-grow flex flex-col justify-center items-center text-center">
         {audiencePollData ? (
           <div className="w-full h-48">
@@ -251,7 +276,6 @@ export default function KBCGamePage() {
         )}
       </div>
 
-      {/* Footer */}
       <div className="mt-6 text-center">
         <p className={cn("text-lg font-bold h-7", showResult && "animate-bounce",
           lockedAnswer && (lockedAnswer === currentQuestion.correctAnswer ? "text-green-400" : "text-red-400"))}>
@@ -290,6 +314,26 @@ export default function KBCGamePage() {
 
   return (
     <div ref={gameContainerRef} className="container mx-auto max-w-7xl py-8 px-4">
+    {isClient && showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
+    
+    <Dialog open={isGameOverDialogOpen} onOpenChange={setIsGameOverDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle className="text-destructive flex items-center gap-2"><XCircle className="h-6 w-6"/>Incorrect Answer</DialogTitle>
+                <DialogUIDescription>
+                    The correct answer was: <strong className="text-foreground">{feedbackMessage?.correctAnswer}</strong>
+                </DialogUIDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <h4 className="font-semibold mb-2 text-primary">Explanation:</h4>
+                <p className="text-sm text-muted-foreground">{feedbackMessage?.explanation}</p>
+            </div>
+            <DialogFooter>
+                <Button onClick={handleEndGameAndRestart} className="w-full">Play Again</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
     {gameState === 'setup' && (
       <Card className="max-w-2xl mx-auto text-center">
         <CardHeader>
