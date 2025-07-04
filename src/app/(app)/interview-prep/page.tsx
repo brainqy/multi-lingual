@@ -96,6 +96,9 @@ export default function InterviewPracticeHubPage() {
   const [selectedQuestionsForQuiz, setSelectedQuestionsForQuiz] = useState<Set<string>>(new Set());
 
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>(sampleCreatedQuizzes);
+  const [currentQuizPage, setCurrentQuizPage] = useState(1);
+  const quizzesPerPage = 6;
+
 
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 10;
@@ -131,6 +134,18 @@ export default function InterviewPracticeHubPage() {
     defaultValues: { isMCQ: false, mcqOptions: ["", "", "", ""], category: 'Common', difficulty: 'Medium' }
   });
   const isMCQSelected = watchQuestionForm("isMCQ");
+
+  const paginatedQuizzes = useMemo(() => {
+    const userQuizzes = createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id);
+    const startIndex = (currentQuizPage - 1) * quizzesPerPage;
+    return userQuizzes.slice(startIndex, startIndex + quizzesPerPage);
+  }, [createdQuizzes, currentQuizPage, currentUser.id]);
+
+  const totalQuizPages = useMemo(() => {
+    const userQuizzes = createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id);
+    return Math.ceil(userQuizzes.length / quizzesPerPage);
+  }, [createdQuizzes, currentUser.id]);
+
 
   // Logging effect for dialog state
   useEffect(() => {
@@ -315,7 +330,7 @@ export default function InterviewPracticeHubPage() {
                     (q.tags && q.tags.some(tag => tag.toLowerCase() === topic.toLowerCase()))
                 ))
                 .slice(0,5) 
-                .map(q => ({id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty })),
+                .map(q => ({id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty, baseScore: q.baseScore || 10 })),
         };
         sampleLiveInterviewSessions.unshift(newLiveSession); 
 
@@ -875,9 +890,9 @@ export default function InterviewPracticeHubPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id).length > 0 ? (
+          {paginatedQuizzes.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id).map(quiz => (
+              {paginatedQuizzes.map(quiz => (
                 <Card key={quiz.id} className="bg-secondary/40">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-md">{quiz.topic}</CardTitle>
@@ -904,6 +919,29 @@ export default function InterviewPracticeHubPage() {
             <p className="text-muted-foreground text-center py-4">No quizzes created yet. Create one from the Question Bank below!</p>
           )}
         </CardContent>
+         {totalQuizPages > 1 && (
+            <CardFooter className="border-t pt-4 flex justify-center items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentQuizPage(p => Math.max(1, p - 1))}
+                    disabled={currentQuizPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                    Page {currentQuizPage} of {totalQuizPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentQuizPage(p => Math.min(totalQuizPages, p + 1))}
+                    disabled={currentQuizPage === totalQuizPages}
+                >
+                    Next <ChevronRight className="h-4 w-4" />
+                </Button>
+            </CardFooter>
+        )}
       </Card>
 
 
