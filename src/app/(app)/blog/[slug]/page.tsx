@@ -1,4 +1,3 @@
-
 // This will be a server component
 import { sampleBlogPosts } from '@/lib/sample-data';
 import { notFound } from 'next/navigation';
@@ -11,7 +10,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+interface BlogPostPageProps {
+  params: { slug: string };
+}
+
+export default function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = params;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = sampleBlogPosts[postIndex];
