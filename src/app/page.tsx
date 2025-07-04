@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
 import { samplePlatformSettings, sampleBlogPosts } from "@/lib/sample-data";
 import { format, parseISO } from "date-fns";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 export default function LandingPage() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -236,44 +237,56 @@ export default function LandingPage() {
                 Get the latest insights, tips, and success stories to supercharge your career.
               </p>
             </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {latestBlogPosts.map((post) => (
-                <Link key={post.id} href={`/blog/${post.slug}`} passHref>
-                  <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
-                    {post.imageUrl && (
-                      <div className="relative w-full h-48">
-                        <Image
-                          src={post.imageUrl}
-                          alt={post.title}
-                          layout="fill"
-                          objectFit="cover"
-                          data-ai-hint="blog post image"
-                        />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="text-xl leading-tight">{post.title}</CardTitle>
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground pt-1">
-                        <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {post.author}</span>
-                        <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
-                    </CardContent>
-                    <CardFooter className="border-t pt-4 mt-auto">
-                       <div className="flex flex-wrap gap-1">
-                         {post.tags?.slice(0, 2).map(tag => (
-                           <span key={tag} className="px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full flex items-center gap-1">
-                             <Tag className="h-3 w-3"/>{tag}
-                           </span>
-                         ))}
-                       </div>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: latestBlogPosts.length > 5,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {latestBlogPosts.map((post) => (
+                  <CarouselItem key={post.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <Link href={`/blog/${post.slug}`} passHref>
+                      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
+                        {post.imageUrl && (
+                          <div className="relative w-full h-40">
+                            <Image
+                              src={post.imageUrl}
+                              alt={post.title}
+                              layout="fill"
+                              objectFit="cover"
+                              data-ai-hint="blog post image"
+                            />
+                          </div>
+                        )}
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-lg leading-tight line-clamp-2">{post.title}</CardTitle>
+                          <div className="flex items-center space-x-2 text-xs text-muted-foreground pt-1">
+                            <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {post.author}</span>
+                            <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 flex-grow">
+                          <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
+                        </CardContent>
+                        <CardFooter className="p-4 pt-0 mt-auto border-t">
+                           <div className="flex flex-wrap gap-1">
+                             {post.tags?.slice(0, 2).map(tag => (
+                               <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-secondary text-secondary-foreground rounded-full flex items-center gap-1">
+                                 <Tag className="h-2.5 w-2.5"/>{tag}
+                               </span>
+                             ))}
+                           </div>
+                        </CardFooter>
+                      </Card>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="ml-[-1rem] bg-card hover:bg-secondary" />
+              <CarouselNext className="mr-[-1rem] bg-card hover:bg-secondary" />
+            </Carousel>
             <div className="text-center mt-10">
               <Link href="/blog">
                 <Button variant="outline" className="px-6 py-2">
