@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -46,7 +47,8 @@ export default function NumberMatchGamePage() {
       return;
     }
 
-    // Debit cost and add transaction
+    // Debit cost and add transaction ONCE per play session.
+    // This logic assumes a "play" click is one attempt.
     sampleWalletBalance.coins -= GAME_COST;
     sampleWalletBalance.transactions.unshift({
       id: `txn-gamecost-${Date.now()}`,
@@ -97,18 +99,6 @@ export default function NumberMatchGamePage() {
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
         const prize = Math.floor(Math.random() * (GAME_COST * 0.05)); // Random prize up to 5% of cost
-        sampleWalletBalance.coins += prize;
-        if (prize > 0) { // Only record a transaction if a prize was actually won
-            sampleWalletBalance.transactions.unshift({
-                id: `txn-gameprize-${Date.now()}`,
-                tenantId: sampleUserProfile.tenantId,
-                userId: sampleUserProfile.id,
-                date: new Date().toISOString(),
-                description: "Number Match Game Consolation Prize",
-                amount: prize,
-                type: 'credit',
-            });
-        }
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
         
@@ -121,6 +111,19 @@ export default function NumberMatchGamePage() {
         if (newAttemptsLeft <= 0) {
           setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
           setIsGameActive(false);
+          // Add final consolation prize to wallet and create a single transaction
+          if (updatedTotalConsolation > 0) {
+            sampleWalletBalance.coins += updatedTotalConsolation;
+            sampleWalletBalance.transactions.unshift({
+              id: `txn-gameprize-total-${Date.now()}`,
+              tenantId: sampleUserProfile.tenantId,
+              userId: sampleUserProfile.id,
+              date: new Date().toISOString(),
+              description: "Number Match Game Consolation Prize (Total)",
+              amount: updatedTotalConsolation,
+              type: 'credit',
+            });
+          }
         } else {
           setMessage("Not a match. Better luck next time!");
         }
