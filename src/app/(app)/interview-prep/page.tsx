@@ -791,7 +791,7 @@ export default function InterviewPracticeHubPage() {
       </CardFooter>
     </Card>
   );
-}
+};
 
   const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
     const [formattedDateTime, setFormattedDateTime] = useState<string | null>(null);
@@ -1004,54 +1004,50 @@ export default function InterviewPracticeHubPage() {
 
             <ScrollArea className="h-[500px] pr-2 -mr-2">
                 {paginatedBankQuestions.length > 0 ? (
-                    paginatedBankQuestions.map(q => (
-                    <Accordion key={q.id} type="single" collapsible className="border rounded-md mb-2 bg-card shadow-sm hover:shadow-md transition-shadow">
-                        <AccordionItem value={`item-${q.id}`} className="border-b-0">
-                          <AccordionTrigger
-                            className="px-4 py-3 text-left text-sm font-medium group hover:no-underline data-[state=open]:border-b"
-                          >
-                            <div className="flex items-start flex-1 gap-3 w-full">
-                                <div className="flex items-center pt-0.5">
-                                    <Checkbox
-                                        id={`select-q-${q.id}`}
-                                        checked={selectedQuestionsForQuiz.has(q.id)}
-                                        onCheckedChange={() => handleToggleQuestionForQuiz(q.id)}
-                                        aria-label={`Select question: ${q.questionText}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
+                    <Accordion type="multiple" className="w-full space-y-2">
+                    {paginatedBankQuestions.map(q => (
+                      <AccordionItem key={q.id} value={`item-${q.id}`} className="border rounded-md bg-card shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start gap-3 p-3">
+                            <div className="flex items-center pt-1">
+                                <Checkbox
+                                    id={`select-q-${q.id}`}
+                                    checked={selectedQuestionsForQuiz.has(q.id)}
+                                    onCheckedChange={() => handleToggleQuestionForQuiz(q.id)}
+                                    aria-label={`Select question: ${q.questionText}`}
+                                />
+                            </div>
+                            <AccordionTrigger className="flex-1 p-0 text-left hover:no-underline justify-between">
+                                <div className="flex-1 text-left min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        {getCategoryIcon(q.category)}
+                                        <span className="font-medium text-foreground">{q.questionText}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                                        <span>ID: {q.id}</span>
+                                        <span className="mx-1">|</span>
+                                        {q.difficulty && <Badge variant="outline" className="text-[10px] px-1 py-0">{q.difficulty}</Badge>}
+                                        {q.tags && q.tags.length > 0 && (<span className="mx-1 hidden sm:inline">|</span>)}
+                                        {q.tags?.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0 hidden sm:inline-flex">{tag}</Badge>)}
+                                    </div>
                                 </div>
-                              <div className="flex-1 text-left min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  {getCategoryIcon(q.category)}
-                                  <span className="font-medium text-foreground">{q.questionText}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-                                  <span>ID: {q.id}</span>
-                                  <span className="mx-1">|</span>
-                                  {q.difficulty && <Badge variant="outline" className="text-[10px] px-1 py-0">{q.difficulty}</Badge>}
-                                  {q.tags && q.tags.length > 0 && (<span className="mx-1 hidden sm:inline">|</span>)}
-                                  {q.tags?.slice(0,2).map(tag => <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0 hidden sm:inline-flex">{tag}</Badge>)}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                            </AccordionTrigger>
+                            <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleToggleBookmarkQuestion(q.id); }}>
-                                  <BookmarkIcon className={cn("h-4 w-4", q.bookmarkedBy?.includes(currentUser.id) && "fill-yellow-400 text-yellow-500")}/>
+                                    <BookmarkIcon className={cn("h-4 w-4", q.bookmarkedBy?.includes(currentUser.id) && "fill-yellow-400 text-yellow-500")} />
                                 </Button>
                                 {(q.createdBy === currentUser.id || currentUser.role === 'admin') && (
-                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditQuestionDialog(q); }}>
-                                    <Edit3 className="h-4 w-4"/>
-                                  </Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditQuestionDialog(q); }}>
+                                        <Edit3 className="h-4 w-4" />
+                                    </Button>
                                 )}
                                 {currentUser.role === 'admin' && (
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); handleDeleteQuestion(q.id);}}>
-                                     <XCircleIcon className="h-4 w-4"/>
-                                  </Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); handleDeleteQuestion(q.id); }}>
+                                        <XCircleIcon className="h-4 w-4" />
+                                    </Button>
                                 )}
-                                {/* ChevronDown removed from here, AccordionTrigger provides its own */}
-                              </div>
                             </div>
-                          </AccordionTrigger>
-                        <AccordionContent className="px-4 pb-3 pt-1 space-y-3">
+                        </div>
+                        <AccordionContent className="px-4 pb-3 pt-0 space-y-3">
                             <div className="bg-primary/5 p-3 rounded-md">
                                 <p className="text-xs font-semibold text-primary mb-1">Suggested Answer/Tip:</p>
                                 <p className="text-xs text-foreground whitespace-pre-line">{q.answerOrTip}</p>
@@ -1130,9 +1126,10 @@ export default function InterviewPracticeHubPage() {
                             )}
 
                         </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                      </AccordionItem>
                     ))
+                    )}
+                    </Accordion>
                 ) : (
                     <p className="text-muted-foreground text-center py-6">No questions found matching your criteria.</p>
                 )}
