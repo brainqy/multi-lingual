@@ -29,6 +29,7 @@ export default function NumberMatchGamePage() {
   const [totalConsolationPrize, setTotalConsolationPrize] = useState(0);
   const [lastPrize, setLastPrize] = useState(0);
   const [showPrize, setShowPrize] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -41,25 +42,30 @@ export default function NumberMatchGamePage() {
       }
       return;
     }
+    
+    // Check for fee only on the first play of a session
+    if (!gameStarted) {
+      if (sampleWalletBalance.coins < GAME_COST) {
+        toast({ title: "Insufficient Coins", description: `You need ${GAME_COST} coins to play.`, variant: "destructive" });
+        return;
+      }
 
-    if (sampleWalletBalance.coins < GAME_COST) {
-      toast({ title: "Insufficient Coins", description: `You need ${GAME_COST} coins to play.`, variant: "destructive" });
-      return;
+      // Deduct cost and add transaction ONCE per game session.
+      sampleWalletBalance.coins -= GAME_COST;
+      sampleWalletBalance.transactions.unshift({
+        id: `txn-gamecost-${Date.now()}`,
+        tenantId: sampleUserProfile.tenantId,
+        userId: sampleUserProfile.id,
+        date: new Date().toISOString(),
+        description: "Number Match Game Fee",
+        amount: -GAME_COST,
+        type: 'debit',
+      });
+      setGameStarted(true); // Mark the game as started, so the fee isn't charged again
+      toast({ title: `-${GAME_COST} Coins`, description: "Good luck!" });
     }
 
-    // Debit cost and add transaction ONCE per play session.
-    // This logic assumes a "play" click is one attempt.
-    sampleWalletBalance.coins -= GAME_COST;
-    sampleWalletBalance.transactions.unshift({
-      id: `txn-gamecost-${Date.now()}`,
-      tenantId: sampleUserProfile.tenantId,
-      userId: sampleUserProfile.id,
-      date: new Date().toISOString(),
-      description: "Number Match Game Fee",
-      amount: -GAME_COST,
-      type: 'debit',
-    });
-
+    // Proceed with rolling logic for every attempt
     setIsRolling(true);
     setMessage("Rolling...");
     setShowPrize(false);
@@ -98,7 +104,7 @@ export default function NumberMatchGamePage() {
         });
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
-        const prize = Math.floor(Math.random() * (GAME_COST * 0.05)); // Random prize up to 5% of cost
+        const prize = Math.floor(Math.random() * (GAME_COST * 0.05)); 
         const updatedTotalConsolation = totalConsolationPrize + prize;
         setTotalConsolationPrize(updatedTotalConsolation);
         
@@ -111,7 +117,6 @@ export default function NumberMatchGamePage() {
         if (newAttemptsLeft <= 0) {
           setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
           setIsGameActive(false);
-          // Add final consolation prize to wallet and create a single transaction
           if (updatedTotalConsolation > 0) {
             sampleWalletBalance.coins += updatedTotalConsolation;
             sampleWalletBalance.transactions.unshift({
@@ -140,6 +145,7 @@ export default function NumberMatchGamePage() {
     setIsRolling(false);
     setTotalConsolationPrize(0);
     setShowPrize(false);
+    setGameStarted(false); // Reset the game started flag for the next session
   };
 
   return (
