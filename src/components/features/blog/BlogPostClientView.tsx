@@ -1,10 +1,11 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { sampleUserProfile, sampleBlogPosts } from '@/lib/sample-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft } from 'lucide-react';
+import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { format, parseISO, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -16,16 +17,36 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { CommunityComment, BlogPost } from '@/types';
 
-// The client component will receive the post as a prop
-interface BlogPostClientViewProps {
-  post: BlogPost;
-  postIndex: number;
-}
-
-export default function BlogPostClientView({ post, postIndex }: BlogPostClientViewProps) {
+export default function BlogPostClientView() {
+  const params = useParams();
+  const router = useRouter();
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
+
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [postIndex, setPostIndex] = useState<number>(-1);
+  const [isLoading, setIsLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
+
+  useEffect(() => {
+    const slug = params.slug as string;
+    if (slug) {
+      const foundIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
+      if (foundIndex !== -1) {
+        setPost(sampleBlogPosts[foundIndex]);
+        setPostIndex(foundIndex);
+      } else {
+        // Post not found, redirect to a 404 page or back to the blog
+        router.push('/blog');
+        toast({
+          title: "Post Not Found",
+          description: "The requested blog post could not be found.",
+          variant: "destructive"
+        });
+      }
+    }
+    setIsLoading(false);
+  }, [params.slug, router, toast]);
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -36,7 +57,7 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
   };
   
   const handleGenericShare = () => {
-    if (navigator.share) {
+    if (navigator.share && post) {
       navigator.share({
         title: post.title,
         text: post.excerpt,
@@ -50,7 +71,7 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim()) {
+    if (!commentText.trim() || !post) {
       toast({ title: "Empty Comment", description: "Cannot submit an empty comment.", variant: "destructive"});
       return;
     }
@@ -62,16 +83,28 @@ export default function BlogPostClientView({ post, postIndex }: BlogPostClientVi
       userAvatar: currentUser.profilePictureUrl,
       timestamp: new Date().toISOString(),
       comment: commentText.trim(),
-      postId: ''
+      postId: post.id,
     };
 
-    // Update the sampleBlogPosts array (in a real app, this would be an API call)
     const updatedPost = { ...post, comments: [...(post.comments || []), newComment] };
     sampleBlogPosts[postIndex] = updatedPost;
+    setPost(updatedPost);
 
     setCommentText('');
     toast({ title: "Comment Added", description: "Your comment has been posted." });
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return null; // Render nothing while redirecting
+  }
 
   return (
      <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8 py-8">
