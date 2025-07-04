@@ -790,36 +790,22 @@ export default function InterviewPracticeHubPage() {
         )}
       </CardFooter>
     </Card>
-  );
-};
+    );
+  };
 
   const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
-    const [formattedDateTime, setFormattedDateTime] = useState<string | null>(null);
-    
-    useEffect(() => {
-      if (isoDateString) {
-        try {
-          const sessionDate = parseISO(isoDateString);
-          const datePart = format(sessionDate, "MMM dd, yyyy");
-          const timePart = format(sessionDate, "p"); // Time with AM/PM
-          setFormattedDateTime(`${datePart} - ${timePart}`);
-        } catch (e) {
-          console.error("[SessionDateTime] Error formatting date:", isoDateString, e);
-          setFormattedDateTime("Invalid Date");
-        }
-      } else {
-        setFormattedDateTime("Date not set");
-      }
-    }, [isoDateString]);
-  
-    if (!formattedDateTime && isoDateString) {
-      try {
-        return <span>{format(parseISO(isoDateString), "MMM dd, yyyy")} - Loading time...</span>;
-      } catch {
-        return <span>Invalid Date</span>;
-      }
+    if (!isoDateString) {
+        return <span>Date not set</span>;
     }
-    return <span>{formattedDateTime || "Date not set"}</span>;
+    try {
+        const sessionDate = parseISO(isoDateString);
+        const datePart = format(sessionDate, "MMM dd, yyyy");
+        const timePart = format(sessionDate, "p");
+        return <span>{`${datePart} - ${timePart}`}</span>;
+    } catch (e) {
+        console.error("[SessionDateTime] Error formatting date:", isoDateString, e);
+        return <span>Invalid Date</span>;
+    }
   };
 
 
@@ -1230,3 +1216,5 @@ export default function InterviewPracticeHubPage() {
     </div>
   );
 }
+
+    
