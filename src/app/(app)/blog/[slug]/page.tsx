@@ -1,12 +1,7 @@
-
 // This will be a server component
 import { sampleBlogPosts } from '@/lib/sample-data';
 import { notFound } from 'next/navigation';
 import BlogPostClientView from '@/components/features/blog/BlogPostClientView';
-
-type PageProps = {
-  params: { slug: string };
-};
 
 // Generate static paths for each blog post
 export async function generateStaticParams() {
@@ -15,7 +10,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function BlogPostPage({ params }: PageProps) {
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = sampleBlogPosts[postIndex];
