@@ -10,11 +10,8 @@ export async function generateStaticParams() {
   }));
 }
 
-interface BlogPostPageProps {
-  params: { slug: string };
-}
-
-export default function BlogPostPage({ params }: BlogPostPageProps) {
+// Define the props inline to avoid build-time type conflicts
+export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const postIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
   const post = sampleBlogPosts[postIndex];
