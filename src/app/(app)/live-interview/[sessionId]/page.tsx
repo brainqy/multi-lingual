@@ -1,13 +1,13 @@
-
 import LiveInterviewClientView from '@/components/features/live-interview/LiveInterviewClientView';
-import { sampleLiveInterviewSessions } from '@/lib/sample-data';
 
-// This function generates the static paths for each live interview session at build time.
-export async function generateStaticParams() {
-  return sampleLiveInterviewSessions.map((session) => ({
-    sessionId: session.id,
-  }));
-}
+// By removing generateStaticParams, this page will be dynamically rendered
+// at request time, which may help with build errors.
+// import { sampleLiveInterviewSessions } from '@/lib/sample-data';
+// export async function generateStaticParams() {
+//   return sampleLiveInterviewSessions.map((session) => ({
+//     sessionId: session.id,
+//   }));
+// }
 
 // The page component itself is now a Server Component that wraps the client view.
 export default function LiveInterviewPageWrapper() {
