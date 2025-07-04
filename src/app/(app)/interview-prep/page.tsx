@@ -907,7 +907,7 @@ export default function InterviewPracticeHubPage() {
                         <Play className="mr-1 h-4 w-4"/>Start Quiz
                     </Button>
                     {(quiz.userId === currentUser.id || currentUser.role === 'admin') && (
-                      <Button size="sm" variant="outline" onClick={() => router.push(`/interview-prep/quiz/edit/${quiz.id}`)}>
+                      <Button size="sm" variant="outline" onClick={() => router.push(`/interview-prep/quiz/edit?quizId=${quiz.id}`)}>
                         <Edit3 className="mr-1 h-4 w-4"/>Edit
                       </Button>
                     )}
