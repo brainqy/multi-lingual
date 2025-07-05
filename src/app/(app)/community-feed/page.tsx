@@ -477,10 +477,10 @@ export default function CommunityFeedPage() {
   }, [posts, filter, currentUser.id, currentUser.role, currentUser.tenantId]);
 
   return (
-      <>
-      <div className="flex items-center justify-between mb-6">
+    <>
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Community Feed</h1>
-         <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+         <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
           <PlusCircle className="mr-2 h-5 w-5" /> Create New Post
         </Button>
       </div>
@@ -630,12 +630,12 @@ export default function CommunityFeedPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <h2 className="text-2xl font-semibold">Recent Posts</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-muted-foreground" />
               <Select value={filter} onValueChange={(value: 'all' | 'text' | 'poll' | 'event' | 'request' | 'my_posts' | 'flagged') => setFilter(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter posts" />
                 </SelectTrigger>
                 <SelectContent>
@@ -847,7 +847,7 @@ export default function CommunityFeedPage() {
             </div>
           )}
         </div>
-        <aside className="lg:col-span-1 space-y-6">
+        <aside className="lg:col-span-1 space-y-6 hidden lg:block">
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary"/>Most Active Users</CardTitle>

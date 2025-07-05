@@ -699,8 +699,8 @@ export default function LiveInterviewClientView() {
         </p>
       </div>
 
-      <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4 overflow-hidden">
-        <div className="lg:col-span-2 bg-black rounded-lg flex flex-col p-1 md:p-2 relative shadow-2xl justify-between overflow-hidden">
+      <div className="flex-grow grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-4 overflow-hidden">
+        <div className="lg:col-span-3 bg-black rounded-lg flex flex-col p-1 md:p-2 relative shadow-2xl justify-between overflow-hidden">
           <div className="w-full aspect-video bg-slate-800 rounded-md flex items-center justify-center text-slate-400 relative overflow-hidden mb-1 md:mb-2 flex-grow">
             <video ref={mainVideoRef} className={cn("w-full h-full object-contain", !mainFeedIsActive && "hidden" )} autoPlay playsInline muted={activeStreamType === 'camera' ? false : true} />
             {!mainFeedIsActive && (

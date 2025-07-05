@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState } from "react";
@@ -121,7 +122,7 @@ export default function ResumeBuilderPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-var(--header-height,4rem))]"> {/* Adjust for header height */}
+    <div className="flex flex-col min-h-screen">
       <div className="bg-slate-800 text-white py-3 px-4 md:px-8">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -131,9 +132,9 @@ export default function ResumeBuilderPage() {
         </div>
       </div>
 
-      <div className="flex-grow flex flex-col md:flex-row">
+      <div className="flex-grow flex flex-col lg:flex-row">
         {/* Stepper Sidebar */}
-        <aside className="w-full md:w-72 bg-slate-700 text-slate-200 p-6 space-y-4 flex-shrink-0">
+        <aside className="w-full lg:w-72 bg-slate-700 text-slate-200 p-6 space-y-4 flex-shrink-0">
           <ResumeBuilderStepper currentStep={currentStep} onStepClick={handleStepClick} />
            <div className="pt-10 text-xs text-slate-400 space-y-1">
                 <p>© {new Date().getFullYear()} JobMatch AI. All rights reserved.</p>
@@ -195,7 +196,7 @@ export default function ResumeBuilderPage() {
         </main>
 
         {/* Resume Preview Area */}
-        <aside className="w-full md:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
+        <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
           <ResumePreview data={resumeData} templateId={resumeData.templateId} />
            <Button 
             variant="outline" 
