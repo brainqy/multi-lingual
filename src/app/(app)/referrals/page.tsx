@@ -95,19 +95,21 @@ export default function ReferralsPage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="referral-code">{t("referrals.referralCodeLabel")}</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Input id="referral-code" value={user.referralCode || 'DEFAULT123'} readOnly className="font-mono flex-grow"/>
-              <Button variant="outline" size="icon" title={t("referrals.copyButton")} onClick={() => copyToClipboard(user.referralCode || 'DEFAULT123')} className="shrink-0">
+              <Button variant="outline" title={t("referrals.copyButton")} onClick={() => copyToClipboard(user.referralCode || 'DEFAULT123')} className="shrink-0">
                 <Copy className="h-4 w-4" />
+                <span className="ml-2 sm:hidden">Copy Code</span>
               </Button>
             </div>
           </div>
           <div>
             <Label htmlFor="referral-link">{t("referrals.referralLinkLabel")}</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Input id="referral-link" value={referralLink} readOnly className="flex-grow"/>
-              <Button variant="outline" size="icon" title={t("referrals.copyButton")} onClick={() => copyToClipboard(referralLink)} className="shrink-0">
+              <Button variant="outline" title={t("referrals.copyButton")} onClick={() => copyToClipboard(referralLink)} className="shrink-0">
                 <LinkIcon className="h-4 w-4" />
+                <span className="ml-2 sm:hidden">Copy Link</span>
               </Button>
             </div>
           </div>
