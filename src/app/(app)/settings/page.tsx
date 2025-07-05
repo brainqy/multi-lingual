@@ -62,11 +62,9 @@ export default function SettingsPage() {
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
-      setIsDarkMode(storedTheme === 'dark');
-      document.documentElement.classList.toggle('dark', storedTheme === 'dark');
-    } else if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
+      const darkMode = storedTheme === 'dark';
+      setIsDarkMode(darkMode);
+      document.documentElement.classList.toggle('dark', darkMode);
     }
 
     if (currentUser.role === 'manager' && currentUser.tenantId) {
