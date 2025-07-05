@@ -12,125 +12,6 @@
       "logout": "लॉग आउट"
     }
   },
-  "landingPage": {
-    "subtitle": "बहुभाषिक संवादासाठी आपले प्रवेशद्वार",
-    "description": "अनेक भाषांमध्ये अखंड भाषांतर आणि सामग्री व्यवस्थापनाचा अनुभव घ्या. आमच्या समुदायात सामील व्हा आणि भाषेचे अडथळे दूर करा.",
-    "exploreDashboard": "डॅशबोर्ड एक्सप्लोर करा",
-    "privacy": "गोपनीयता धोरण",
-    "terms": "सेवा अटी"
-  },
-  "localizedPage": {
-    "title": "स्थानिकीकृत सामग्री क्षेत्र",
-    "greeting": "स्थानिक भाषेसाठी पृष्ठावर आपले स्वागत आहे:",
-    "description": "हे पृष्ठ निवडलेल्या भाषा मार्गासाठी विशिष्ट असू शकणारी सामग्री दर्शवते. प्रदर्शित केलेली वास्तविक भाषा i18n संदर्भावर अवलंबून असते, जी भाषा स्विचरद्वारे बदलली जाऊ शकते.",
-    "backHome": "मुख्य पृष्ठावर परत"
-  },
-  "userDashboard": {
-    "title": "वापरकर्ता डॅशबोर्ड",
-    "customizeButton": "डॅशबोर्ड सानुकूलित करा",
-    "progress": {
-      "title": "तुमची प्रगती अवलोकन",
-      "level": "स्तर {level}",
-      "totalXp": "एकूण XP: {xp}",
-      "dayStreak": "दिवसाची स्ट्रीक",
-      "badgesEarned": "बॅजेस"
-    },
-    "promotionalSpotlight": {
-        "title": "प्रीमियम वैशिष्ट्ये अनलॉक करा!",
-        "description": "प्रगत विश्लेषण, अमर्यादित बायोडाटा स्कॅन, प्राधान्य समर्थन आणि विशेष टेम्पलेट्ससह आपला JobMatch AI अनुभव श्रेणीसुधारित करा.",
-        "learnMoreButton": "अधिक जाणून घ्या"
-    },
-    "dailyChallenge": {
-      "title": "आजचे दैनिक आव्हान",
-      "description": "दररोज एका नवीन आव्हानासह आपली कौशल्ये वाढवा.",
-      "viewButton": "आव्हान सोडवा"
-    },
-    "stats": {
-      "resumesAnalyzed": {
-        "title": "विश्लेषित बायोडाटा",
-        "description": "गेल्या महिन्यापासून +{count}%"
-      },
-      "avgMatchScore": {
-        "title": "सरासरी जुळणी गुण",
-        "description": "गेल्या महिन्यापासून +{score}%"
-      },
-      "jobApplications": {
-        "title": "नोकरी अर्ज",
-        "description": "{count} मुलाखतीत"
-      },
-      "alumniConnections": {
-        "title": "माजी विद्यार्थी कनेक्शन",
-        "description": "या आठवड्यात +{count} नवीन कनेक्शन"
-      }
-    },
-    "charts": {
-      "jobApplicationStatus": {
-        "title": "नोकरी अर्ज स्थिती",
-        "description": "आपल्या वर्तमान अर्ज स्थितींचे अवलोकन."
-      },
-      "matchScoreOverTime": {
-        "title": "वेळेनुसार सरासरी जुळणी गुण",
-        "description": "आपल्या बायोडाटा जुळणी गुणांमधील सुधारणांचा मागोवा घ्या."
-      }
-    },
-    "reminders": {
-      "jobApp": {
-        "title": "आगामी नोकरी अर्ज स्मरणपत्रे",
-        "description": "आपल्या नोकरी अर्जांसाठी फॉलो-अप आणि अंतिम मुदत.",
-        "noReminders": "कोणतेही आगामी स्मरणपत्रे सेट केलेली नाहीत.",
-        "viewButton": "पहा"
-      }
-    },
-    "upcomingSessions": {
-      "title": "आगामी भेटी आणि मुलाखती",
-      "description": "आपले नियोजित मार्गदर्शन आणि सराव सत्र.",
-      "noSessions": "कोणतेही आगामी सत्र नाही.",
-      "typeLabel": "प्रकार",
-      "withLabel": "सह",
-      "dateLabel": "दिनांक",
-      "todayLabel": "(आज!)"
-    },
-    "recentActivities": {
-      "title": "अलीकडील क्रियाकलाप",
-      "description": "प्लॅटफॉर्मवरील आपल्या नवीनतम क्रिया.",
-      "noActivities": "दाखवण्यासाठी कोणतेही अलीकडील क्रियाकलाप नाहीत.",
-      "viewAllButton": "सर्व क्रियाकलाप पहा"
-    },
-    "welcomeTour": {
-      "title": "तुमच्या डॅशबोर्डवर स्वागत आहे!"
-    },
-    "customizeDialog": {
-      "title": "तुमचा डॅशबोर्ड सानुकूलित करा",
-      "description": "तुम्हाला तुमच्या डॅशबोर्डवर कोणती विजेट्स पहायची आहेत ते निवडा.",
-      "saveButton": "प्राधान्ये जतन करा",
-      "cancelButton": "रद्द करा"
-    },
-    "toast": {
-      "upgradeMock": {
-        "title": "अपग्रेड मॉक",
-        "description": "प्रीमियम वैशिष्ट्य पृष्ठ उघडेल."
-      },
-      "dashboardUpdated": {
-        "title": "डॅशबोर्ड अद्यतनित केले",
-        "description": "तुमची डॅशबोर्ड विजेट प्राधान्ये या सत्रासाठी जतन केली गेली आहेत."
-      },
-      "appointmentReminder": {
-        "title": "भेटीची आठवण",
-        "description": "तुमची \"{title}\" साठी {user} सोबत आज {time} वाजता भेट आहे."
-      }
-    },
-    "widgets": {
-      "promotionCard": "प्रमोशनल स्पॉटलाइट",
-      "jobApplicationStatusChart": "नोकरी अर्ज स्थिती चार्ट",
-      "matchScoreOverTimeChart": "वेळेनुसार जुळणी गुण चार्ट",
-      "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
-      "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
-      "recentActivities": "अलीकडील क्रियाकलाप"
-    }
-  },
-  "adminDashboard": {
-    "title": "प्रशासक डॅशबोर्ड"
-  },
   "userSettings": {
     "pageTitle": "सेटिंग्ज",
     "appearanceCardTitle": "स्वरूप",
@@ -243,6 +124,136 @@
       }
     }
   },
+  "aiMockInterview": {
+    "title": "AI मॉक इंटरव्यू",
+    "setup": "सेटअप",
+    "interview": "मुलाखत",
+    "feedback": "अभिप्राय",
+    "restart": "पुन्हा सुरू करा",
+    "loadingMessage": "तुमचे वैयक्तिकृत मुलाखत प्रश्न तयार करत आहे...",
+    "interviewerTitle": "AI मुलाखतकार{topic}",
+    "aiThinking": "AI तुमच्या उत्तराचे मूल्यांकन करत आहे...",
+    "feedbackReady": "अभिप्राय खाली तयार आहे.",
+    "questionHeader": "प्रश्न {current} पैकी {total}",
+    "questionCategory": "{category} - {difficulty}",
+    "yourAnswerLabel": "तुमचे उत्तर",
+    "answerPlaceholder": "तुमचे उत्तर येथे टाइप करा किंवा रेकॉर्ड करा...",
+    "listeningPlaceholder": "ऐकत आहे... स्पष्टपणे बोला.",
+    "record": "रेकॉर्ड करा",
+    "stopRecord": "रेकॉर्डिंग थांबवा",
+    "submit": "उत्तर सबमिट करा",
+    "feedbackTitle": "AI अभिप्राय",
+    "scoreLabel": "गुण",
+    "strengthsLabel": "सामर्थ्ये",
+    "improvementsLabel": "सुधारणेसाठी क्षेत्रे",
+    "nextQuestion": "पुढील प्रश्न",
+    "viewOverallReport": "एकूण अहवाल पहा",
+    "timesUpAlert": "वेळ संपली! कृपया तुमचे उत्तर सबमिट करा.",
+    "endAndReport": "समाप्त करा आणि अहवाल तयार करा",
+    "end": "समाप्त करा",
+    "youLabel": "तुम्ही",
+    "camDeniedTitle": "कॅमेरा नाकारला",
+    "camDeniedDesc": "कृपया कॅमेरा परवानगी सक्षम करा.",
+    "enterFullscreen": "पूर्णस्क्रीन प्रविष्ट करा",
+    "exitFullscreen": "पूर्णस्क्रीनमधून बाहेर पडा",
+    "unmute": "अनम्यूट करा",
+    "mute": "म्यूट करा",
+    "startVideo": "व्हिडिओ सुरू करा",
+    "stopVideo": "व्हिडिओ थांबवा",
+    "startRecording": "सत्र रेकॉर्डिंग सुरू करा",
+    "stopRecording": "सत्र रेकॉर्डिंग थांबवा",
+    "toast": {
+      "speechError": {
+        "title": "बोलण्यात त्रुटी",
+        "description": "एक त्रुटी आली: {error}. कृपया पुन्हा प्रयत्न करा किंवा तुमचे उत्तर टाइप करा."
+      },
+      "cameraError": {
+        "title": "कॅमेरा त्रुटी",
+        "description": "तुमच्या ब्राउझरद्वारे कॅमेरा प्रवेश समर्थित नाही."
+      },
+      "cameraDenied": {
+        "title": "कॅमेरा प्रवेश नाकारला",
+        "description": "हे वैशिष्ट्य वापरण्यासाठी कृपया तुमच्या ब्राउझर सेटिंग्जमध्ये कॅमेरा परवानगी सक्षम करा."
+      },
+      "fullscreenError": {
+        "title": "पूर्णस्क्रीन त्रुटी",
+        "description": "पूर्णस्क्रीन मोडमध्ये प्रवेश/बाहेर पडता आले नाही: {message}"
+      },
+      "setupFailed": {
+        "title": "सेटअप अयशस्वी",
+        "description": "मुलाखतीचे प्रश्न तयार करता आले नाहीत. कृपया भिन्न पर्याय वापरून पहा किंवा समर्थनाशी संपर्क साधा."
+      },
+      "apiQuotaError": {
+        "title": "API वापर मर्यादा ओलांडली",
+        "description": "तुम्ही तुमची Gemini API वापर मर्यादा ओलांडली आहे. कृपया तुमचे Google Cloud बिलिंग खाते तपासा."
+      },
+      "interviewReady": {
+        "title": "मुलाखत तयार!",
+        "description": "तुमच्यासाठी {count} प्रश्न तयार केले. शुभेच्छा!"
+      },
+      "evaluationFailed": {
+        "title": "मूल्यांकन अयशस्वी",
+        "description": "यावेळी तुमच्या उत्तराचे मूल्यांकन करता आले नाही. कृपया पुन्हा प्रयत्न करा."
+      },
+      "sessionIssue": {
+        "title": "सत्र समस्या",
+        "description": "मुलाखत पूर्ण करण्यासाठी सत्र डेटा सापडला नाही."
+      },
+      "noAnswers": {
+        "title": "कोणतेही उत्तर दिले नाही",
+        "description": "अभिप्राय मिळविण्यासाठी कृपया किमान एका प्रश्नाचे उत्तर द्या."
+      },
+      "feedbackFailed": {
+        "title": "अभिप्राय निर्मिती अयशस्वी",
+        "description": "एकूण मुलाखत अभिप्राय तयार करता आला नाही. कृपया पुन्हा प्रयत्न करा."
+      },
+      "interviewComplete": {
+        "title": "मुलाखत पूर्ण!",
+        "description": "तुमचा एकूण अभिप्राय अहवाल खाली तयार आहे."
+      },
+      "micMuted": {
+        "title": "माइक म्यूट केले"
+      },
+      "micUnmuted": {
+        "title": "माइक अनम्यूट केले"
+      },
+      "notSupported": {
+        "title": "समर्थित नाही",
+        "description": "तुमच्या ब्राउझरमध्ये स्पीच रेकग्निशन समर्थित नाही. कृपया तुमचे उत्तर टाइप करा."
+      },
+      "recordingNotSupported": {
+        "title": "रेकॉर्डिंग समर्थित नाही",
+        "description": "तुमच्या ब्राउझरद्वारे सत्र ऑडिओ रेकॉर्डिंग समर्थित नाही."
+      },
+      "micError": {
+        "title": "माइक प्रवेश त्रुटी",
+        "description": "रेकॉर्डिंगसाठी मायक्रोफोन प्रवेश मिळवता आला नाही."
+      },
+      "noAudioInput": {
+        "title": "ऑडिओ इनपुट नाही",
+        "description": "मायक्रोफोन म्यूट असल्यामुळे रेकॉर्डिंग सुरू करता येत नाही."
+      },
+      "recordingError": {
+        "title": "रेकॉर्डिंग त्रुटी",
+        "description": "रेकॉर्ड करण्यासाठी मीडिया स्ट्रीम तयार करण्यात अयशस्वी."
+      },
+      "recordingInitError": {
+        "title": "रेकॉर्डिंग सुरू करण्यात त्रुटी",
+        "description": "MediaRecorder सुरू करण्यात अयशस्वी."
+      },
+      "recordingStopped": {
+        "title": "रेकॉर्डिंग थांबले",
+        "description": "ऑडिओ रेकॉर्डिंग या सत्रात सेव्ह केले आहे."
+      },
+      "recordingStarted": {
+        "title": "रेकॉर्डिंग सुरू झाले"
+      },
+      "timesUp": {
+        "title": "वेळ संपली!",
+        "description": "कृपया तुमचे उत्तर सबमिट करा."
+      }
+    }
+  },
   "translateTool": {
     "title": "भाषांतर साधन",
     "enterTextLabel": "भाषांतरासाठी मजकूर प्रविष्ट करा",
@@ -257,3 +268,5 @@
     "hindi": "हिंदी"
   }
 }
+
+    
