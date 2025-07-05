@@ -142,7 +142,7 @@
   },
   "platformSettings": {
     "title": "Platform Settings",
-    "description": "Manage global settings for the ResumeMatch AI platform.",
+    "description": "Manage global settings for the JobMatch AI platform.",
     "saveButton": "Save All Settings",
     "validation": {
       "platformNameMin": "Platform name must be at least 3 characters.",
@@ -331,7 +331,7 @@
     "formLabels": {
       "tenantName": "Tenant Name (e.g., University Name, Company)",
       "tenantDomain": "Tenant Domain (Optional)",
-      "tenantDomainPlaceholder": "e.g., myuni.resumematch.ai",
+      "tenantDomainPlaceholder": "e.g., myuni.JobMatch.ai",
       "customLogoUrl": "Custom Logo URL (Optional)",
       "customLogoUrlPlaceholder": "https://example.com/logo.png",
       "primaryColor": "Primary Color (HSL or Hex)",
@@ -519,7 +519,7 @@
   },
   "referrals": {
     "pageTitle": "Referral Program",
-    "pageDescription": "Refer friends to ResumeMatch AI and earn rewards for every successful signup!",
+    "pageDescription": "Refer friends to JobMatch AI and earn rewards for every successful signup!",
     "yourReferralCardTitle": "Your Referral Link",
     "yourReferralCardDescription": "Share your unique link or code. When someone signs up, you get rewarded.",
     "referralCodeLabel": "Your Referral Code",
@@ -550,7 +550,7 @@
       },
       {
         "title": "Friend Signs Up",
-        "description": "Your friend clicks your link and successfully signs up on the ResumeMatch AI platform."
+        "description": "Your friend clicks your link and successfully signs up on the JobMatch AI platform."
       },
       {
         "title": "Earn Rewards",
@@ -648,9 +648,9 @@
   },
   "affiliates": {
     "title": "Affiliates Program",
-    "pageDescription": "Partner with ResumeMatch AI, share with your network, and earn commissions!",
+    "pageDescription": "Partner with JobMatch AI, share with your network, and earn commissions!",
     "yourDetails": "Your Affiliate Details",
-    "detailsDesc": "Use this code or link to promote ResumeMatch AI.",
+    "detailsDesc": "Use this code or link to promote JobMatch AI.",
     "codeLabel": "Your Unique Affiliate Code",
     "linkLabel": "Your Affiliate Link",
     "commissionRate": "Commission Rate",
@@ -676,7 +676,7 @@
       },
       {
         "title": "New User Signs Up",
-        "description": "A new user signs up on ResumeMatch AI through your unique referral link."
+        "description": "A new user signs up on JobMatch AI through your unique referral link."
       },
       {
         "title": "Earn Commission",
@@ -691,7 +691,7 @@
   "activityLog": {
     "title": "Activity Log",
     "recentActivities": "Recent Activities",
-    "description": "A log of your recent actions and system events within ResumeMatch AI.",
+    "description": "A log of your recent actions and system events within JobMatch AI.",
     "noActivities": "No activities recorded yet."
   },
   "appointments": {

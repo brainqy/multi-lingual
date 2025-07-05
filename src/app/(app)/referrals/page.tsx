@@ -17,7 +17,7 @@ export default function ReferralsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const user = sampleUserProfile;
-  const referralLink = `https://resumematch.ai/signup?ref=${user.referralCode || 'DEFAULT123'}`;
+  const referralLink = `https://JobMatch.ai/signup?ref=${user.referralCode || 'DEFAULT123'}`;
   const referralHistory = sampleReferralHistory.filter(r => r.referrerUserId === user.id); // Filter for current user
 
   const referralsCount = referralHistory.length;
@@ -35,8 +35,8 @@ export default function ReferralsPage() {
   const handleShare = () => {
      if (navigator.share) {
       navigator.share({
-        title: 'Join me on ResumeMatch AI!',
-        text: `Use my referral code ${user.referralCode || 'DEFAULT123'} to sign up for ResumeMatch AI!`,
+        title: 'Join me on JobMatch AI!',
+        text: `Use my referral code ${user.referralCode || 'DEFAULT123'} to sign up for JobMatch AI!`,
         url: referralLink,
       })
       .then(() => console.log('Successful share'))

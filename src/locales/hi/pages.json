@@ -14,7 +14,7 @@
   },
   "platformSettings": {
     "title": "प्लेटफ़ॉर्म सेटिंग्स",
-    "description": "ResumeMatch AI प्लेटफ़ॉर्म के लिए वैश्विक सेटिंग्स प्रबंधित करें।",
+    "description": "JobMatch AI प्लेटफ़ॉर्म के लिए वैश्विक सेटिंग्स प्रबंधित करें।",
     "saveButton": "सभी सेटिंग्स सहेजें"
   },
   "tenantManagement": {
@@ -52,7 +52,7 @@
     "formLabels": {
       "tenantName": "किरायेदार का नाम (उदा., विश्वविद्यालय का नाम, कंपनी)",
       "tenantDomain": "किरायेदार डोमेन (वैकल्पिक)",
-      "tenantDomainPlaceholder": "उदा., myuni.resumematch.ai",
+      "tenantDomainPlaceholder": "उदा., myuni.JobMatch.ai",
       "customLogoUrl": "कस्टम लोगो यूआरएल (वैकल्पिक)",
       "customLogoUrlPlaceholder": "https://example.com/logo.png",
       "primaryColor": "प्राथमिक रंग (एचएसएल या हेक्स)",
@@ -240,7 +240,7 @@
   },
   "referrals": {
     "pageTitle": "रेफरल कार्यक्रम",
-    "pageDescription": "दोस्तों को ResumeMatch AI में रेफर करें और हर सफल साइनअप पर इनाम पाएं!",
+    "pageDescription": "दोस्तों को JobMatch AI में रेफर करें और हर सफल साइनअप पर इनाम पाएं!",
     "yourReferralCardTitle": "आपकी रेफरल लिंक",
     "yourReferralCardDescription": "अपनी अनूठी लिंक या कोड साझा करें। जब कोई साइन अप करता है, तो आपको इनाम मिलता है।",
     "referralCodeLabel": "आपका रेफरल कोड",
@@ -271,7 +271,7 @@
       },
       {
         "title": "मित्र साइन अप करता है",
-        "description": "आपका दोस्त आपकी लिंक पर क्लिक करता है और ResumeMatch AI प्लेटफॉर्म पर सफलतापूर्वक साइन अप करता है।"
+        "description": "आपका दोस्त आपकी लिंक पर क्लिक करता है और JobMatch AI प्लेटफॉर्म पर सफलतापूर्वक साइन अप करता है।"
       },
       {
         "title": "पुरस्कार अर्जित करें",
@@ -369,9 +369,9 @@
   },
   "affiliates": {
     "title": "संबद्ध कार्यक्रम",
-    "pageDescription": "ResumeMatch AI के साथ भागीदार बनें, अपने नेटवर्क के साथ साझा करें, और कमीशन कमाएँ!",
+    "pageDescription": "JobMatch AI के साथ भागीदार बनें, अपने नेटवर्क के साथ साझा करें, और कमीशन कमाएँ!",
     "yourDetails": "आपके संबद्ध विवरण",
-    "detailsDesc": "ResumeMatch AI को बढ़ावा देने के लिए इस कोड या लिंक का उपयोग करें।",
+    "detailsDesc": "JobMatch AI को बढ़ावा देने के लिए इस कोड या लिंक का उपयोग करें।",
     "codeLabel": "आपका अनूठा संबद्ध कोड",
     "linkLabel": "आपकी संबद्ध लिंक",
     "commissionRate": "कमीशन दर",
@@ -397,7 +397,7 @@
       },
       {
         "title": "नया उपयोगकर्ता साइन अप करता है",
-        "description": "एक नया उपयोगकर्ता आपकी अनूठी रेफरल लिंक के माध्यम से ResumeMatch AI पर साइन अप करता है।"
+        "description": "एक नया उपयोगकर्ता आपकी अनूठी रेफरल लिंक के माध्यम से JobMatch AI पर साइन अप करता है।"
       },
       {
         "title": "कमीशन कमाएँ",
@@ -412,7 +412,7 @@
   "activityLog": {
     "title": "गतिविधि लॉग",
     "recentActivities": "हाल की गतिविधियाँ",
-    "description": "ResumeMatch AI मधील तुमच्या अलीकडील क्रिया आणि सिस्टम इव्हेंटचा लॉग.",
+    "description": "JobMatch AI मधील तुमच्या अलीकडील क्रिया आणि सिस्टम इव्हेंटचा लॉग.",
     "noActivities": "अद्याप कोणतेही क्रियाकलाप रेकॉर्ड केलेले नाहीत."
   },
   "appointments": {

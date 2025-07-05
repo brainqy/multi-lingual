@@ -21,7 +21,7 @@ export default function DocumentationPage() {
         <BookText className="h-8 w-8" /> Documentation
       </h1>
       <CardDescription>
-        Welcome to the ResumeMatch AI documentation. Here you'll find details about our platform's features and API.
+        Welcome to the JobMatch AI documentation. Here you'll find details about our platform's features and API.
       </CardDescription>
 
       <Card className="shadow-lg">
@@ -74,7 +74,7 @@ export default function DocumentationPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Code2 className="h-6 w-6 text-primary"/>API Documentation (Conceptual)</CardTitle>
-          <CardDescription>Information for developers looking to integrate with ResumeMatch AI. (These are conceptual examples and not yet live endpoints).</CardDescription>
+          <CardDescription>Information for developers looking to integrate with JobMatch AI. (These are conceptual examples and not yet live endpoints).</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">

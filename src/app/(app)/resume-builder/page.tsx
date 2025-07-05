@@ -136,7 +136,7 @@ export default function ResumeBuilderPage() {
         <aside className="w-full md:w-72 bg-slate-700 text-slate-200 p-6 space-y-4 flex-shrink-0">
           <ResumeBuilderStepper currentStep={currentStep} onStepClick={handleStepClick} />
            <div className="pt-10 text-xs text-slate-400 space-y-1">
-                <p>© {new Date().getFullYear()} ResumeMatch AI. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} JobMatch AI. All rights reserved.</p>
                 <div className="space-x-2">
                     <a href="/terms" className="hover:text-white">Terms</a>
                     <a href="/privacy" className="hover:text-white">Privacy Policy</a>

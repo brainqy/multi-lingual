@@ -6,7 +6,7 @@ export let samplePromotionalContent: PromotionalContent[] = [
     id: 'promo-1',
     isActive: true,
     title: 'Unlock Premium Features!',
-    description: 'Upgrade your ResumeMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
+    description: 'Upgrade your JobMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
     imageUrl: 'https://placehold.co/300x200.png',
     imageAlt: 'Retro motel sign against a blue sky',
     imageHint: 'motel sign',

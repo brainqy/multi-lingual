@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
   name: 'generateAiBlogPostPrompt',
   input: {schema: GenerateAiBlogPostInputSchema},
   output: {schema: GenerateAiBlogPostOutputSchema},
-  prompt: `You are an expert blog post writer for an Alumni Engagement Platform called "ResumeMatch AI".
+  prompt: `You are an expert blog post writer for an Alumni Engagement Platform called "JobMatch AI".
 Your task is to write an engaging and informative blog post on the topic: {{{topic}}}.
 
 Writing Style: {{{style}}}
@@ -56,7 +56,7 @@ Please generate the following for the blog post:
 4.  A list of 3-5 relevant 'suggestedTags' (lowercase, single words or short phrases).
 
 Ensure the content is original, well-written, and provides value to the reader.
-The platform helps users with resume analysis, job tracking, alumni connections, and career development. You can subtly weave in how ResumeMatch AI might help with the topic if it feels natural, but the primary focus should be the topic itself.
+The platform helps users with resume analysis, job tracking, alumni connections, and career development. You can subtly weave in how JobMatch AI might help with the topic if it feels natural, but the primary focus should be the topic itself.
 `,
 });
 

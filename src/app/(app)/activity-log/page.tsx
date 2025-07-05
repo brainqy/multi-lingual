@@ -21,7 +21,7 @@ export default function ActivityLogPage() {
             {t("activityLog.recentActivities", { default: "Recent Activities" })}
           </CardTitle>
           <CardDescription>
-            {t("activityLog.description", { default: "A log of your recent actions and system events within ResumeMatch AI." })}
+            {t("activityLog.description", { default: "A log of your recent actions and system events within JobMatch AI." })}
           </CardDescription>
         </CardHeader>
         <CardContent>

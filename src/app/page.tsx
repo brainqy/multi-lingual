@@ -44,14 +44,14 @@ export default function LandingPage() {
   ];
 
   const faqs = [
-    { question: "What is ResumeMatch AI?", answer: "ResumeMatch AI is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks." },
+    { question: "What is JobMatch AI?", answer: "JobMatch AI is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks." },
     { question: "How does AI Mock Interview work?", answer: "AI Mock Interview generates questions based on your job role and evaluates your answers with detailed feedback." },
-    { question: "Is ResumeMatch AI free?", answer: "Yes, you can start using ResumeMatch AI for free. Premium features are available with subscription plans." },
-    { question: "Can I customize my resume templates?", answer: "Absolutely! ResumeMatch AI provides customizable templates to suit your needs." },
+    { question: "Is JobMatch AI free?", answer: "Yes, you can start using JobMatch AI for free. Premium features are available with subscription plans." },
+    { question: "Can I customize my resume templates?", answer: "Absolutely! JobMatch AI provides customizable templates to suit your needs." },
   ];
 
   const customerReviews = [
-    { name: "Alice Wonderland", review: "ResumeMatch AI helped me land my dream job at Google! The AI Mock Interview feature was a game-changer.", avatar: "https://picsum.photos/seed/alice/50/50" },
+    { name: "Alice Wonderland", review: "JobMatch AI helped me land my dream job at Google! The AI Mock Interview feature was a game-changer.", avatar: "https://picsum.photos/seed/alice/50/50" },
     { name: "Bob The Builder", review: "The resume analyzer gave me insights I never thought of. Highly recommend this platform!", avatar: "https://picsum.photos/seed/bob/50/50" },
     { name: "Charlie Brown", review: "The alumni network feature connected me with mentors who guided me through my career transition.", avatar: "https://picsum.photos/seed/charlie/50/50" },
     { name: "Diana Prince", review: "The gamified rewards kept me motivated throughout my job search journey. Great platform!", avatar: "https://picsum.photos/seed/diana/50/50" },
@@ -113,7 +113,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">All The Tools You Need to Succeed</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From crafting the perfect resume to acing the interview and building your network, ResumeMatch AI provides a comprehensive suite of tools.
+              From crafting the perfect resume to acing the interview and building your network, JobMatch AI provides a comprehensive suite of tools.
             </p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-10">
               {coreFeatures.map((feature, index) => (
@@ -302,7 +302,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Ready to Elevate Your Career?</h2>
             <p className="mt-4 max-w-xl mx-auto text-lg text-muted-foreground">
-              Stop guessing and start getting results. Sign up for ResumeMatch AI today and take the next step in your professional journey.
+              Stop guessing and start getting results. Sign up for JobMatch AI today and take the next step in your professional journey.
             </p>
             <div className="mt-8">
               <Link href="/auth/signup">

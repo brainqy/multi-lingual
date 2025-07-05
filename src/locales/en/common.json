@@ -1,6 +1,6 @@
 
 {
-  "appName": "ResumeMatch AI",
+  "appName": "JobMatch AI",
   "validation": {
     "email": "Please enter a valid email address.",
     "required": "This field is required.",
