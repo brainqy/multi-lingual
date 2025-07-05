@@ -152,36 +152,68 @@ export default function ReferralsPage() {
           {referralHistory.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">{t("referrals.noHistory")}</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("referrals.tableReferredUser")}</TableHead>
-                  <TableHead>{t("referrals.tableDateReferred")}</TableHead>
-                  <TableHead>{t("referrals.tableStatus")}</TableHead>
-                  <TableHead className="text-right">{t("referrals.tableReward")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile View: List of Cards */}
+              <div className="md:hidden space-y-3">
                 {referralHistory.map((referral) => {
                   const statusInfo = getStatusIconAndLabel(referral.status);
                   return (
-                    <TableRow key={referral.id}>
-                      <TableCell className="font-medium">{referral.referredEmailOrName}</TableCell>
-                      <TableCell>{format(new Date(referral.referralDate), 'PP')}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center gap-1">
+                    <Card key={referral.id} className="p-4 bg-secondary/50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">{referral.referredEmailOrName}</p>
+                          <p className="text-xs text-muted-foreground">{format(new Date(referral.referralDate), 'PP')}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">{referral.rewardAmount ? `${referral.rewardAmount} Coins/XP` : '-'}</p>
+                          <p className="text-xs text-muted-foreground">{t("referrals.tableReward")}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t text-sm">
+                        <span className="inline-flex items-center gap-1.5 font-medium">
                           {statusInfo.icon}
                           {statusInfo.label}
                         </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {referral.rewardAmount ? `${referral.rewardAmount} Coins/XP` : '-'}
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </Card>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+              
+              {/* Desktop View: Table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("referrals.tableReferredUser")}</TableHead>
+                      <TableHead>{t("referrals.tableDateReferred")}</TableHead>
+                      <TableHead>{t("referrals.tableStatus")}</TableHead>
+                      <TableHead className="text-right">{t("referrals.tableReward")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {referralHistory.map((referral) => {
+                      const statusInfo = getStatusIconAndLabel(referral.status);
+                      return (
+                        <TableRow key={referral.id}>
+                          <TableCell className="font-medium">{referral.referredEmailOrName}</TableCell>
+                          <TableCell>{format(new Date(referral.referralDate), 'PP')}</TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center gap-1">
+                              {statusInfo.icon}
+                              {statusInfo.label}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {referral.rewardAmount ? `${referral.rewardAmount} Coins/XP` : '-'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
