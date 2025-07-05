@@ -191,6 +191,16 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               <Button variant={practiceSessionConfig.type === 'experts' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'experts' }))}>
                 <div><p className="font-semibold">Practice with Experts</p><p className="text-xs text-muted-foreground">Schedule a session with an industry expert.</p></div>
               </Button>
+              <Button variant={practiceSessionConfig.type === 'friends' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'friends' }))}>
+                <div><p className="font-semibold">Practice with Friends</p><p className="text-xs text-muted-foreground">Invite a friend to conduct a mock interview.</p></div>
+              </Button>
+              {practiceSessionConfig.type === 'friends' && (
+                <div className="p-4 border rounded-md bg-secondary/50">
+                  <Label htmlFor="friend-email">Friend's Email Address</Label>
+                  <Input id="friend-email" type="email" placeholder="friend@example.com" value={practiceSessionConfig.friendEmail} onChange={e => { setPracticeSessionConfig(p => ({...p, friendEmail: e.target.value})); setFriendEmailError(null); }} />
+                  {friendEmailError && <p className="text-sm text-destructive mt-1">{friendEmailError}</p>}
+                </div>
+              )}
             </div>
           )}
 
