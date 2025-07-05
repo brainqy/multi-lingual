@@ -89,7 +89,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   const t = useCallback((key: string, options?: ({ default?: string } & Record<string, string | number>)): string => {
     const findTranslation = (data: Translations) => {
       const keys = key.split('.');
-      let current: string | Translations | NestedTranslations = data;
+      let current: string | Translations | NestedTranslations | Array<string | NestedTranslations> = data;
       for (const k of keys) {
         if (typeof current === 'object' && current !== null && k in current) {
           current = (current as NestedTranslations)[k];
