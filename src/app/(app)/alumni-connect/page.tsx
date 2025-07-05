@@ -50,6 +50,9 @@ export default function AlumniConnectPage() {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [alumniToBook, setAlumniToBook] = useState<AlumniProfile | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const alumniPerPage = 9;
+
   const { control, handleSubmit: handleBookingSubmit, reset: resetBookingForm, formState: { errors: bookingErrors } } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -62,6 +65,10 @@ export default function AlumniConnectPage() {
   useEffect(() => {
     setAllAlumniData(sampleAlumni); // Ensure local state is in sync with potentially mutated global sample
   }, [sampleAlumni]); // Add sampleAlumni to dependency array if it can be mutated globally and needs to trigger refresh
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
   const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
   const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company))).sort(), [allAlumniData]);
@@ -87,6 +94,13 @@ export default function AlumniConnectPage() {
     }
     return results;
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData]);
+
+  const paginatedAlumni = useMemo(() => {
+    const startIndex = (currentPage - 1) * alumniPerPage;
+    return filteredAlumni.slice(startIndex, startIndex + alumniPerPage);
+  }, [filteredAlumni, currentPage, alumniPerPage]);
+
+  const totalPages = Math.ceil(filteredAlumni.length / alumniPerPage);
 
   const handleFilterChange = (filterSet: Set<string>, item: string, setter: React.Dispatch<React.SetStateAction<Set<string>>>) => {
     const newSet = new Set(filterSet);
@@ -313,8 +327,9 @@ export default function AlumniConnectPage() {
             </CardHeader>
         </Card>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAlumni.map(alumni => (
+          {paginatedAlumni.map(alumni => (
             <Card key={alumni.id} className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
               <CardContent className="pt-6 flex-grow">
                 <div className="flex items-center space-x-4 mb-4">
@@ -381,6 +396,30 @@ export default function AlumniConnectPage() {
             </Card>
           ))}
         </div>
+        {totalPages > 1 && (
+            <div className="flex items-center justify-center pt-6">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                </Button>
+                <span className="mx-4 text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+        )}
+        </>
       )}
 
       <Dialog open={isBookingDialogOpen} onOpenChange={(isOpen) => {

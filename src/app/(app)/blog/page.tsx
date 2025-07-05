@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, CalendarDays, User, Tag, ArrowRight, PlusCircle } from "lucide-react";
+import { BookOpen, Search, CalendarDays, User, Tag, ArrowRight, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { sampleBlogPosts } from "@/lib/sample-data";
@@ -18,20 +18,36 @@ export default function BlogPage() {
   const { t } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
   const allPosts = sampleBlogPosts; 
 
   const allTags = Array.from(new Set(allPosts.flatMap(post => post.tags || [])));
 
-  const filteredPosts = allPosts.filter(post => {
-    const matchesSearch = searchTerm === '' ||
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedTag]);
 
-    const matchesTag = selectedTag === 'all' || (post.tags && post.tags.includes(selectedTag));
+  const filteredPosts = useMemo(() => {
+    return allPosts.filter(post => {
+      const matchesSearch = searchTerm === '' ||
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.author.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesTag;
-  });
+      const matchesTag = selectedTag === 'all' || (post.tags && post.tags.includes(selectedTag));
+
+      return matchesSearch && matchesTag;
+    });
+  }, [allPosts, searchTerm, selectedTag]);
+
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * postsPerPage;
+    return filteredPosts.slice(startIndex, startIndex + postsPerPage);
+  }, [filteredPosts, currentPage, postsPerPage]);
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
 
   return (
     <div className="space-y-8">
@@ -81,8 +97,9 @@ export default function BlogPage() {
           </CardHeader>
         </Card>
       ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.map((post) => (
+          {paginatedPosts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`} passHref>
               <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
                 {post.imageUrl && (
@@ -121,6 +138,30 @@ export default function BlogPage() {
             </Link>
           ))}
         </div>
+        {totalPages > 1 && (
+            <div className="flex items-center justify-center pt-6">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                </Button>
+                <span className="mx-4 text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+        )}
+        </>
       )}
     </div>
   );
