@@ -3,8 +3,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
-import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame } from "lucide-react";
-import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent, sampleChallenges } from "@/lib/sample-data";
+import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame, Trophy, User as UserIcon, Star } from "lucide-react";
+import { sampleJobApplications, sampleActivities, sampleAlumni, sampleUserProfile, userDashboardTourSteps, samplePracticeSessions, samplePromotionalContent, sampleChallenges, sampleBadges, samplePlatformUsers } from "@/lib/sample-data";
 // import sampleAppointments from the correct file if it exists, e.g.:
 import { sampleAppointments } from "@/lib/data/appointments";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge } from '@/types';
+import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId } from '@/types';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
@@ -27,6 +27,10 @@ import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import SpreadTheWordCard from "@/components/features/SpreadTheWordCard";
+import { TooltipProvider, Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import * as LucideIcons from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 
 const jobApplicationStatusData = sampleJobApplications.reduce((acc, curr) => {
@@ -88,14 +92,6 @@ const renderActiveShape = (props: PieSectorDataItem) => {
   );
 };
 
-type UserDashboardWidgetId =
-  | 'promotionCard'
-  | 'jobApplicationStatusChart'
-  | 'matchScoreOverTimeChart'
-  | 'jobAppReminders'
-  | 'upcomingAppointments'
-  | 'recentActivities';
-
 interface WidgetConfig {
   id: UserDashboardWidgetId;
   title: string;
@@ -109,7 +105,27 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'jobAppReminders', title: 'Job App Reminders', defaultVisible: true },
   { id: 'upcomingAppointments', title: 'Upcoming Appointments & Interviews', defaultVisible: true },
   { id: 'recentActivities', title: 'Recent Activities', defaultVisible: true },
+  { id: 'userBadges', title: 'My Badges', defaultVisible: true },
+  { id: 'leaderboard', title: 'Leaderboard Summary', defaultVisible: true },
 ];
+
+type IconName = keyof typeof LucideIcons;
+
+function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.LucideProps) {
+  const IconComponent = LucideIcons[name] as React.ElementType;
+  if (!IconComponent) {
+    return <LucideIcons.HelpCircle {...props} />;
+  }
+  return <IconComponent {...props} />;
+}
+
+const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
+    if (rank === 2) return <Award className="h-5 w-5 text-gray-400" />;
+    if (rank === 3) return <Star className="h-5 w-5 text-orange-400" />;
+    return <span className="text-sm font-medium w-5 text-center">{rank}</span>;
+};
+
 
 export default function UserDashboard() {
   const { t } = useI18n();
@@ -132,6 +148,15 @@ export default function UserDashboard() {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 5);
   }, [user.id]);
+
+  const earnedBadges = useMemo(() => sampleBadges.filter(badge => user.earnedBadges?.includes(badge.id)), [user.earnedBadges]);
+
+  const leaderboardUsers = useMemo(() => {
+    return [...samplePlatformUsers]
+      .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
+      .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
+      .slice(0, 5);
+  }, []);
 
   useEffect(() => {
     const today = new Date();
@@ -464,9 +489,80 @@ export default function UserDashboard() {
               </CardContent>
             </Card>
           )}
-        </div>
+          
+          {visibleWidgetIds.has('userBadges') && (
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5 text-primary"/>My Badges</CardTitle>
+                    <CardDescription>A collection of your achievements.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {earnedBadges.length > 0 ? (
+                        <TooltipProvider>
+                            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                                {earnedBadges.slice(0, 12).map((badge) => (
+                                    <UITooltip key={badge.id}>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex flex-col items-center p-2 border rounded-lg bg-primary/10 text-center transition-transform hover:scale-105">
+                                                <DynamicIcon name={badge.icon as IconName} className="h-8 w-8 text-primary mb-1" />
+                                                <p className="text-[10px] font-medium text-foreground truncate w-full">{badge.name}</p>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="font-semibold">{badge.name}</p>
+                                            <p className="text-xs text-muted-foreground">{badge.description}</p>
+                                        </TooltipContent>
+                                    </UITooltip>
+                                ))}
+                            </div>
+                        </TooltipProvider>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">No badges earned yet. Keep exploring!</p>
+                    )}
+                </CardContent>
+                <CardFooter>
+                    <Button variant="link" asChild className="text-xs p-0">
+                        <Link href="/gamification">View All Badges & Progress</Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+          )}
 
-        <div className="grid gap-6 md:grid-cols-2">
+          {visibleWidgetIds.has('leaderboard') && (
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>Community Leaderboard</CardTitle>
+                    <CardDescription>Top 5 users on the platform.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableBody>
+                            {leaderboardUsers.map((lbUser, index) => (
+                                <TableRow key={lbUser.id} className={cn(lbUser.id === user.id && "bg-primary/10")}>
+                                    <TableCell className="text-center font-bold w-10">{getRankIcon(index + 1)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/>
+                                                <AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium text-sm">{lbUser.name}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right font-semibold">{lbUser.xpPoints?.toLocaleString() || 0} XP</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+                <CardFooter>
+                    <Button variant="link" asChild className="text-xs p-0">
+                        <Link href="/gamification">View Full Leaderboard</Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+          )}
+
           {visibleWidgetIds.has('jobAppReminders') && (
             <Card className="shadow-lg">
               <CardHeader>

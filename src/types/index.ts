@@ -1217,3 +1217,13 @@ export interface PromoCode {
   timesUsed?: number;
   isActive: boolean;
 }
+
+export type UserDashboardWidgetId =
+  | 'promotionCard'
+  | 'jobApplicationStatusChart'
+  | 'matchScoreOverTimeChart'
+  | 'jobAppReminders'
+  | 'upcomingAppointments'
+  | 'recentActivities'
+  | 'userBadges'
+  | 'leaderboard';
