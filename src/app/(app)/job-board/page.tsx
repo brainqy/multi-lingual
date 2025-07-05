@@ -13,7 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
-import { sampleAlumni, sampleUserProfile, sampleJobApplications } from "@/lib/sample-data";
+import { sampleAlumni, sampleUserProfile, sampleJobApplications, sampleJobOpenings as globalJobOpenings } from "@/lib/sample-data";
 import { getJobOpenings, addJobOpening } from "@/lib/data-services"; // Updated import
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -124,14 +124,11 @@ export default function JobBoardPage() {
 
   const onPostSubmit = async (data: JobOpeningFormData) => {
     if (editingOpening) {
-      if (process.env.NODE_ENV === 'development') {
-        setOpenings(prev => prev.map(op => op.id === editingOpening.id ? { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined } : op));
-        const index = sampleAlumni.findIndex(s => s.id === editingOpening.id);
-        if (index !== -1) {
-          // sampleJobOpenings[index] = { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined };
-        }
-      } else {
-        console.warn("Update functionality for production API not implemented yet.");
+      const updatedOpening = { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined };
+      setOpenings(prev => prev.map(op => op.id === editingOpening.id ? updatedOpening : op));
+      const globalIndex = globalJobOpenings.findIndex(job => job.id === editingOpening.id);
+      if (globalIndex !== -1) {
+        globalJobOpenings[globalIndex] = updatedOpening;
       }
       toast({ title: "Opportunity Updated", description: `${data.title} at ${data.company} has been updated.` });
     } else {
@@ -493,7 +490,7 @@ export default function JobBoardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginatedOpenings.map((opening) => {
             const postingAlumni = sampleAlumni.find(a => a.id === opening.postedByAlumniId);
-            const isOwnPosting = opening.postedByAlumniId === currentUser.id;
+            const isOwnPosting = opening.postedByAlumniId === currentUser.id || currentUser.role === 'admin';
             return (
             <Card key={opening.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
               <CardHeader>
