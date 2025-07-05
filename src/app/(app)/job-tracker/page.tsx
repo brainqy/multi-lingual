@@ -280,7 +280,7 @@ export default function JobTrackerPage() {
         coverLetterText: app.coverLetterText || '',
     });
     setCurrentInterviews(app.interviews || []);
-    const initialNotes = (Array.isArray(app.notes) ? app.notes : (app.notes ? [app.notes] : []))
+    const initialNotes = (Array.isArray(app.notes) ? app.notes : app.notes ? app.notes.split('\n') : [])
       .map((noteContent, index) => ({
         id: `note-${index}-${Date.now()}`,
         date: format(new Date(), 'yyyy-MM-dd'), 
@@ -773,19 +773,4 @@ export default function JobTrackerPage() {
       </Dialog>
     </div>
   );
-}
-
-// Add this helper function somewhere in your file (or import from your API utils)
-async function generateCoverLetter({ jobTitle, companyName, resumeText, jobDescription }: { jobTitle: string, companyName: string, resumeText: string, jobDescription: string }) {
-  // Replace this with your actual API call or logic
-  // Example placeholder:
-  return \`Dear Hiring Manager at \${companyName},
-
-I am excited to apply for the \${jobTitle} position. My experience and skills are a great fit for this role.
-
-\${resumeText ? "Resume highlights: " + resumeText.substring(0, 100) + "..." : ""}
-\${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + "..." : ""}
-
-Thank you for your consideration.
-\`;
 }
