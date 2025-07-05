@@ -13,6 +13,7 @@ import Image from "next/image";
 import { sampleBlogPosts } from "@/lib/sample-data";
 import type { BlogPost } from "@/types";
 import { format, parseISO } from 'date-fns';
+import { useRef } from "react";
 
 export default function BlogPage() {
   const { t } = useI18n();
@@ -165,4 +166,21 @@ export default function BlogPage() {
       )}
     </div>
   );
+}
+function useMemo<T>(factory: () => T, deps: any[]): T {
+  const ref = useRef<{ deps: any[]; value: T }>();
+
+  if (!ref.current || !areDepsEqual(ref.current.deps, deps)) {
+    ref.current = { deps, value: factory() };
+  }
+
+  return ref.current.value;
+}
+
+function areDepsEqual(a: any[], b: any[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
