@@ -4,7 +4,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -171,6 +171,7 @@ export default function JobTrackerPage() {
   const [currentNotes, setCurrentNotes] = useState<Note[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
 
   const { control, handleSubmit, reset, setValue } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
@@ -301,7 +302,7 @@ export default function JobTrackerPage() {
 
   const openNewApplicationDialog = () => {
     setEditingApplication(null);
-    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: '' });
+    reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '' });
     setCurrentInterviews([]); // Reset interviews for new application
     setIsDialogOpen(true);
   };
@@ -320,8 +321,7 @@ export default function JobTrackerPage() {
   }
 
   const handleOpenInterviewModal = (interview: Interview) => {
-    // You might want to set a state here to hold the specific interview details
-    // that you want to display in the modal, if the modal is generic.
+    setSelectedInterview(interview);
     setIsInterviewModalOpen(true);
   }
   
@@ -716,15 +716,60 @@ export default function JobTrackerPage() {
       </Dialog>
 
        {/* Interview Detail Modal */}
-      <Dialog open={isInterviewModalOpen} onOpenChange={setIsInterviewModalOpen}>
+      <Dialog open={isInterviewModalOpen} onOpenChange={(isOpen) => {
+          setIsInterviewModalOpen(isOpen);
+          if (!isOpen) setSelectedInterview(null);
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Interview Details</DialogTitle>
-            {/* Display selected interview details here */}
+            {selectedInterview && editingApplication && (
+              <DialogUIDescription>
+                For {editingApplication.jobTitle} at {editingApplication.companyName}
+              </DialogUIDescription>
+            )}
           </DialogHeader>
-          <div className="py-4">
-            <p>More details about the interview will go here.</p>
-          </div>
+          {selectedInterview && (
+            <div className="py-4 space-y-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Type</Label>
+                <p className="font-semibold">{selectedInterview.type}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Date & Time</Label>
+                <p>{format(parseISO(selectedInterview.date), 'PPP p')}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Interviewer(s)</Label>
+                <p>{selectedInterview.interviewer}</p>
+              </div>
+              {selectedInterview.interviewerEmail && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Interviewer Email</Label>
+                  <p>{selectedInterview.interviewerEmail}</p>
+                </div>
+              )}
+              {selectedInterview.interviewerMobile && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Interviewer Mobile</Label>
+                  <p>{selectedInterview.interviewerMobile}</p>
+                </div>
+              )}
+              {selectedInterview.notes && selectedInterview.notes.length > 0 && selectedInterview.notes.join('').trim() !== '' && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Notes</Label>
+                  <div className="text-sm p-3 bg-muted rounded-md whitespace-pre-wrap">
+                    {selectedInterview.notes.join('\n')}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+              <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+              </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
