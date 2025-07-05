@@ -82,13 +82,6 @@ export default function LaunchingSoonPage() {
     if (email && email.includes('@')) {
       console.log('Waitlist submission:', email);
       
-      const whatsappNumber = "919561402263";
-      const message = `New waitlist signup: ${email}`;
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-      
-      // Open WhatsApp in a new tab
-      window.open(whatsappUrl, '_blank');
-
       toast({
         title: "You're on the list!",
         description: `We've added ${email} to our waiting list. We'll notify you on launch!`,
@@ -150,8 +143,16 @@ export default function LaunchingSoonPage() {
         <div className="w-full max-w-md">
             <h2 className="text-2xl font-bold text-foreground mb-2">Thank You for Joining!</h2>
             <p className="text-muted-foreground mb-4">
-                While you wait, why not share the excitement with your friends?
+                While you wait, join our community and share the excitement with your friends!
             </p>
+            <Button 
+              onClick={() => window.open('https://chat.whatsapp.com/EPfjQi6YXs6AyfBHrrx8K3', '_blank')}
+              className="mb-4 bg-green-600 hover:bg-green-700 text-white w-full"
+              size="lg"
+            >
+                <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5" fill="currentColor"><title>WhatsApp</title><path d="M17.472 14.382c-.297-.149-.88-.436-1.017-.487-.137-.05-.274-.074-.412.074-.138.149-.524.638-.642.766-.118.128-.236.149-.412.05-.176-.1-1.057-.39-2.012-1.23-.742-.656-1.227-1.46-1.383-1.712-.156-.252-.023-.39.1-.518.11-.118.236-.306.354-.455.118-.149.168-.252.246-.42.078-.168.038-.315-.023-.42-.06-.105-.412-1-1.6-2.207-.524-1.2-.838-1.033-.964-1.053-.126-.02-.274-.02-.412-.02-.138 0-.362.05-.55.274-.188.225-.712.695-.712 1.705 0 1.01.73 1.97 1.414 2.642.684.672 1.397 1.227 2.292 1.693.896.466 1.733.722 2.604.964.87.242 1.63.187 2.25.113.62-.075 1.785-.73 2.04-1.442.252-.712.252-1.31.188-1.442-.063-.13-.202-.202-.412-.322z"/></svg>
+                Join our WhatsApp Community
+            </Button>
             <SpreadTheWordCard user={waitlistUser} />
         </div>
       ) : (
