@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,11 @@ import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChar
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleAffiliates, sampleAffiliateClicks, sampleAffiliateSignups } from "@/lib/sample-data";
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from "@/types";
-import { format } from "date-fns";
+import { format, subDays, isAfter, parseISO } from "date-fns";
 import Link from "next/link";
 import { useI18n } from "@/hooks/use-i18n";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 export default function AffiliatesPage() {
   const { toast } = useToast();
@@ -22,6 +24,7 @@ export default function AffiliatesPage() {
   const [userAffiliateProfile, setUserAffiliateProfile] = useState<Affiliate | null>(null);
   const [userSignups, setUserSignups] = useState<AffiliateSignup[]>([]);
   const [userClicks, setUserClicks] = useState<AffiliateClick[]>([]);
+  const [durationFilter, setDurationFilter] = useState<'7d' | '30d' | 'all'>('all');
 
   useEffect(() => {
     // Find if the current user is an affiliate
@@ -36,9 +39,32 @@ export default function AffiliatesPage() {
 
   const affiliateLink = userAffiliateProfile ? `https://resumematch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
 
-  const totalClicks = userClicks.length;
-  const totalSignups = userSignups.length;
-  const totalEarned = userSignups.reduce((sum, signup) => sum + (signup.commissionEarned || 0), 0);
+  const filteredStats = useMemo(() => {
+    const now = new Date();
+    let startDate: Date | null = null;
+    if (durationFilter === '7d') {
+      startDate = subDays(now, 7);
+    } else if (durationFilter === '30d') {
+      startDate = subDays(now, 30);
+    }
+
+    const clicksInPeriod = startDate 
+      ? userClicks.filter(c => isAfter(parseISO(c.timestamp), startDate!))
+      : userClicks;
+
+    const signupsInPeriod = startDate
+      ? userSignups.filter(s => isAfter(parseISO(s.signupDate), startDate!))
+      : userSignups;
+
+    const earnedInPeriod = signupsInPeriod.reduce((sum, signup) => sum + (signup.commissionEarned || 0), 0);
+
+    return {
+      clicks: clicksInPeriod.length,
+      signups: signupsInPeriod.length,
+      earned: earnedInPeriod,
+    };
+  }, [durationFilter, userClicks, userSignups]);
+
 
   const affiliateSteps = [
     { icon: <Share2 className="h-8 w-8 text-primary" />, titleKey: "affiliates.howItWorks.0.title" },
@@ -206,23 +232,34 @@ export default function AffiliatesPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{t("affiliates.performance")}</CardTitle>
-          <CardDescription>{t("affiliates.performanceDesc")}</CardDescription>
+           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <CardTitle>{t("affiliates.performance")}</CardTitle>
+                    <CardDescription>{t("affiliates.performanceDesc")}</CardDescription>
+                </div>
+                <Tabs value={durationFilter} onValueChange={(value) => setDurationFilter(value as any)} className="w-full sm:w-auto">
+                    <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                        <TabsTrigger value="7d">Last 7d</TabsTrigger>
+                        <TabsTrigger value="30d">Last 30d</TabsTrigger>
+                        <TabsTrigger value="all">All Time</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="p-4 border rounded-lg">
                 <BarChart3 className="h-8 w-8 text-primary mx-auto mb-2"/>
-                <p className="text-2xl font-bold">{totalClicks}</p>
+                <p className="text-2xl font-bold">{filteredStats.clicks}</p>
                 <p className="text-sm text-muted-foreground">{t("affiliates.totalClicks")}</p>
             </div>
              <div className="p-4 border rounded-lg">
                 <Users className="h-8 w-8 text-green-600 mx-auto mb-2"/>
-                <p className="text-2xl font-bold">{totalSignups}</p>
+                <p className="text-2xl font-bold">{filteredStats.signups}</p>
                 <p className="text-sm text-muted-foreground">{t("affiliates.successfulSignups")}</p>
             </div>
             <div className="p-4 border rounded-lg">
                 <DollarSign className="h-8 w-8 text-yellow-500 mx-auto mb-2"/>
-                <p className="text-2xl font-bold">${totalEarned.toFixed(2)}</p>
+                <p className="text-2xl font-bold">${filteredStats.earned.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">{t("affiliates.totalEarned")}</p>
             </div>
         </CardContent>
