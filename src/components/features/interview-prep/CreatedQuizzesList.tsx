@@ -26,6 +26,7 @@ export default function CreatedQuizzesList({ createdQuizzes, currentUser }: Crea
   }, [searchTerm]);
 
   const filteredQuizzes = useMemo(() => {
+    if (!createdQuizzes) return [];
     const userQuizzes = createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id);
     if (!searchTerm) {
       return userQuizzes;
@@ -37,11 +38,13 @@ export default function CreatedQuizzesList({ createdQuizzes, currentUser }: Crea
   }, [createdQuizzes, currentUser.id, searchTerm]);
 
   const paginatedQuizzes = useMemo(() => {
+    if (!filteredQuizzes) return [];
     const startIndex = (currentPage - 1) * quizzesPerPage;
     return filteredQuizzes.slice(startIndex, startIndex + quizzesPerPage);
   }, [filteredQuizzes, currentPage, quizzesPerPage]);
 
   const totalQuizPages = useMemo(() => {
+    if (!filteredQuizzes) return 0;
     return Math.ceil(filteredQuizzes.length / quizzesPerPage);
   }, [filteredQuizzes, quizzesPerPage]);
 
@@ -65,7 +68,7 @@ export default function CreatedQuizzesList({ createdQuizzes, currentUser }: Crea
         </div>
       </CardHeader>
       <CardContent>
-        {filteredQuizzes.length > 0 ? (
+        {filteredQuizzes && filteredQuizzes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paginatedQuizzes.map(quiz => (
               <Card key={quiz.id} className="bg-secondary/40">
@@ -74,7 +77,7 @@ export default function CreatedQuizzesList({ createdQuizzes, currentUser }: Crea
                   <CardDescription className="text-xs truncate">{quiz.description || "No description"}</CardDescription>
                 </CardHeader>
                 <CardContent className="text-xs text-muted-foreground pb-3">
-                  <p>Questions: {quiz.questions.length}</p>
+                  <p>Questions: {quiz.questions?.length || 0}</p>
                   <p>Difficulty: {quiz.difficulty || 'N/A'}</p>
                 </CardContent>
                 <CardFooter className="flex gap-2">

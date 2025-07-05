@@ -124,16 +124,19 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
 
 export default function PracticeSessionList({ practiceSessions, onCancelSession, onRescheduleSession }: PracticeSessionListProps) {
   const upcomingSessions = useMemo(() => {
+    if (!practiceSessions) return [];
     return practiceSessions
       .filter(s => s.status === 'SCHEDULED' && isFuture(parseISO(s.date)))
       .sort((a, b) => compareAsc(parseISO(a.date), parseISO(b.date)));
   }, [practiceSessions]);
 
   const allUserSessions = useMemo(() => {
+    if (!practiceSessions) return [];
     return [...practiceSessions].sort((a, b) => compareAsc(parseISO(b.date), parseISO(a.date)));
   }, [practiceSessions]);
   
   const cancelledSessions = useMemo(() => {
+    if (!practiceSessions) return [];
     return practiceSessions
       .filter(s => s.status === 'CANCELLED')
       .sort((a, b) => compareAsc(parseISO(b.date), parseISO(a.date)));
