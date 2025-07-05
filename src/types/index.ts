@@ -277,22 +277,23 @@ export interface Badge {
 
 export interface BlogPost {
   id: string;
-  tenantId?: string | 'platform';
+  tenantId: string;
   userId: string;
   userName: string;
-  userAvatar?: string;
+  userAvatar: string;
   title: string;
   slug: string;
   author: string;
   date: string;
-  imageUrl?: string;
+  imageUrl: string;
+  dataAiHint?: string;
   content: string;
   excerpt: string;
-  tags?: string[];
-  comments?: CommunityComment[];
-  bookmarkedBy?: string[];
+  tags: string[];
+  comments: any[];
+  bookmarkedBy: string[];
+  // possibly other properties
 }
-
 export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR', 'Situational', 'Problem-Solving'] as const;
 export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
 

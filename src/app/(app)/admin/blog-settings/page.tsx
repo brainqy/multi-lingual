@@ -92,7 +92,7 @@ export default function AdminBlogSettingsPage() {
       
       const newPost: BlogPost = {
         id: `blog-ai-${Date.now()}`,
-        tenantId: 'platform', 
+        tenantId: 'platform',
         userId: 'system-ai',
         userName: 'ResumeMatch AI Writer',
         userAvatar: 'https://picsum.photos/seed/aiwriter/50/50',
@@ -104,6 +104,8 @@ export default function AdminBlogSettingsPage() {
         excerpt: blogOutput.excerpt,
         tags: blogOutput.suggestedTags,
         comments: [],
+        imageUrl: "",
+        bookmarkedBy: []
       };
       
       sampleBlogPosts.unshift(newPost); 

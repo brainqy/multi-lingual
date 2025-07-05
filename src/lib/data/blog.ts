@@ -18,6 +18,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'A great follow-up email can set you apart from other candidates. Learn the key components to craft the perfect note that leaves a lasting impression.',
     tags: ['interview', 'communication', 'jobsearch'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog5',
@@ -35,6 +36,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Avoid these common pitfalls on your resume to make sure you stand out to recruiters for all the right reasons. From typos to poor formatting, we cover how to fix them.',
     tags: ['resume', 'writing', 'career'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog6',
@@ -52,6 +54,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Thinking about a career change? This step-by-step guide helps you plan your transition, from self-assessment to landing your new role.',
     tags: ['career change', 'advice', 'planning'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog7',
@@ -69,6 +72,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Your LinkedIn profile is a key part of your professional identity. Learn how to optimize your profile, share content, and build a strong personal brand.',
     tags: ['linkedin', 'personal branding', 'networking'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog8',
@@ -86,6 +90,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'The dreaded salary question can be intimidating. We break down how to research, prepare, and confidently answer questions about your salary expectations.',
     tags: ['salary', 'negotiation', 'interview'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog1',
@@ -103,7 +108,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Learn how to leverage our AI analysis tool to its full potential. Understand match scores, keyword analysis...',
     tags: ['resume', 'ai', 'jobsearch'],
     comments: [],
-     bookmarkedBy: ['managerUser1'] ,
+    bookmarkedBy: []
   },
   {
     id: 'blog2',
@@ -121,6 +126,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Hear inspiring stories from fellow alumni who found opportunities through the ResumeMatch AI network...',
     tags: ['networking', 'career', 'success stories', 'brainqy university'],
     comments: [],
+    bookmarkedBy: []
   },
   {
     id: 'blog3',
@@ -138,6 +144,7 @@ export let sampleBlogPosts: BlogPost[] = [
     excerpt: 'Explore the benefits of both being a mentor and finding a mentor within our community...',
     tags: ['mentorship', 'community', 'connections'],
     comments: [],
+    bookmarkedBy: []
   },
 ];
 

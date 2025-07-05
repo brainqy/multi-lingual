@@ -48,16 +48,17 @@ export default function CreateBlogPage() {
         tenantId: currentUser.tenantId,
         userId: currentUser.id,
         userName: currentUser.name,
-        userAvatar: currentUser.profilePictureUrl,
+        userAvatar: currentUser.profilePictureUrl ?? "",
         title: data.title,
         slug: data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
         author: currentUser.name,
         date: new Date().toISOString(),
-        imageUrl: data.imageUrl || undefined,
+        imageUrl: data.imageUrl || "",
         content: data.content,
         excerpt: data.excerpt,
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
         comments: [],
+        bookmarkedBy: []
       };
       sampleBlogPosts.unshift(newPost);
       toast({ title: t("blog.toastCreatedTitle", { default: "Post Created!" }), description: t("blog.toastCreatedDesc", { default: "Your blog post has been published." }) });

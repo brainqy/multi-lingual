@@ -136,16 +136,15 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
           aiTimerPerQuestion: practiceSessionConfig.aiTimerPerQuestion,
           aiQuestionCategories: practiceSessionConfig.aiQuestionCategories,
         };
-        const queryParams = new URLSearchParams({
-            topic: newPracticeSession.aiTopicOrRole,
-            numQuestions: String(newPracticeSession.aiNumQuestions),
-            difficulty: String(newPracticeSession.aiDifficulty),
-            autoFullScreen: 'true',
-            sourceSessionId: newPracticeSession.id,
-        });
-        if(newPracticeSession.aiJobDescription) queryParams.set('jobDescription', newPracticeSession.aiJobDescription);
-        if(newPracticeSession.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newPracticeSession.aiTimerPerQuestion));
-        if(newPracticeSession.aiQuestionCategories?.length) queryParams.set('categories', newPracticeSession.aiQuestionCategories.join(','));
+        const queryParams = new URLSearchParams();
+        queryParams.set('topic', newPracticeSession.aiTopicOrRole || '');
+        queryParams.set('numQuestions', String(newPracticeSession.aiNumQuestions));
+        queryParams.set('difficulty', String(newPracticeSession.aiDifficulty));
+        queryParams.set('autoFullScreen', 'true');
+        queryParams.set('sourceSessionId', newPracticeSession.id);
+        if (newPracticeSession.aiJobDescription) queryParams.set('jobDescription', newPracticeSession.aiJobDescription);
+        if (newPracticeSession.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newPracticeSession.aiTimerPerQuestion));
+        if (newPracticeSession.aiQuestionCategories?.length) queryParams.set('categories', newPracticeSession.aiQuestionCategories.join(','));
         
         onSessionBooked(newPracticeSession, queryParams);
     }
