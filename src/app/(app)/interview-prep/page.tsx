@@ -1113,8 +1113,8 @@ export default function InterviewPracticeHubPage() {
 
                         </AccordionContent>
                       </AccordionItem>
-                    ))
-                    )}
+                    ))}
+                    {/* No additional content needed here, just close the Accordion! */}
                     </Accordion>
                 ) : (
                     <p className="text-muted-foreground text-center py-6">No questions found matching your criteria.</p>
