@@ -669,10 +669,24 @@
     "pending": "Pending",
     "commissionProcessNote": "Commissions are typically processed at the end of each month.",
     "howItWorksCardTitle": "How It Works",
-    "howItWorksStep1": "1. Share your unique affiliate code or link.",
-    "howItWorksStep2": "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.",
-    "howItWorksStep3": "3. Track your performance and earnings in this dashboard.",
-    "howItWorksStep4": "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal]."
+    "howItWorks": [
+      {
+        "title": "Share Your Link",
+        "description": "Distribute your unique affiliate link through social media, email, or your website."
+      },
+      {
+        "title": "New User Signs Up",
+        "description": "A new user signs up on ResumeMatch AI through your unique referral link."
+      },
+      {
+        "title": "Earn Commission",
+        "description": "You earn a commission for qualifying purchases or subscriptions made by your referred user."
+      },
+      {
+        "title": "Get Paid",
+        "description": "Track your earnings and receive payouts, typically on a monthly basis."
+      }
+    ]
   },
   "activityLog": {
     "title": "Activity Log",
@@ -911,5 +925,8 @@
         "description": "Your unique referral link is ready to share."
       }
     }
+  },
+  "adminDashboard": {
+    "title": "प्रशासक डॅशबोर्ड"
   }
 }

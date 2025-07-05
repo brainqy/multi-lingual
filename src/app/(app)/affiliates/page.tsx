@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info } from "lucide-react";
+import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sampleUserProfile, sampleAffiliates, sampleAffiliateClicks, sampleAffiliateSignups } from "@/lib/sample-data";
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from "@/types";
@@ -40,6 +40,12 @@ export default function AffiliatesPage() {
   const totalSignups = userSignups.length;
   const totalEarned = userSignups.reduce((sum, signup) => sum + (signup.commissionEarned || 0), 0);
 
+  const affiliateSteps = [
+    { icon: <Share2 className="h-8 w-8 text-primary" />, titleKey: "affiliates.howItWorks.0.title" },
+    { icon: <UserPlus className="h-8 w-8 text-primary" />, titleKey: "affiliates.howItWorks.1.title" },
+    { icon: <DollarSign className="h-8 w-8 text-primary" />, titleKey: "affiliates.howItWorks.2.title" },
+    { icon: <Award className="h-8 w-8 text-primary" />, titleKey: "affiliates.howItWorks.3.title" }
+  ];
 
   const copyToClipboard = (text: string) => {
     if (!text) return;
@@ -259,13 +265,20 @@ export default function AffiliatesPage() {
 
        <Card className="shadow-lg bg-primary/10 border-primary/30">
             <CardHeader>
-                <CardTitle>{t("affiliates.howItWorks")}</CardTitle>
+                <CardTitle>{t("affiliates.howItWorksCardTitle")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm text-foreground/80">
-                <p>{t("affiliates.step1")}</p>
-                <p>{t("affiliates.step2")}</p>
-                <p>{t("affiliates.step3")}</p>
-                <p>{t("affiliates.step4")}</p>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                {affiliateSteps.map((step, index) => (
+                    <div key={index} className="flex flex-col items-center p-4">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-3">
+                            {step.icon}
+                        </div>
+                        <h3 className="font-semibold text-md text-foreground">{t(step.titleKey as any)}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{t(`affiliates.howItWorks.${index}.description` as any)}</p>
+                    </div>
+                ))}
+              </div>
             </CardContent>
         </Card>
     </div>
