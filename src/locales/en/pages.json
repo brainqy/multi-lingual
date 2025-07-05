@@ -593,8 +593,8 @@
       "flipChallengeTitle": "Flip Challenge",
       "toast": {
         "newChallenge": {
-          "title": "New Challenge Loaded",
-          "description": "A new technical challenge has been fetched for you."
+          "title": "New Challenges Loaded",
+          "description": "A new standard and flip challenge have been fetched for you."
         },
         "showHint": {
           "title": "Hint",

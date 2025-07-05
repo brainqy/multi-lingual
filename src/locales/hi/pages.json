@@ -314,8 +314,8 @@
       "flipChallengeTitle": "पलट चुनौती",
       "toast": {
         "newChallenge": {
-          "title": "नई चुनौती लोड की गई",
-          "description": "आपके लिए एक नई तकनीकी चुनौती लाई गई है।"
+          "title": "नई चुनौतियां लोड की गईं",
+          "description": "आपके लिए एक नई मानक और फ्लिप चुनौती लाई गई है।"
         },
         "showHint": {
           "title": "संकेत",

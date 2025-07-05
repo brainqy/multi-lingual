@@ -20,9 +20,20 @@ export default function DailyInterviewChallengePage() {
   const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'flip'));
 
   const handleRefreshChallenge = () => {
-    const allStandardChallenges = sampleChallenges.filter(c => c.type === 'standard');
-    const newChallenge = allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)];
-    setStandardChallenge(newChallenge);
+    // Refresh standard challenge
+    const allStandardChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
+    if (allStandardChallenges.length > 0) {
+      const newStandardChallenge = allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)];
+      setStandardChallenge(newStandardChallenge);
+    }
+    
+    // Refresh flip challenge
+    const allFlipChallenges = sampleChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
+     if (allFlipChallenges.length > 0) {
+      const newFlipChallenge = allFlipChallenges[Math.floor(Math.random() * allFlipChallenges.length)];
+      setFlipChallenge(newFlipChallenge);
+    }
+
     toast({
       title: t("dailyChallenge.toast.newChallenge.title"),
       description: t("dailyChallenge.toast.newChallenge.description"),
