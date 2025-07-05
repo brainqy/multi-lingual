@@ -11,7 +11,7 @@ export const sampleTenants: Tenant[] = [
     id: 'Brainqy',
     name: 'Brainqy University',
     createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-    domain: 'brainqy.resumematch.ai',
+    domain: 'brainqy.JobMatch.ai',
     settings: {
       allowPublicSignup: true,
       customLogoUrl: 'https://placehold.co/200x50/008080/FFFFFF&text=Brainqy+U',
@@ -33,7 +33,7 @@ export const sampleTenants: Tenant[] = [
     id: 'tenant-2',
     name: 'Corporate Partner Inc.',
     createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    domain: 'cpp.resumematch.ai',
+    domain: 'cpp.JobMatch.ai',
     settings: {
       allowPublicSignup: false,
       primaryColor: 'hsl(221 83% 53%)',
@@ -52,7 +52,7 @@ export const sampleTenants: Tenant[] = [
     id: 'tenant-3',
     name: 'Community College Connect',
     createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-    domain: 'ccc.resumematch.ai',
+    domain: 'ccc.JobMatch.ai',
     settings: {
       allowPublicSignup: true,
       primaryColor: 'hsl(39 100% 50%)',
@@ -70,7 +70,7 @@ export const sampleTenants: Tenant[] = [
 ];
 
 export let samplePlatformSettings: PlatformSettings = {
-  platformName: "ResumeMatch AI",
+  platformName: "JobMatch AI",
   maintenanceMode: false,
   communityFeedEnabled: true,
   autoModeratePosts: true,
@@ -97,7 +97,7 @@ export let samplePlatformSettings: PlatformSettings = {
   enablePublicProfilePages: false,
   sessionTimeoutMinutes: 60,
   maxEventRegistrationsPerUser: 3,
-  globalAnnouncement: 'Welcome to the new and improved ResumeMatch AI platform! Check out the AI Mock Interview feature.',
+  globalAnnouncement: 'Welcome to the new and improved JobMatch AI platform! Check out the AI Mock Interview feature.',
   pointsForAffiliateSignup: 50,
   walletEnabled: true,
 };
@@ -350,7 +350,7 @@ Available upon request.`
 ];
 
 export const userDashboardTourSteps: TourStep[] = [
-  { title: "Welcome to Your Dashboard!", description: "This is your central hub for managing your career journey with ResumeMatch AI." },
+  { title: "Welcome to Your Dashboard!", description: "This is your central hub for managing your career journey with JobMatch AI." },
   { title: "Resume Analysis", description: "Use our AI tools to analyze your resume against job descriptions and get improvement suggestions." },
   { title: "Job Tracker", description: "Keep track of all your job applications in one place with our Kanban-style board." },
   { title: "Alumni Network", description: "Connect with fellow alumni, find mentors, and expand your professional network." },

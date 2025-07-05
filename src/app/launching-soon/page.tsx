@@ -163,7 +163,7 @@ export default function LaunchingSoonPage() {
             <Card className="w-full max-w-md shadow-2xl">
                 <CardHeader>
                 <CardTitle>Join the Waitlist</CardTitle>
-                <CardDescription>Get notified when ResumeMatch AI goes live.</CardDescription>
+                <CardDescription>Get notified when JobMatch AI goes live.</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <form onSubmit={handleJoinWaitlist} className="flex flex-col sm:flex-row items-center gap-2">

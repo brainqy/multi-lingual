@@ -37,7 +37,7 @@ export default function AffiliatesPage() {
     }
   }, [user.id]);
 
-  const affiliateLink = userAffiliateProfile ? `https://resumematch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
+  const affiliateLink = userAffiliateProfile ? `https://JobMatch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
 
   const filteredStats = useMemo(() => {
     const now = new Date();
@@ -87,8 +87,8 @@ export default function AffiliatesPage() {
     if (!affiliateLink) return;
      if (navigator.share) {
       navigator.share({
-        title: 'Supercharge Your Career with ResumeMatch AI!',
-        text: `Check out ResumeMatch AI and use my affiliate link: ${affiliateLink}`,
+        title: 'Supercharge Your Career with JobMatch AI!',
+        text: `Check out JobMatch AI and use my affiliate link: ${affiliateLink}`,
         url: affiliateLink,
       })
       .then(() => console.log('Successful share'))
@@ -132,7 +132,7 @@ export default function AffiliatesPage() {
                     <CardTitle className="text-3xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
                        <Gift className="h-8 w-8" /> Join Our Affiliate Program!
                     </CardTitle>
-                    <CardDescription className="mt-2">Partner with ResumeMatch AI, share with your network, and earn commissions.</CardDescription>
+                    <CardDescription className="mt-2">Partner with JobMatch AI, share with your network, and earn commissions.</CardDescription>
                 </CardHeader>
                 <CardContent>
                      <p className="text-muted-foreground mb-6">

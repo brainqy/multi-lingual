@@ -153,7 +153,7 @@ export default function TenantOnboardingPage() {
             </div>
             <div>
               <Label htmlFor="tenantDomain">{t("tenantOnboarding.formLabels.tenantDomain", { default: "Tenant Domain (Optional)" })}</Label>
-              <Controller name="tenantDomain" control={control} render={({ field }) => <Input id="tenantDomain" placeholder={t("tenantOnboarding.formLabels.tenantDomainPlaceholder", { default: "e.g., myuni.resumematch.ai" })} {...field} />} />
+              <Controller name="tenantDomain" control={control} render={({ field }) => <Input id="tenantDomain" placeholder={t("tenantOnboarding.formLabels.tenantDomainPlaceholder", { default: "e.g., myuni.JobMatch.ai" })} {...field} />} />
               {errors.tenantDomain && <p className="text-sm text-destructive mt-1">{errors.tenantDomain.message}</p>}
             </div>
           </div>

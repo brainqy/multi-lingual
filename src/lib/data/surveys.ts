@@ -79,7 +79,7 @@ export const sampleSurveyResponses: SurveyResponse[] = [
 ];
 
 export const initialFeedbackSurvey: SurveyStep[] = [
-  { id: 'start', type: 'botMessage', text: 'Hi there! 👋 Welcome to ResumeMatch AI. We\'d love to hear your thoughts.', nextStepId: 'q_experience' },
+  { id: 'start', type: 'botMessage', text: 'Hi there! 👋 Welcome to JobMatch AI. We\'d love to hear your thoughts.', nextStepId: 'q_experience' },
   { id: 'q_experience', type: 'botMessage', text: 'How has your experience been using our platform so far?', nextStepId: 'ans_experience' },
   { id: 'ans_experience', type: 'userOptions', options: [
     { text: '🚀 Amazing!', value: 'amazing', nextStepId: 'feedback_positive' },
@@ -92,7 +92,7 @@ export const initialFeedbackSurvey: SurveyStep[] = [
   { id: 'input_neutral_feedback', type: 'userInput', placeholder: 'Tell us what to improve...', variableName: 'improvement_suggestion', nextStepId: 'q_referral' },
   { id: 'feedback_negative', type: 'botMessage', text: 'We\'re sorry to hear that. Could you please tell us more about what wasn\'t working or what you found frustrating?', nextStepId: 'input_negative_feedback'},
   { id: 'input_negative_feedback', type: 'userInput', placeholder: 'Describe your concerns...', variableName: 'frustration_details', nextStepId: 'q_referral' },
-  { id: 'q_referral', type: 'botMessage', text: 'Thank you for sharing! One last thing: how likely are you to recommend ResumeMatch AI to a friend or colleague?', nextStepId: 'ans_referral_dropdown' },
+  { id: 'q_referral', type: 'botMessage', text: 'Thank you for sharing! One last thing: how likely are you to recommend JobMatch AI to a friend or colleague?', nextStepId: 'ans_referral_dropdown' },
   { id: 'ans_referral_dropdown', type: 'userDropdown', dropdownOptions: [
       { label: 'Very Likely', value: 'very_likely' },
       { label: 'Likely', value: 'likely' },

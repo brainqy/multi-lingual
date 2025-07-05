@@ -69,7 +69,7 @@ export const sampleChallenges: DailyChallenge[] = [
     id: "flip-challenge-4",
     type: 'flip',
     title: "Platform Guru",
-    description: "Demonstrate your complete mastery of the ResumeMatch AI ecosystem by completing these advanced tasks.",
+    description: "Demonstrate your complete mastery of the JobMatch AI ecosystem by completing these advanced tasks.",
     xpReward: 2500,
     tasks: [
       { description: "Analyze a resume, then use Power Edit to apply at least one AI suggestion and re-analyze.", action: "power_edit_resume", target: 1 },
