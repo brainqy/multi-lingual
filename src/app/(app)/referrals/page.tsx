@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, Copy, Share2, Users, CheckCircle, LinkIcon, Clock, AlertCircle, Star } from "lucide-react"; // Added Clock, AlertCircle, Star
+import { Gift, Copy, Share2, Users, CheckCircle, LinkIcon, Clock, AlertCircle, Star, UserPlus, Award, DollarSign } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleReferralHistory } from "@/lib/sample-data"; // Added sampleReferralHistory
-import type { ReferralHistoryItem, ReferralStatus } from "@/types"; // Added ReferralHistoryItem, ReferralStatus
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Added Table components
-import { format } from "date-fns"; // Added format
+import { sampleUserProfile, sampleReferralHistory } from "@/lib/sample-data"; 
+import type { ReferralHistoryItem, ReferralStatus } from "@/types"; 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; 
+import { format } from "date-fns"; 
 
 export default function ReferralsPage() {
   const { t } = useI18n();
@@ -56,6 +56,29 @@ export default function ReferralsPage() {
       default: return { icon: null, label: status };
     }
   };
+
+  const referralSteps = [
+    {
+      icon: <Share2 className="h-8 w-8 text-primary" />,
+      title: t("referrals.howItWorks.0.title"),
+      description: t("referrals.howItWorks.0.description")
+    },
+    {
+      icon: <UserPlus className="h-8 w-8 text-primary" />,
+      title: t("referrals.howItWorks.1.title"),
+      description: t("referrals.howItWorks.1.description")
+    },
+    {
+      icon: <Award className="h-8 w-8 text-primary" />,
+      title: t("referrals.howItWorks.2.title"),
+      description: t("referrals.howItWorks.2.description")
+    },
+    {
+      icon: <DollarSign className="h-8 w-8 text-primary" />,
+      title: t("referrals.howItWorks.3.title"),
+      description: t("referrals.howItWorks.3.description")
+    }
+  ];
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -165,13 +188,21 @@ export default function ReferralsPage() {
             <CardHeader>
                 <CardTitle>{t("referrals.howItWorksCardTitle")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm text-foreground/80">
-                <p>{t("referrals.howItWorksStep1")}</p>
-                <p>{t("referrals.howItWorksStep2")}</p>
-                <p>{t("referrals.howItWorksStep3")}</p>
-                <p>{t("referrals.howItWorksStep4")}</p>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                {referralSteps.map((step, index) => (
+                    <div key={index} className="flex flex-col items-center p-4">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-3">
+                            {step.icon}
+                        </div>
+                        <h3 className="font-semibold text-md text-foreground">{step.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
+                    </div>
+                ))}
+              </div>
             </CardContent>
         </Card>
     </div>
   );
 }
+

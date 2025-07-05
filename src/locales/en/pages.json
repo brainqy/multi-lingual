@@ -518,7 +518,61 @@
     "pageTitle": "Feature Requests & Suggestions"
   },
   "referrals": {
-    "pageTitle": "Referral Program"
+    "pageTitle": "Referral Program",
+    "pageDescription": "Refer friends to ResumeMatch AI and earn rewards for every successful signup!",
+    "yourReferralCardTitle": "Your Referral Link",
+    "yourReferralCardDescription": "Share your unique link or code. When someone signs up, you get rewarded.",
+    "referralCodeLabel": "Your Referral Code",
+    "referralLinkLabel": "Your Referral Link",
+    "copyButton": "Copy",
+    "shareButton": "Share",
+    "statsCardTitle": "Your Stats",
+    "statsCardDescription": "Track your referral performance.",
+    "totalReferralsLabel": "Total Referrals",
+    "successfulSignupsLabel": "Successful Signups",
+    "rewardsInfo": "Rewards are credited to your wallet once a referral is verified.",
+    "historyCardTitle": "Referral History",
+    "historyCardDescription": "A log of your referral activity.",
+    "noHistory": "You haven't referred anyone yet. Share your link to get started!",
+    "tableReferredUser": "Referred User",
+    "tableDateReferred": "Date Referred",
+    "tableStatus": "Status",
+    "tableReward": "Reward",
+    "statusPending": "Pending",
+    "statusSignedUp": "Signed Up",
+    "statusRewardEarned": "Reward Earned",
+    "statusExpired": "Expired",
+    "howItWorksCardTitle": "How It Works",
+    "howItWorks": [
+      {
+        "title": "Share Your Link",
+        "description": "Distribute your unique referral link through social media, email, or your website."
+      },
+      {
+        "title": "Friend Signs Up",
+        "description": "Your friend clicks your link and successfully signs up on the ResumeMatch AI platform."
+      },
+      {
+        "title": "Earn Rewards",
+        "description": "You earn coins or XP once their signup is verified and they become an active user."
+      },
+      {
+        "title": "Track Progress",
+        "description": "Monitor all your referrals and rewards right here in your dashboard."
+      }
+    ],
+    "toastCopied": {
+      "title": "Copied to Clipboard!",
+      "description": "Your referral link is ready to share."
+    },
+    "toastCopyFailed": {
+      "title": "Copy Failed",
+      "description": "Could not copy the text."
+    },
+    "toastShareAPINotSupported": {
+      "title": "Share API Not Supported",
+      "description": "Your browser doesn't support the Web Share API. Link copied to clipboard instead."
+    }
   },
   "userSettings": {
     "pageTitle": "Settings"
@@ -614,11 +668,11 @@
     "userMasked": "User...{last4}",
     "pending": "Pending",
     "commissionProcessNote": "Commissions are typically processed at the end of each month.",
-    "howItWorks": "How the Affiliate Program Works",
-    "step1": "1. Share your unique affiliate code or link.",
-    "step2": "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.",
-    "step3": "3. Track your performance and earnings in this dashboard.",
-    "step4": "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal]."
+    "howItWorksCardTitle": "How It Works",
+    "howItWorksStep1": "1. Share your unique affiliate code or link.",
+    "howItWorksStep2": "2. When someone signs up using your link and subscribes to a paid plan (if applicable), you earn a commission.",
+    "howItWorksStep3": "3. Track your performance and earnings in this dashboard.",
+    "howItWorksStep4": "4. Payouts are typically made monthly via [Payment Method - e.g., PayPal]."
   },
   "activityLog": {
     "title": "Activity Log",
