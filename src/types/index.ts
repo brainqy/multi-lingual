@@ -359,6 +359,11 @@ export interface UserProfile extends AlumniProfile {
   createdAt?: string;
   isDistinguished?: boolean;
   challengeTopics?: InterviewQuestionCategory[];
+  challengeProgress?: Record<string, {
+    action: ChallengeAction;
+    current: number;
+    target: number;
+  }>;
   sessionId?: string;
 }
 

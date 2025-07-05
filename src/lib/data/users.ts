@@ -95,6 +95,10 @@ Projects
     isDistinguished: true,
     userApiKey: '',
     bio: '',
+    challengeProgress: {
+      refer: { action: 'refer', current: 2, target: 5 },
+      analyze_resume: { action: 'analyze_resume', current: 3, target: 3 },
+    },
     sessionId: undefined,
   },
   {
@@ -363,6 +367,7 @@ export function ensureFullUserProfile(partialProfile: Partial<UserProfile>): Use
     affiliateCode: undefined,
     pastInterviewSessions: [],
     challengeTopics: [],
+    challengeProgress: {},
     shortBio: '', // From AlumniProfile
     university: '', // From AlumniProfile,
     userApiKey: '',

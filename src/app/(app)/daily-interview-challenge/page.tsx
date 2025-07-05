@@ -1,14 +1,16 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useI18n } from "@/hooks/use-i18n";
-import { sampleChallenges } from "@/lib/sample-data";
+import { sampleChallenges, sampleUserProfile } from "@/lib/sample-data";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap } from 'lucide-react';
 import type { DailyChallenge } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from "@/components/ui/progress";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
@@ -80,7 +82,17 @@ export default function DailyInterviewChallengePage() {
     </Card>
   );
   
-  const renderFlipChallenge = (challenge: DailyChallenge) => (
+  const renderFlipChallenge = (challenge: DailyChallenge) => {
+    const user = sampleUserProfile;
+    const totalXP = challenge.tasks?.reduce((acc, task) => {
+        const progress = user.challengeProgress?.[task.action];
+        if (progress && progress.current >= task.target) {
+            return acc + (challenge.xpReward || 0) / (challenge.tasks?.length || 1);
+        }
+        return acc;
+    }, 0);
+
+    return (
     <Card className="shadow-lg bg-primary/5 border-primary/20 h-full flex flex-col">
        <CardHeader>
           <div className="flex items-center justify-between">
@@ -95,22 +107,33 @@ export default function DailyInterviewChallengePage() {
         <CardContent className="flex-grow">
             <h4 className="font-semibold mb-2 text-foreground">Your Tasks:</h4>
             <div className="space-y-3">
-                {challenge.tasks?.map((task, index) => (
-                    <div key={index} className="flex items-start p-3 bg-card rounded-md border shadow-sm">
-                        <CheckCircle className="h-5 w-5 text-gray-400 mr-3 mt-1 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium text-foreground">{task.description}</p>
-                            <p className="text-xs text-muted-foreground">Goal: {task.target} {task.action.replace(/_/g, ' ')}</p>
+                {challenge.tasks?.map((task, index) => {
+                    const progress = user.challengeProgress?.[task.action];
+                    const currentProgress = progress?.current || 0;
+                    const isCompleted = currentProgress >= task.target;
+                    const progressPercent = Math.min((currentProgress / task.target) * 100, 100);
+
+                    return (
+                        <div key={index} className="flex items-start p-3 bg-card rounded-md border shadow-sm">
+                            {isCompleted ? <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" /> : <div className="h-5 w-5 border-2 border-gray-400 rounded-full mr-3 mt-1 flex-shrink-0" />}
+                            <div>
+                                <p className="font-medium text-foreground">{task.description}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Progress value={progressPercent} className="w-24 h-2" />
+                                    <p className="text-xs text-muted-foreground">({currentProgress}/{task.target})</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </CardContent>
         <CardFooter className="flex justify-end mt-auto border-t pt-4">
-          <Button onClick={() => toast({ title: "Coming Soon!", description: "Task completion tracking is under development."})}>{t("dailyChallenge.completeTasksButton")}</Button>
+          <Button onClick={() => toast({ title: "Keep Going!", description: "Complete tasks across the platform to earn XP."})}>{t("dailyChallenge.completeTasksButton")}</Button>
         </CardFooter>
     </Card>
-  );
+    );
+  };
 
   return (
     <div className="container mx-auto max-w-7xl py-8 px-4">
