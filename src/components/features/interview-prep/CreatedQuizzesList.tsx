@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Edit3, ChevronLeft, ChevronRight, ListChecks } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Play, Edit3, ChevronLeft, ChevronRight, ListChecks, Search } from 'lucide-react';
 import type { MockInterviewSession, UserProfile } from '@/types';
 
 interface CreatedQuizzesListProps {
@@ -16,29 +17,55 @@ interface CreatedQuizzesListProps {
 export default function CreatedQuizzesList({ createdQuizzes, currentUser }: CreatedQuizzesListProps) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const quizzesPerPage = 6;
 
-  const paginatedQuizzes = useMemo(() => {
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const filteredQuizzes = useMemo(() => {
     const userQuizzes = createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id);
+    if (!searchTerm) {
+      return userQuizzes;
+    }
+    return userQuizzes.filter(quiz =>
+      quiz.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (quiz.description && quiz.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [createdQuizzes, currentUser.id, searchTerm]);
+
+  const paginatedQuizzes = useMemo(() => {
     const startIndex = (currentPage - 1) * quizzesPerPage;
-    return userQuizzes.slice(startIndex, startIndex + quizzesPerPage);
-  }, [createdQuizzes, currentPage, currentUser.id]);
+    return filteredQuizzes.slice(startIndex, startIndex + quizzesPerPage);
+  }, [filteredQuizzes, currentPage, quizzesPerPage]);
 
   const totalQuizPages = useMemo(() => {
-    const userQuizzes = createdQuizzes.filter(q => q.userId === 'system' || q.userId === currentUser.id);
-    return Math.ceil(userQuizzes.length / quizzesPerPage);
-  }, [createdQuizzes, currentUser.id]);
+    return Math.ceil(filteredQuizzes.length / quizzesPerPage);
+  }, [filteredQuizzes, quizzesPerPage]);
 
   return (
     <Card className="shadow-lg">
-      <CardHeader className="flex flex-row justify-between items-center">
-        <div>
-          <CardTitle className="text-xl font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary"/>Created Quizzes</CardTitle>
-          <CardDescription>Manage your custom quizzes or start one.</CardDescription>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <CardTitle className="text-xl font-semibold flex items-center gap-2"><ListChecks className="h-5 w-5 text-primary"/>Created Quizzes</CardTitle>
+              <CardDescription>Manage your custom quizzes or start one.</CardDescription>
+            </div>
+             <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Filter quizzes by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
         </div>
       </CardHeader>
       <CardContent>
-        {paginatedQuizzes.length > 0 ? (
+        {filteredQuizzes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paginatedQuizzes.map(quiz => (
               <Card key={quiz.id} className="bg-secondary/40">
@@ -64,7 +91,7 @@ export default function CreatedQuizzesList({ createdQuizzes, currentUser }: Crea
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-center py-4">No quizzes created yet. Create one from the Question Bank below!</p>
+          <p className="text-muted-foreground text-center py-4">{searchTerm ? "No quizzes match your filter." : "No quizzes created yet. Create one from the Question Bank below!"}</p>
         )}
       </CardContent>
       {totalQuizPages > 1 && (
