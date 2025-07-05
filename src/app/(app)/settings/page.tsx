@@ -60,13 +60,16 @@ export default function SettingsPage() {
   ];
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
+    // This effect runs only on the client side
+    if (typeof window !== 'undefined') {
+      const storedTheme = localStorage.getItem('theme');
       const darkMode = storedTheme === 'dark';
       setIsDarkMode(darkMode);
       document.documentElement.classList.toggle('dark', darkMode);
     }
+  }, []);
 
+  useEffect(() => {
     if (currentUser.role === 'manager' && currentUser.tenantId) {
       const currentTenant = sampleTenants.find(t => t.id === currentUser.tenantId);
       if (currentTenant) {
@@ -85,8 +88,8 @@ export default function SettingsPage() {
         setShowApiKeyTour(true);
       }
     }
-
   }, [currentUser.role, currentUser.tenantId, platformSettings.walletEnabled, platformSettings.allowUserApiKey]);
+
 
   const toggleTheme = () => {
     const newIsDarkMode = !isDarkMode;
@@ -186,7 +189,7 @@ export default function SettingsPage() {
           <CardDescription>{t("userSettings.appearanceCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
             <Label htmlFor="theme-switcher" className="flex items-center gap-2 text-sm font-medium">
               {isDarkMode ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5"/>}
               {t("userSettings.darkModeLabel")}
@@ -281,21 +284,21 @@ export default function SettingsPage() {
           <CardDescription>{t("userSettings.notificationsCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
             <Label htmlFor="email-notifications" className="text-sm font-medium">{t("userSettings.emailNotificationsLabel")}</Label>
             <Switch id="email-notifications" checked={emailNotificationsEnabled} onCheckedChange={setEmailNotificationsEnabled} />
           </div>
-           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
             <Label htmlFor="app-notifications" className="text-sm font-medium">{t("userSettings.appNotificationsLabel")}</Label>
             <Switch id="app-notifications" checked={appNotificationsEnabled} onCheckedChange={setAppNotificationsEnabled} />
           </div>
-          <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
             <Label htmlFor="gamification-notifications" className="flex items-center gap-2 text-sm font-medium">
               <Award className="h-4 w-4" /> {t("userSettings.gamificationNotificationsLabel")}
             </Label>
             <Switch id="gamification-notifications" checked={gamificationNotificationsEnabled} onCheckedChange={setGamificationNotificationsEnabled} />
           </div>
-           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
             <Label htmlFor="referral-notifications" className="flex items-center gap-2 text-sm font-medium">
               <Gift className="h-4 w-4" /> {t("userSettings.referralNotificationsLabel")}
             </Label>
@@ -335,7 +338,7 @@ export default function SettingsPage() {
             <CardDescription>{t("userSettings.platformFeaturesAdminCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
               <Label htmlFor="wallet-enable-platform" className="text-sm font-medium">{t("userSettings.walletEnablePlatformLabel")}</Label>
               <Switch
                 id="wallet-enable-platform"
@@ -419,12 +422,12 @@ export default function SettingsPage() {
             </DialogContent>
           </Dialog>
 
-           <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30 mt-4">
+           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
              <Label htmlFor="data-sharing" className="text-sm font-medium">{t("userSettings.dataSharingLabel")}</Label>
             <Switch id="data-sharing" defaultChecked />
           </div>
           {currentUser.role === 'admin' && (
-             <div className="flex items-center justify-between p-3 rounded-md border hover:bg-secondary/30">
+             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-md border hover:bg-secondary/30 gap-2">
                 <Label htmlFor="two-factor-auth" className="text-sm font-medium">{t("userSettings.twoFactorAuthLabel")}</Label>
                 <Switch id="two-factor-auth" onCheckedChange={() => toast({ title: t("userSettings.toast.mockAction.title"), description: t("userSettings.toast.mockAction.description") })} />
             </div>
