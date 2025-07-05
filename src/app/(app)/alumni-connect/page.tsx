@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Search, Briefcase, GraduationCap, MessageSquare, Eye, CalendarDays, Coins, Filter as FilterIcon, User as UserIcon, Mail, CalendarPlus, Star, ChevronLeft, ChevronRight, Edit3 } from "lucide-react";
-import { sampleAlumni, sampleUserProfile } from "@/lib/sample-data";
+import { sampleAlumni, sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
 import type { AlumniProfile, PreferredTimeSlot } from "@/types";
 import { PreferredTimeSlots } from "@/types";
 import { useToast } from '@/hooks/use-toast';
@@ -132,15 +132,34 @@ export default function AlumniConnectPage() {
 
   const onBookAppointmentSubmit = (data: BookingFormData) => {
     if (!alumniToBook) return;
+    const cost = alumniToBook.appointmentCoinCost || 10;
+
+    if (sampleWalletBalance.coins < cost) {
+      toast({
+        title: "Insufficient Coins",
+        description: `You need ${cost} coins for this appointment. You currently have ${sampleWalletBalance.coins}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Deduct coins and create a transaction record
+    sampleWalletBalance.coins -= cost;
+    sampleWalletBalance.transactions.unshift({
+      id: `txn-appt-${Date.now()}`,
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
+      date: new Date().toISOString(),
+      description: `Appointment fee for ${alumniToBook.name}`,
+      amount: -cost,
+      type: 'debit',
+    });
 
     toast({
-      title: "Coins Deducted (Mock)",
-      description: `${alumniToBook.appointmentCoinCost || 10} coins deducted from your wallet.`,
+      title: `-${cost} Coins`,
+      description: `Your appointment request with ${alumniToBook.name} has been sent.`,
     });
-    toast({
-      title: "Appointment Request Sent (Mock)",
-      description: `Your appointment request with ${alumniToBook.name} for ${data.preferredDate.toLocaleDateString()} (${data.preferredTimeSlot}) regarding "${data.purpose.substring(0,20)}..." has been sent.`,
-    });
+    // In a real app, you would also create the appointment record here.
     setIsBookingDialogOpen(false);
   };
 

@@ -5,8 +5,9 @@ import { sampleUserProfile } from './users';
 export let sampleWalletBalance: Wallet = {
     tenantId: sampleUserProfile.tenantId,
     userId: sampleUserProfile.id,
-    coins: sampleUserProfile.role === 'manager' ? 500 : (sampleUserProfile.role === 'admin' ? 1000 : 150),
+    coins: sampleUserProfile.role === 'manager' ? 525 : (sampleUserProfile.role === 'admin' ? 1000 : 150),
     transactions: [
+        { id: 'txn-ref2', tenantId: 'managerUser1', userId: 'managerUser1', date: new Date(Date.now() - 86400000 * 5).toISOString(), description: 'Reward for referral: colleague@example.com', amount: 25, type: 'credit' },
         { id: 'txn1', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), description: 'Reward for profile completion', amount: 50, type: 'credit' },
         { id: 'txn2', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), description: 'Used for premium report', amount: -20, type: 'debit' },
         { id: 'txn3', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), description: 'Appointment booking fee (Bob B.)', amount: -10, type: 'debit' },
@@ -71,7 +72,7 @@ export let samplePromoCodes: PromoCode[] = [
 
 export const sampleReferralHistory: ReferralHistoryItem[] = [
   { id: 'ref1', referrerUserId: 'alumni1', referredEmailOrName: 'friend1@example.com', referralDate: new Date(Date.now() - 86400000 * 7).toISOString(), status: 'Signed Up' },
-  { id: 'ref2', referrerUserId: 'alumni1', referredEmailOrName: 'colleague@example.com', referralDate: new Date(Date.now() - 86400000 * 5).toISOString(), status: 'Reward Earned', rewardAmount: 25 },
+  { id: 'ref2', referrerUserId: 'managerUser1', referredEmailOrName: 'colleague@example.com', referralDate: new Date(Date.now() - 86400000 * 5).toISOString(), status: 'Reward Earned', rewardAmount: 25 },
   { id: 'ref3', referrerUserId: 'alumni2', referredEmailOrName: 'contact@example.com', referralDate: new Date(Date.now() - 86400000 * 3).toISOString(), status: 'Pending' },
   { id: 'ref4', referrerUserId: 'alumni2', referredEmailOrName: 'another@example.com', referralDate: new Date(Date.now() - 86400000 * 10).toISOString(), status: 'Expired' },
   { id: 'ref5', referrerUserId: 'managerUser1', referredEmailOrName: 'newcorpcontact@example.com', referralDate: new Date(Date.now() - 86400000 * 1).toISOString(), status: 'Signed Up' },
