@@ -575,7 +575,8 @@
     }
   },
   "userSettings": {
-    "pageTitle": "Settings"
+    "pageTitle": "Settings",
+    "appearanceCardDescription": "Customize the look and feel of the application, including the color theme."
   },
   "interviewPrep": {
     "pageTitle": "Interview Preparation Hub"
