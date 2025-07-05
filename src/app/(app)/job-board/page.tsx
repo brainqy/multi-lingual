@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark } from "lucide-react";
+import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { sampleAlumni, sampleUserProfile, sampleJobApplications } from "@/lib/sample-data";
 import { getJobOpenings, addJobOpening } from "@/lib/data-services"; // Updated import
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
@@ -53,6 +53,8 @@ export default function JobBoardPage() {
   
   const [recommendedJobs, setRecommendedJobs] = useState<RecommendedJob[] | null>(null);
   const [isRecLoading, setIsRecLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 9;
 
   const { toast } = useToast();
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<JobOpeningFormData>({
@@ -77,6 +79,10 @@ export default function JobBoardPage() {
     }
     loadOpenings();
   }, [toast]);
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedJobTypes, selectedLocations, selectedCompanies]);
 
 
   const uniqueLocations = useMemo(() => {
@@ -98,6 +104,13 @@ export default function JobBoardPage() {
       return matchesSearchTerm && matchesJobType && matchesLocation && matchesCompany;
     });
   }, [openings, searchTerm, selectedJobTypes, selectedLocations, selectedCompanies]);
+  
+  const paginatedOpenings = useMemo(() => {
+    const startIndex = (currentPage - 1) * postsPerPage;
+    return filteredOpenings.slice(startIndex, startIndex + postsPerPage);
+  }, [filteredOpenings, currentPage, postsPerPage]);
+  
+  const totalPages = Math.ceil(filteredOpenings.length / postsPerPage);
 
   const handleFilterChange = (filterSet: Set<string>, item: string, setter: React.Dispatch<React.SetStateAction<Set<string>>>) => {
     const newSet = new Set(filterSet);
@@ -110,20 +123,14 @@ export default function JobBoardPage() {
   };
 
   const onPostSubmit = async (data: JobOpeningFormData) => {
-    // In a real app, for editing, you'd likely make a PUT request.
-    // For now, we'll focus on creation for the conditional logic.
     if (editingOpening) {
-      // Mock update for local state if developing with sample data
       if (process.env.NODE_ENV === 'development') {
         setOpenings(prev => prev.map(op => op.id === editingOpening.id ? { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined } : op));
-         // Find and update in sampleJobOpenings for persistence across reloads in dev
         const index = sampleAlumni.findIndex(s => s.id === editingOpening.id);
         if (index !== -1) {
-          // @ts-ignore This is a bit of a hack for sample data
           // sampleJobOpenings[index] = { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined };
         }
       } else {
-        // TODO: Implement PUT request for production
         console.warn("Update functionality for production API not implemented yet.");
       }
       toast({ title: "Opportunity Updated", description: `${data.title} at ${data.company} has been updated.` });
@@ -482,8 +489,9 @@ export default function JobBoardPage() {
           </CardHeader>
         </Card>
       ) : (
+        <>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredOpenings.map((opening) => {
+          {paginatedOpenings.map((opening) => {
             const postingAlumni = sampleAlumni.find(a => a.id === opening.postedByAlumniId);
             const isOwnPosting = opening.postedByAlumniId === currentUser.id;
             return (
@@ -544,6 +552,30 @@ export default function JobBoardPage() {
           );
         })}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center pt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" /> Previous
+            </Button>
+            <span className="mx-4 text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
