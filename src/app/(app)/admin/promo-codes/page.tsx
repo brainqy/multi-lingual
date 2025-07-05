@@ -165,15 +165,15 @@ export default function PromoCodeManagementPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 flex-wrap">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <Gift className="h-8 w-8" /> {t("promoCodes.title")}
         </h1>
-        <div className="flex gap-2">
-          <Button onClick={() => setIsGeneratorDialogOpen(true)} variant="outline">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button onClick={() => setIsGeneratorDialogOpen(true)} variant="outline" className="flex-1 sm:flex-initial">
             <Wand2 className="mr-2 h-4 w-4"/> {t("promoCodes.generateButton")}
           </Button>
-          <Button onClick={openNewDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button onClick={openNewDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-initial">
             <PlusCircle className="mr-2 h-5 w-5" /> {t("promoCodes.createButton")}
           </Button>
         </div>
@@ -353,3 +353,5 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
+
+    

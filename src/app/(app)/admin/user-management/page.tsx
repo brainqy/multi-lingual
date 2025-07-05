@@ -266,16 +266,16 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <UserCog className="h-8 w-8" /> 
           {currentUser.role === 'manager' ? t("userManagement.titleManager", { tenantName: getTenantName(currentUser.tenantId) }) : t("userManagement.titleAdmin")}
         </h1>
-        <div className="flex gap-2">
-           <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline">
+        <div className="flex gap-2 w-full sm:w-auto">
+           <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline" className="flex-1 sm:flex-initial">
             <UploadCloud className="mr-2 h-4 w-4"/> {t("userManagement.bulkUploadButton")}
           </Button>
-          <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button onClick={openNewUserDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-initial">
             <PlusCircle className="mr-2 h-5 w-5" /> {t("userManagement.addNewButton")}
           </Button>
         </div>
@@ -362,7 +362,7 @@ export default function UserManagementPage() {
           </Table>
         </CardContent>
         {totalPages > 1 && (
-            <CardFooter className="flex justify-center items-center gap-2 pt-4">
+            <CardFooter className="flex flex-wrap justify-center items-center gap-2 pt-4">
                 <Button
                     variant="outline"
                     size="sm"
@@ -508,3 +508,5 @@ export default function UserManagementPage() {
     </div>
   );
 }
+
+    
