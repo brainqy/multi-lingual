@@ -167,7 +167,7 @@ export default function GamificationRulesPage() {
       <CardDescription>{t("gamificationRules.description")}</CardDescription>
 
       <Card className="shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <CardTitle className="flex items-center gap-2"><Award className="h-6 w-6 text-primary"/> {t("gamificationRules.badgeConfig.title")}</CardTitle>
             <CardDescription>{t("gamificationRules.badgeConfig.description")}</CardDescription>
@@ -216,7 +216,7 @@ export default function GamificationRulesPage() {
       </Card>
 
       <Card className="shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
            <div>
              <CardTitle className="flex items-center gap-2"><Star className="h-6 w-6 text-primary"/> {t("gamificationRules.xpRules.title")}</CardTitle>
              <CardDescription>{t("gamificationRules.xpRules.description")}</CardDescription>
