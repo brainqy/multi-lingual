@@ -158,12 +158,60 @@ export default function GamificationRulesPage() {
     return <IconComponent {...props} />;
   }
 
+  const BadgeCard = ({ badge }: { badge: Badge }) => (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+            <div className="flex items-center gap-2">
+                <DynamicIcon name={badge.icon as IconName} className="h-6 w-6 text-primary" />
+                <p className="font-bold">{badge.name}</p>
+            </div>
+            <p className="text-sm font-semibold text-yellow-500">+{badge.xpReward || 0} XP</p>
+        </div>
+        <p className="text-sm text-muted-foreground">{badge.description}</p>
+        <p className="text-xs text-muted-foreground italic"><strong>Trigger:</strong> {badge.triggerCondition || 'N/A'}</p>
+        <div className="flex justify-end gap-2 border-t pt-3">
+            <Button variant="outline" size="sm" onClick={() => openEditBadgeDialog(badge)}>
+                <Edit3 className="h-4 w-4 mr-1" /> Edit
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => handleDeleteBadge(badge.id)}>
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const XpRuleCard = ({ rule }: { rule: GamificationRule }) => (
+    <Card>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+            <div>
+              <p className="font-bold">{rule.description}</p>
+              <p className="font-mono text-xs text-muted-foreground">{rule.actionId}</p>
+            </div>
+            <p className="text-sm font-semibold text-yellow-500">+{rule.xpPoints} XP</p>
+        </div>
+        <div className="flex justify-end gap-2 border-t pt-3">
+            <Button variant="outline" size="sm" onClick={() => openEditXpRuleDialog(rule)}>
+                <Edit3 className="h-4 w-4 mr-1" /> Edit
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => handleDeleteXpRule(rule.actionId)}>
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <TooltipProvider>
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <ListChecks className="h-8 w-8" /> {t("gamificationRules.title")}
-      </h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <ListChecks className="h-8 w-8" /> {t("gamificationRules.title")}
+        </h1>
+      </div>
       <CardDescription>{t("gamificationRules.description")}</CardDescription>
 
       <Card className="shadow-lg">
@@ -180,37 +228,46 @@ export default function GamificationRulesPage() {
           {badges.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">{t("gamificationRules.badgeConfig.noBadges")}</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("gamificationRules.table.icon")}</TableHead>
-                  <TableHead>{t("gamificationRules.table.name")}</TableHead>
-                  <TableHead>{t("gamificationRules.table.description")}</TableHead>
-                  <TableHead>{t("gamificationRules.table.xpReward")}</TableHead>
-                  <TableHead>{t("gamificationRules.table.trigger")}</TableHead>
-                  <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {badges.map((badge) => (
-                  <TableRow key={badge.id}>
-                    <TableCell><DynamicIcon name={badge.icon as IconName} className="h-6 w-6 text-primary" /></TableCell>
-                    <TableCell className="font-medium">{badge.name}</TableCell>
-                    <TableCell>{badge.description}</TableCell>
-                    <TableCell>{badge.xpReward || 0}</TableCell>
-                    <TableCell>{badge.triggerCondition || 'N/A'}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditBadgeDialog(badge)}>
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteBadge(badge.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <>
+              {/* Mobile View */}
+              <div className="md:hidden space-y-4">
+                {badges.map((badge) => <BadgeCard key={badge.id} badge={badge} />)}
+              </div>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("gamificationRules.table.icon")}</TableHead>
+                      <TableHead>{t("gamificationRules.table.name")}</TableHead>
+                      <TableHead>{t("gamificationRules.table.description")}</TableHead>
+                      <TableHead>{t("gamificationRules.table.xpReward")}</TableHead>
+                      <TableHead>{t("gamificationRules.table.trigger")}</TableHead>
+                      <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {badges.map((badge) => (
+                      <TableRow key={badge.id}>
+                        <TableCell><DynamicIcon name={badge.icon as IconName} className="h-6 w-6 text-primary" /></TableCell>
+                        <TableCell className="font-medium">{badge.name}</TableCell>
+                        <TableCell>{badge.description}</TableCell>
+                        <TableCell>{badge.xpReward || 0}</TableCell>
+                        <TableCell>{badge.triggerCondition || 'N/A'}</TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => openEditBadgeDialog(badge)}>
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDeleteBadge(badge.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -229,33 +286,42 @@ export default function GamificationRulesPage() {
           {xpRules.length === 0 ? (
              <p className="text-center text-muted-foreground py-8">{t("gamificationRules.xpRules.noRules")}</p>
           ) : (
-             <Table>
-               <TableHeader>
-                 <TableRow>
-                   <TableHead>{t("gamificationRules.table.actionId")}</TableHead>
-                   <TableHead>{t("gamificationRules.table.description")}</TableHead>
-                   <TableHead>{t("gamificationRules.table.xpPoints")}</TableHead>
-                   <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
-                 </TableRow>
-               </TableHeader>
-               <TableBody>
-                 {xpRules.map((rule) => (
-                   <TableRow key={rule.actionId}>
-                     <TableCell className="font-mono">{rule.actionId}</TableCell>
-                     <TableCell>{rule.description}</TableCell>
-                     <TableCell>{rule.xpPoints}</TableCell>
-                     <TableCell className="text-right space-x-2">
-                       <Button variant="outline" size="sm" onClick={() => openEditXpRuleDialog(rule)}>
-                         <Edit3 className="h-4 w-4" />
-                       </Button>
-                       <Button variant="destructive" size="sm" onClick={() => handleDeleteXpRule(rule.actionId)}>
-                         <Trash2 className="h-4 w-4" />
-                       </Button>
-                     </TableCell>
-                   </TableRow>
-                 ))}
-               </TableBody>
-             </Table>
+            <>
+              {/* Mobile View */}
+              <div className="md:hidden space-y-4">
+                {xpRules.map((rule) => <XpRuleCard key={rule.actionId} rule={rule} />)}
+              </div>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                 <Table>
+                   <TableHeader>
+                     <TableRow>
+                       <TableHead>{t("gamificationRules.table.actionId")}</TableHead>
+                       <TableHead>{t("gamificationRules.table.description")}</TableHead>
+                       <TableHead>{t("gamificationRules.table.xpPoints")}</TableHead>
+                       <TableHead className="text-right">{t("gamificationRules.table.actions")}</TableHead>
+                     </TableRow>
+                   </TableHeader>
+                   <TableBody>
+                     {xpRules.map((rule) => (
+                       <TableRow key={rule.actionId}>
+                         <TableCell className="font-mono">{rule.actionId}</TableCell>
+                         <TableCell>{rule.description}</TableCell>
+                         <TableCell>{rule.xpPoints}</TableCell>
+                         <TableCell className="text-right space-x-2">
+                           <Button variant="outline" size="sm" onClick={() => openEditXpRuleDialog(rule)}>
+                             <Edit3 className="h-4 w-4" />
+                           </Button>
+                           <Button variant="destructive" size="sm" onClick={() => handleDeleteXpRule(rule.actionId)}>
+                             <Trash2 className="h-4 w-4" />
+                           </Button>
+                         </TableCell>
+                       </TableRow>
+                     ))}
+                   </TableBody>
+                 </Table>
+               </div>
+             </>
            )}
         </CardContent>
       </Card>

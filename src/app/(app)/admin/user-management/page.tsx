@@ -263,6 +263,56 @@ export default function UserManagementPage() {
   const getTenantName = (tenantId: string) => {
     return sampleTenants.find(t => t.id === tenantId)?.name || tenantId;
   };
+  
+  const UserCard = ({ user }: { user: UserProfile }) => (
+    <Card className="mb-4">
+        <CardContent className="p-4 space-y-3">
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`} alt={user.name} />
+                        <AvatarFallback><UserCircle /></AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-foreground">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                </div>
+                <span className={`px-2 py-0.5 text-xs rounded-full capitalize shrink-0 ${getStatusClass(user.status)}`}>
+                    {user.status || 'unknown'}
+                </span>
+            </div>
+            <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
+                <p><strong>Role:</strong> <span className="capitalize">{user.role}</span></p>
+                {currentUser.role === 'admin' && <p><strong>Tenant:</strong> {getTenantName(user.tenantId)}</p>}
+            </div>
+             <div className="flex justify-end gap-2 border-t pt-3">
+                <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
+                    <Edit3 className="h-4 w-4 mr-1" /> Edit
+                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
+                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {t("userManagement.deleteDialog.description", { name: user.name })}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-8">
@@ -300,66 +350,73 @@ export default function UserManagementPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("userManagement.table.user")}</TableHead>
-                <TableHead>{t("userManagement.table.role")}</TableHead>
-                {currentUser.role === 'admin' && <TableHead>{t("userManagement.table.tenant")}</TableHead>}
-                <TableHead>{t("userManagement.table.status")}</TableHead>
-                <TableHead className="text-right">{t("userManagement.table.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`} alt={user.name} />
-                        <AvatarFallback><UserCircle /></AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-foreground">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="capitalize">{user.role}</TableCell>
-                  {currentUser.role === 'admin' && <TableCell>{getTenantName(user.tenantId)}</TableCell>}
-                  <TableCell>
-                    <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${getStatusClass(user.status)}`}>
-                      {user.status || 'unknown'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                       <AlertDialogTrigger asChild>
-                         <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
-                       </AlertDialogTrigger>
-                       <AlertDialogContent>
-                         <AlertDialogHeader>
-                           <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
-                           <AlertDialogDescription>
-                             {t("userManagement.deleteDialog.description", { name: user.name })}
-                           </AlertDialogDescription>
-                         </AlertDialogHeader>
-                         <AlertDialogFooter>
-                           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                           <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
-                         </AlertDialogFooter>
-                       </AlertDialogContent>
-                     </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            {/* Mobile View */}
+            <div className="md:hidden">
+              {paginatedUsers.map(user => <UserCard key={user.id} user={user} />)}
+            </div>
+            {/* Desktop View */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("userManagement.table.user")}</TableHead>
+                    <TableHead>{t("userManagement.table.role")}</TableHead>
+                    {currentUser.role === 'admin' && <TableHead>{t("userManagement.table.tenant")}</TableHead>}
+                    <TableHead>{t("userManagement.table.status")}</TableHead>
+                    <TableHead className="text-right">{t("userManagement.table.actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`} alt={user.name} />
+                            <AvatarFallback><UserCircle /></AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-foreground">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="capitalize">{user.role}</TableCell>
+                      {currentUser.role === 'admin' && <TableCell>{getTenantName(user.tenantId)}</TableCell>}
+                      <TableCell>
+                        <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${getStatusClass(user.status)}`}>
+                          {user.status || 'unknown'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                           <AlertDialogTrigger asChild>
+                             <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                             <AlertDialogHeader>
+                               <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
+                               <AlertDialogDescription>
+                                 {t("userManagement.deleteDialog.description", { name: user.name })}
+                               </AlertDialogDescription>
+                             </AlertDialogHeader>
+                             <AlertDialogFooter>
+                               <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                               <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
+                             </AlertDialogFooter>
+                           </AlertDialogContent>
+                         </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex flex-wrap justify-center items-center gap-2 pt-4">
@@ -508,5 +565,3 @@ export default function UserManagementPage() {
     </div>
   );
 }
-
-    

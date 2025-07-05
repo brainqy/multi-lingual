@@ -162,6 +162,30 @@ export default function PromoCodeManagementPage() {
     toast({ title: t("promoCodes.toast.copied.title"), description: t("promoCodes.toast.copied.description") });
   };
 
+  const PromoCodeCard = ({ code }: { code: PromoCode }) => (
+    <Card className="mb-4">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-bold font-mono">{code.code}</p>
+            <p className="text-sm text-muted-foreground">{code.description}</p>
+          </div>
+          <span className={`px-2 py-0.5 text-xs rounded-full capitalize shrink-0 ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+            {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
+          </span>
+        </div>
+        <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
+          <p><strong>Reward:</strong> {code.rewardValue} {code.rewardType}</p>
+          <p><strong>Usage:</strong> {code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</p>
+          <p><strong>Expires:</strong> {code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</p>
+        </div>
+        <div className="flex justify-end gap-2 border-t pt-3">
+          <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4 mr-1"/> Edit</Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4 mr-1"/> Delete</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-8">
@@ -187,39 +211,46 @@ export default function PromoCodeManagementPage() {
           <CardTitle>{t("promoCodes.currentCodesTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("promoCodes.table.code")}</TableHead>
-                <TableHead>{t("promoCodes.table.description")}</TableHead>
-                <TableHead>{t("promoCodes.table.reward")}</TableHead>
-                <TableHead>{t("promoCodes.table.status")}</TableHead>
-                <TableHead>{t("promoCodes.table.usage")}</TableHead>
-                <TableHead>{t("promoCodes.table.expires")}</TableHead>
-                <TableHead className="text-right">{t("promoCodes.table.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {promoCodes.map(code => (
-                <TableRow key={code.id}>
-                  <TableCell className="font-mono">{code.code}</TableCell>
-                  <TableCell>{code.description}</TableCell>
-                  <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                      {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
-                    </span>
-                  </TableCell>
-                  <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
-                  <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>
-                  </TableCell>
+          {/* Mobile View */}
+          <div className="md:hidden space-y-4">
+            {promoCodes.map(code => <PromoCodeCard key={code.id} code={code} />)}
+          </div>
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("promoCodes.table.code")}</TableHead>
+                  <TableHead>{t("promoCodes.table.description")}</TableHead>
+                  <TableHead>{t("promoCodes.table.reward")}</TableHead>
+                  <TableHead>{t("promoCodes.table.status")}</TableHead>
+                  <TableHead>{t("promoCodes.table.usage")}</TableHead>
+                  <TableHead>{t("promoCodes.table.expires")}</TableHead>
+                  <TableHead className="text-right">{t("promoCodes.table.actions")}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {promoCodes.map(code => (
+                  <TableRow key={code.id}>
+                    <TableCell className="font-mono">{code.code}</TableCell>
+                    <TableCell>{code.description}</TableCell>
+                    <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
+                      </span>
+                    </TableCell>
+                    <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
+                    <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -353,5 +384,3 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
-
-    
