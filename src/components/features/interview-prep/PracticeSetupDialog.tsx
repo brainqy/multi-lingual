@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { PracticeSession, PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
-import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS, sampleUserProfile, sampleLiveInterviewSessions } from '@/lib/sample-data';
+import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
+import { sampleUserProfile, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import PracticeTopicSelection from './PracticeTopicSelection';
 import PracticeDateTimeSelector from './PracticeDateTimeSelector';
@@ -298,4 +299,3 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
     </Dialog>
   );
 }
-

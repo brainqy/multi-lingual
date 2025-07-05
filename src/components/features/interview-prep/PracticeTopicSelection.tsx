@@ -41,7 +41,7 @@ export default function PracticeTopicSelection({ availableTopics, initialSelecte
         <CardContent className="p-0">
             <ScrollArea className="h-60 pr-3"> {/* Adjust height as needed for dialog */}
             <div className="space-y-3">
-                {availableTopics.map(topic => (
+                {(availableTopics || []).map(topic => (
                 <div key={topic} className="flex items-center space-x-3 p-3 border rounded-md hover:bg-secondary/50 transition-colors">
                     <Checkbox
                     id={`dialog-topic-${topic}`} // Ensure unique ID for dialog context
