@@ -47,7 +47,7 @@ const interviewSchema = z.object({
   interviewer: z.string(),
   interviewerEmail: z.string().email().optional(),
   interviewerMobile: z.string().optional(),
-  notes: z.string().optional(),
+  notes: z.array(z.string()).optional(),
  opened: z.boolean().optional(), // Add opened state for modal
 });
 
@@ -230,7 +230,11 @@ export default function JobTrackerPage() {
   };
 
   const onSubmit = (data: JobApplicationFormData) => {
-    const applicationData = { ...data, interviews: currentInterviews };
+    const applicationData = { 
+      ...data, 
+      interviews: currentInterviews,
+      notes: currentNotes.map(n => n.content) // Convert notes back to string array for saving
+    };
 
     if (editingApplication) {
       setApplications(apps => apps.map(app => 
@@ -276,13 +280,13 @@ export default function JobTrackerPage() {
         coverLetterText: app.coverLetterText || '',
     });
     setCurrentInterviews(app.interviews || []);
-    // Initialize notes, adding sample notes if no notes exist for the application
-    const initialNotes = app.notes && app.notes.length > 0
-      ? (Array.isArray(app.notes)
-          ? app.notes.map(noteContent => ({ date: format(new Date(), 'yyyy-MM-dd'), content: noteContent, editable: false }))
-          : [{ date: format(new Date(), 'yyyy-MM-dd'), content: app.notes, editable: false }]
-        )
-      : addSampleNotes([]);
+    const initialNotes = (Array.isArray(app.notes) ? app.notes : (app.notes ? [app.notes] : []))
+      .map((noteContent, index) => ({
+        id: `note-${index}-${Date.now()}`,
+        date: format(new Date(), 'yyyy-MM-dd'), 
+        content: noteContent,
+        editable: false
+      }));
     setCurrentNotes(initialNotes);
     setIsDialogOpen(true);
   };
@@ -304,6 +308,7 @@ export default function JobTrackerPage() {
     setEditingApplication(null);
     reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '' });
     setCurrentInterviews([]); // Reset interviews for new application
+    setCurrentNotes([]); // Reset notes
     setIsDialogOpen(true);
   };
   
@@ -349,13 +354,6 @@ export default function JobTrackerPage() {
     setCurrentNotes(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Function to add sample notes
- const addSampleNotes = (existingNotes: Note[]): Note[] => {
- return [...existingNotes,
-      { date: "2024-05-01", content: t("jobTracker.dialog.notesHistorySample1", { default: "Had a call with recruiter, discussed company culture and next steps." }), editable: false },
-      { date: "2024-05-10", content: t("jobTracker.dialog.notesHistorySample2", { default: "Completed technical assessment. Focused on React and system design." }), editable: false },
-      { date: "2024-05-15", content: t("jobTracker.dialog.notesHistorySample3", { default: "Scheduled interview with engineering manager for next week." }), editable: false }, ]; };
-
   const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[]; }): JobApplication[] => {
     return applications.filter(app => column.acceptedStatuses.includes(app.status));
   };
@@ -369,7 +367,7 @@ export default function JobTrackerPage() {
         </Button>
       </div>
 
-      <div className="flex flex-1 gap-4 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
+      <div className="flex flex-col md:flex-row flex-1 gap-4 overflow-y-auto md:overflow-x-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
         <Card className="w-full md:w-72 flex-shrink-0 shadow-lg h-full flex flex-col">
           <CardHeader className="pb-3 pt-4 px-4">
             <CardTitle className="text-md font-semibold">{t("jobTracker.jobs", { default: "Jobs" })}</CardTitle>
@@ -436,7 +434,7 @@ export default function JobTrackerPage() {
           </CardFooter>
         </Card>
 
-        <div className="flex flex-1 gap-4 h-full">
+        <div className="flex flex-col md:flex-row flex-1 gap-4 h-full">
           {KANBAN_COLUMNS_CONFIG.map((colConfig) => (
             <KanbanColumn
               key={colConfig.id}
@@ -459,7 +457,8 @@ export default function JobTrackerPage() {
         if (!isOpen) {
             setEditingApplication(null);
             reset({ companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0], notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '' });
- setCurrentInterviews([]); // Reset interviews
+            setCurrentInterviews([]); // Reset interviews
+            setCurrentNotes([]);
         }
       }}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
@@ -468,7 +467,7 @@ export default function JobTrackerPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
             <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
-              <TabsList className="grid w-full grid-cols-5 shrink-0 h-10"> {/* Adjusted height */}
+              <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
                 <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
                 <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
                 <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
@@ -780,13 +779,13 @@ export default function JobTrackerPage() {
 async function generateCoverLetter({ jobTitle, companyName, resumeText, jobDescription }: { jobTitle: string, companyName: string, resumeText: string, jobDescription: string }) {
   // Replace this with your actual API call or logic
   // Example placeholder:
-  return `Dear Hiring Manager at ${companyName},
+  return \`Dear Hiring Manager at \${companyName},
 
-I am excited to apply for the ${jobTitle} position. My experience and skills are a great fit for this role.
+I am excited to apply for the \${jobTitle} position. My experience and skills are a great fit for this role.
 
-${resumeText ? "Resume highlights: " + resumeText.substring(0, 100) + "..." : ""}
-${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + "..." : ""}
+\${resumeText ? "Resume highlights: " + resumeText.substring(0, 100) + "..." : ""}
+\${jobDescription ? "\nJob Description: " + jobDescription.substring(0, 100) + "..." : ""}
 
 Thank you for your consideration.
-`;
+\`;
 }
