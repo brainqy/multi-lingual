@@ -56,7 +56,7 @@ export default function LaunchingSoonPage() {
   // Effect for the countdown timer
   useEffect(() => {
     // Set a fixed future date for the launch: August 1st, 2025, at 12:00 PM IST
-    const launchDate = new Date("2025-08-01T12:00:00+05:30");
+    const launchDate = new Date("2025-10-01T12:00:00+05:30");
 
     const timer = setInterval(() => {
       const now = new Date().getTime();

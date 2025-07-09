@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import {
     Download, CheckCircle, Edit3, Wand2, Lightbulb, Brain, SearchCheck,
     ListChecks, History, Star, Trash2, Bookmark, PlusCircle, HelpCircle, XCircle, Info, ThumbsUp, Users, FileCheck2,
-    Target, ListX, Sparkles, RefreshCcw, WandSparkles, ClipboardCopy, Check, Save
+    Target, ListX, Sparkles, RefreshCcw, WandSparkles, ClipboardCopy, Check, Save,
+    Loader2
 } from "lucide-react";
 import type { AnalyzeResumeAndJobDescriptionOutput, AtsFormattingIssue } from '@/types';
 import { useToast } from '@/hooks/use-toast';
