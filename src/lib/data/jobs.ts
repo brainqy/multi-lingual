@@ -47,7 +47,7 @@ export let sampleJobApplications: JobApplication[] = [
   },
 ];
 
-export const sampleJobOpenings: JobOpening[] = [
+export let sampleJobOpenings: JobOpening[] = [
   { id: 'job1', tenantId: 'Brainqy', title: 'Junior Developer', company: 'Google', postedByAlumniId: 'managerUser1', alumniName: 'Manager Mike', description: 'Exciting opportunity for recent graduates to join our engineering team. Key skills: Java, Python, Problem Solving.', datePosted: '2024-07-10', location: 'Mountain View, CA', type: 'Full-time', applicationLink: 'https://careers.google.com/jobs/results/' },
   { id: 'job2', tenantId: 'Brainqy', title: 'Marketing Intern (Summer)', company: 'Amazon', postedByAlumniId: 'alumni1', alumniName: 'Alice Wonderland', description: 'Gain hands-on experience in a fast-paced marketing environment. Focus on digital campaigns and market research.', datePosted: '2024-07-08', location: 'Seattle, WA', type: 'Internship', applicationLink: 'https://www.amazon.jobs/en/' },
   { id: 'job3', tenantId: 'Brainqy', title: 'Project Manager - Mentorship Program', company: 'Self-Employed (Mentorship)', postedByAlumniId: 'alumni2', alumniName: 'Bob The Builder', description: 'Looking to mentor aspiring Product Managers. Part-time commitment. Focus on agile methodologies and product strategy.', datePosted: '2024-07-05', location: 'Remote', type: 'Mentorship' },

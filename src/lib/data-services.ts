@@ -1,19 +1,34 @@
 
-"use client"; // Can be a client-side or server-side utility depending on usage
+"use client";
 
 import type { JobOpening, UserProfile } from '@/types';
 import { sampleJobOpenings, sampleUserProfile } from '@/lib/sample-data';
 
 // This constant will be automatically set by Next.js based on the environment
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+// Function to get common headers
+const getHeaders = () => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  // Add tenant information if available, as shown in your Postman screenshot
+  if (sampleUserProfile?.tenantId) {
+    headers['X-Private-Tenant'] = sampleUserProfile.tenantId;
+  }
+  // If you had auth tokens, they would be added here:
+  // const token = localStorage.getItem('authToken');
+  // if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+};
+
 
 export async function getJobOpenings(): Promise<JobOpening[]> {
   // If an API base URL is provided, always use it.
   if (API_BASE_URL) {
     try {
       console.log(`[DataService] Fetching job openings from ${API_BASE_URL}/job-board`);
-      const response = await fetch(`${API_BASE_URL}/job-board`); // Ensure this endpoint exists on your backend
+      const response = await fetch(`${API_BASE_URL}/job-board`, { headers: getHeaders() }); 
       if (!response.ok) {
         console.error(`[DataService] Error fetching job openings: ${response.status} ${response.statusText}`);
         // Fallback to sample data on API error
@@ -53,10 +68,7 @@ export async function addJobOpening(
       console.log(`[DataService] Posting job opening to ${API_BASE_URL}/job-board`);
       const response = await fetch(`${API_BASE_URL}/job-board`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${your_jwt_token}` // If your API is secured
-        },
+        headers: getHeaders(),
         body: JSON.stringify(jobData), // Send the DTO your backend expects
       });
       if (!response.ok) {
