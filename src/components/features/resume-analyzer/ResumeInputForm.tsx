@@ -62,6 +62,7 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
       toast({ title: "Parsing File...", description: "Extracting text from your document." });
 
       try {
+        let extractedText = '';
         if (file.type === "application/pdf") {
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -72,19 +73,31 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
             const pageText = textContent.items.map(item => 'str' in item ? item.str : '').join(' ');
             fullText += pageText + '\n\n';
           }
-          setResumeText(fullText.trim());
-          toast({ title: "PDF Parsed Successfully", description: "Resume text extracted." });
+          extractedText = fullText.trim();
         } else if (file.type.includes("wordprocessingml.document")) {
           const arrayBuffer = await file.arrayBuffer();
           const { value } = await mammoth.extractRawText({ arrayBuffer });
-          setResumeText(value);
-          toast({ title: "DOCX Parsed Successfully", description: "Resume text extracted." });
+          extractedText = value;
         } else if (file.type === "text/plain" || file.type === "text/markdown") {
           const text = await file.text();
-          setResumeText(text);
-          toast({ title: "Text File Loaded", description: "Resume text loaded." });
+          extractedText = text;
         } else {
           toast({ title: "Unsupported File Type", description: "Please upload a PDF, DOCX, or TXT file.", variant: "destructive" });
+          setIsParsing(false);
+          return;
+        }
+
+        if (!extractedText) {
+          toast({
+            title: "File Appears Empty",
+            description: "Could not extract any text from the document. It might be an image-based file. Please try another file or paste the text directly.",
+            variant: "destructive",
+            duration: 7000,
+          });
+          setResumeText("");
+        } else {
+          setResumeText(extractedText);
+          toast({ title: "File Parsed Successfully", description: "Resume text extracted." });
         }
       } catch (error) {
         console.error("Error parsing file:", error);
