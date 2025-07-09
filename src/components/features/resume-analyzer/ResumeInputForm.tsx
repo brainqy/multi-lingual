@@ -11,6 +11,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Search, UploadCloud, ArrowRight, Loader2, HelpCircle } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import type { ResumeProfile } from '@/types';
+import mammoth from 'mammoth';
+import * as pdfjsLib from 'pdfjs-dist';
 
 interface ResumeInputFormProps {
   resumes: ResumeProfile[];
@@ -33,11 +35,14 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
 
-  const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
-  const [isEditingCompanyName, setIsEditingCompanyName] = useState(false);
-  
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Set up the PDF.js worker source. Using a CDN is the easiest way to avoid complex build configurations.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  }, []);
 
   useEffect(() => {
     const selectedResume = resumes.find(r => r.id === selectedResumeId);
@@ -47,28 +52,46 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
     }
   }, [selectedResumeId, resumes, toast]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       setResumeFile(file);
       setSelectedResumeId(null);
       setResumeText('');
+      setIsParsing(true);
+      toast({ title: "Parsing File...", description: "Extracting text from your document." });
 
-      if (file.type === "application/pdf" || file.type.includes("wordprocessingml")) {
-        toast({
-          title: "File Format Notice",
-          description: "PDF/DOCX parsing is not supported. Please copy and paste the resume text for accurate analysis.",
-          variant: "default",
-          duration: 7000
-        });
-        setResumeText(`Mock content for ${file.name}. Please paste the actual text for analysis.`);
-        return;
+      try {
+        if (file.type === "application/pdf") {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => 'str' in item ? item.str : '').join(' ');
+            fullText += pageText + '\n\n';
+          }
+          setResumeText(fullText.trim());
+          toast({ title: "PDF Parsed Successfully", description: "Resume text extracted." });
+        } else if (file.type.includes("wordprocessingml.document")) {
+          const arrayBuffer = await file.arrayBuffer();
+          const { value } = await mammoth.extractRawText({ arrayBuffer });
+          setResumeText(value);
+          toast({ title: "DOCX Parsed Successfully", description: "Resume text extracted." });
+        } else if (file.type === "text/plain" || file.type === "text/markdown") {
+          const text = await file.text();
+          setResumeText(text);
+          toast({ title: "Text File Loaded", description: "Resume text loaded." });
+        } else {
+          toast({ title: "Unsupported File Type", description: "Please upload a PDF, DOCX, or TXT file.", variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Error parsing file:", error);
+        toast({ title: "File Parsing Error", description: "Could not read text from the file. Please try pasting the content instead.", variant: "destructive" });
+      } finally {
+        setIsParsing(false);
       }
-
-      const reader = new FileReader();
-      reader.onload = (e) => setResumeText(e.target?.result as string);
-      reader.onerror = () => toast({ title: "File Read Error", variant: "destructive" });
-      reader.readAsText(file);
     }
   };
 
@@ -102,6 +125,7 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
                   value={selectedResumeId || ''}
                   onChange={(e) => { setSelectedResumeId(e.target.value || null); if(e.target.value) {setResumeFile(null);} }}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isParsing || isLoading}
                 >
                   <option value="">-- Select or Paste/Upload Below --</option>
                   {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -112,10 +136,17 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
                 <Label htmlFor="resume-file-upload" className="text-lg font-medium">Upload New Resume</Label>
                 <div className="flex items-center justify-center w-full">
                   <label htmlFor="resume-file-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary/50 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-1 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag & drop</p><p className="text-xs text-muted-foreground">PDF, DOCX, TXT, MD</p>
-                    </div>
-                    <Input id="resume-file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.docx,.doc,.txt,.md" />
+                    {isParsing ? (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Loader2 className="w-8 h-8 mb-2 text-muted-foreground animate-spin" />
+                        <p className="text-sm text-muted-foreground">Parsing document...</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" /><p className="mb-1 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag & drop</p><p className="text-xs text-muted-foreground">PDF, DOCX, TXT</p>
+                      </div>
+                    )}
+                    <Input id="resume-file-upload" type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.docx,.doc,.txt,.md" disabled={isParsing || isLoading}/>
                   </label>
                 </div>
                 {resumeFile && <p className="text-sm text-muted-foreground">Uploaded: {resumeFile.name}</p>}
@@ -123,17 +154,17 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
                 <div className="relative flex items-center my-2"><div className="flex-grow border-t border-muted"></div><span className="flex-shrink mx-4 text-muted-foreground text-xs uppercase">OR</span><div className="flex-grow border-t border-muted"></div></div>
 
                 <Label htmlFor="resume-text-area" className="text-lg font-medium">Paste Resume Text</Label>
-                <Textarea id="resume-text-area" placeholder="Paste your resume content here..." value={resumeText} onChange={(e) => { setResumeText(e.target.value); setSelectedResumeId(null); setResumeFile(null); }} rows={8} className="border-input focus:ring-primary" />
+                <Textarea id="resume-text-area" placeholder="Paste your resume content here..." value={resumeText} onChange={(e) => { setResumeText(e.target.value); setSelectedResumeId(null); setResumeFile(null); }} rows={8} className="border-input focus:ring-primary" disabled={isParsing || isLoading}/>
               </div>
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="job-title-input">Target Job Title</Label>
-                    <Input id="job-title-input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Enter job title" />
+                    <Input id="job-title-input" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="Enter job title" disabled={isParsing || isLoading}/>
                   </div>
                   <div>
                     <Label htmlFor="company-name-input">Target Company Name</Label>
-                    <Input id="company-name-input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Enter company name" />
+                    <Input id="company-name-input" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Enter company name" disabled={isParsing || isLoading}/>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -143,13 +174,13 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
                     <TooltipContent><p className="max-w-xs">Paste the full job description for the most accurate analysis.</p></TooltipContent>
                   </Tooltip>
                 </div>
-                <Textarea id="job-description-area" placeholder="Paste the job description here..." value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} rows={resumes.length > 0 || resumeFile || resumeText.length > 0 ? 10 + 14 + 4 : 10} className="border-input focus:ring-primary" />
+                <Textarea id="job-description-area" placeholder="Paste the job description here..." value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} rows={resumes.length > 0 || resumeFile || resumeText.length > 0 ? 10 + 14 + 4 : 10} className="border-input focus:ring-primary" disabled={isParsing || isLoading}/>
               </div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={isLoading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>) : (<>Analyze Resume <ArrowRight className="ml-2 h-4 w-4" /></>)}
+            <Button type="submit" disabled={isLoading || isParsing} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
+              {(isLoading || isParsing) ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isParsing ? 'Parsing...' : 'Analyzing...'} </>) : (<>Analyze Resume <ArrowRight className="ml-2 h-4 w-4" /></>)}
             </Button>
           </CardFooter>
         </form>
