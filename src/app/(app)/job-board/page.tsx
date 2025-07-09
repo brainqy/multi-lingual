@@ -199,7 +199,17 @@ export default function JobBoardPage() {
       toast({ title: "Recommendations Ready", description: "AI has suggested some job openings for you." });
     } catch (error) {
       console.error("Job recommendation error:", error);
-      toast({ title: "Recommendation Failed", description: "Could not fetch job recommendations.", variant: "destructive" });
+      const errorMessage = (error as any).message || String(error);
+      if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
+          toast({
+              title: "API Usage Limit Exceeded",
+              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: "Recommendation Failed", description: "Could not fetch job recommendations.", variant: "destructive" });
+      }
     } finally {
       setIsRecLoading(false);
     }

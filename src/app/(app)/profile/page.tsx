@@ -1,3 +1,4 @@
+
 "use client";
 import { suggestDynamicSkills, type SuggestDynamicSkillsInput, type SuggestDynamicSkillsOutput } from '@/ai/flows/suggest-dynamic-skills';
 import { useI18n } from "@/hooks/use-i18n";
