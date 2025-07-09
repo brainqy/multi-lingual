@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, type FormEvent, useEffect, useMemo } from 'react';
@@ -73,6 +74,19 @@ export default function ResumeAnalyzerPage() {
       setResumeFile(file);
       setSelectedResumeId(null);
       setResumeText('');
+
+      // Check file type
+      if (file.type === "application/pdf" || file.type.includes("wordprocessingml")) {
+        toast({
+          title: "File Format Notice",
+          description: "PDF/DOCX parsing is not yet implemented. Please copy and paste the resume text for accurate analysis.",
+          variant: "default",
+          duration: 7000
+        });
+        // Simulate content to show something happened, but it's not the real parsed content.
+        setResumeText(`Mock content for ${file.name}. Please paste the actual text for analysis.`);
+        return; 
+      }
       
       const reader = new FileReader();
       reader.onload = (e) => {
