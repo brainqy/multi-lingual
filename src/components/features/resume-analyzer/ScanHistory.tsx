@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
 import ScoreCircle from '@/components/ui/score-circle';
 import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
-import { initialScanHistory } from '@/lib/sample-data'; // This should be the single source of truth
+import { sampleResumeScanHistory } from '@/lib/sample-data'; // This should be the single source of truth
 
 interface ScanHistoryProps {
   scanHistory: ResumeScanHistoryItem[];
@@ -88,8 +88,13 @@ export default function ScanHistory({
     setScanHistory(updatedHistory);
 
     const bookmarkedItem = updatedHistory.find(item => item.id === scanId);
-    const globalIndex = initialScanHistory.findIndex(item => item.id === scanId);
-    if (globalIndex !== -1) initialScanHistory[globalIndex].bookmarked = bookmarkedItem?.bookmarked;
+    const globalIndex = sampleResumeScanHistory.findIndex(item => item.id === scanId);
+    if (globalIndex !== -1) {
+      const historyItem = sampleResumeScanHistory[globalIndex];
+      if (historyItem) {
+        historyItem.bookmarked = bookmarkedItem?.bookmarked;
+      }
+    }
     
     toast({
       title: bookmarkedItem?.bookmarked ? "Scan Bookmarked" : "Bookmark Removed",
@@ -98,8 +103,8 @@ export default function ScanHistory({
 
   const handleDeleteScan = (scanId: string) => {
     setScanHistory(prev => prev.filter(item => item.id !== scanId));
-    const globalIndex = initialScanHistory.findIndex(item => item.id === scanId);
-    if (globalIndex !== -1) initialScanHistory.splice(globalIndex, 1);
+    const globalIndex = sampleResumeScanHistory.findIndex(item => item.id === scanId);
+    if (globalIndex !== -1) sampleResumeScanHistory.splice(globalIndex, 1);
     toast({ title: "Scan Deleted", description: "Scan history entry removed." });
   };
 
