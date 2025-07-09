@@ -95,6 +95,41 @@ export let sampleCreatedQuizzes: MockInterviewSession[] = [
 
 export let samplePracticeSessions: PracticeSession[] = [
   {
+    id: "ps-ai-1",
+    userId: 'alumni1',
+    date: new Date(Date.now() + 86400000 * 4).toISOString(), // 4 days from now
+    category: "Practice with AI",
+    type: "React Hooks & State Management",
+    language: "English",
+    status: "SCHEDULED",
+    notes: "AI interview focusing on React concepts.",
+    aiTopicOrRole: "React Developer",
+    aiNumQuestions: 5,
+    aiDifficulty: 'medium',
+    aiTimerPerQuestion: 120,
+    aiQuestionCategories: ['Technical', 'Coding'],
+  },
+  {
+    id: "ps-expert-2",
+    userId: 'managerUser1',
+    date: new Date(Date.now() + 86400000 * 10).toISOString(), // 10 days from now
+    category: "Practice with Experts",
+    type: "Leadership & Management",
+    language: "English",
+    status: "SCHEDULED",
+    notes: "Session to discuss team leadership strategies and conflict resolution.",
+  },
+  {
+    id: "ps-friend-1",
+    userId: 'alumni2', // Bob
+    date: new Date(Date.now() + 86400000 * 1).toISOString(), // Tomorrow
+    category: "Practice with Friends",
+    type: "Product Management Case Study",
+    language: "English",
+    status: "SCHEDULED",
+    notes: "Practice with Alice Wonderland for upcoming PM interview.",
+  },
+  {
     id: "ps1",
     userId: 'managerUser1',
     date: new Date(SAMPLE_DATA_BASE_DATE.getTime() + 86400000 * 3).toISOString(),
