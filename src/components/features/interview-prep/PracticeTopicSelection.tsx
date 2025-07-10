@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PracticeTopicSelectionProps {
-  availableTopics: string[];
+  availableTopics: readonly string[];
   initialSelectedTopics: string[];
   onSelectionChange: (selectedTopics: string[]) => void;
+  description?: string;
 }
 
-export default function PracticeTopicSelection({ availableTopics, initialSelectedTopics, onSelectionChange }: PracticeTopicSelectionProps) {
+export default function PracticeTopicSelection({ availableTopics, initialSelectedTopics, onSelectionChange, description }: PracticeTopicSelectionProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelectedTopics));
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function PracticeTopicSelection({ availableTopics, initialSelecte
     // Removed encompassing Card to allow embedding in dialog
     <div>
         <CardHeader className="px-0 pt-0 pb-3">
-            <CardDescription className="text-sm">Choose one or more topics you'd like to focus on. This will help tailor the session.</CardDescription>
+            <CardDescription className="text-sm">{description || "Choose one or more topics you'd like to focus on. This will help tailor the session."}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
             <ScrollArea className="h-60 pr-3"> {/* Adjust height as needed for dialog */}
