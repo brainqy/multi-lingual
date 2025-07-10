@@ -1,5 +1,3 @@
-
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -294,6 +292,7 @@ export interface BlogPost {
   tags: string[];
   comments: any[];
   bookmarkedBy: string[];
+  // possibly other properties
 }
 export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR', 'Situational', 'Problem-Solving'] as const;
 export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
@@ -620,9 +619,9 @@ export interface InterviewQuestionUserComment {
   id: string;
   userId: string;
   userName: string;
-  userAvatar: string;
   comment: string;
   timestamp: string;
+  useravatar?: string; // Optional avatar URL
 }
 
 export interface InterviewQuestionUserRating {
@@ -791,29 +790,27 @@ export interface QuizSession {
 export type PracticeSessionStatus = 'SCHEDULED' | 'CANCELLED' | 'COMPLETED';
 export type PracticeSessionType = "friends" | "experts" | "ai";
 
-export type DialogStep =
+export type DialogStep = 
   | 'selectType'
   | 'selectTopics'
-  | 'selectInterviewCategory'
-  | 'selectTimeSlot'
   | 'aiSetupBasic'
   | 'aiSetupAdvanced'
-  | 'aiSetupCategories';
-
+  | 'aiSetupCategories'
+  | 'selectTimeSlot'
+  | 'selectInterviewCategory';
 
 export interface PracticeSessionConfig {
-  type: PracticeSessionType | null;
-  interviewCategory?: InterviewQuestionCategory; // For the first step (e.g., Technical, Behavioral)
-  topics: string[]; // For the second step (e.g., Java, Python)
+  type: 'ai' | 'experts' | 'friends' | null;
+  interviewCategory?: InterviewQuestionCategory;
+  topics: string[];
   dateTime: Date | null;
-  friendEmail?: string;
-  expertId?: string;
-  aiTopicOrRole?: string;
-  aiJobDescription?: string;
-  aiNumQuestions?: number;
-  aiDifficulty?: 'easy' | 'medium' | 'hard';
-  aiTimerPerQuestion?: number;
-  aiQuestionCategories?: InterviewQuestionCategory[];
+  friendEmail: string;
+  aiTopicOrRole: string;
+  aiJobDescription: string;
+  aiNumQuestions: number;
+  aiDifficulty: 'easy' | 'medium' | 'hard';
+  aiTimerPerQuestion: number;
+  aiQuestionCategories: string[];
 }
 
 
@@ -823,7 +820,7 @@ export interface PracticeSession {
   date: string;
   category: "Practice with Friends" | "Practice with Experts" | "Practice with AI";
   type: string; // This likely refers to the specific topics for the practice
-  language: string; 
+  language: string;
   status: PracticeSessionStatus;
   notes?: string;
   // AI specific fields
@@ -835,10 +832,11 @@ export interface PracticeSession {
   aiQuestionCategories?: InterviewQuestionCategory[];
 }
 
-export const PREDEFINED_INTERVIEW_TOPICS: readonly string[] = [
+export const PREDEFINED_INTERVIEW_TOPICS: string[] = Array.from(new Set([
     "Java", "Python", "DSA", "Angular", "Javascript", "Microservices",
-    "System Design", "Product Management", "Data Science", "React", "Next.js", "AWS"
-];
+    "System Design", "Product Management", "Data Science",
+    ...ALL_CATEGORIES.filter(cat => cat !== "Behavioral") // Ensure Behavioral is not duplicated
+]));
 
 
 export const PRACTICE_FOCUS_AREAS = ["Java", "Python", "DSA", "Angular", "Javascript", "Microservices", "System Design", "Behavioral", "Product Management", "Data Science"] as const;
@@ -1230,5 +1228,3 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
-
-    

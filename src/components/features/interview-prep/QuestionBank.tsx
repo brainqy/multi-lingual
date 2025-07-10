@@ -137,18 +137,26 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
     const questionToUpdate = sampleInterviewQuestions[questionIndex];
 
     // Update ratings
-    const existingRatingIndex = questionToUpdate.userRatings?.findIndex(r => r.userId === currentUser.id) ?? -1;
-    if (existingRatingIndex !== -1) {
-        questionToUpdate.userRatings![existingRatingIndex] = { userId: currentUser.id, rating };
-    } else {
-        if (!questionToUpdate.userRatings) questionToUpdate.userRatings = [];
-        questionToUpdate.userRatings.push({ userId: currentUser.id, rating });
-    }
-    
-    // Recalculate average rating
-    const totalRating = questionToUpdate.userRatings.reduce((sum, r) => sum + r.rating, 0);
-    questionToUpdate.ratingsCount = questionToUpdate.userRatings.length;
-    questionToUpdate.rating = totalRating / questionToUpdate.ratingsCount;
+    // Update ratings
+        // Use optional chaining and nullish coalescing for safer access
+        const existingRatingIndex = questionToUpdate.userRatings?.findIndex(r => r.userId === currentUser.id) ?? -1;
+        if (existingRatingIndex !== -1) {
+            // Ensure userRatings is not undefined before accessing by index
+            if (questionToUpdate.userRatings) {
+                questionToUpdate.userRatings[existingRatingIndex] = { userId: currentUser.id, rating };
+            }
+        } else {
+            // This block already handles the case where userRatings is undefined
+            if (!questionToUpdate.userRatings) questionToUpdate.userRatings = [];
+            questionToUpdate.userRatings.push({ userId: currentUser.id, rating });
+        }
+
+        // Recalculate average rating
+        // Use optional chaining and nullish coalescing for safer access
+        const totalRating = questionToUpdate.userRatings?.reduce((sum, r) => sum + r.rating, 0) ?? 0;
+        questionToUpdate.ratingsCount = questionToUpdate.userRatings?.length ?? 0;
+        // Avoid division by zero if ratingsCount is 0
+        questionToUpdate.rating = questionToUpdate.ratingsCount > 0 ? totalRating / questionToUpdate.ratingsCount : 0;
 
     // Add comment if provided
     if (comment && comment.trim() !== "") {
@@ -157,7 +165,7 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
             id: `uc-${Date.now()}`,
             userId: currentUser.id,
             userName: currentUser.name,
-            userAvatar: currentUser.profilePictureUrl || "",
+            useravatar: currentUser.profilePictureUrl || "",
             comment: comment.trim(),
             timestamp: new Date().toISOString(),
         });
@@ -291,7 +299,7 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
                                   <p className="text-xs font-semibold text-muted-foreground">Community Comments:</p>
                                   {q.userComments.map(comment => (
                                       <div key={comment.id} className="flex items-start gap-2 text-xs">
-                                          <Avatar className="h-6 w-6"><AvatarImage src={comment.userAvatar} alt={comment.userName}/><AvatarFallback>{comment.userName.substring(0,1)}</AvatarFallback></Avatar>
+                                          <Avatar className="h-6 w-6"><AvatarImage src={comment.useravatar} alt={comment.userName}/><AvatarFallback>{comment.userName.substring(0,1)}</AvatarFallback></Avatar>
                                           <div>
                                               <span className="font-semibold">{comment.userName}</span>
                                               <span className="text-muted-foreground/80 ml-2 text-[10px]">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</span>

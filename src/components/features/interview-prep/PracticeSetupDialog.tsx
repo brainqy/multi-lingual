@@ -142,7 +142,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
           aiNumQuestions: practiceSessionConfig.aiNumQuestions,
           aiDifficulty: practiceSessionConfig.aiDifficulty,
           aiTimerPerQuestion: practiceSessionConfig.aiTimerPerQuestion,
-          aiQuestionCategories: practiceSessionConfig.aiQuestionCategories,
+          aiQuestionCategories: practiceSessionConfig.aiQuestionCategories as InterviewQuestionCategory[],
         };
         const queryParams = new URLSearchParams();
         queryParams.set('topic', newPracticeSession.aiTopicOrRole || '');
