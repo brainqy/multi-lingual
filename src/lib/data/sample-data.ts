@@ -15,3 +15,4 @@ export * from './requests';
 export * from './activities';
 export * from './questions';
 export * from './challenges';
+export * from './companies';

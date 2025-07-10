@@ -16,6 +16,17 @@ export interface User {
   role: 'user' | 'admin';
 }
 
+export interface ProductCompany {
+  id: string;
+  name: string;
+  location: string;
+  websiteUrl: string;
+  domain: string; // e.g., 'SaaS', 'Fintech', 'E-commerce'
+  hrName?: string;
+  hrEmail?: string;
+  contactNumber?: string;
+  logoUrl?: string;
+}
 
 
 export type UserRole = 'admin' | 'manager' | 'user';
@@ -835,7 +846,6 @@ export interface PracticeSession {
 export const PREDEFINED_INTERVIEW_TOPICS: string[] = Array.from(new Set([
     "Java", "Python", "DSA", "Angular", "Javascript", "Microservices",
     "System Design", "Product Management", "Data Science",
-    ...ALL_CATEGORIES.filter(cat => cat !== "Behavioral") // Ensure Behavioral is not duplicated
 ]));
 
 
