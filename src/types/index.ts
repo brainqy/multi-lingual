@@ -620,6 +620,7 @@ export interface InterviewQuestionUserComment {
   id: string;
   userId: string;
   userName: string;
+  userAvatar: string;
   comment: string;
   timestamp: string;
 }

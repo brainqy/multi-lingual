@@ -14,14 +14,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ListFilter, ChevronLeft, ChevronRight, PlusCircle, Edit3, XCircle as XCircleIcon, Star, Bookmark as BookmarkIcon, CheckCircle as CheckCircleIcon, Code as CodeIcon, Lightbulb, MessageSquare, Puzzle, Settings2, Brain as BrainIcon, Users as UsersGroupIcon } from 'lucide-react';
+import { ListFilter, ChevronLeft, ChevronRight, PlusCircle, Edit3, XCircle as XCircleIcon, Star, Bookmark as BookmarkIcon, CheckCircle as CheckCircleIcon, Code as CodeIcon, Lightbulb, MessageSquare, Puzzle, Settings2, Brain as BrainIcon, Users as UsersGroupIcon, Send } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory, BankQuestionSortOrder, BankQuestionFilterView, UserProfile } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { cn } from "@/lib/utils";
 import { parseISO, formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { sampleInterviewQuestions } from '@/lib/sample-data';
+
 
 interface QuestionBankProps {
   allBankQuestions: InterviewQuestion[];
@@ -44,6 +47,10 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
   const [selectedQuestionsForQuiz, setSelectedQuestionsForQuiz] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 10;
+  
+  const [userRatings, setUserRatings] = useState<Record<string, number>>({});
+  const [userComments, setUserComments] = useState<Record<string, string>>({});
+
 
   const filteredBankQuestions = useMemo(() => {
     let questionsToFilter = [...allBankQuestions];
@@ -112,6 +119,57 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
 
     const questionIdsQueryParam = validMcqQuestionIds.join(',');
     router.push(`/interview-prep/quiz/edit?mode=new&questions=${questionIdsQueryParam}`);
+  };
+  
+  const handleRatingSubmit = (questionId: string) => {
+    const rating = userRatings[questionId];
+    const comment = userComments[questionId];
+
+    if (!rating) {
+        toast({ title: "Rating Required", description: "Please select a star rating before submitting.", variant: "destructive" });
+        return;
+    }
+    
+    // Find the question in the original sample data to mutate it
+    const questionIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
+    if (questionIndex === -1) return;
+
+    const questionToUpdate = sampleInterviewQuestions[questionIndex];
+
+    // Update ratings
+    const existingRatingIndex = questionToUpdate.userRatings?.findIndex(r => r.userId === currentUser.id) ?? -1;
+    if (existingRatingIndex !== -1) {
+        questionToUpdate.userRatings![existingRatingIndex] = { userId: currentUser.id, rating };
+    } else {
+        if (!questionToUpdate.userRatings) questionToUpdate.userRatings = [];
+        questionToUpdate.userRatings.push({ userId: currentUser.id, rating });
+    }
+    
+    // Recalculate average rating
+    const totalRating = questionToUpdate.userRatings.reduce((sum, r) => sum + r.rating, 0);
+    questionToUpdate.ratingsCount = questionToUpdate.userRatings.length;
+    questionToUpdate.rating = totalRating / questionToUpdate.ratingsCount;
+
+    // Add comment if provided
+    if (comment && comment.trim() !== "") {
+        if (!questionToUpdate.userComments) questionToUpdate.userComments = [];
+        questionToUpdate.userComments.push({
+            id: `uc-${Date.now()}`,
+            userId: currentUser.id,
+            userName: currentUser.name,
+            userAvatar: currentUser.profilePictureUrl || "",
+            comment: comment.trim(),
+            timestamp: new Date().toISOString(),
+        });
+    }
+
+    // This is a mock update. In a real app, this would be an API call.
+    // The parent component's state (`allBankQuestions`) will re-render with this mutated data.
+    toast({ title: "Feedback Submitted", description: "Thank you for helping improve the question bank!" });
+
+    // Clear local input state
+    setUserRatings(prev => ({ ...prev, [questionId]: 0 }));
+    setUserComments(prev => ({ ...prev, [questionId]: '' }));
   };
 
   const getCategoryIcon = (category: InterviewQuestionCategory) => {
@@ -243,6 +301,27 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
                                   ))}
                                 </div>
                               )}
+                              <Separator className="my-3"/>
+                              <div className="space-y-2">
+                                <p className="text-xs font-semibold">Rate this question:</p>
+                                <div className="flex items-center gap-1">
+                                  {[1,2,3,4,5].map(rating => (
+                                    <Button key={rating} variant="ghost" size="icon" className="h-6 w-6" onClick={() => setUserRatings(prev => ({...prev, [q.id]: rating}))}>
+                                      <Star className={cn("h-4 w-4 text-muted-foreground", (userRatings[q.id] || 0) >= rating && "fill-yellow-400 text-yellow-500")} />
+                                    </Button>
+                                  ))}
+                                </div>
+                                <Textarea
+                                  placeholder="Add a comment (optional)..."
+                                  className="text-xs"
+                                  rows={2}
+                                  value={userComments[q.id] || ''}
+                                  onChange={(e) => setUserComments(prev => ({...prev, [q.id]: e.target.value}))}
+                                />
+                                <Button size="sm" onClick={() => handleRatingSubmit(q.id)}>
+                                  <Send className="h-4 w-4 mr-2" />Submit Feedback
+                                </Button>
+                              </div>
                         </AccordionContent>
                       </AccordionItem>
                     ))}
@@ -281,3 +360,4 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
     </Card>
   );
 }
+
