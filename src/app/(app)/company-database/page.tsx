@@ -37,9 +37,10 @@ export default function CompanyDatabasePage() {
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
     return companies.filter(company => {
-      const matchesSearch = searchTerm === "" ||
-        company.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = lowercasedSearchTerm === "" ||
+        company.name.toLowerCase().includes(lowercasedSearchTerm);
       
       const matchesLocation = selectedLocation === "all" || company.location === selectedLocation;
       
