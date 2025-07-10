@@ -294,7 +294,6 @@ export interface BlogPost {
   tags: string[];
   comments: any[];
   bookmarkedBy: string[];
-  // possibly other properties
 }
 export const ALL_CATEGORIES = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR', 'Situational', 'Problem-Solving'] as const;
 export type InterviewQuestionCategory = typeof ALL_CATEGORIES[number];
@@ -835,11 +834,10 @@ export interface PracticeSession {
   aiQuestionCategories?: InterviewQuestionCategory[];
 }
 
-export const PREDEFINED_INTERVIEW_TOPICS: string[] = Array.from(new Set([
+export const PREDEFINED_INTERVIEW_TOPICS: readonly string[] = [
     "Java", "Python", "DSA", "Angular", "Javascript", "Microservices",
-    "System Design", "Product Management", "Data Science",
-    ...ALL_CATEGORIES.filter(cat => cat !== "Behavioral") // Ensure Behavioral is not duplicated
-]));
+    "System Design", "Product Management", "Data Science", "React", "Next.js", "AWS"
+];
 
 
 export const PRACTICE_FOCUS_AREAS = ["Java", "Python", "DSA", "Angular", "Javascript", "Microservices", "System Design", "Behavioral", "Product Management", "Data Science"] as const;
@@ -1231,3 +1229,5 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+
+    
