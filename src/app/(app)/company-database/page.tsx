@@ -18,13 +18,15 @@ export default function CompanyDatabasePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("all");
 
+  const companies = sampleProductCompanies || [];
+
   const uniqueLocations = useMemo(() => {
-    const locations = new Set(sampleProductCompanies.map(c => c.location));
+    const locations = new Set(companies.map(c => c.location));
     return ["all", ...Array.from(locations).sort()];
-  }, []);
+  }, [companies]);
 
   const filteredCompanies = useMemo(() => {
-    return sampleProductCompanies.filter(company => {
+    return companies.filter(company => {
       const matchesSearch = searchTerm === "" ||
         company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         company.domain.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,7 +35,7 @@ export default function CompanyDatabasePage() {
 
       return matchesSearch && matchesLocation;
     });
-  }, [searchTerm, selectedLocation]);
+  }, [searchTerm, selectedLocation, companies]);
 
   return (
     <div className="space-y-8">
