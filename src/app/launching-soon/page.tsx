@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, type FormEvent, useEffect } from 'react';
-import { Rocket, Mail } from "lucide-react";
+import { useState, type FormEvent, useEffect, useRef } from 'react';
+import { Rocket, Mail, Zap, FileText, Briefcase, Users, Brain, Award } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import SpreadTheWordCard from '@/components/features/SpreadTheWordCard';
 import type { UserProfile } from '@/types';
-
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 export default function LaunchingSoonPage() {
   const [email, setEmail] = useState('');
@@ -24,6 +25,19 @@ export default function LaunchingSoonPage() {
     minutes: 0,
     seconds: 0,
   });
+
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })
+  );
+
+  const upcomingFeatures = [
+    { title: "AI Resume Analyzer", description: "Get instant feedback on your resume against any job description.", icon: Zap },
+    { title: "Smart Job Tracker", description: "Organize your job search with a Kanban-style application tracker.", icon: Briefcase },
+    { title: "Alumni Network", description: "Connect with peers, find mentors, and grow your professional circle.", icon: Users },
+    { title: "Mock Interview Practice", description: "Hone your interview skills with AI-powered practice sessions.", icon: Brain },
+    { title: "Gamified Rewards", description: "Earn points and badges as you build your career profile and network.", icon: Award },
+    { title: "Personalized Cover Letters", description: "Generate tailored cover letters in seconds for any application.", icon: FileText },
+  ];
 
   // Effect for real-time social proof toasts
   useEffect(() => {
@@ -156,11 +170,32 @@ export default function LaunchingSoonPage() {
             <SpreadTheWordCard user={waitlistUser} />
         </div>
       ) : (
-        <>
-            <p className="text-muted-foreground mb-6">
+        <div className="w-full max-w-xl">
+            <h2 className="text-2xl font-bold text-foreground mb-4">What's Coming...</h2>
+            <Carousel
+              opts={{ align: "start", loop: true }}
+              plugins={[autoplayPlugin.current]}
+              className="w-full"
+            >
+              <CarouselContent>
+                {upcomingFeatures.map((feature, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                      <Card className="h-full flex flex-col items-center justify-center text-center p-6 shadow-lg">
+                        <feature.icon className="h-10 w-10 text-primary mb-3" />
+                        <CardTitle className="text-lg">{feature.title}</CardTitle>
+                        <CardDescription className="text-xs mt-1">{feature.description}</CardDescription>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+
+            <p className="text-muted-foreground my-6">
                 Be the first to know when we launch. Join our waiting list!
             </p>
-            <Card className="w-full max-w-md shadow-2xl">
+            <Card className="w-full max-w-md mx-auto shadow-2xl">
                 <CardHeader>
                 <CardTitle>Join the Waitlist</CardTitle>
                 <CardDescription>Get notified when JobMatch AI goes live.</CardDescription>
@@ -188,7 +223,7 @@ export default function LaunchingSoonPage() {
                 </form>
                 </CardContent>
             </Card>
-        </>
+        </div>
       )}
     </div>
   );
