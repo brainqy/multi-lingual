@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { sampleUserProfile, sampleBlogPosts } from '@/lib/sample-data';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { format, parseISO, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
@@ -36,7 +36,6 @@ export default function BlogPostClientView() {
         setPost(sampleBlogPosts[foundIndex]);
         setPostIndex(foundIndex);
       } else {
-        // Post not found, redirect to a 404 page or back to the blog
         router.push('/blog');
         toast({
           title: "Post Not Found",
@@ -47,6 +46,16 @@ export default function BlogPostClientView() {
     }
     setIsLoading(false);
   }, [params.slug, router, toast]);
+  
+  const relatedPosts = useMemo(() => {
+    if (!post || !post.tags || post.tags.length === 0) return [];
+
+    return sampleBlogPosts.filter(otherPost => {
+      // Exclude the current post and find posts with at least one common tag
+      return otherPost.id !== post.id && otherPost.tags?.some(tag => post.tags!.includes(tag));
+    }).slice(0, 3); // Limit to 3 related posts
+  }, [post]);
+
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -198,6 +207,44 @@ export default function BlogPostClientView() {
           </div>
         </CardContent>
       </Card>
+      
+      {relatedPosts.length > 0 && (
+        <div className="mt-12 pt-8 border-t">
+          <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" /> Related Articles
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedPosts.map(relatedPost => (
+              <Link key={relatedPost.id} href={`/blog/${relatedPost.slug}`} passHref>
+                <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
+                  {relatedPost.imageUrl && (
+                    <div className="relative w-full h-40">
+                      <Image
+                        src={relatedPost.imageUrl}
+                        alt={relatedPost.title}
+                        layout="fill"
+                        objectFit="cover"
+                        data-ai-hint="blog post image"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-lg leading-tight line-clamp-2">{relatedPost.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 flex-grow">
+                    <p className="text-sm text-muted-foreground line-clamp-3">{relatedPost.excerpt}</p>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0 mt-auto">
+                    <span className="text-primary text-sm font-semibold flex items-center gap-1">
+                      Read More <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
