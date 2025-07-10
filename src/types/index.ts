@@ -793,9 +793,8 @@ export type PracticeSessionType = "friends" | "experts" | "ai";
 
 export type DialogStep =
   | 'selectType'
-  | 'selectInterviewCategory'
-  | 'selectExpertTopic'
   | 'selectTopics'
+  | 'selectInterviewCategory'
   | 'selectTimeSlot'
   | 'aiSetupBasic'
   | 'aiSetupAdvanced'
@@ -824,7 +823,7 @@ export interface PracticeSession {
   date: string;
   category: "Practice with Friends" | "Practice with Experts" | "Practice with AI";
   type: string; // This likely refers to the specific topics for the practice
-  language: string;
+  language: string; 
   status: PracticeSessionStatus;
   notes?: string;
   // AI specific fields
