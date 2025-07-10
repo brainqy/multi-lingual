@@ -12,10 +12,11 @@ interface PracticeTopicSelectionProps {
   availableTopics: readonly string[];
   initialSelectedTopics: string[];
   onSelectionChange: (selectedTopics: string[]) => void;
+  isSingleSelection?: boolean;
   description?: string;
 }
 
-export default function PracticeTopicSelection({ availableTopics, initialSelectedTopics, onSelectionChange, description }: PracticeTopicSelectionProps) {
+export default function PracticeTopicSelection({ availableTopics, initialSelectedTopics, onSelectionChange, isSingleSelection = false, description }: PracticeTopicSelectionProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelectedTopics));
 
   useEffect(() => {
@@ -23,10 +24,10 @@ export default function PracticeTopicSelection({ availableTopics, initialSelecte
   }, [initialSelectedTopics]);
 
   const toggleTopic = (topic: string) => {
-    const newSet = new Set(selected);
-    if (newSet.has(topic)) {
+    const newSet = isSingleSelection ? new Set([topic]) : new Set(selected);
+    if (!isSingleSelection && newSet.has(topic)) {
       newSet.delete(topic);
-    } else {
+    } else if (!isSingleSelection) {
       newSet.add(topic);
     }
     setSelected(newSet);
@@ -34,21 +35,21 @@ export default function PracticeTopicSelection({ availableTopics, initialSelecte
   };
 
   return (
-    // Removed encompassing Card to allow embedding in dialog
     <div>
         <CardHeader className="px-0 pt-0 pb-3">
             <CardDescription className="text-sm">{description || "Choose one or more topics you'd like to focus on. This will help tailor the session."}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            <ScrollArea className="h-60 pr-3"> {/* Adjust height as needed for dialog */}
+            <ScrollArea className="h-60 pr-3">
             <div className="space-y-3">
                 {(availableTopics || []).map(topic => (
-                <div key={topic} className="flex items-center space-x-3 p-3 border rounded-md hover:bg-secondary/50 transition-colors">
+                <div key={topic} className="flex items-center space-x-3 p-3 border rounded-md hover:bg-secondary/50 transition-colors" onClick={() => toggleTopic(topic)}>
                     <Checkbox
-                    id={`dialog-topic-${topic}`} // Ensure unique ID for dialog context
-                    checked={selected.has(topic)}
-                    onCheckedChange={() => toggleTopic(topic)}
-                    className="h-5 w-5"
+                      id={`dialog-topic-${topic}`}
+                      checked={selected.has(topic)}
+                      onCheckedChange={() => toggleTopic(topic)}
+                      className="h-5 w-5"
+                      aria-label={`Select topic: ${topic}`}
                     />
                     <Label htmlFor={`dialog-topic-${topic}`} className="font-normal text-md flex-1 cursor-pointer">{topic}</Label>
                 </div>
@@ -56,7 +57,6 @@ export default function PracticeTopicSelection({ availableTopics, initialSelecte
             </div>
             </ScrollArea>
         </CardContent>
-        {/* Footer and buttons will be handled by the parent dialog */}
     </div>
   );
 }

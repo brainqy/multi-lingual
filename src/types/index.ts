@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -792,6 +793,8 @@ export type PracticeSessionType = "friends" | "experts" | "ai";
 
 export type DialogStep =
   | 'selectType'
+  | 'selectInterviewCategory'
+  | 'selectExpertTopic'
   | 'selectTopics'
   | 'selectTimeSlot'
   | 'aiSetupBasic'
@@ -801,7 +804,8 @@ export type DialogStep =
 
 export interface PracticeSessionConfig {
   type: PracticeSessionType | null;
-  topics: string[];
+  interviewCategory?: InterviewQuestionCategory; // For the first step (e.g., Technical, Behavioral)
+  topics: string[]; // For the second step (e.g., Java, Python)
   dateTime: Date | null;
   friendEmail?: string;
   expertId?: string;

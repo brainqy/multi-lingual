@@ -28,15 +28,26 @@ interface PracticeSetupDialogProps {
   onSessionBooked: (session: PracticeSession, queryParams?: URLSearchParams) => void;
 }
 
-// Add the new step to the DialogStep type
-type ExtendedDialogStep = DialogStep | 'selectInterviewCategory';
+const expertTopicsByCategory: Record<InterviewQuestionCategory, string[]> = {
+  Technical: ["Java", "Python", "System Design", "Cloud (AWS/GCP)", "DevOps"],
+  Behavioral: ["STAR Method Practice", "Leadership Scenarios", "Conflict Resolution"],
+  Coding: ["Data Structures", "Algorithms", "Problem Solving"],
+  "Role-Specific": ["Product Management Case", "Marketing Strategy", "Sales Pitch Practice"],
+  Analytical: ["Brain Teasers", "Logical Reasoning", "Data Interpretation"],
+  Common: ["Common Questions", "Tell me about yourself", "Strengths/Weaknesses"],
+  HR: ["Company Culture Fit", "Salary Negotiation", "Career Growth"],
+  Situational: ["Situational Scenarios"],
+  "Problem-Solving": ["Problem-Solving Cases"]
+};
+
 
 export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }: PracticeSetupDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [dialogStep, setDialogStep] = useState<ExtendedDialogStep>('selectType');
+  const [dialogStep, setDialogStep] = useState<DialogStep>('selectType');
   const [practiceSessionConfig, setPracticeSessionConfig] = useState<PracticeSessionConfig>({
     type: null,
+    interviewCategory: undefined,
     topics: [],
     dateTime: null,
     friendEmail: '',
@@ -65,13 +76,19 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
         return; 
       }
       if (practiceSessionConfig.type === 'experts') {
-        setDialogStep('selectInterviewCategory'); // New Step for experts
+        setDialogStep('selectInterviewCategory'); 
       } else { // 'ai'
         setDialogStep('selectTopics');
       }
     } else if (dialogStep === 'selectInterviewCategory') {
-        if (practiceSessionConfig.topics.length === 0) { // Using 'topics' to store category selection for now
-            toast({ title: "Error", description: "Please select at least one interview category.", variant: "destructive" });
+        if (!practiceSessionConfig.interviewCategory) { 
+            toast({ title: "Error", description: "Please select an interview category.", variant: "destructive" });
+            return;
+        }
+        setDialogStep('selectExpertTopic');
+    } else if (dialogStep === 'selectExpertTopic') {
+        if (practiceSessionConfig.topics.length === 0) {
+            toast({ title: "Error", description: "Please select a specific topic.", variant: "destructive" });
             return;
         }
         setDialogStep('selectTimeSlot');
@@ -84,9 +101,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
       if (practiceSessionConfig.type === 'ai') {
         setPracticeSessionConfig(prev => ({...prev, aiTopicOrRole: prev.topics.join(', ')}));
         setDialogStep('aiSetupBasic');
-      } else { // This path is no longer directly reachable for 'experts' from here
-        setDialogStep('selectTimeSlot');
-      }
+      } 
     } else if (dialogStep === 'aiSetupBasic') {
       if (!practiceSessionConfig.aiTopicOrRole?.trim()) {
           toast({ title: "Error", description: "Please specify the AI interview topic/role.", variant: "destructive" });
@@ -99,8 +114,9 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
   };
 
   const handleDialogPreviousStep = () => {
-    if (dialogStep === 'selectTimeSlot') setDialogStep('selectInterviewCategory'); // Back to new step
-    else if (dialogStep === 'selectInterviewCategory') setDialogStep('selectType'); // Back to start
+    if (dialogStep === 'selectTimeSlot') setDialogStep('selectExpertTopic');
+    else if (dialogStep === 'selectExpertTopic') setDialogStep('selectInterviewCategory');
+    else if (dialogStep === 'selectInterviewCategory') setDialogStep('selectType'); 
     else if (dialogStep === 'selectTopics') setDialogStep('selectType');
     else if (dialogStep === 'aiSetupCategories') setDialogStep('aiSetupAdvanced');
     else if (dialogStep === 'aiSetupAdvanced') setDialogStep('aiSetupBasic');
@@ -126,10 +142,10 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
             userId: sampleUserProfile.id,
             date: practiceSessionConfig.dateTime.toISOString(),
             category: "Practice with Experts",
-            type: practiceSessionConfig.topics.join(', ') || "General",
+            type: `${practiceSessionConfig.interviewCategory}: ${practiceSessionConfig.topics.join(', ')}`,
             language: "English", 
             status: "SCHEDULED",
-            notes: `Scheduled expert session for topics: ${practiceSessionConfig.topics.join(', ')}.`,
+            notes: `Scheduled expert session for category "${practiceSessionConfig.interviewCategory}" on topics: ${practiceSessionConfig.topics.join(', ')}.`,
         };
         onSessionBooked(newSession);
     } else if (practiceSessionConfig.type === 'ai') {
@@ -166,6 +182,10 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
     onClose();
   };
 
+  const handleCategorySelectionChange = (category: InterviewQuestionCategory) => {
+    setPracticeSessionConfig(prev => ({ ...prev, interviewCategory: category, topics: [] })); // Reset topics when category changes
+  };
+
   const handleTopicSelectionChange = (newTopics: string[]) => {
     setPracticeSessionConfig(prev => ({ ...prev, topics: newTopics }));
   };
@@ -192,6 +212,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
             {
               dialogStep === 'selectType' ? "Choose the type of mock interview you want to practice." :
               dialogStep === 'selectInterviewCategory' ? "First, select a general category for your expert session." :
+              dialogStep === 'selectExpertTopic' ? "Now, choose a specific topic within your selected category." :
               dialogStep === 'selectTopics' ? "Select the topics you want to focus on." :
               dialogStep === 'selectTimeSlot' ? "Pick a date and time for your expert session." :
               "Configure your AI-powered mock interview."
@@ -204,7 +225,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               <Button variant={practiceSessionConfig.type === 'ai' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'ai' }))}>
                 <div><p className="font-semibold">Practice with AI</p><p className="text-xs text-muted-foreground">Get instant feedback from our AI interviewer.</p></div>
               </Button>
-              <Button variant={practiceSessionConfig.type === 'experts' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'experts', topics: [] }))}>
+              <Button variant={practiceSessionConfig.type === 'experts' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'experts', topics: [], interviewCategory: undefined }))}>
                 <div><p className="font-semibold">Practice with Experts</p><p className="text-xs text-muted-foreground">Schedule a session with an industry expert.</p></div>
               </Button>
               <Button variant={practiceSessionConfig.type === 'friends' ? 'default' : 'outline'} className="w-full justify-start h-auto p-4 text-left" onClick={() => setPracticeSessionConfig(prev => ({ ...prev, type: 'friends' }))}>
@@ -223,9 +244,19 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
           {dialogStep === 'selectInterviewCategory' && (
              <PracticeTopicSelection
               availableTopics={ALL_CATEGORIES}
+              initialSelectedTopics={practiceSessionConfig.interviewCategory ? [practiceSessionConfig.interviewCategory] : []}
+              onSelectionChange={(selection) => handleCategorySelectionChange(selection[0] as InterviewQuestionCategory)}
+              isSingleSelection={true}
+              description="Choose one high-level category for your session."
+            />
+          )}
+
+          {dialogStep === 'selectExpertTopic' && (
+             <PracticeTopicSelection
+              availableTopics={expertTopicsByCategory[practiceSessionConfig.interviewCategory!] || []}
               initialSelectedTopics={practiceSessionConfig.topics}
               onSelectionChange={handleTopicSelectionChange}
-              description="Choose one or more high-level categories for your session."
+              description={`Select a topic under "${practiceSessionConfig.interviewCategory}".`}
             />
           )}
 
