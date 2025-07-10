@@ -26,10 +26,6 @@ export default function LaunchingSoonPage() {
     seconds: 0,
   });
 
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })
-  );
-
   const upcomingFeatures = [
     { title: "AI Resume Analyzer", description: "Get instant feedback on your resume against any job description.", icon: Zap },
     { title: "Smart Job Tracker", description: "Organize your job search with a Kanban-style application tracker.", icon: Briefcase },
@@ -174,7 +170,13 @@ export default function LaunchingSoonPage() {
             <h2 className="text-2xl font-bold text-foreground mb-4">What's Coming...</h2>
             <Carousel
               opts={{ align: "start", loop: true }}
-              plugins={[autoplayPlugin.current]}
+              plugins={[
+                Autoplay({
+                  delay: 3000,
+                  stopOnInteraction: true,
+                  stopOnMouseEnter: true,
+                }),
+              ]}
               className="w-full"
             >
               <CarouselContent>
