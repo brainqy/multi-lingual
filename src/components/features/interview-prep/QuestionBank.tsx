@@ -18,8 +18,10 @@ import { ListFilter, ChevronLeft, ChevronRight, PlusCircle, Edit3, XCircle as XC
 import type { InterviewQuestion, InterviewQuestionCategory, BankQuestionSortOrder, BankQuestionFilterView, UserProfile } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { cn } from "@/lib/utils";
-import { parseISO } from 'date-fns';
+import { parseISO, formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '../ui/separator';
 
 interface QuestionBankProps {
   allBankQuestions: InterviewQuestion[];
@@ -187,7 +189,7 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
                                         <span className="font-medium text-foreground">{q.questionText}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-                                        <span>ID: {q.id}</span>
+                                        <div className="flex items-center gap-1"><Star className="h-3 w-3 text-yellow-500"/> {(q.rating || 0).toFixed(1)} ({q.ratingsCount || 0})</div>
                                         <span className="mx-1">|</span>
                                         {q.difficulty && <Badge variant="outline" className="text-[10px] px-1 py-0">{q.difficulty}</Badge>}
                                         {q.tags && q.tags.length > 0 && (<span className="mx-1 hidden sm:inline">|</span>)}
@@ -226,6 +228,21 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
                                 ))}
                                 </div>
                             )}
+                             {q.userComments && q.userComments.length > 0 && (
+                                <div className="space-y-2 pt-2 border-t mt-3">
+                                  <p className="text-xs font-semibold text-muted-foreground">Community Comments:</p>
+                                  {q.userComments.map(comment => (
+                                      <div key={comment.id} className="flex items-start gap-2 text-xs">
+                                          <Avatar className="h-6 w-6"><AvatarImage src={comment.userAvatar} alt={comment.userName}/><AvatarFallback>{comment.userName.substring(0,1)}</AvatarFallback></Avatar>
+                                          <div>
+                                              <span className="font-semibold">{comment.userName}</span>
+                                              <span className="text-muted-foreground/80 ml-2 text-[10px]">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</span>
+                                              <p className="text-muted-foreground">{comment.comment}</p>
+                                          </div>
+                                      </div>
+                                  ))}
+                                </div>
+                              )}
                         </AccordionContent>
                       </AccordionItem>
                     ))}
@@ -235,8 +252,29 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
                 )}
             </ScrollArea>
         </CardContent>
-        <CardFooter className="border-t pt-4">
-            <Button onClick={handleCreateQuiz} disabled={selectedQuestionsForQuiz.size === 0} className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white">
+        <CardFooter className="border-t pt-4 flex-wrap justify-between items-center gap-2">
+            <div className="flex justify-center items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+            <Button onClick={handleCreateQuiz} disabled={selectedQuestionsForQuiz.size === 0} className="bg-green-600 hover:bg-green-700 text-white">
                 <PlusCircle className="mr-2 h-4 w-4" /> Create Quiz from Selected ({selectedQuestionsForQuiz.size})
             </Button>
         </CardFooter>
