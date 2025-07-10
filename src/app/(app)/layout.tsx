@@ -10,6 +10,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { addRecentPage, getLabelForPath } from '@/lib/recent-pages';
 import AnnouncementBanner from '@/components/features/AnnouncementBanner';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 export default function AppLayout({
   children,
@@ -17,6 +20,8 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (pathname) {
@@ -25,6 +30,20 @@ export default function AppLayout({
       addRecentPage(pathname, label);
     }
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/auth/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+  
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider defaultOpen>
