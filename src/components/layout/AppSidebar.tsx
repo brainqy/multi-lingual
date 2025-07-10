@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
@@ -35,6 +36,10 @@ const navItems = [
   { href: "/gallery", labelKey: "sideMenu.eventGallery", icon: GalleryVerticalEnd },
   { href: "/activity-log", labelKey: "sideMenu.activityLog", icon: BarChart2 },
   { href: "/profile", labelKey: "sideMenu.myProfile", icon: User },
+];
+
+const databaseItems = [
+  { href: "/company-database", labelKey: "sideMenu.companyDatabase", icon: Building2 },
 ];
 
 const utilityItems = [
@@ -140,6 +145,14 @@ export function AppSidebar() {
             )
           )}
         </SidebarMenu>
+
+        <SidebarSeparator className="my-4" />
+         <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">{t("sideMenu.databases")}</SidebarGroupLabel>
+          <SidebarMenu>
+            {databaseItems.map(item => renderMenuItem(item))}
+          </SidebarMenu>
+        </SidebarGroup>
 
         <SidebarSeparator className="my-4" />
          <SidebarGroup className="p-0">
