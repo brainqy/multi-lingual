@@ -126,8 +126,8 @@ export default function BlogPostClientView() {
           <Image
             src={post.imageUrl}
             alt={post.title}
-            layout="fill"
-            objectFit="cover"
+            fill
+            style={{ objectFit: "cover" }}
             data-ai-hint="blog post image"
             priority 
           />
@@ -222,8 +222,8 @@ export default function BlogPostClientView() {
                       <Image
                         src={relatedPost.imageUrl}
                         alt={relatedPost.title}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        style={{ objectFit: "cover" }}
                         data-ai-hint="blog post image"
                       />
                     </div>

@@ -75,8 +75,8 @@ export default function GalleryPage() {
                         <Image
                             src={event.imageUrls[0]}
                             alt={event.title}
-                            layout="fill"
-                            objectFit="cover"
+                            fill
+                            style={{ objectFit: "cover" }}
                             data-ai-hint={event.dataAiHint || "event photo"}
                             className="group-hover:opacity-80 transition-opacity"
                         />
@@ -179,8 +179,8 @@ export default function GalleryPage() {
                             <Image
                               src={url}
                               alt={`${selectedEventForImageView.title} - Image ${index + 1}`}
-                              layout="fill"
-                              objectFit="contain"
+                              fill
+                              style={{ objectFit: "contain" }}
                               data-ai-hint={selectedEventForImageView.dataAiHint || "event photo detail"}
                             />
                           </div>

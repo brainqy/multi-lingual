@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState } from "react";
@@ -129,8 +130,8 @@ export default function ResumeTemplatesPage() {
                 <Image
                   src={template.previewImageUrl}
                   alt={template.name}
-                  layout="fill"
-                  objectFit="contain" 
+                  fill
+                  style={{ objectFit: "contain" }}
                   className="p-2"
                   data-ai-hint={template.dataAiHint || "resume template"}
                 />
@@ -170,7 +171,7 @@ export default function ResumeTemplatesPage() {
                     alt={`${selectedTemplate.name} Preview`}
                     width={800}
                     height={1035}
-                    objectFit="contain"
+                    style={{ objectFit: "contain" }}
                     className="border"
                     data-ai-hint={selectedTemplate.dataAiHint || "resume preview"}
                   />

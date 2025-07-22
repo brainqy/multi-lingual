@@ -107,8 +107,8 @@ export default function BlogPage() {
                     <Image
                       src={post.imageUrl}
                       alt={post.title}
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
                       data-ai-hint="blog post image"
                     />
                   </div>
