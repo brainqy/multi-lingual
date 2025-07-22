@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { UserProfile } from '@/types';
 import { useRouter, usePathname } from 'next/navigation';
-import { samplePlatformUsers, ensureFullUserProfile } from '@/lib/sample-data'; // Import server-side data and helper
+import { getUserByEmail, createUser, updateUser } from '@/lib/data-services/users';
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
@@ -40,36 +40,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [router, pathname]);
 
   useEffect(() => {
-    try {
-      const storedUserJSON = localStorage.getItem('bhashaSetuUser');
-      if (storedUserJSON) {
-        const storedUser = JSON.parse(storedUserJSON);
-        // Re-validate user from our "database" to prevent stale roles
-        const freshUser = samplePlatformUsers.find(u => u.id === storedUser.id);
-        if (freshUser) {
-          // If the user still exists, use the fresh data from the source
-          // and just keep the session ID from the stored data.
-          setUser({ ...freshUser, sessionId: storedUser.sessionId });
-        } else {
-          // User doesn't exist anymore, clear session
-          setUser(null);
-          localStorage.removeItem('bhashaSetuUser');
+    const checkUserSession = async () => {
+      try {
+        const storedUserJSON = localStorage.getItem('bhashaSetuUser');
+        if (storedUserJSON) {
+          const storedUser = JSON.parse(storedUserJSON);
+          const freshUser = await getUserByEmail(storedUser.email);
+          if (freshUser) {
+            setUser({ ...freshUser, sessionId: storedUser.sessionId });
+          } else {
+            setUser(null);
+            localStorage.removeItem('bhashaSetuUser');
+          }
         }
+      } catch (error) {
+        console.error("Failed to parse user from localStorage", error);
+        setUser(null);
+        localStorage.removeItem('bhashaSetuUser');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      setUser(null);
-      localStorage.removeItem('bhashaSetuUser');
-    } finally {
-      setIsLoading(false);
-    }
+    };
+    checkUserSession();
   }, []);
   
   // Session validation effect for multi-device logout
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (user && user.id && user.sessionId) {
-        const serverUser = samplePlatformUsers.find(u => u.id === user.id);
+    const interval = setInterval(async () => {
+      if (user && user.email && user.sessionId) {
+        const serverUser = await getUserByEmail(user.email);
         if (serverUser && serverUser.sessionId !== user.sessionId) {
           toast({
             title: "Session Expired",
@@ -86,17 +85,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback((email: string, name?: string) => {
-    const userToLogin = samplePlatformUsers.find(u => u.email === email);
+  const login = useCallback(async (email: string, name?: string) => {
+    const userToLogin = await getUserByEmail(email);
 
     if (userToLogin) {
       const sessionId = `session-${Date.now()}`;
       const userWithSession = { ...userToLogin, sessionId };
 
-      const userIndex = samplePlatformUsers.findIndex(u => u.id === userToLogin.id);
-      if (userIndex > -1) {
-        samplePlatformUsers[userIndex] = userWithSession;
-      }
+      await updateUser(userToLogin.id, { sessionId });
       
       setUser(userWithSession);
       localStorage.setItem('bhashaSetuUser', JSON.stringify(userWithSession));
@@ -111,8 +107,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [router, toast]);
 
-  const signup = useCallback((name: string, email: string, role: 'user' | 'admin') => {
-    const existingUser = samplePlatformUsers.find(u => u.email === email);
+  const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin') => {
+    const existingUser = await getUserByEmail(email);
     if (existingUser) {
         toast({
             title: "Account Exists",
@@ -122,20 +118,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
     }
     
-    const newUser = ensureFullUserProfile({
-        id: Date.now().toString(),
-        email,
-        name,
-        role, 
-        sessionId: `session-${Date.now()}`,
-    });
+    const newUser = await createUser({ name, email, role });
     
-    samplePlatformUsers.push(newUser);
-    
-    // Log in the new user immediately
-    setUser(newUser);
-    localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
-    router.push('/dashboard');
+    if (newUser) {
+      // Log in the new user immediately
+      setUser(newUser);
+      localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
+      router.push('/dashboard');
+    } else {
+       toast({
+        title: "Signup Failed",
+        description: "Could not create a new user account.",
+        variant: "destructive",
+      });
+    }
   }, [router, toast]);
 
   const isAuthenticated = !!user;

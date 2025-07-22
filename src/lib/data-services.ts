@@ -2,7 +2,9 @@
 "use client";
 
 import type { JobOpening, UserProfile } from '@/types';
-import { sampleJobOpenings, sampleUserProfile } from '@/lib/sample-data';
+import { sampleJobOpenings } from './data/jobs';
+import { sampleUserProfile } from './data/users';
+import { getUserByEmail, createUser } from './data-services/users';
 
 // This constant will be automatically set by Next.js based on the environment
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
