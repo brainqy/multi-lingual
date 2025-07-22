@@ -6,35 +6,27 @@ import { NextRequest, NextResponse } from 'next/server';
 // the tenant based on the subdomain or URL path.
 
 export async function middleware(request: NextRequest) {
-  const hostname = request.headers.get('host');
+  const url = request.nextUrl.clone();
+  const hostname = request.headers.get('host') || '';
+
+  // For local development, we might use something like `brainqy.localhost:9002`.
+  // This logic extracts the subdomain part.
+  // It assumes your main app domain is `localhost` locally. For production, you'd change 'localhost' to your actual domain (e.g., 'jobmatch.ai').
+  const subdomain = hostname.split('.')[0];
   
-  // --- Alternative 1: Path-Based Multitenancy (e.g., /t/tenant-id/dashboard) ---
-  // This is a common and simpler alternative to subdomains.
-  // The logic would extract the tenant ID from the URL path and make it available
-  // to the rest of the application.
-  // Example:
-  // const path = request.nextUrl.pathname;
-  // if (path.startsWith('/t/')) {
-  //   const tenantId = path.split('/')[2];
-  //   // You could add the tenantId to the request headers here
-  //   // for server components to access.
-  // }
+  // You can define which subdomains are considered tenants.
+  const knownTenants = ['brainqy', 'cpp']; 
   
+  if (knownTenants.includes(subdomain)) {
+    // Rewrite the path to include the tenant ID, so pages can access it.
+    // For example, `brainqy.localhost:9002/dashboard` becomes a request for `/t/brainqy/dashboard`.
+    // This allows you to use a file structure like `src/app/(app)/t/[tenantId]/...`
+    console.log(`Rewriting for tenant: ${subdomain}`);
+    url.pathname = `/t/${subdomain}${url.pathname}`;
+    return NextResponse.rewrite(url);
+  }
 
-  // --- Alternative 2: Subdomain-Based Multitenancy (e.g., tenant.example.com) ---
-  // Example Logic:
-  // 1. Extract the subdomain (e.g., "tenant-a" from "tenant-a.localhost:3000").
-  // const subdomain = hostname?.split('.')[0];
-
-  // 2. If a subdomain exists and is not 'www', you could rewrite the path
-  //    to a tenant-specific page or add a header with the tenant ID.
-  //    For example:
-  //    const url = request.nextUrl.clone();
-  //    url.pathname = `/t/${subdomain}${url.pathname}`;
-  //    return NextResponse.rewrite(url);
-
-  // 3. For now, we will just proceed with the request without any changes,
-  //    as the app currently scopes data after login.
+  // If it's not a known tenant subdomain, continue to the requested page.
   return NextResponse.next();
 }
 
