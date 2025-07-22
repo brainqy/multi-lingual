@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String    @id @default(cuid())
+  tenantId                String
+  name                    String
+  email                   String    @unique
+  role                    String
+  status                  String?
+  lastLogin               DateTime?
+  dateOfBirth             String?
+  gender                  String?
+  mobileNumber            String?
+  currentAddress          String?
+  graduationYear          String?
+  degreeProgram           String?
+  department              String?
+  currentJobTitle         String
+  company                 String
+  currentOrganization     String?
+  industry                String?
+  workLocation            String?
+  linkedInProfile         String?
+  yearsOfExperience       String?
+  skills                  String[]
+  areasOfSupport          String[]
+  timeCommitment          String?
+  preferredEngagementMode String?
+  otherComments           String?
+  lookingForSupportType   String?
+  helpNeededDescription   String?
+  shareProfileConsent     Boolean?
+  featureInSpotlightConsent Boolean?
+  profilePictureUrl       String?
+  resumeText              String?
+  careerInterests         String?
+  bio                     String
+  interests               String[]
+  offersHelpWith          String[]
+  appointmentCoinCost     Int?
+  xpPoints                Int?
+  dailyStreak             Int?
+  longestStreak           Int?
+  totalActiveDays         Int?
+  weeklyActivity          Boolean[]
+  referralCode            String?
+  earnedBadges            String[]
+  affiliateCode           String?
+  pastInterviewSessions   String[]
+  interviewCredits        Int?
+  createdAt               DateTime  @default(now())
+  isDistinguished         Boolean?
+  userApiKey              String?
+  challengeTopics         String[]
+  shortBio                String
+  university              String
+  sessionId               String?
+}

@@ -1,35 +1,21 @@
 // src/lib/db.ts
+import { PrismaClient } from '@prisma/client';
 
-/**
- * This file centralizes the database connection logic.
- * It reads the NODE_ENV environment variable to determine whether
- * the application is in 'production' or 'development' mode,
- * and exports the appropriate database connection URL.
- */
-
-// In a real application, you would import a database client like Prisma or Drizzle here.
-// For example: import { PrismaClient } from '@prisma/client';
-
-const DATABASE_URL =
-  process.env.NODE_ENV === 'production'
-    ? process.env.DATABASE_URL_PROD
-    : process.env.DATABASE_URL;
-
-if (!DATABASE_URL) {
-  console.warn(
-    'DATABASE_URL is not set. Please check your .env file.'
-  );
+declare global {
+  // allow global `var` declarations
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
 }
 
-// Example of how you would export the database client:
-//
-// export const db = new PrismaClient({
-//   datasources: {
-//     db: {
-//       url: DATABASE_URL,
-//     },
-//   },
-// });
+export const db =
+  global.prisma ||
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
+  });
 
-// For now, we just export the URL for demonstration.
-export { DATABASE_URL };
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = db;
+}
