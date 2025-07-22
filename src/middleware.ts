@@ -1,33 +1,32 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// This is a placeholder for multitenant routing logic.
-// In a real-world scenario, this middleware would be responsible for identifying
-// the tenant based on the subdomain or URL path.
+// This middleware identifies the tenant based on the subdomain
+// and passes that information via a request header.
+// It does NOT rewrite the URL path, avoiding "Page not found" errors.
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
 
-  // For local development, we might use something like `brainqy.localhost:9002`.
-  // This logic extracts the subdomain part.
-  // It assumes your main app domain is `localhost` locally. For production, you'd change 'localhost' to your actual domain (e.g., 'jobmatch.ai').
+  // For local development, this extracts the subdomain from e.g., `brainqy.localhost:9002`.
+  // In production, you would adjust this for your actual domain, e.g., 'jobmatch.ai'.
   const subdomain = hostname.split('.')[0];
   
-  // You can define which subdomains are considered tenants.
+  // Define your known tenants. In a real app, this would come from a database.
   const knownTenants = ['brainqy', 'cpp']; 
-  
+
+  // Create a new response object so we can modify its headers.
+  const response = NextResponse.next();
+
   if (knownTenants.includes(subdomain)) {
-    // Rewrite the path to include the tenant ID, so pages can access it.
-    // For example, `brainqy.localhost:9002/dashboard` becomes a request for `/t/brainqy/dashboard`.
-    // This allows you to use a file structure like `src/app/(app)/t/[tenantId]/...`
-    console.log(`Rewriting for tenant: ${subdomain}`);
-    url.pathname = `/t/${subdomain}${url.pathname}`;
-    return NextResponse.rewrite(url);
+    // Pass the tenant ID via a request header.
+    // Your application logic can now read this header to scope data.
+    console.log(`Request for tenant: ${subdomain}. Setting X-Tenant-Id header.`);
+    response.headers.set('X-Tenant-Id', subdomain);
   }
 
-  // If it's not a known tenant subdomain, continue to the requested page.
-  return NextResponse.next();
+  return response;
 }
 
 // See "Matching Paths" below to learn more
