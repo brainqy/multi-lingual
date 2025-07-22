@@ -1,6 +1,5 @@
 
 import type { ResumeProfile, ResumeScanHistoryItem } from '@/types';
-import { samplePlatformUsers } from './users';
 import { SAMPLE_DATA_BASE_DATE } from './platform';
 
 const placeholderResumeText = `[Your Name]
@@ -33,10 +32,10 @@ Qualifications:
 `;
 
 export let sampleResumeProfiles: ResumeProfile[] = [
-  { id: 'resume1', tenantId: 'Brainqy', userId: 'alumni1', name: "Software Engineer Focused (Alice)", resumeText: samplePlatformUsers.find(u => u.id === 'alumni1')?.resumeText || "Alice Wonderland's resume focused on software engineering roles...", lastAnalyzed: "2024-07-15" },
+  { id: 'resume1', tenantId: 'Brainqy', userId: 'alumni1', name: "Software Engineer Focused (Alice)", resumeText: `Alice Wonderland\n(123) 456-7890 | alice.wonderland@email.com | linkedin.com/in/alicewonder | github.com/alicew | alicew.dev\n\nSummary\nHighly skilled Senior Software Engineer with 7+ years of experience...`, lastAnalyzed: "2024-07-15" },
   { id: 'resume2', tenantId: 'Brainqy', userId: 'alumni2', name: "Product Manager Application (Bob)", resumeText: "Bob The Builder's resume tailored for product management positions...", lastAnalyzed: "2024-07-10" },
   { id: 'resume3', tenantId: 'tenant-2', userId: 'alumni3', name: "Data Science General (Charlie)", resumeText: "Charlie Brown's general purpose resume for various data roles.", lastAnalyzed: "2024-06-20" },
-  { id: 'resumeManager1', tenantId: 'tenant-2', userId: 'managerUser1', name: "Engagement Strategy Lead Resume (Mike)", resumeText: samplePlatformUsers.find(u => u.id === 'managerUser1')?.resumeText || "Resume for Manager Mike, focused on engagement and leadership.", lastAnalyzed: "2024-07-20" },
+  { id: 'resumeManager1', tenantId: 'tenant-2', userId: 'managerUser1', name: "Engagement Strategy Lead Resume (Mike)", resumeText: "Resume for Manager Mike, focused on engagement and leadership.", lastAnalyzed: "2024-07-20" },
 ];
 
 export const sampleResumeScanHistory: ResumeScanHistoryItem[] = [
@@ -90,7 +89,7 @@ export const sampleResumeScanHistory: ResumeScanHistoryItem[] = [
     resumeName: 'CorpStrategyResume.pdf',
     jobTitle: `Strategy Consultant`,
     companyName: 'McKinsey',
-    resumeTextSnapshot: samplePlatformUsers.find(u => u.id === 'managerUser1')?.resumeText || "Strategic resume content for McKinsey...",
+    resumeTextSnapshot: `Strategic resume content for McKinsey...`,
     jobDescriptionText: `Title: Strategy Consultant\nCompany: McKinsey\n${placeholderJobDescription}`,
     scanDate: new Date(SAMPLE_DATA_BASE_DATE.getTime() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     matchScore: 88,
