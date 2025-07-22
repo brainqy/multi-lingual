@@ -29,12 +29,12 @@ export function SignupForm() {
   const { signup } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
-  const platformName = samplePlatformSettings.platformName;
+  const platformName = t("appName", { default: "Bhasha Setu" });
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),
     email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address."}) }),
-    password: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),
+    password: z.string().min(8, { message: t("validation.adminPasswordMin", { default: "Password must be at least 8 characters."}) }),
     referralCode: z.string().optional(),
     agreeToTerms: z.boolean().refine(val => val === true, {
       message: t("validation.termsRequired", { default: "You must accept the terms and conditions." }),

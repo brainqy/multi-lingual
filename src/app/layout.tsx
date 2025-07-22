@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Brainqy',
-  description: 'Personal AI Assistant for your Career journey',
+  title: 'Bhasha Setu',
+  description: 'AI-powered translation and localization platform.',
 };
 
 export default function RootLayout({

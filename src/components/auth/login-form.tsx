@@ -28,7 +28,7 @@ export function LoginForm() {
   const { login } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
-  const platformName = samplePlatformSettings.platformName;
+  const platformName = t("appName", { default: "Bhasha Setu" });
 
   const formSchema = z.object({
     email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address." }) }),
@@ -46,7 +46,8 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    login(values.email, values.email.split('@')[0]); 
+    // In a real app, you'd also send the password for verification
+    login(values.email); 
   }
 
   return (
