@@ -125,6 +125,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(newUser);
       localStorage.setItem('bhashaSetuUser', JSON.stringify(newUser));
       router.push('/dashboard');
+      toast({
+        title: "Signup Successful!",
+        description: `Welcome, ${name}! Your account has been created.`,
+      });
     } else {
        toast({
         title: "Signup Failed",
