@@ -1,13 +1,14 @@
 // src/lib/db.ts
 import { PrismaClient } from '@prisma/client';
 
+// This setup prevents multiple instances of Prisma Client in development.
 declare global {
   // allow global `var` declarations
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
-export const db =
+const prisma =
   global.prisma ||
   new PrismaClient({
     log:
@@ -17,5 +18,7 @@ export const db =
   });
 
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = db;
+  global.prisma = prisma;
 }
+
+export const db = prisma;
