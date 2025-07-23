@@ -1,9 +1,10 @@
 
 'use server';
 
-import type { UserProfile, UserStatus, Gender, DegreeProgram, Industry, TimeCommitment, EngagementMode, SupportTypeSought, Tenant } from '@/types';
+import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
-import { samplePlatformUsers, sampleTenants } from '@/lib/data/users';
+import { samplePlatformUsers } from '@/lib/data/users';
+import { sampleTenants } from '@/lib/data/platform';
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
 const log = console.log;
@@ -79,7 +80,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
             lastLogin: newUserPayload.lastLogin.toISOString(),
             createdAt: newUserPayload.createdAt.toISOString(),
             dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined
-        };
+        } as UserProfile; // Cast to satisfy all optional fields
         samplePlatformUsers.push(newUser);
         return newUser;
     }
@@ -93,7 +94,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
     if (!tenantExists) {
       log(`[DataService] Default tenant '${defaultTenantId}' not found. Creating it now.`);
-      const defaultTenantData = sampleTenants.find(t => t.id === defaultTenantId);
+      const defaultTenantData = sampleTenants.find((t: Tenant) => t.id === defaultTenantId);
       if (defaultTenantData) {
         await db.tenant.create({
           data: {
@@ -128,7 +129,7 @@ export async function updateUser(userId: string, data: Partial<UserProfile>): Pr
     const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
       const updatedUser = { ...samplePlatformUsers[userIndex], ...data };
-      samplePlatformUsers[userIndex] = updatedUser;
+      samplePlatformUsers[userIndex] = updatedUser as UserProfile;
       return updatedUser as UserProfile;
     }
     return null;
