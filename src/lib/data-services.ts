@@ -6,50 +6,48 @@ import { sampleJobOpenings } from './data/jobs';
 import { sampleUserProfile } from './data/users';
 import { getUserByEmail, createUser } from './data-services/users';
 
-// This constant will be automatically set by Next.js based on the environment
+const useMockDb = process.env.USE_MOCK_DB === 'true';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-// Function to get common headers
 const getHeaders = () => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  // Add tenant information if available, as shown in your Postman screenshot
   if (sampleUserProfile?.tenantId) {
     headers['X-Private-Tenant'] = sampleUserProfile.tenantId;
   }
-  // If you had auth tokens, they would be added here:
-  // const token = localStorage.getItem('authToken');
-  // if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
 };
 
 
 export async function getJobOpenings(): Promise<JobOpening[]> {
-  // If an API base URL is provided, always use it.
+  if (useMockDb) {
+    console.log('[DataService] DEV MODE: Using sample job openings.');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return Promise.resolve([...sampleJobOpenings]);
+  }
+  
+  // The following block will run only if USE_MOCK_DB is not 'true'.
+  // It's kept for when you have a live jobs API.
   if (API_BASE_URL) {
     try {
       console.log(`[DataService] Fetching job openings from ${API_BASE_URL}/job-board`);
       const response = await fetch(`${API_BASE_URL}/job-board`, { headers: getHeaders() }); 
       if (!response.ok) {
         console.error(`[DataService] Error fetching job openings: ${response.status} ${response.statusText}`);
-        // Fallback to sample data on API error
-        return Promise.resolve([...sampleJobOpenings]);
+        return Promise.resolve([]); // Return empty on API error if not using mock
       }
       const data = await response.json();
       console.log('[DataService] Fetched job openings from API:', data);
       return data as JobOpening[];
     } catch (error) {
       console.error('[DataService] Exception fetching job openings:', error);
-      // Fallback to sample data on exception
-      return Promise.resolve([...sampleJobOpenings]);
+      return Promise.resolve([]); // Return empty on exception
     }
   }
 
-  // Otherwise (local development without API_BASE_URL set), use sample data.
-  console.log('[DataService] DEV MODE: Using sample job openings.');
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return Promise.resolve([...sampleJobOpenings]); // Return a copy
+  console.warn('[DataService] No API_BASE_URL and mock DB is off. Returning empty job list.');
+  return Promise.resolve([]);
 }
 
 export async function addJobOpening(
@@ -58,12 +56,18 @@ export async function addJobOpening(
 ): Promise<JobOpening | null> {
   const newOpeningBase: JobOpening = {
     ...jobData,
-    id: `temp-${Date.now()}`, // Temporary ID for client-side
+    id: `temp-${Date.now()}`,
     datePosted: new Date().toISOString().split('T')[0],
     postedByAlumniId: currentUser.id,
     alumniName: currentUser.name,
     tenantId: currentUser.tenantId,
   };
+
+  if (useMockDb) {
+    console.log('[DataService] DEV MODE: Adding job opening to sample data:', newOpeningBase);
+    sampleJobOpenings.unshift(newOpeningBase);
+    return Promise.resolve(newOpeningBase);
+  }
 
   if (API_BASE_URL) {
     try {
@@ -71,7 +75,7 @@ export async function addJobOpening(
       const response = await fetch(`${API_BASE_URL}/job-board`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify(jobData), // Send the DTO your backend expects
+        body: JSON.stringify(jobData),
       });
       if (!response.ok) {
         console.error(`[DataService] Error posting job opening: ${response.status} ${response.statusText}`);
@@ -85,9 +89,7 @@ export async function addJobOpening(
       return Promise.resolve(null);
     }
   }
-
-  // Fallback for local development
-  console.log('[DataService] DEV MODE: Adding job opening to sample data:', newOpeningBase);
-  sampleJobOpenings.unshift(newOpeningBase);
-  return Promise.resolve(newOpeningBase);
+  
+  console.error('[DataService] Cannot add job opening: No API_BASE_URL and mock DB is disabled.');
+  return Promise.resolve(null);
 }
