@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                        String      @id @default(cuid())
+  tenantId                  String
+  name                      String
+  email                     String      @unique
+  role                      String // 'admin', 'manager', 'user'
+  status                    String?
+  lastLogin                 DateTime?
+  dateOfBirth               DateTime?
+  gender                    String?
+  mobileNumber              String?
+  currentAddress            String?
+  graduationYear            String?
+  degreeProgram             String?
+  department                String?
+  currentJobTitle           String?
+  company                   String?
+  currentOrganization       String?
+  industry                  String?
+  workLocation              String?
+  linkedInProfile           String?
+  yearsOfExperience         String?
+  skills                    String[]
+  areasOfSupport            String[]
+  timeCommitment            String?
+  preferredEngagementMode   String?
+  otherComments             String?
+  lookingForSupportType     String?
+  helpNeededDescription     String?
+  shareProfileConsent       Boolean?
+  featureInSpotlightConsent Boolean?
+  profilePictureUrl         String?
+  resumeText                String?
+  careerInterests           String?
+  bio                       String?
+  interests                 String[]
+  offersHelpWith            String[]
+  appointmentCoinCost       Int?
+  xpPoints                  Int?
+  dailyStreak               Int?
+  longestStreak             Int?
+  totalActiveDays           Int?
+  weeklyActivity            Boolean[]
+  referralCode              String?
+  earnedBadges              String[]
+  affiliateCode             String?
+  pastInterviewSessions     String[]
+  interviewCredits          Int?
+  createdAt                 DateTime    @default(now())
+  isDistinguished           Boolean?
+  userApiKey                String?
+  challengeTopics           String[]
+  shortBio                  String?
+  university                String?
+  sessionId                 String?
+
+  @@unique(fields: [sessionId], name: "User_sessionId_key", nullsNotDistinct: false)
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?  @unique
+  createdAt DateTime @default(now())
+  settings  Json?
+}
+
+model JobApplication {
+  id                   String      @id @default(cuid())
+  tenantId             String
+  userId               String
+  companyName          String
+  jobTitle             String
+  status               String // JobApplicationStatus
+  dateApplied          String
+  notes                String[]
+  jobDescription       String?
+  location             String?
+  salary               String?
+  reminderDate         String?
+  sourceJobOpeningId   String?
+  applicationUrl       String?
+  resumeIdUsed         String?
+  coverLetterText      String?
+  interviews           Json[] // Storing Interview objects as JSON
+}
+
+model ResumeScanHistory {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  userId               String
+  resumeId             String
+  resumeName           String
+  jobTitle             String
+  companyName          String
+  resumeTextSnapshot   String
+  jobDescriptionText   String
+  scanDate             String
+  matchScore           Int?
+  bookmarked           Boolean?
+}
+
+model CommunityPost {
+  id                String   @id @default(cuid())
+  tenantId          String
+  userId            String
+  userName          String
+  userAvatar        String?
+  timestamp         String
+  content           String?
+  type              String // 'text', 'poll', 'event', 'request'
+  tags              String[]
+  imageUrl          String?
+  pollOptions       Json[] // { option: string, votes: number }[]
+  eventTitle        String?
+  eventDate         String?
+  eventLocation     String?
+  attendees         Int?
+  capacity          Int?
+  assignedTo        String?
+  status            String? // 'open', 'assigned', 'completed'
+  moderationStatus  String // 'visible', 'flagged', 'removed'
+  flagCount         Int
+  comments          Json[] // CommunityComment[]
+  bookmarkedBy      String[]
+}
+
+model Appointment {
+  id                String @id @default(cuid())
+  tenantId          String
+  requesterUserId   String
+  alumniUserId      String
+  title             String
+  dateTime          String
+  status            String // AppointmentStatus
+  withUser          String
+  reminderDate      String?
+  costInCoins       Int?
+  notes             String?
+}
+
+model Activity {
+    id          String @id @default(cuid())
+    tenantId    String
+    userId      String
+    timestamp   String
+    description String
+}
+
+model Badge {
+    id               String @id @default(cuid())
+    name             String
+    description      String
+    icon             String
+    xpReward         Int?
+    triggerCondition String?
+}
