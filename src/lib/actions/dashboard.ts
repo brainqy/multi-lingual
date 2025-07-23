@@ -59,25 +59,36 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
   // Real database fetching logic using Prisma
   try {
     const users = (await db.user.findMany()) as unknown as UserProfile[];
-    // Tenants are currently only handled by mock data, so we don't query the DB for them.
-    const tenants = sampleTenants as Tenant[];
+    const tenants = (await db.tenant.findMany({
+      include: { settings: true }
+    })) as unknown as Tenant[];
+    const resumeScans = (await db.resumeScanHistory.findMany()) as unknown as ResumeScanHistoryItem[];
+    const communityPosts = (await db.communityPost.findMany({
+        include: { comments: true }
+    })) as unknown as CommunityPost[];
+    const jobApplications = (await db.jobApplication.findMany({
+        include: { interviews: true }
+    })) as unknown as JobApplication[];
+    const appointments = (await db.appointment.findMany()) as unknown as Appointment[];
+    const activities = (await db.activity.findMany()) as unknown as Activity[];
+    const badges = (await db.badge.findMany()) as unknown as Badge[];
 
-    // Add other Prisma fetches as your schema grows
-    // For now, we return mock data for complex types not in the DB schema yet.
+
+    // For data not yet in DB schema, we fall back to mock data
     return {
       users,
       tenants,
-      resumeScans: sampleResumeScanHistory, // Mocked until schema exists
-      communityPosts: sampleCommunityPosts, // Mocked until schema exists
-      jobApplications: sampleJobApplications, // Mocked until schema exists
-      alumni: sampleAlumni, // Mocked until schema exists
-      mockInterviews: sampleMockInterviewSessions, // Mocked until schema exists
-      appointments: sampleAppointments, // Mocked until schema exists
-      systemAlerts: sampleSystemAlerts, // Mocked until schema exists
-      promotions: samplePromotionalContent, // Mocked until schema exists
-      activities: sampleActivities, // Mocked until schema exists
-      badges: sampleBadges, // Mocked until schema exists
-      challenges: sampleChallenges, // Mocked until schema exists
+      resumeScans,
+      communityPosts,
+      jobApplications,
+      appointments,
+      activities,
+      badges,
+      alumni: sampleAlumni, // Mocked
+      mockInterviews: sampleMockInterviewSessions, // Mocked
+      systemAlerts: sampleSystemAlerts, // Mocked
+      promotions: samplePromotionalContent, // Mocked
+      challenges: sampleChallenges, // Mocked
     };
   } catch (error) {
     console.error('[DashboardAction] Error fetching data from database:', error);
