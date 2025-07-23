@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -12,13 +13,13 @@ datasource db {
 
 model User {
   id                        String    @id @default(cuid()) @db.VarChar(255)
-  tenantId                  String?   @db.VarChar(255) // Made optional to fix foreign key constraint on initial setup
+  tenantId                  String    @db.VarChar(255)
   name                      String
   email                     String    @unique
-  role                      String
-  status                    String?
-  lastLogin                 DateTime? @db.Timestamp(6)
-  dateOfBirth               DateTime? @db.Date
+  role                      String    @default("user")
+  status                    String?   @default("active")
+  lastLogin                 DateTime? @default(now())
+  dateOfBirth               DateTime?
   gender                    String?
   mobileNumber              String?
   currentAddress            String?
@@ -26,212 +27,159 @@ model User {
   degreeProgram             String?
   department                String?
   currentJobTitle           String?
-  company                   String?
   currentOrganization       String?
   industry                  String?
   workLocation              String?
   linkedInProfile           String?
   yearsOfExperience         String?
-  skills                    String[]
-  areasOfSupport            String[]
+  skills                    Json?
+  areasOfSupport            Json?
   timeCommitment            String?
   preferredEngagementMode   String?
   otherComments             String?
   lookingForSupportType     String?
   helpNeededDescription     String?
-  shareProfileConsent       Boolean?
-  featureInSpotlightConsent Boolean?
+  shareProfileConsent       Boolean?  @default(true)
+  featureInSpotlightConsent Boolean?  @default(false)
   profilePictureUrl         String?
   resumeText                String?
   careerInterests           String?
   bio                       String?
-  interests                 String[]
-  offersHelpWith            String[]
+  interests                 Json?
+  offersHelpWith            Json?
   appointmentCoinCost       Int?
-  xpPoints                  Int?
-  dailyStreak               Int?
-  longestStreak             Int?
-  totalActiveDays           Int?
-  weeklyActivity            Boolean[]
-  referralCode              String?
-  earnedBadges              String[]
-  affiliateCode             String?
-  pastInterviewSessions     String[]
-  interviewCredits          Int?
-  createdAt                 DateTime  @default(now()) @db.Timestamp(6)
-  isDistinguished           Boolean?
+  xpPoints                  Int?      @default(0)
+  dailyStreak               Int?      @default(0)
+  longestStreak             Int?      @default(0)
+  totalActiveDays           Int?      @default(0)
+  weeklyActivity            Json?
+  referralCode              String?   @unique
+  earnedBadges              Json?
+  affiliateCode             String?   @unique
+  interviewCredits          Int?      @default(5)
+  createdAt                 DateTime  @default(now())
+  isDistinguished           Boolean?  @default(false)
   userApiKey                String?
-  challengeTopics           String[]
+  challengeTopics           Json?
   shortBio                  String?
   university                String?
-  sessionId                 String?   @unique @db.VarChar(255)
-
-  tenant Tenant? @relation(fields: [tenantId], references: [id])
-
-  @@map("User")
+  sessionId                 String?   @unique(sort: Desc, nulls: NotLast) @db.VarChar(255)
+  tenant                    Tenant    @relation(fields: [tenantId], references: [id])
 }
 
 model Tenant {
-  id        String @id @default(cuid()) @db.VarChar(255)
+  id        String   @id @default(cuid()) @db.VarChar(255)
   name      String
   domain    String?  @unique
-  createdAt DateTime @default(now()) @db.Timestamp(6)
+  createdAt DateTime @default(now())
   users     User[]
 
+  // Relation to TenantSettings
   settings TenantSettings?
-
-  @@map("Tenant")
 }
 
 model TenantSettings {
-  id                           String  @id @default(cuid()) @db.VarChar(255)
-  tenantId                     String  @unique @db.VarChar(255)
-  allowPublicSignup            Boolean @default(true)
-  customLogoUrl                String?
-  primaryColor                 String?
-  accentColor                  String?
-  communityFeedEnabled         Boolean @default(true)
-  jobBoardEnabled              Boolean @default(true)
-  gamificationEnabled          Boolean @default(true)
-  walletEnabled                Boolean @default(true)
-  eventRegistrationEnabled     Boolean @default(true)
-  welcomeEmailTemplate         String?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-
-  @@map("TenantSettings")
+  id                            String  @id @default(cuid())
+  tenantId                      String  @unique
+  allowPublicSignup             Boolean @default(true)
+  customLogoUrl                 String?
+  primaryColor                  String?
+  accentColor                   String?
+  features                      Json?
+  emailTemplates                Json?
+  // Foreign key relation
+  tenant                        Tenant  @relation(fields: [tenantId], references: [id])
 }
-
 
 model JobApplication {
-  id                 String       @id @default(cuid()) @db.VarChar(255)
-  tenantId           String       @db.VarChar(255)
-  userId             String       @db.VarChar(255)
-  companyName        String
-  jobTitle           String
-  status             String
-  dateApplied        String
-  notes              String[]
-  jobDescription     String?
-  location           String?
-  salary             String?
-  reminderDate       String?
-  sourceJobOpeningId String?
-  applicationUrl     String?
-  resumeIdUsed       String?
-  coverLetterText    String?
-  interviews         Interview[]
-
-  @@map("JobApplication")
-}
-
-model Interview {
-  id                 String   @id @default(cuid()) @db.VarChar(255)
-  jobApplicationId   String   @db.VarChar(255)
-  date               String
-  type               String
-  interviewer        String
-  interviewerMobile  String?
-  interviewerEmail   String?
-  notes              String[]
-  jobApplication     JobApplication @relation(fields: [jobApplicationId], references: [id])
-
-  @@map("Interview")
+  id                   String      @id @default(cuid())
+  tenantId             String
+  userId               String
+  companyName          String
+  jobTitle             String
+  status               String
+  dateApplied          DateTime
+  jobDescription       String?
+  location             String?
+  salary               String?
+  reminderDate         DateTime?
+  sourceJobOpeningId   String?
+  applicationUrl       String?
+  resumeIdUsed         String?
+  coverLetterText      String?
+  interviews           Json?
+  notes                Json?
 }
 
 model CommunityPost {
-  id                String             @id @default(cuid()) @db.VarChar(255)
-  tenantId          String             @db.VarChar(255)
-  userId            String             @db.VarChar(255)
-  userName          String
-  userAvatar        String?
-  timestamp         DateTime           @default(now()) @db.Timestamp(6)
-  content           String?
-  type              String
-  tags              String[]
-  imageUrl          String?
-  pollOptions       Json[]
-  eventTitle        String?
-  eventDate         String?
-  eventLocation     String?
-  attendees         Int?
-  capacity          Int?
-  assignedTo        String?
-  status            String?
-  moderationStatus  String
-  flagCount         Int
-  comments          CommunityComment[]
-  bookmarkedBy      String[]
-
-  @@map("CommunityPost")
+  id                 String   @id @default(cuid())
+  tenantId           String
+  userId             String
+  userName           String
+  userAvatar         String?
+  timestamp          DateTime @default(now())
+  content            String?
+  type               String
+  tags               Json?
+  imageUrl           String?
+  pollOptions        Json?
+  eventTitle         String?
+  eventDate          DateTime?
+  eventLocation      String?
+  attendees          Int?
+  capacity           Int?
+  assignedTo         String?
+  status             String?
+  moderationStatus   String
+  flagCount          Int
+  comments           Json?
+  bookmarkedBy       Json?
 }
 
-model CommunityComment {
-  id         String        @id @default(cuid()) @db.VarChar(255)
-  postId     String        @db.VarChar(255)
-  userId     String        @db.VarChar(255)
-  userName   String
-  userAvatar String?
-  timestamp  DateTime      @default(now()) @db.Timestamp(6)
-  comment    String
-  parentId   String?       @db.VarChar(255)
-  post       CommunityPost @relation(fields: [postId], references: [id])
+model Activity {
+  id          String   @id @default(cuid())
+  tenantId    String
+  timestamp   DateTime @default(now())
+  description String
+  userId      String?
+}
 
-  @@map("CommunityComment")
+model Badge {
+  id               String  @id @default(cuid())
+  name             String
+  description      String
+  icon             String
+  xpReward         Int?
+  triggerCondition String?
 }
 
 model ResumeScanHistory {
-  id                   String   @id @default(cuid()) @db.VarChar(255)
-  tenantId             String   @db.VarChar(255)
-  userId               String   @db.VarChar(255)
-  resumeId             String   @db.VarChar(255)
-  resumeName           String
-  jobTitle             String
-  companyName          String
-  resumeTextSnapshot   String
-  jobDescriptionText   String
-  scanDate             DateTime @default(now()) @db.Timestamp(6)
-  matchScore           Int?
-  bookmarked           Boolean?
-
-  @@map("ResumeScanHistory")
+  id                  String   @id @default(cuid())
+  tenantId            String
+  userId              String
+  resumeId            String
+  resumeName          String
+  jobTitle            String
+  companyName         String
+  resumeTextSnapshot  String
+  jobDescriptionText  String
+  scanDate            DateTime @default(now())
+  matchScore          Int?
+  bookmarked          Boolean? @default(false)
 }
 
 model Appointment {
-  id              String   @id @default(cuid()) @db.VarChar(255)
-  tenantId        String   @db.VarChar(255)
-  requesterUserId String   @db.VarChar(255)
-  alumniUserId    String   @db.VarChar(255)
+  id              String   @id @default(cuid())
+  tenantId        String
+  requesterUserId String
+  alumniUserId    String
   title           String
-  dateTime        DateTime @db.Timestamp(6)
+  dateTime        DateTime
   status          String
   meetingLink     String?
   location        String?
   notes           String?
   costInCoins     Int?
   withUser        String
-  reminderDate    String?
-
-  @@map("Appointment")
-}
-
-model Activity {
-  id          String   @id @default(cuid()) @db.VarChar(255)
-  tenantId    String   @db.VarChar(255)
-  userId      String   @db.VarChar(255)
-  timestamp   DateTime @default(now()) @db.Timestamp(6)
-  description String
-
-  @@map("Activity")
-}
-
-model Badge {
-  id               String  @id @default(cuid()) @db.VarChar(255)
-  name             String
-  description      String
-  icon             String
-  xpReward         Int?
-  triggerCondition String?
-
-  @@map("Badge")
+  reminderDate    DateTime?
 }
