@@ -2,17 +2,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift } from "lucide-react";
+import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift, Loader2 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
     managerDashboardTourSteps,
     sampleUserProfile,
-    samplePlatformUsers,
-    sampleResumeScanHistory,
-    sampleCommunityPosts,
-    sampleEvents,
 } from "@/lib/sample-data";
+import { getDashboardData } from "@/lib/actions/dashboard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid } from 'recharts';
@@ -23,7 +20,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
-import { sampleAppointments } from "@/lib/data/appointments";
+import { Skeleton } from "../ui/skeleton";
+import type { UserProfile, Appointment, CommunityPost, ResumeScanHistoryItem, GalleryEvent } from "@/types";
 
 type ManagerDashboardWidgetId =
   | 'activeUsersStat'
@@ -35,7 +33,7 @@ type ManagerDashboardWidgetId =
 
 interface WidgetConfig {
   id: ManagerDashboardWidgetId;
-  titleKey: string; // Changed from title to titleKey for i18n
+  titleKey: string;
   defaultVisible: boolean;
 }
 
@@ -48,13 +46,14 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'tenantManagementActions', titleKey: 'managerDashboard.widgets.tenantManagementActions', defaultVisible: true },
 ];
 
-
 export default function ManagerDashboard() {
   const { t } = useI18n();
   const [showManagerTour, setShowManagerTour] = useState(false);
   const currentUser = sampleUserProfile;
   const tenantId = currentUser.tenantId;
   const { toast } = useToast();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<ManagerDashboardWidgetId>>(
     new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
@@ -62,32 +61,41 @@ export default function ManagerDashboard() {
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<ManagerDashboardWidgetId>>(visibleWidgetIds);
 
-
   useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const data = await getDashboardData(tenantId);
+      setDashboardData(data);
+      setIsLoading(false);
+    }
+    loadData();
+
     if (typeof window !== 'undefined') {
       const tourSeen = localStorage.getItem('managerDashboardTourSeen');
       if (!tourSeen) {
         setShowManagerTour(true);
       }
     }
-  }, []);
+  }, [tenantId]);
 
   const tenantStats = useMemo(() => {
-    const usersInTenant = samplePlatformUsers.filter(u => u.tenantId === tenantId);
-    const resumesAnalyzedInTenant = sampleResumeScanHistory.filter(s => s.tenantId === tenantId);
-    const communityPostsInTenant = sampleCommunityPosts.filter(p => p.tenantId === tenantId);
-    const activeAppointments = sampleAppointments.filter(a => a.tenantId === tenantId && a.status === 'Confirmed');
-    const pendingEventApprovals = sampleEvents.filter(e => e.tenantId === tenantId && !(e as any).approved).length;
+    if (!dashboardData) return { activeUsers: 0, totalUsers: 0, resumesAnalyzed: 0, communityPosts: 0, activeAppointments: 0, pendingEventApprovals: 0 };
+    
+    const usersInTenant = dashboardData.users.filter((u: UserProfile) => u.tenantId === tenantId);
+    const resumesAnalyzedInTenant = dashboardData.resumeScans.filter((s: ResumeScanHistoryItem) => s.tenantId === tenantId);
+    const communityPostsInTenant = dashboardData.communityPosts.filter((p: CommunityPost) => p.tenantId === tenantId);
+    const activeAppointments = dashboardData.appointments.filter((a: Appointment) => a.tenantId === tenantId && a.status === 'Confirmed');
+    const pendingEventApprovals = dashboardData.events?.filter((e: GalleryEvent) => e.tenantId === tenantId && !(e as any).approved).length || 0;
 
     return {
-      activeUsers: usersInTenant.filter(u => u.lastLogin && new Date(u.lastLogin) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
+      activeUsers: usersInTenant.filter((u: UserProfile) => u.lastLogin && new Date(u.lastLogin) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
       totalUsers: usersInTenant.length,
       resumesAnalyzed: resumesAnalyzedInTenant.length,
       communityPosts: communityPostsInTenant.length,
       activeAppointments: activeAppointments.length,
       pendingEventApprovals,
     };
-  }, [tenantId]);
+  }, [dashboardData, tenantId]);
 
   const engagementChartData = [
     { name: t("managerDashboard.charts.tenantEngagement.legendPosts"), count: tenantStats.communityPosts },
@@ -98,11 +106,8 @@ export default function ManagerDashboard() {
   const handleCustomizeToggle = (widgetId: ManagerDashboardWidgetId, checked: boolean) => {
     setTempVisibleWidgetIds(prev => {
       const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(widgetId);
-      } else {
-        newSet.delete(widgetId);
-      }
+      if (checked) newSet.add(widgetId);
+      else newSet.delete(widgetId);
       return newSet;
     });
   };
@@ -117,6 +122,21 @@ export default function ManagerDashboard() {
     setTempVisibleWidgetIds(new Set(visibleWidgetIds));
     setIsCustomizeDialogOpen(true);
   };
+  
+  if (isLoading) {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-12 w-1/2" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+        </div>
+    );
+  }
 
   return (
     <>
@@ -285,6 +305,3 @@ export default function ManagerDashboard() {
     </>
   );
 }
-
-
-    

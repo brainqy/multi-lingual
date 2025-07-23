@@ -2,21 +2,13 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon } from "lucide-react";
+import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
   adminDashboardTourSteps,
-  sampleTenants,
-  sampleCommunityPosts,
-  sampleJobApplications,
-  sampleAlumni,
-  sampleMockInterviewSessions,
-  sampleUserProfile,
-  sampleResumeScanHistory,
-  sampleSystemAlerts, 
 } from "@/lib/sample-data";
-import { samplePlatformUsers } from "@/lib/data/users";
+import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Tenant, UserProfile, SystemAlert } from "@/types"; 
@@ -30,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, parseISO } from "date-fns"; 
 import { useI18n } from "@/hooks/use-i18n";
+import { Skeleton } from "../ui/skeleton";
 
 interface TenantActivityStats extends Tenant {
   userCount: number;
@@ -62,20 +55,11 @@ const mockTimeSpentData = {
       { periodLabel: "Apr", hours: 720 },
     ],
   },
-  topUsersByTime: (period: 'weekly' | 'monthly') => samplePlatformUsers.slice(0,5).map((user) => ({
+  topUsersByTime: (period: 'weekly' | 'monthly', users: UserProfile[]) => users.slice(0,5).map((user) => ({
     name: user.name,
     time: Math.floor(Math.random() * (period === 'weekly' ? 20 : 80)) + (period === 'weekly' ? 5 : 20),
   })).sort((a,b) => b.time - a.time),
 };
-
-const mockRegistrationData = Array.from({ length: 30 }, (_, i) => {
-  const date = new Date();
-  date.setDate(date.getDate() - (29 - i));
-  return {
-    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    signups: Math.floor(Math.random() * 50) + 10, 
-  };
-});
 
 const aiFeatureUsageData = [
   { name: 'Resume Analyzer', count: 1250, fill: 'hsl(var(--chart-1))' },
@@ -84,7 +68,6 @@ const aiFeatureUsageData = [
   { name: 'AI Resume Writer', count: 620, fill: 'hsl(var(--chart-4))' },
   { name: 'Skill Suggestions', count: 1100, fill: 'hsl(var(--chart-5))' },
 ];
-
 
 type AdminDashboardWidgetId =
   | 'promotionalSpotlight'
@@ -106,7 +89,7 @@ type AdminDashboardWidgetId =
 
 interface WidgetConfig {
   id: AdminDashboardWidgetId;
-  titleKey: string; // Changed from title to titleKey for i18n
+  titleKey: string;
   defaultVisible: boolean;
 }
 
@@ -129,12 +112,12 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
-
 export default function AdminDashboard() {
   const { t } = useI18n();
   const [showAdminTour, setShowAdminTour] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<'weekly' | 'monthly'>('weekly');
-  const [currentTenantActivityData, setCurrentTenantActivityData] = useState<TenantActivityStats[]>([]);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<AdminDashboardWidgetId>>(
@@ -142,11 +125,18 @@ export default function AdminDashboard() {
   );
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<AdminDashboardWidgetId>>(visibleWidgetIds);
-
-  const [alerts, setAlerts] = useState<SystemAlert[]>(sampleSystemAlerts.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-
+  const [alerts, setAlerts] = useState<SystemAlert[]>([]);
 
   useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const data = await getDashboardData();
+      setDashboardData(data);
+      setAlerts(data.systemAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+      setIsLoading(false);
+    }
+    loadData();
+
     if (typeof window !== 'undefined') {
       const tourSeen = localStorage.getItem('adminDashboardTourSeen');
       if (!tourSeen) {
@@ -156,59 +146,57 @@ export default function AdminDashboard() {
   }, []);
 
   const platformStats = useMemo(() => {
+    if (!dashboardData) return { totalUsers: 0, newSignupsThisPeriod: 0, totalResumesAnalyzedThisPeriod: 0, totalCommunityPostsThisPeriod: 0, activeUsersThisPeriod: 0, totalJobApplicationsThisPeriod: 0, totalAlumniConnections: 0, totalMockInterviews: 0, flaggedPostsCount: 0 };
+    
     const now = new Date();
     const oneWeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-
     const startDate = usagePeriod === 'weekly' ? oneWeekAgo : oneMonthAgo;
-
-    const totalUsers = samplePlatformUsers.length;
-    const activeUsersThisPeriod = samplePlatformUsers.filter(u => u.lastLogin && new Date(u.lastLogin) >= startDate).length;
-    const newSignupsThisPeriod = samplePlatformUsers.filter(u => u.createdAt && new Date(u.createdAt) >= startDate).length;
-    const totalResumesAnalyzedThisPeriod = sampleResumeScanHistory.filter(s => new Date(s.scanDate) >= startDate).length;
-    const totalJobApplicationsThisPeriod = sampleJobApplications.filter(j => new Date(j.dateApplied) >= startDate).length;
-    const totalCommunityPostsThisPeriod = sampleCommunityPosts.filter(p => new Date(p.timestamp) >= startDate).length;
-    const totalAlumniConnections = sampleAlumni.length * 5; 
-    const totalMockInterviews = sampleMockInterviewSessions.length;
-    const flaggedPostsCount = sampleCommunityPosts.filter(p => p.moderationStatus === 'flagged').length;
-
 
     return {
-      totalUsers,
-      activeUsersThisPeriod,
-      newSignupsThisPeriod,
-      totalResumesAnalyzedThisPeriod,
-      totalJobApplicationsThisPeriod,
-      totalCommunityPostsThisPeriod,
-      totalAlumniConnections,
-      totalMockInterviews,
-      flaggedPostsCount,
+      totalUsers: dashboardData.users.length,
+      activeUsersThisPeriod: dashboardData.users.filter((u: UserProfile) => u.lastLogin && new Date(u.lastLogin) >= startDate).length,
+      newSignupsThisPeriod: dashboardData.users.filter((u: UserProfile) => u.createdAt && new Date(u.createdAt) >= startDate).length,
+      totalResumesAnalyzedThisPeriod: dashboardData.resumeScans.filter((s: any) => new Date(s.scanDate) >= startDate).length,
+      totalJobApplicationsThisPeriod: dashboardData.jobApplications.filter((j: any) => new Date(j.dateApplied) >= startDate).length,
+      totalCommunityPostsThisPeriod: dashboardData.communityPosts.filter((p: any) => new Date(p.timestamp) >= startDate).length,
+      totalAlumniConnections: dashboardData.alumni.length * 5, 
+      totalMockInterviews: dashboardData.mockInterviews.length,
+      flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
     };
-  }, [usagePeriod]);
+  }, [dashboardData, usagePeriod]);
 
-  useEffect(() => {
+  const currentTenantActivityData = useMemo(() => {
+    if (!dashboardData) return [];
+
     const now = new Date();
     const oneWeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
     const startDate = usagePeriod === 'weekly' ? oneWeekAgo : oneMonthAgo;
 
-    const data = sampleTenants.map(tenant => {
-      const usersInTenant = samplePlatformUsers.filter(u => u.tenantId === tenant.id);
-      const newUsersInTenantThisPeriod = usersInTenant.filter(u => u.createdAt && new Date(u.createdAt) >= startDate).length;
-      const resumesAnalyzedInTenantThisPeriod = sampleResumeScanHistory.filter(s => s.tenantId === tenant.id && new Date(s.scanDate) >= startDate).length;
-      const communityPostsInTenantThisPeriod = sampleCommunityPosts.filter(p => p.tenantId === tenant.id && new Date(p.timestamp) >= startDate).length;
-      const jobApplicationsInTenant = sampleJobApplications.filter(j => j.tenantId === tenant.id);
+    return dashboardData.tenants.map((tenant: Tenant) => {
+      const usersInTenant = dashboardData.users.filter((u: UserProfile) => u.tenantId === tenant.id);
       return {
         ...tenant,
         userCount: usersInTenant.length,
-        newUsersThisPeriod: newUsersInTenantThisPeriod,
-        resumesAnalyzedThisPeriod: resumesAnalyzedInTenantThisPeriod,
-        communityPostsCountThisPeriod: communityPostsInTenantThisPeriod,
-        jobApplicationsCount: jobApplicationsInTenant.length,
+        newUsersThisPeriod: usersInTenant.filter((u: UserProfile) => u.createdAt && new Date(u.createdAt) >= startDate).length,
+        resumesAnalyzedThisPeriod: dashboardData.resumeScans.filter((s: any) => s.tenantId === tenant.id && new Date(s.scanDate) >= startDate).length,
+        communityPostsCountThisPeriod: dashboardData.communityPosts.filter((p: any) => p.tenantId === tenant.id && new Date(p.timestamp) >= startDate).length,
+        jobApplicationsCount: dashboardData.jobApplications.filter((j: any) => j.tenantId === tenant.id).length,
       };
     });
-    setCurrentTenantActivityData(data);
-  }, [usagePeriod]);
+  }, [dashboardData, usagePeriod]);
+
+  const registrationTrendsData = useMemo(() => {
+      if (!dashboardData) return [];
+      return Array.from({ length: 30 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (29 - i));
+          const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const signups = dashboardData.users.filter((u: UserProfile) => u.createdAt && new Date(u.createdAt).toDateString() === date.toDateString()).length;
+          return { date: dateString, signups };
+      });
+  }, [dashboardData]);
 
   const chartData = currentTenantActivityData.map(tenant => ({
       name: tenant.name.substring(0,15) + (tenant.name.length > 15 ? "..." : ""),
@@ -250,8 +238,8 @@ export default function AdminDashboard() {
     ));
     const alertToMark = alerts.find(a => a.id === alertId);
     if(alertToMark) {
-        const globalIndex = sampleSystemAlerts.findIndex(sa => sa.id === alertId);
-        if (globalIndex !== -1) sampleSystemAlerts[globalIndex].isRead = true;
+        // In a real app, you would also update this on the backend.
+        // For demo, we just update the local state that came from dashboardData.
     }
     toast({
         title: t("adminDashboard.charts.systemAlerts.alertReadToastTitle"), 
@@ -273,6 +261,21 @@ export default function AdminDashboard() {
   const recentUnreadAlerts = useMemo(() => alerts.filter(a => !a.isRead).slice(0, 3), [alerts]);
 
   const translatedUsagePeriod = usagePeriod === 'weekly' ? t("adminDashboard.charts.timeSpent.weekly") : t("adminDashboard.charts.timeSpent.monthly");
+  
+  if (isLoading) {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-12 w-1/2" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+        </div>
+    );
+  }
 
   return (
     <>
@@ -328,7 +331,7 @@ export default function AdminDashboard() {
                 <Building2 className="h-5 w-5 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{sampleTenants.length}</div>
+                <div className="text-2xl font-bold">{dashboardData.tenants.length}</div>
                 <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.totalTenants.description")}</p>
               </CardContent>
             </Card>
@@ -418,7 +421,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockRegistrationData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <LineChart data={registrationTrendsData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.5}/>
                   <XAxis dataKey="date" tick={{fontSize: 10}}/>
                   <YAxis allowDecimals={false} tick={{fontSize: 10}}/>
@@ -525,7 +528,6 @@ export default function AdminDashboard() {
           </Card>
         )}
 
-
         {visibleWidgetIds.has('timeSpentStats') && (
           <Card className="shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -566,7 +568,7 @@ export default function AdminDashboard() {
                       <CardHeader className="pb-2"><CardTitle className="text-base">{t("adminDashboard.charts.timeSpent.topUsers", { period: translatedUsagePeriod})}</CardTitle></CardHeader>
                       <CardContent>
                           <ul className="space-y-1 text-xs">
-                              {mockTimeSpentData.topUsersByTime(usagePeriod).map(user => (
+                              {mockTimeSpentData.topUsersByTime(usagePeriod, dashboardData.users).map((user:any) => (
                                   <li key={user.name} className="flex justify-between">
                                       <span>{user.name}</span>
                                       <span className="font-semibold">{user.time} hrs</span>
