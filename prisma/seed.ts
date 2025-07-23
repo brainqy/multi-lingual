@@ -1,5 +1,4 @@
-
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { samplePlatformUsers, sampleTenants } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
@@ -22,8 +21,8 @@ async function main() {
           create: {
             ...settings,
             // features and emailTemplates are JSON fields, so they should be created as such
-            features: settings.features || Prisma.JsonNull,
-            emailTemplates: settings.emailTemplates || Prisma.JsonNull,
+            features: settings.features || null,
+            emailTemplates: settings.emailTemplates || null,
           },
         } : undefined,
       },

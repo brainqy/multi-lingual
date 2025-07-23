@@ -1,5 +1,4 @@
 import type { UserProfile, AlumniProfile } from '@/types';
-import { SAMPLE_TENANT_ID } from './platform';
 import { AreasOfSupport } from '@/types';
 
 // This file now primarily provides a single sample user for client-side fallbacks
@@ -128,8 +127,7 @@ export let sampleAlumni: AlumniProfile[] = [
     appointmentCoinCost: 10,
     xpPoints: 3500,
     createdAt: new Date(Date.now() - 86400000 * 365).toISOString(),
-    isDistinguished: true,
-    bio: ''
+    isDistinguished: true
   },
 ];
 

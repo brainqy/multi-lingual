@@ -57,7 +57,6 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         createdAt: new Date(),
         // Add defaults for all other fields to ensure a complete object
         currentJobTitle: data.currentJobTitle || '',
-        company: data.company || '',
         skills: data.skills || [],
         bio: data.bio || '',
         profilePictureUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.email}.png`,
@@ -76,11 +75,11 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
     if (useMockDb) {
         const newUser: UserProfile = {
-            ...newUserPayload,
-            lastLogin: newUserPayload.lastLogin.toISOString(),
-            createdAt: newUserPayload.createdAt.toISOString(),
-            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined
-        } as UserProfile; // Cast to satisfy all optional fields
+          ...newUserPayload,
+          lastLogin: newUserPayload.lastLogin.toISOString(),
+          createdAt: newUserPayload.createdAt.toISOString(),
+          dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined
+        } as unknown as UserProfile; // Cast to satisfy all optional fields
         samplePlatformUsers.push(newUser);
         return newUser;
     }
