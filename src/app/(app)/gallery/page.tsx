@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GalleryVerticalEnd, CalendarDays, Users, UserCircle, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { sampleEvents, sampleUserProfile, samplePlatformUsers } from "@/lib/sample-data";
+import { sampleEvents, sampleUserProfile } from "@/lib/sample-data";
+import { samplePlatformUsers } from "@/lib/data/users";
 import Image from "next/image";
 import type { UserProfile, GalleryEvent } from "@/types"; 
 import { useState } from "react";

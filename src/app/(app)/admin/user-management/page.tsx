@@ -15,7 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { samplePlatformUsers, sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
+import { sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
+import { samplePlatformUsers } from "@/lib/data/users";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -165,7 +166,7 @@ export default function UserManagementPage() {
         return;
     }
     setAllUsers(prev => prev.filter(u => u.id !== userId));
-    const globalIndex = samplePlatformUsers.findIndex(u => u.id === userId);
+    const globalIndex = samplePlatformUsers.findIndex(u => u.id !== userId);
     if (globalIndex !== -1) samplePlatformUsers.splice(globalIndex, 1);
     toast({ title: t("userManagement.toast.deleted.title"), description: t("userManagement.toast.deleted.description"), variant: "destructive" });
   };

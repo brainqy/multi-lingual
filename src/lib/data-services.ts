@@ -4,7 +4,6 @@
 import type { JobOpening, UserProfile } from '@/types';
 import { sampleJobOpenings } from './data/jobs';
 import { sampleUserProfile } from './data/users';
-import { getUserByEmail, createUser } from './data-services/users';
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

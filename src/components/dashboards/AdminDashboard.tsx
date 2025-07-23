@@ -14,9 +14,9 @@ import {
   sampleMockInterviewSessions,
   sampleUserProfile,
   sampleResumeScanHistory,
-  samplePlatformUsers,
   sampleSystemAlerts, 
 } from "@/lib/sample-data";
+import { samplePlatformUsers } from "@/lib/data/users";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Tenant, UserProfile, SystemAlert } from "@/types"; 

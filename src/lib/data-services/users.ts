@@ -36,85 +36,85 @@ export async function getUserById(id: string): Promise<UserProfile | null> {
 
 export async function createUser(data: Partial<UserProfile>): Promise<UserProfile | null> {
   console.log(`[DataService] Creating new user: ${data.email} (Mock DB: ${useMockDb})`);
-  if (!data.name || !data.email || !data.role) {
-      throw new Error("Name, email, and role are required to create a user.");
-  }
-  
-  const newUserPayload = {
-    id: `user-${Date.now()}`,
-    tenantId: data.tenantId || 'Brainqy',
-    name: data.name,
-    email: data.email,
-    role: data.role,
-    status: 'active',
-    lastLogin: new Date(),
-    currentJobTitle: data.currentJobTitle || '',
-    company: data.company || '',
-    skills: data.skills || [],
-    bio: data.bio || '',
-    profilePictureUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.email}.png`,
-    xpPoints: 0,
-    dailyStreak: 0,
-    longestStreak: 0,
-    totalActiveDays: 0,
-    weeklyActivity: Array(7).fill(false),
-    earnedBadges: [],
-    interviewCredits: 5, // Starter credits
-    createdAt: new Date(),
-    isDistinguished: false,
-    shortBio: '',
-    university: '',
-    sessionId: data.sessionId,
-    areasOfSupport: [],
-    interests: [],
-    offersHelpWith: [],
-    pastInterviewSessions: [],
-    challengeTopics: [],
-    // Ensure all required fields from UserProfile are present
-    dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-    gender: data.gender,
-    mobileNumber: data.mobileNumber,
-    currentAddress: data.currentAddress,
-    graduationYear: data.graduationYear,
-    degreeProgram: data.degreeProgram,
-    department: data.department,
-    currentOrganization: data.currentOrganization,
-    industry: data.industry,
-    workLocation: data.workLocation,
-    linkedInProfile: data.linkedInProfile,
-    yearsOfExperience: data.yearsOfExperience,
-    timeCommitment: data.timeCommitment,
-    preferredEngagementMode: data.preferredEngagementMode,
-    otherComments: data.otherComments,
-    lookingForSupportType: data.lookingForSupportType,
-    helpNeededDescription: data.helpNeededDescription,
-    shareProfileConsent: data.shareProfileConsent,
-    featureInSpotlightConsent: data.featureInSpotlightConsent,
-    resumeText: data.resumeText,
-    careerInterests: data.careerInterests,
-    userApiKey: data.userApiKey,
-    appointmentCoinCost: data.appointmentCoinCost,
-    referralCode: data.referralCode,
-    affiliateCode: data.affiliateCode,
-    challengeProgress: data.challengeProgress,
-  };
+    if (!data.name || !data.email || !data.role) {
+        throw new Error("Name, email, and role are required to create a user.");
+    }
 
-  if (useMockDb) {
-    const newUser: UserProfile = {
-        ...newUserPayload,
-        lastLogin: newUserPayload.lastLogin.toISOString(),
-        createdAt: newUserPayload.createdAt.toISOString(),
-        dateOfBirth: newUserPayload.dateOfBirth ? newUserPayload.dateOfBirth.toISOString() : undefined
+    const newUserPayload = {
+        id: `user-${Date.now()}`,
+        tenantId: data.tenantId || 'Brainqy',
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        status: 'active',
+        lastLogin: new Date(),
+        currentJobTitle: data.currentJobTitle || '',
+        company: data.company || '',
+        skills: data.skills || [],
+        bio: data.bio || '',
+        profilePictureUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.email}.png`,
+        xpPoints: 0,
+        dailyStreak: 0,
+        longestStreak: 0,
+        totalActiveDays: 0,
+        weeklyActivity: Array(7).fill(false),
+        earnedBadges: [],
+        interviewCredits: 5, // Starter credits
+        createdAt: new Date(),
+        isDistinguished: false,
+        shortBio: '',
+        university: '',
+        sessionId: data.sessionId,
+        areasOfSupport: [],
+        interests: [],
+        offersHelpWith: [],
+        pastInterviewSessions: [],
+        challengeTopics: [],
+        // Ensure all required fields from UserProfile are present
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+        gender: data.gender,
+        mobileNumber: data.mobileNumber,
+        currentAddress: data.currentAddress,
+        graduationYear: data.graduationYear,
+        degreeProgram: data.degreeProgram,
+        department: data.department,
+        currentOrganization: data.currentOrganization,
+        industry: data.industry,
+        workLocation: data.workLocation,
+        linkedInProfile: data.linkedInProfile,
+        yearsOfExperience: data.yearsOfExperience,
+        timeCommitment: data.timeCommitment,
+        preferredEngagementMode: data.preferredEngagementMode,
+        otherComments: data.otherComments,
+        lookingForSupportType: data.lookingForSupportType,
+        helpNeededDescription: data.helpNeededDescription,
+        shareProfileConsent: data.shareProfileConsent,
+        featureInSpotlightConsent: data.featureInSpotlightConsent,
+        resumeText: data.resumeText,
+        careerInterests: data.careerInterests,
+        userApiKey: data.userApiKey,
+        appointmentCoinCost: data.appointmentCoinCost,
+        referralCode: data.referralCode,
+        affiliateCode: data.affiliateCode,
+        challengeProgress: data.challengeProgress,
     };
-    samplePlatformUsers.push(newUser);
-    return newUser;
-  }
+    
+    if (useMockDb) {
+        const newUser: UserProfile = {
+            ...newUserPayload,
+            lastLogin: newUserPayload.lastLogin.toISOString(),
+            createdAt: newUserPayload.createdAt.toISOString(),
+            dateOfBirth: newUserPayload.dateOfBirth ? newUserPayload.dateOfBirth.toISOString() : undefined
+        };
+        samplePlatformUsers.push(newUser);
+        return newUser;
+    }
 
-  const newUser = await db.user.create({
+    const newUser = await db.user.create({
       data: newUserPayload as any, // Cast to any to handle potential mismatches with Prisma's generated types
-  });
+    });
 
-  return newUser as UserProfile;
+    return newUser as UserProfile;
 }
 
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
