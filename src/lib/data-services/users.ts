@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { UserProfile } from '@/types';
+import type { UserProfile, UserStatus } from '@/types';
 import { db } from '@/lib/db';
 import { samplePlatformUsers } from '@/lib/data/users';
 
@@ -46,7 +46,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         name: data.name,
         email: data.email,
         role: data.role,
-        status: 'active',
+        status: 'active' as UserStatus,
         lastLogin: new Date(),
         currentJobTitle: data.currentJobTitle || '',
         company: data.company || '',
@@ -71,6 +71,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         pastInterviewSessions: [],
         challengeTopics: [],
         // Ensure all required fields from UserProfile are present
+        // Add default values for any missing fields to ensure type compatibility
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
         gender: data.gender,
         mobileNumber: data.mobileNumber,
