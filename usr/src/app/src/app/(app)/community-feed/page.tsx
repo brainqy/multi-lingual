@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,8 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
-import { sampleCommunityPosts, sampleUserProfile, samplePlatformUsers } from "@/lib/data/users";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
+import { sampleUserProfile, samplePlatformUsers, sampleAppointments } from "@/lib/sample-data";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { sampleAppointments } from "@/lib/data/appointments";
+import { getCommunityPosts, createCommunityPost, addCommentToPost, updateCommunityPost } from "@/lib/actions/community";
 
 
 const postSchema = z.object({
@@ -133,7 +133,8 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
 
 
 export default function CommunityFeedPage() {
-  const [posts, setPosts] = useState<CommunityPost[]>(sampleCommunityPosts);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'text' | 'poll' | 'event' | 'request' | 'my_posts' | 'flagged'>('all');
   const { toast } = useToast();
 
@@ -159,28 +160,28 @@ export default function CommunityFeedPage() {
   });
 
   const postType = watch("type");
-
   const currentUser = sampleUserProfile;
 
-  useEffect(() => {
-    let viewablePosts = sampleCommunityPosts;
-    if (currentUser.role === 'manager') {
-      viewablePosts = sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId || p.tenantId === 'platform');
-    } else if (currentUser.role === 'user') {
-      viewablePosts = sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId || p.tenantId === 'platform');
-    }
-    setPosts(viewablePosts);
-  }, [currentUser.role, currentUser.tenantId]);
+  const fetchPosts = useCallback(async () => {
+    setIsLoading(true);
+    const fetchedPosts = await getCommunityPosts(currentUser.tenantId, currentUser.id);
+    setPosts(fetchedPosts);
+    setIsLoading(false);
+  }, [currentUser.tenantId, currentUser.id]);
 
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const mostActiveUsers = useMemo(() => {
+    // This can be replaced with a dedicated server action in the future
     return [...samplePlatformUsers]
       .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active' && (currentUser.role === 'admin' || user.tenantId === currentUser.tenantId || user.tenantId === 'platform'))
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
       .slice(0, 5);
   }, [currentUser.role, currentUser.tenantId]);
 
-  const handleFormSubmit = (data: PostFormData) => {
+  const handleFormSubmit = async (data: PostFormData) => {
     let pollOptionsFinal = undefined;
     if (data.type === 'poll' && data.pollOptions) {
         pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
@@ -190,33 +191,32 @@ export default function CommunityFeedPage() {
         }
     }
 
-
     if (editingPost) {
-      setPosts(prevPosts => prevPosts.map(p => p.id === editingPost.id
-        ? {
-          ...p,
-          content: data.content,
-          tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-          type: data.type as any,
-          imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-          pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-          eventDate: data.type === 'event' ? data.eventDate : undefined,
-          eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-          eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-          attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-          capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
-        }
-        : p
-      ));
-      toast({ title: "Post Updated", description: "Your post has been updated." });
+      const updatedPostData: Partial<CommunityPost> = {
+        content: data.content,
+        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+        type: data.type as any,
+        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
+        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
+        eventDate: data.type === 'event' ? data.eventDate : undefined,
+        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
+        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
+        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
+        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+      };
+      const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
+      if (updatedPost) {
+        setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
+        toast({ title: "Post Updated", description: "Your post has been updated." });
+      } else {
+        toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
+      }
     } else {
-      const newPost: CommunityPost = {
-        id: String(Date.now()),
-        tenantId: sampleUserProfile.tenantId || 'platform',
-        userId: sampleUserProfile.id,
-        userName: sampleUserProfile.name,
-        userAvatar: sampleUserProfile.profilePictureUrl,
-        timestamp: new Date().toISOString(),
+      const newPostData = {
+        tenantId: currentUser.tenantId || 'platform',
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userAvatar: currentUser.profilePictureUrl,
         content: data.content,
         type: data.type as any,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
@@ -227,172 +227,113 @@ export default function CommunityFeedPage() {
         attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
         capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        moderationStatus: 'visible',
+        moderationStatus: 'visible' as const,
         flagCount: 0,
-        comments: [],
-        status: data.type === 'request' ? 'open' : undefined,
+        status: data.type === 'request' ? 'open' as const : undefined,
       };
-      setPosts(prevPosts => [newPost, ...prevPosts]);
-      sampleCommunityPosts.unshift(newPost);
-      toast({ title: "Post Created", description: "Your post has been added to the feed." });
+      const newPost = await createCommunityPost(newPostData);
+      if (newPost) {
+        setPosts(prev => [newPost, ...prev]);
+        toast({ title: "Post Created", description: "Your post has been added to the feed." });
+      } else {
+        toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
+      }
     }
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
   };
 
-  const handleCommentSubmit = (postId: string, text: string, parentId?: string) => {
+  const handleCommentSubmit = async (postId: string, text: string, parentId?: string) => {
     if (!text.trim()) {
       toast({ title: "Empty Comment", description: "Cannot submit an empty comment.", variant: "destructive" });
       return;
     }
-    const newComment: CommunityComment = {
-      id: `comment-${Date.now()}`,
+    const newCommentData = {
       postId,
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
-      timestamp: new Date().toISOString(),
       comment: text.trim(),
       parentId: parentId,
     };
 
-    const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
-        setPosts(prevPosts => prevPosts.map(post => post.id === postId ? updater(post) : post));
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            sampleCommunityPosts[globalPostIndex] = updater(sampleCommunityPosts[globalPostIndex]);
-        }
-    };
-    updateGlobalAndLocal(post => ({ ...post, comments: [...(post.comments || []), newComment] }));
-
-    toast({ title: "Comment Added", description: "Your comment has been posted." });
-
-    // Clear the correct input field
-    if (parentId) {
-      setReplyText('');
-      setReplyingToCommentId(null);
-    } else {
-      setTopLevelCommentTexts(prev => ({...prev, [postId]: ''}));
-    }
-  };
-
-
-  const handleVote = (postId: string, optionIndex: number) => {
-     const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
-        setPosts(prevPosts => prevPosts.map(post => post.id === postId ? updater(post) : post));
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            sampleCommunityPosts[globalPostIndex] = updater(sampleCommunityPosts[globalPostIndex]);
-        }
-    };
-    updateGlobalAndLocal(post => {
-        if (post.type === 'poll' && post.pollOptions) {
-            const newPollOptions = [...post.pollOptions];
-            if (newPollOptions[optionIndex]) {
-                newPollOptions[optionIndex] = { ...newPollOptions[optionIndex], votes: (newPollOptions[optionIndex].votes || 0) + 1 };
-                return { ...post, pollOptions: newPollOptions };
-            }
-        }
-        return post;
-    });
-    toast({ title: "Vote Recorded", description: "Your vote has been cast." });
-  };
-
-  const handleAssign = (postId: string, userName: string) => {
-    let appointmentCreated = false;
-    let alreadyAssigned = false;
-    let originalPostCreatorId = '';
-    let originalPostContent = '';
-    let originalPostTenantId = '';
-    let originalPostUserName = '';
-
-
-    const updatedPosts = posts.map(post => {
-        if (post.id === postId && post.type === 'request') {
-            if (post.assignedTo) {
-                alreadyAssigned = true;
-                return post;
-            }
-            originalPostCreatorId = post.userId;
-            originalPostContent = post.content || 'Community Request';
-            originalPostTenantId = post.tenantId;
-            originalPostUserName = post.userName;
-
-            appointmentCreated = true;
-            return { ...post, assignedTo: userName, status: 'in progress' as CommunityPost['status'] };
-        }
-        return post;
-    });
-
-    if (alreadyAssigned) {
-        toast({ title: "Already Assigned", description: "This request is already assigned to someone." });
-    } else if (appointmentCreated) {
-        const newAppointment: Appointment = {
-            id: `appt-req-${postId}-${Date.now()}`,
-            tenantId: originalPostTenantId,
-            requesterUserId: originalPostCreatorId,
-            alumniUserId: sampleUserProfile.id,
-            title: `Assigned Request: ${originalPostContent.substring(0, 30)}...`,
-            dateTime: new Date().toISOString(),
-            withUser: originalPostUserName,
-            status: 'Confirmed' as AppointmentStatus,
-            notes: `Taken from community request: "${originalPostContent}"`,
-            costInCoins: 0,
-        };
-        sampleAppointments.unshift(newAppointment);
-
-        setPosts(updatedPosts);
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            const postToUpdate = sampleCommunityPosts[globalPostIndex];
-            if (postToUpdate.type === 'request') {
-                 sampleCommunityPosts[globalPostIndex] = {
-                    ...postToUpdate,
-                    assignedTo: userName,
-                    status: 'in progress'
-                };
-            }
-        }
-        toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
-    }
-  };
-
-  const handleRegisterForEvent = (postId: string, eventTitle?: string) => {
-    const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost | null) => {
-        let success = false;
-        setPosts(prevPosts => prevPosts.map(post => {
-            if (post.id === postId) {
-                const updatedPost = updater(post);
-                if (updatedPost) {
-                    success = true;
-                    return updatedPost;
-                }
-            }
-            return post;
-        }));
-        if (success) {
-            const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-            if (globalPostIndex !== -1) {
-                const updatedGlobalPost = updater(sampleCommunityPosts[globalPostIndex]);
-                 if (updatedGlobalPost) sampleCommunityPosts[globalPostIndex] = updatedGlobalPost;
-            }
-        }
-        return success;
-    };
-
-    const registered = updateGlobalAndLocal(post => {
-      if (post.type === 'event' && post.attendees !== undefined && post.capacity !== undefined && post.attendees < post.capacity) {
-        return { ...post, attendees: (post.attendees || 0) + 1 };
-      } else if (post.type === 'event') {
-         toast({ title: "Registration Failed", description: `Cannot register for "${eventTitle || 'the event'}". It might be full.`, variant: "destructive"});
-         return null;
+    const newComment = await addCommentToPost(newCommentData);
+    if (newComment) {
+      setPosts(prevPosts => prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, comments: [...(post.comments || []), newComment] }
+          : post
+      ));
+      toast({ title: "Comment Added", description: "Your comment has been posted." });
+      if (parentId) {
+        setReplyText('');
+        setReplyingToCommentId(null);
+      } else {
+        setTopLevelCommentTexts(prev => ({...prev, [postId]: ''}));
       }
-      return post;
-    });
+    } else {
+      toast({ title: "Error", description: "Failed to add comment.", variant: "destructive" });
+    }
+  };
 
-    if(registered) {
-        toast({ title: "Registered for Event!", description: `You've successfully registered for "${eventTitle || 'the event'}".`});
+  const handleVote = async (postId: string, optionIndex: number) => {
+    const postToUpdate = posts.find(p => p.id === postId);
+    if (postToUpdate?.type === 'poll' && postToUpdate.pollOptions) {
+        const newPollOptions = [...postToUpdate.pollOptions];
+        if (newPollOptions[optionIndex]) {
+            newPollOptions[optionIndex] = { ...newPollOptions[optionIndex], votes: (newPollOptions[optionIndex].votes || 0) + 1 };
+            const updatedPost = await updateCommunityPost(postId, { pollOptions: newPollOptions });
+            if (updatedPost) {
+              setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+              toast({ title: "Vote Recorded", description: "Your vote has been cast." });
+            }
+        }
+    }
+  };
+
+  const handleAssign = async (postId: string, userName: string) => {
+    const postToUpdate = posts.find(p => p.id === postId);
+    if (postToUpdate?.type !== 'request' || postToUpdate.assignedTo) {
+      toast({ title: "Already Assigned", description: "This request is already assigned to someone." });
+      return;
+    }
+
+    const updatedPost = await updateCommunityPost(postId, { assignedTo: userName, status: 'in progress' });
+    if (updatedPost) {
+      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      
+      const newAppointment: Appointment = {
+          id: `appt-req-${postId}-${Date.now()}`,
+          tenantId: postToUpdate.tenantId,
+          requesterUserId: postToUpdate.userId,
+          alumniUserId: currentUser.id,
+          title: `Assigned Request: ${postToUpdate.content?.substring(0, 30)}...`,
+          dateTime: new Date().toISOString(),
+          withUser: postToUpdate.userName,
+          status: 'Confirmed' as AppointmentStatus,
+          notes: `Taken from community request: "${postToUpdate.content}"`,
+          costInCoins: 0,
+      };
+      sampleAppointments.unshift(newAppointment); // This still uses mock data for now.
+      
+      toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
+    }
+  };
+  
+  const handleRegisterForEvent = async (postId: string, eventTitle?: string) => {
+    const postToUpdate = posts.find(p => p.id === postId);
+    if (!postToUpdate || postToUpdate.type !== 'event') return;
+
+    if (postToUpdate.capacity !== undefined && postToUpdate.capacity > 0 && (postToUpdate.attendees || 0) >= postToUpdate.capacity) {
+      toast({ title: "Registration Failed", description: `Cannot register for "${eventTitle || 'the event'}". It is full.`, variant: "destructive"});
+      return;
+    }
+    
+    const updatedPost = await updateCommunityPost(postId, { attendees: (postToUpdate.attendees || 0) + 1 });
+    if (updatedPost) {
+      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      toast({ title: "Registered for Event!", description: `You've successfully registered for "${eventTitle || 'the event'}".`});
     }
   };
 
@@ -407,9 +348,7 @@ export default function CommunityFeedPage() {
     setValue('content', post.content || '');
     setValue('tags', post.tags?.join(', ') || '');
     setValue('type', post.type);
-    if (post.type === 'text') {
-        setValue('imageUrl', post.imageUrl || '');
-    }
+    if (post.type === 'text') setValue('imageUrl', post.imageUrl || '');
     if (post.type === 'poll') setValue('pollOptions', post.pollOptions || [{ option: '', votes: 0 }, { option: '', votes: 0 }]);
     if (post.type === 'event') {
       setValue('eventDate', post.eventDate);
@@ -420,41 +359,31 @@ export default function CommunityFeedPage() {
     }
     setIsPostDialogOpen(true);
   };
-
-  const handleFlagPost = (postId: string) => {
-    const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
-        setPosts(prevPosts => prevPosts.map(post => post.id === postId ? updater(post) : post));
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            sampleCommunityPosts[globalPostIndex] = updater(sampleCommunityPosts[globalPostIndex]);
-        }
-    };
-    updateGlobalAndLocal(post => ({ ...post, moderationStatus: 'flagged', flagCount: (post.flagCount || 0) + 1 }));
-    toast({ title: "Post Flagged", description: "The post has been flagged for review." });
+  
+  const handleFlagPost = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'flagged', flagCount: (post.flagCount || 0) + 1 });
+    if(updatedPost) {
+        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        toast({ title: "Post Flagged", description: "The post has been flagged for review." });
+    }
   };
 
-  const handleApprovePost = (postId: string) => {
-    const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
-        setPosts(prevPosts => prevPosts.map(post => post.id === postId ? updater(post) : post));
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            sampleCommunityPosts[globalPostIndex] = updater(sampleCommunityPosts[globalPostIndex]);
-        }
-    };
-    updateGlobalAndLocal(post => ({ ...post, moderationStatus: 'visible', flagCount: 0 }));
-    toast({ title: "Post Approved", description: "The post is now visible." });
+  const handleApprovePost = async (postId: string) => {
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0 });
+    if(updatedPost) {
+        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        toast({ title: "Post Approved", description: "The post is now visible." });
+    }
   };
 
-  const handleRemovePost = (postId: string) => {
-    const updateGlobalAndLocal = (updater: (post: CommunityPost) => CommunityPost) => {
-        setPosts(prevPosts => prevPosts.map(post => post.id === postId ? updater(post) : post));
-        const globalPostIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-        if (globalPostIndex !== -1) {
-            sampleCommunityPosts[globalPostIndex] = updater(sampleCommunityPosts[globalPostIndex]);
-        }
-    };
-    updateGlobalAndLocal(post => ({ ...post, moderationStatus: 'removed' }));
-    toast({ title: "Post Removed", description: "The post has been removed.", variant: "destructive" });
+  const handleRemovePost = async (postId: string) => {
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'removed' });
+    if(updatedPost) {
+        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        toast({ title: "Post Removed", description: "The post has been removed.", variant: "destructive" });
+    }
   };
 
   const filteredPosts = useMemo(() => {
@@ -475,6 +404,14 @@ export default function CommunityFeedPage() {
       return post.type === filter;
     });
   }, [posts, filter, currentUser.id, currentUser.role, currentUser.tenantId]);
+  
+   if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>
