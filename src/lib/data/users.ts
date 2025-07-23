@@ -1,3 +1,4 @@
+
 import type { UserProfile, AlumniProfile } from '@/types';
 import { SAMPLE_TENANT_ID } from './platform';
 import { AreasOfSupport } from '@/types';
@@ -128,6 +129,47 @@ export let sampleAlumni: AlumniProfile[] = [
     xpPoints: 3500,
     createdAt: new Date(Date.now() - 86400000 * 365).toISOString(),
     isDistinguished: true,
-    bio: ''
   },
+];
+
+const ensureFullUserProfile = (
+  user: Partial<UserProfile> & Pick<UserProfile, 'name' | 'email' | 'role' | 'tenantId'>
+): UserProfile => ({
+  id: user.id || `user-${Date.now()}`,
+  status: user.status || 'active',
+  lastLogin: user.lastLogin || new Date().toISOString(),
+  currentJobTitle: user.currentJobTitle || '',
+  company: user.company || '',
+  skills: user.skills || [],
+  bio: user.bio || '',
+  profilePictureUrl: user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`,
+  xpPoints: user.xpPoints || 0,
+  dailyStreak: user.dailyStreak || 0,
+  longestStreak: user.longestStreak || 0,
+  totalActiveDays: user.totalActiveDays || 0,
+  weeklyActivity: user.weeklyActivity || Array(7).fill(false),
+  earnedBadges: user.earnedBadges || [],
+  interviewCredits: user.interviewCredits || 5,
+  createdAt: user.createdAt || new Date().toISOString(),
+  isDistinguished: user.isDistinguished || false,
+  shortBio: user.shortBio || 'New user on the platform.',
+  university: user.university || 'N/A',
+  areasOfSupport: user.areasOfSupport || [],
+  interests: user.interests || [],
+  offersHelpWith: user.offersHelpWith || [],
+  pastInterviewSessions: user.pastInterviewSessions || [],
+  challengeTopics: user.challengeTopics || [],
+  referralCode: user.referralCode || `REF-${user.name.substring(0,4).toUpperCase()}${Date.now().toString().slice(-4)}`,
+  ...user,
+});
+
+
+// Re-introducing samplePlatformUsers for UI components that depend on it.
+// In a real app, this would be replaced by API calls fetching user lists.
+export let samplePlatformUsers: UserProfile[] = [
+  sampleUserProfile, // Alice Wonderland (Admin)
+  ensureFullUserProfile({ id: 'alumni2', tenantId: 'Brainqy', role: 'user', name: 'Bob The Builder', email: 'bob.builder@example.com', currentJobTitle: 'Product Manager', company: 'Innovate LLC', skills: ['Agile', 'Product Roadmapping'], shortBio: 'Building great products.', university: 'State University', xpPoints: 1250, dailyStreak: 5, profilePictureUrl: 'https://picsum.photos/seed/bob/200/200', isDistinguished: true }),
+  ensureFullUserProfile({ id: 'alumni3', tenantId: 'tenant-2', role: 'user', name: 'Charlie Brown', email: 'charlie.brown@example.com', currentJobTitle: 'Data Scientist', company: 'Data Corp', skills: ['SQL', 'Tableau', 'R'], shortBio: 'Loves data visualization.', university: 'Tech University', xpPoints: 800, dailyStreak: 2, profilePictureUrl: 'https://picsum.photos/seed/charlie/200/200' }),
+  ensureFullUserProfile({ id: 'alumni4', tenantId: 'Brainqy', role: 'user', name: 'Diana Prince', email: 'diana.prince@example.com', currentJobTitle: 'UX Designer', company: 'Web Wizards', skills: ['Figma', 'User Research'], shortBio: 'Creating user-centric designs.', university: 'State University', xpPoints: 2100, dailyStreak: 12, profilePictureUrl: 'https://picsum.photos/seed/diana/200/200' }),
+  ensureFullUserProfile({ id: 'managerUser1', tenantId: 'tenant-2', role: 'manager', name: 'Manager Mike', email: 'manager.mike@tenant2.com', currentJobTitle: 'Engagement Lead', company: 'Corporate Partner Inc.', shortBio: 'Managing the corporate partnership program.', university: 'Business College', xpPoints: 1500, dailyStreak: 10, profilePictureUrl: 'https://avatar.vercel.sh/managermike.png' }),
 ];
