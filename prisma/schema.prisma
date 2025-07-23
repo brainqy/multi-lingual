@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -12,14 +11,14 @@ datasource db {
 }
 
 model User {
-  id                        String      @id @default(cuid())
-  tenantId                  String
+  id                        String    @id @default(cuid()) @db.VarChar(255)
+  tenantId                  String?   @db.VarChar(255) // Made optional to fix foreign key constraint on initial setup
   name                      String
-  email                     String      @unique
-  role                      String // 'admin', 'manager', 'user'
+  email                     String    @unique
+  role                      String
   status                    String?
-  lastLogin                 DateTime?
-  dateOfBirth               DateTime?
+  lastLogin                 DateTime? @db.Timestamp(6)
+  dateOfBirth               DateTime? @db.Date
   gender                    String?
   mobileNumber              String?
   currentAddress            String?
@@ -59,182 +58,180 @@ model User {
   affiliateCode             String?
   pastInterviewSessions     String[]
   interviewCredits          Int?
-  createdAt                 DateTime    @default(now())
+  createdAt                 DateTime  @default(now()) @db.Timestamp(6)
   isDistinguished           Boolean?
   userApiKey                String?
   challengeTopics           String[]
   shortBio                  String?
   university                String?
-  sessionId                 String?     @unique
+  sessionId                 String?   @unique @db.VarChar(255)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
-  @@index([tenantId])
+  @@map("User")
 }
 
 model Tenant {
-  id        String          @id @default(cuid())
+  id        String @id @default(cuid()) @db.VarChar(255)
   name      String
-  domain    String?         @unique
-  createdAt DateTime        @default(now())
+  domain    String?  @unique
+  createdAt DateTime @default(now()) @db.Timestamp(6)
   users     User[]
-  settings  TenantSettings?
+
+  settings TenantSettings?
+
+  @@map("Tenant")
 }
 
 model TenantSettings {
-  id                           String   @id @default(cuid())
-  tenantId                     String   @unique
-  allowPublicSignup            Boolean  @default(true)
+  id                           String  @id @default(cuid()) @db.VarChar(255)
+  tenantId                     String  @unique @db.VarChar(255)
+  allowPublicSignup            Boolean @default(true)
   customLogoUrl                String?
   primaryColor                 String?
   accentColor                  String?
-  communityFeedEnabled         Boolean?
-  jobBoardEnabled              Boolean?
-  gamificationEnabled          Boolean?
-  walletEnabled                Boolean?
-  eventRegistrationEnabled     Boolean?
+  communityFeedEnabled         Boolean @default(true)
+  jobBoardEnabled              Boolean @default(true)
+  gamificationEnabled          Boolean @default(true)
+  walletEnabled                Boolean @default(true)
+  eventRegistrationEnabled     Boolean @default(true)
   welcomeEmailTemplate         String?
-  tenant                       Tenant   @relation(fields: [tenantId], references: [id])
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("TenantSettings")
 }
 
-model ResumeProfile {
-  id           String    @id @default(cuid())
-  tenantId     String
-  userId       String
-  name         String
-  resumeText   String
-  lastAnalyzed DateTime?
-  createdAt    DateTime  @default(now())
-
-  @@index([userId])
-}
-
-model ResumeScanHistory {
-  id                 String   @id @default(cuid())
-  tenantId           String
-  userId             String
-  resumeId           String
-  resumeName         String
-  jobTitle           String
-  companyName        String
-  resumeTextSnapshot String
-  jobDescriptionText String
-  scanDate           DateTime @default(now())
-  matchScore         Int?
-  bookmarked         Boolean? @default(false)
-
-  @@index([userId])
-}
 
 model JobApplication {
-  id                 String      @id @default(cuid())
-  tenantId           String
-  userId             String
+  id                 String       @id @default(cuid()) @db.VarChar(255)
+  tenantId           String       @db.VarChar(255)
+  userId             String       @db.VarChar(255)
   companyName        String
   jobTitle           String
-  status             String // Saved, Applied, Interviewing, Offer, Rejected
-  dateApplied        DateTime
+  status             String
+  dateApplied        String
   notes              String[]
   jobDescription     String?
   location           String?
   salary             String?
-  reminderDate       DateTime?
+  reminderDate       String?
   sourceJobOpeningId String?
   applicationUrl     String?
   resumeIdUsed       String?
   coverLetterText    String?
   interviews         Interview[]
 
-  @@index([userId])
+  @@map("JobApplication")
 }
 
 model Interview {
-  id                String         @id @default(cuid())
-  jobApplicationId  String
-  date              DateTime
-  type              String // Phone Screen, Technical, Behavioral, On-site, Final Round
-  interviewer       String
-  interviewerMobile String?
-  interviewerEmail  String?
-  notes             String[]
-  jobApplication    JobApplication @relation(fields: [jobApplicationId], references: [id])
+  id                 String   @id @default(cuid()) @db.VarChar(255)
+  jobApplicationId   String   @db.VarChar(255)
+  date               String
+  type               String
+  interviewer        String
+  interviewerMobile  String?
+  interviewerEmail   String?
+  notes              String[]
+  jobApplication     JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@map("Interview")
 }
 
 model CommunityPost {
-  id               String              @id @default(cuid())
-  tenantId         String
-  userId           String
-  userName         String
-  userAvatar       String?
-  timestamp        DateTime            @default(now())
-  content          String?
-  type             String // text, poll, event, request
-  tags             String[]
-  imageUrl         String?
-  pollOptions      Json? // [{ option: string, votes: number }]
-  eventTitle       String?
-  eventDate        DateTime?
-  eventLocation    String?
-  attendees        Int?
-  capacity         Int?
-  assignedTo       String?
-  status           String? // open, assigned, completed, in progress
-  moderationStatus String // visible, flagged, removed
-  flagCount        Int
-  comments         CommunityComment[]
-  bookmarkedBy     String[]
+  id                String             @id @default(cuid()) @db.VarChar(255)
+  tenantId          String             @db.VarChar(255)
+  userId            String             @db.VarChar(255)
+  userName          String
+  userAvatar        String?
+  timestamp         DateTime           @default(now()) @db.Timestamp(6)
+  content           String?
+  type              String
+  tags              String[]
+  imageUrl          String?
+  pollOptions       Json[]
+  eventTitle        String?
+  eventDate         String?
+  eventLocation     String?
+  attendees         Int?
+  capacity          Int?
+  assignedTo        String?
+  status            String?
+  moderationStatus  String
+  flagCount         Int
+  comments          CommunityComment[]
+  bookmarkedBy      String[]
 
-  @@index([tenantId])
+  @@map("CommunityPost")
 }
 
 model CommunityComment {
-  id         String        @id @default(cuid())
-  postId     String
-  userId     String
+  id         String        @id @default(cuid()) @db.VarChar(255)
+  postId     String        @db.VarChar(255)
+  userId     String        @db.VarChar(255)
   userName   String
   userAvatar String?
-  timestamp  DateTime      @default(now())
+  timestamp  DateTime      @default(now()) @db.Timestamp(6)
   comment    String
-  parentId   String?
+  parentId   String?       @db.VarChar(255)
   post       CommunityPost @relation(fields: [postId], references: [id])
 
-  @@index([postId])
+  @@map("CommunityComment")
+}
+
+model ResumeScanHistory {
+  id                   String   @id @default(cuid()) @db.VarChar(255)
+  tenantId             String   @db.VarChar(255)
+  userId               String   @db.VarChar(255)
+  resumeId             String   @db.VarChar(255)
+  resumeName           String
+  jobTitle             String
+  companyName          String
+  resumeTextSnapshot   String
+  jobDescriptionText   String
+  scanDate             DateTime @default(now()) @db.Timestamp(6)
+  matchScore           Int?
+  bookmarked           Boolean?
+
+  @@map("ResumeScanHistory")
 }
 
 model Appointment {
-  id              String   @id @default(cuid())
-  tenantId        String
-  requesterUserId String
-  alumniUserId    String
+  id              String   @id @default(cuid()) @db.VarChar(255)
+  tenantId        String   @db.VarChar(255)
+  requesterUserId String   @db.VarChar(255)
+  alumniUserId    String   @db.VarChar(255)
   title           String
-  dateTime        DateTime
-  status          String // Pending, Confirmed, Cancelled, Completed
+  dateTime        DateTime @db.Timestamp(6)
+  status          String
   meetingLink     String?
   location        String?
   notes           String?
   costInCoins     Int?
   withUser        String
-  reminderDate    DateTime?
+  reminderDate    String?
 
-  @@index([requesterUserId])
-  @@index([alumniUserId])
+  @@map("Appointment")
 }
 
 model Activity {
-  id          String   @id @default(cuid())
-  tenantId    String
-  userId      String
-  timestamp   DateTime @default(now())
+  id          String   @id @default(cuid()) @db.VarChar(255)
+  tenantId    String   @db.VarChar(255)
+  userId      String   @db.VarChar(255)
+  timestamp   DateTime @default(now()) @db.Timestamp(6)
   description String
 
-  @@index([userId])
+  @@map("Activity")
 }
 
 model Badge {
-  id               String  @id @default(cuid())
-  name             String  @unique
+  id               String  @id @default(cuid()) @db.VarChar(255)
+  name             String
   description      String
   icon             String
   xpReward         Int?
   triggerCondition String?
+
+  @@map("Badge")
 }
