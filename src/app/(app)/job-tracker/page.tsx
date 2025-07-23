@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, GripVertical, Search, FileText, Clock, Bookmark, CalendarDays } from "lucide-react";
-import { sampleJobApplications, sampleJobOpenings, sampleUserProfile, sampleResumeProfiles } from "@/lib/sample-data"; 
+import { PlusCircle, Edit3, Trash2, GripVertical, Search, FileText, Clock, Bookmark, CalendarDays, Loader2 } from "lucide-react";
+import { sampleJobOpenings, sampleUserProfile, sampleResumeProfiles } from "@/lib/sample-data"; 
 import type { JobApplication, JobApplicationStatus, ResumeScanHistoryItem, KanbanColumnId, JobOpening, ResumeProfile, Interview } from "@/types"; 
 import { JOB_APPLICATION_STATUSES } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +22,7 @@ import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getUserJobApplications, createJobApplication, updateJobApplication, deleteJobApplication } from "@/lib/actions/jobs";
 
 import {
   DropdownMenu, DropdownMenuCheckboxItem,
@@ -158,7 +159,8 @@ function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: { colu
 
 export default function JobTrackerPage() {
   const { t } = useI18n();
-  const [applications, setApplications] = useState<JobApplication[]>(sampleJobApplications.filter(app => app.userId === sampleUserProfile.id));
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState<JobApplication | null>(null);
   const [resumes, setResumes] = useState<ResumeProfile[]>([]);
@@ -184,7 +186,15 @@ export default function JobTrackerPage() {
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    setResumes(sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id));
+    async function fetchData() {
+      setIsLoading(true);
+      const userApps = await getUserJobApplications(sampleUserProfile.id);
+      setApplications(userApps);
+      // This can be optimized later to fetch only if needed
+      setResumes(sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id));
+      setIsLoading(false);
+    }
+    fetchData();
   }, []);
 
   const handleJobSearch = () => {
@@ -204,32 +214,37 @@ export default function JobTrackerPage() {
     }
   };
 
-  const handleAddSearchedJobToTracker = (job: JobOpening) => {
+  const handleAddSearchedJobToTracker = async (job: JobOpening) => {
     const alreadyExists = applications.some(app => app.sourceJobOpeningId === job.id);
     if (alreadyExists) {
       toast({ title: t("jobTracker.toast.alreadyInTracker.title"), description: t("jobTracker.toast.alreadyInTracker.description"), variant: "default" });
       return;
     }
 
-    const newApplication: JobApplication = {
-      id: `app-${job.id}-${Date.now()}`,
+    const newApplicationData = {
       tenantId: job.tenantId,
       userId: sampleUserProfile.id,
       companyName: job.company,
       jobTitle: job.title,
-      status: 'Saved',
+      status: 'Saved' as JobApplicationStatus,
       dateApplied: new Date().toISOString().split('T')[0],
       notes: ['Added from job board search.'],
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
-      applicationUrl: job.applicationLink,
+      applicationUrl: job.applicationUrl,
     };
-    setApplications(prevApps => [newApplication, ...prevApps]);
-    toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: job.companyName }) });
+    
+    const newApp = await createJobApplication(newApplicationData);
+    if(newApp) {
+      setApplications(prevApps => [newApp, ...prevApps]);
+      toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: job.companyName }) });
+    } else {
+      toast({ title: "Error", description: "Could not add job to tracker.", variant: "destructive" });
+    }
   };
 
-  const onSubmit = (data: JobApplicationFormData) => {
+  const onSubmit = async (data: JobApplicationFormData) => {
     const applicationData = { 
       ...data, 
       interviews: currentInterviews,
@@ -237,29 +252,25 @@ export default function JobTrackerPage() {
     };
 
     if (editingApplication) {
-      setApplications(apps => apps.map(app => 
-        app.id === editingApplication.id 
-          ? { 
-              ...app, 
-              ...applicationData, 
-              status: data.status as JobApplicationStatus, 
-              salary: data.salary,
-              notes: applicationData.notes
-            } 
-          : app
-      ));
-      toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
+      const updatedApp = await updateJobApplication(editingApplication.id, applicationData);
+      if (updatedApp) {
+        setApplications(apps => apps.map(app => app.id === editingApplication.id ? updatedApp : app));
+        toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
+      } else {
+        toast({ title: "Error", description: "Failed to update application.", variant: "destructive"});
+      }
     } else {
-      const newApp: JobApplication = { 
-        ...applicationData, 
-        notes: applicationData.notes, 
-        id: String(Date.now()), 
-        status: data.status as JobApplicationStatus, 
-        tenantId: sampleUserProfile.tenantId, 
-        userId: sampleUserProfile.id 
-      };
-      setApplications(apps => [newApp, ...apps]);
-      toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
+      const newApp = await createJobApplication({
+        ...applicationData,
+        userId: sampleUserProfile.id,
+        tenantId: sampleUserProfile.tenantId
+      });
+      if(newApp) {
+        setApplications(apps => [newApp, ...apps]);
+        toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
+      } else {
+        toast({ title: "Error", description: "Failed to add application.", variant: "destructive"});
+      }
     }
     setIsDialogOpen(false);
   };
@@ -291,16 +302,21 @@ export default function JobTrackerPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setApplications(apps => apps.filter(app => app.id !== id));
-    toast({ title: t("jobTracker.toast.appDeleted.title"), description: t("jobTracker.toast.appDeleted.description") });
+  const handleDelete = async (id: string) => {
+    const success = await deleteJobApplication(id);
+    if(success) {
+      setApplications(apps => apps.filter(app => app.id !== id));
+      toast({ title: t("jobTracker.toast.appDeleted.title"), description: t("jobTracker.toast.appDeleted.description") });
+    } else {
+      toast({ title: "Error", description: "Failed to delete application.", variant: "destructive"});
+    }
   };
 
-  const handleMoveApplication = (appId: string, newStatus: JobApplicationStatus) => {
-    setApplications(prevApps => prevApps.map(app => app.id === appId ? { ...app, status: newStatus } : app));
-    const app = applications.find(a => a.id === appId);
-    if (app) {
-      toast({ title: t("jobTracker.toast.appMoved.title"), description: t("jobTracker.toast.appMoved.description", { jobTitle: app.jobTitle, newStatus: t(`jobTracker.statuses.${newStatus}`) }) });
+  const handleMoveApplication = async (appId: string, newStatus: JobApplicationStatus) => {
+    const updatedApp = await updateJobApplication(appId, { status: newStatus });
+    if(updatedApp) {
+      setApplications(prevApps => prevApps.map(app => app.id === appId ? updatedApp : app));
+      toast({ title: t("jobTracker.toast.appMoved.title"), description: t("jobTracker.toast.appMoved.description", { jobTitle: updatedApp.jobTitle, newStatus: t(`jobTracker.statuses.${newStatus}`) }) });
     }
   };
 
@@ -357,6 +373,14 @@ export default function JobTrackerPage() {
   const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[]; }): JobApplication[] => {
     return applications.filter(app => column.acceptedStatuses.includes(app.status));
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full space-y-4 p-0 -m-4 sm:-m-6 lg:-m-8"> 
