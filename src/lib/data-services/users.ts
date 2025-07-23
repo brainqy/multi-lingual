@@ -19,7 +19,10 @@ export async function getUserByEmail(email: string): Promise<UserProfile | null>
   const user = await db.user.findUnique({
     where: { email },
   });
-  return user as UserProfile | null;
+  
+  // The cast is necessary because the Prisma generated type doesn't perfectly match our custom UserProfile type
+  // This is a safe cast as our schema is designed to produce this shape.
+  return user as unknown as UserProfile | null;
 }
 
 export async function getUserById(id: string): Promise<UserProfile | null> {
@@ -31,7 +34,7 @@ export async function getUserById(id: string): Promise<UserProfile | null> {
   const user = await db.user.findUnique({
     where: { id },
   });
-  return user as UserProfile | null;
+  return user as unknown as UserProfile | null;
 }
 
 export async function createUser(data: Partial<UserProfile>): Promise<UserProfile | null> {
@@ -121,8 +124,9 @@ export async function updateUser(userId: string, data: Partial<UserProfile>): Pr
   if (useMockDb) {
     const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-      samplePlatformUsers[userIndex] = { ...samplePlatformUsers[userIndex], ...data };
-      return samplePlatformUsers[userIndex] as UserProfile;
+      const updatedUser = { ...samplePlatformUsers[userIndex], ...data };
+      samplePlatformUsers[userIndex] = updatedUser;
+      return updatedUser as UserProfile;
     }
     return null;
   }
