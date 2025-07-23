@@ -1,9 +1,9 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
-import { I18nProvider } from '@/contexts/i18n-provider';
-import { AuthProvider } from '@/contexts/auth-provider';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
+import { I18nProvider } from '@/contexts/i18n-provider'; // Keep for global language setting
+import { AuthProvider } from '@/contexts/auth-provider'; // Keep for global auth state
 
 export const metadata: Metadata = {
   title: 'Bhasha Setu',

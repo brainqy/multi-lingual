@@ -6,12 +6,11 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import FloatingMessenger from '@/components/features/FloatingMessenger';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { addRecentPage, getLabelForPath } from '@/lib/recent-pages';
 import AnnouncementBanner from '@/components/features/AnnouncementBanner';
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 export default function AppLayout({
@@ -25,7 +24,6 @@ export default function AppLayout({
 
   useEffect(() => {
     if (pathname) {
-      // For recent pages, the path from usePathname() will not have locale if i18n is removed
       const label = getLabelForPath(pathname);
       addRecentPage(pathname, label);
     }
@@ -36,7 +34,7 @@ export default function AppLayout({
       router.replace('/auth/login');
     }
   }, [isLoading, isAuthenticated, router]);
-  
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
