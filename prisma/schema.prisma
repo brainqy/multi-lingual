@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -11,14 +12,14 @@ datasource db {
 }
 
 model User {
-  id                        String    @id @default(cuid()) @db.VarChar(255)
-  tenantId                  String    @db.VarChar(255)
+  id                        String      @id @default(cuid())
+  tenantId                  String?
   name                      String
-  email                     String    @unique
-  role                      String    @default("user")
-  status                    String?   @default("active")
-  lastLogin                 DateTime? @default(now())
-  dateOfBirth               DateTime?
+  email                     String      @unique
+  role                      String
+  status                    String?
+  lastLogin                 DateTime?
+  dateOfBirth               DateTime?   @db.Date
   gender                    String?
   mobileNumber              String?
   currentAddress            String?
@@ -26,6 +27,7 @@ model User {
   degreeProgram             String?
   department                String?
   currentJobTitle           String?
+  company                   String?
   currentOrganization       String?
   industry                  String?
   workLocation              String?
@@ -38,8 +40,8 @@ model User {
   otherComments             String?
   lookingForSupportType     String?
   helpNeededDescription     String?
-  shareProfileConsent       Boolean?  @default(true)
-  featureInSpotlightConsent Boolean?  @default(false)
+  shareProfileConsent       Boolean?
+  featureInSpotlightConsent Boolean?
   profilePictureUrl         String?
   resumeText                String?
   careerInterests           String?
@@ -47,79 +49,117 @@ model User {
   interests                 Json?
   offersHelpWith            Json?
   appointmentCoinCost       Int?
-  xpPoints                  Int?      @default(0)
-  dailyStreak               Int?      @default(0)
-  longestStreak             Int?      @default(0)
-  totalActiveDays           Int?      @default(0)
+  xpPoints                  Int?
+  dailyStreak               Int?
+  longestStreak             Int?
+  totalActiveDays           Int?
   weeklyActivity            Json?
-  referralCode              String?   @unique
+  referralCode              String?
   earnedBadges              Json?
-  affiliateCode             String?   @unique
-  interviewCredits          Int?      @default(5)
-  createdAt                 DateTime  @default(now())
-  isDistinguished           Boolean?  @default(false)
+  affiliateCode             String?
+  pastInterviewSessions     Json?
+  interviewCredits          Int?
+  createdAt                 DateTime    @default(now())
+  isDistinguished           Boolean?
   userApiKey                String?
   challengeTopics           Json?
   shortBio                  String?
   university                String?
-  sessionId                 String?   @unique @db.VarChar(255)
-  tenant                    Tenant    @relation(fields: [tenantId], references: [id])
+  sessionId                 String?     @unique(sort: Desc)
+
+  tenant               Tenant?            @relation(fields: [tenantId], references: [id])
+  jobApplications      JobApplication[]
+  resumeScanHistories  ResumeScanHistory[]
+  communityPosts       CommunityPost[]
+  comments             CommunityComment[]
+  appointmentsAsRequester Appointment[] @relation("RequesterAppointments")
+  appointmentsAsAlumni    Appointment[] @relation("AlumniAppointments")
+  activities           Activity[]
 }
 
 model Tenant {
-  id        String   @id @default(cuid()) @db.VarChar(255)
+  id        String   @id @default(cuid())
   name      String
-  domain    String?  @unique
+  domain    String?
   createdAt DateTime @default(now())
   users     User[]
-
-  // Relation to TenantSettings
-  settings TenantSettings?
+  settings  TenantSettings?
 }
 
 model TenantSettings {
-  id                            String  @id @default(cuid())
-  tenantId                      String  @unique
-  allowPublicSignup             Boolean @default(true)
-  customLogoUrl                 String?
-  primaryColor                  String?
-  accentColor                   String?
-  features                      Json?
-  emailTemplates                Json?
-  // Foreign key relation
-  tenant                        Tenant  @relation(fields: [tenantId], references: [id])
+  id                  String   @id @default(cuid())
+  tenantId            String   @unique
+  allowPublicSignup   Boolean  @default(true)
+  customLogoUrl       String?
+  primaryColor        String?
+  accentColor         String?
+  features            Json?
+  emailTemplates      Json?
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 model JobApplication {
-  id                   String      @id @default(cuid())
-  tenantId             String
-  userId               String
-  companyName          String
-  jobTitle             String
-  status               String
-  dateApplied          DateTime
-  jobDescription       String?
-  location             String?
-  salary               String?
-  reminderDate         DateTime?
-  sourceJobOpeningId   String?
-  applicationUrl       String?
-  resumeIdUsed         String?
-  coverLetterText      String?
-  interviews           Json?
-  notes                Json?
+  id                  String      @id @default(cuid())
+  userId              String
+  tenantId            String?
+  companyName         String
+  jobTitle            String
+  status              String
+  dateApplied         DateTime    @db.Date
+  notes               String[]
+  jobDescription      String?
+  location            String?
+  salary              String?
+  reminderDate        DateTime?   @db.Timestamp(6)
+  sourceJobOpeningId  String?
+  applicationUrl      String?
+  resumeIdUsed        String?
+  coverLetterText     String?
+  
+  user        User          @relation(fields: [userId], references: [id])
+  interviews  Interview[]
+}
+
+model Interview {
+  id                String          @id @default(cuid())
+  jobApplicationId  String
+  date              DateTime        @db.Timestamp(6)
+  type              String
+  interviewer       String
+  interviewerMobile String?
+  interviewerEmail  String?
+  notes             String[]
+  
+  jobApplication    JobApplication  @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+}
+
+model ResumeScanHistory {
+  id                  String   @id @default(cuid())
+  userId              String
+  tenantId            String?
+  resumeId            String
+  resumeName          String
+  jobTitle            String
+  companyName         String
+  resumeTextSnapshot  String
+  jobDescriptionText  String
+  scanDate            DateTime @default(now())
+  matchScore          Int?
+  bookmarked          Boolean?
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model CommunityPost {
   id                 String   @id @default(cuid())
-  tenantId           String
   userId             String
+  tenantId           String?
   userName           String
   userAvatar         String?
   timestamp          DateTime @default(now())
   content            String?
   type               String
-  tags               Json?
+  tags               String[]
   imageUrl           String?
   pollOptions        Json?
   eventTitle         String?
@@ -131,54 +171,60 @@ model CommunityPost {
   status             String?
   moderationStatus   String
   flagCount          Int
-  comments           Json?
-  bookmarkedBy       Json?
+  bookmarkedBy       String[]
+
+  user     User               @relation(fields: [userId], references: [id])
+  comments CommunityComment[]
 }
 
-model Activity {
-  id          String   @id @default(cuid())
-  tenantId    String
-  timestamp   DateTime @default(now())
-  description String
-  userId      String?
-}
+model CommunityComment {
+  id         String   @id @default(cuid())
+  postId     String
+  userId     String
+  userName   String
+  userAvatar String?
+  timestamp  DateTime @default(now())
+  comment    String
+  parentId   String?
 
-model Badge {
-  id               String  @id @default(cuid())
-  name             String
-  description      String
-  icon             String
-  xpReward         Int?
-  triggerCondition String?
-}
-
-model ResumeScanHistory {
-  id                  String   @id @default(cuid())
-  tenantId            String
-  userId              String
-  resumeId            String
-  resumeName          String
-  jobTitle            String
-  companyName         String
-  resumeTextSnapshot  String
-  jobDescriptionText  String
-  scanDate            DateTime @default(now())
-  matchScore          Int?
-  bookmarked          Boolean? @default(false)
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id])
 }
 
 model Appointment {
   id              String   @id @default(cuid())
-  tenantId        String
+  tenantId        String?
   requesterUserId String
   alumniUserId    String
   title           String
-  dateTime        DateTime
+  dateTime        DateTime @db.Timestamp(6)
   status          String
   meetingLink     String?
   location        String?
   notes           String?
   costInCoins     Int?
   withUser        String
-  reminderDate    DateTime?
+  reminderDate    DateTime? @db.Timestamp(6)
+
+  requester User @relation("RequesterAppointments", fields: [requesterUserId], references: [id])
+  alumni    User @relation("AlumniAppointments", fields: [alumniUserId], references: [id])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  tenantId    String?
+  timestamp   DateTime @default(now())
+  description String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Badge {
+  id              String  @id @default(cuid())
+  name            String
+  description     String
+  icon            String
+  xpReward        Int?
+  triggerCondition String?
 }
