@@ -1,17 +1,18 @@
 
 'use server';
 
-import type { UserProfile, UserStatus, Gender, DegreeProgram, Industry, TimeCommitment, EngagementMode, SupportTypeSought } from '@/types';
+import type { UserProfile, UserStatus, Gender, DegreeProgram, Industry, TimeCommitment, EngagementMode, SupportTypeSought, Tenant } from '@/types';
 import { db } from '@/lib/db';
-import { samplePlatformUsers } from '@/lib/data/users';
+import { samplePlatformUsers, sampleTenants } from '@/lib/data/users';
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
+const log = console.log;
 
 // This file acts as a database service. It will use Prisma for a real DB
 // or a simple in-memory array for mock data based on the USE_MOCK_DB env variable.
 
 export async function getUserByEmail(email: string): Promise<UserProfile | null> {
-  console.log(`[DataService] Fetching user by email: ${email} (Mock DB: ${useMockDb})`);
+  log(`[DataService] Fetching user by email: ${email} (Mock DB: ${useMockDb})`);
   if (useMockDb) {
     const user = samplePlatformUsers.find(u => u.email === email);
     return user ? (user as UserProfile) : null;
@@ -19,14 +20,14 @@ export async function getUserByEmail(email: string): Promise<UserProfile | null>
   const user = await db.user.findUnique({
     where: { email },
   });
-  
-  // The cast is necessary because the Prisma generated type doesn't perfectly match our custom UserProfile type
-  // This is a safe cast as our schema is designed to produce this shape.
-  return user as unknown as UserProfile | null;
+  if (!user) {
+      return null;
+  }
+  return user as unknown as UserProfile;
 }
 
 export async function getUserById(id: string): Promise<UserProfile | null> {
-  console.log(`[DataService] Fetching user by id: ${id} (Mock DB: ${useMockDb})`);
+  log(`[DataService] Fetching user by id: ${id} (Mock DB: ${useMockDb})`);
   if (useMockDb) {
     const user = samplePlatformUsers.find(u => u.id === id);
     return user ? (user as UserProfile) : null;
@@ -38,19 +39,22 @@ export async function getUserById(id: string): Promise<UserProfile | null> {
 }
 
 export async function createUser(data: Partial<UserProfile>): Promise<UserProfile | null> {
-  console.log(`[DataService] Creating new user: ${data.email} (Mock DB: ${useMockDb})`);
     if (!data.name || !data.email || !data.role) {
         throw new Error("Name, email, and role are required to create a user.");
     }
 
+    const defaultTenantId = 'Brainqy';
+
     const newUserPayload = {
         id: `user-${Date.now()}`,
-        tenantId: data.tenantId || 'Brainqy',
+        tenantId: data.tenantId || defaultTenantId,
         name: data.name,
         email: data.email,
         role: data.role,
-        status: 'active' as UserStatus,
+        status: data.status || 'active',
         lastLogin: new Date(),
+        createdAt: new Date(),
+        // Add defaults for all other fields to ensure a complete object
         currentJobTitle: data.currentJobTitle || '',
         company: data.company || '',
         skills: data.skills || [],
@@ -62,54 +66,52 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         totalActiveDays: 0,
         weeklyActivity: Array(7).fill(false),
         earnedBadges: [],
-        interviewCredits: 5, // Starter credits
-        createdAt: new Date(),
+        interviewCredits: 5,
         isDistinguished: false,
         shortBio: '',
         university: '',
         sessionId: data.sessionId,
-        areasOfSupport: [],
-        interests: [],
-        offersHelpWith: [],
-        pastInterviewSessions: [],
-        challengeTopics: [],
-        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-        gender: data.gender as Gender | undefined,
-        mobileNumber: data.mobileNumber,
-        currentAddress: data.currentAddress,
-        graduationYear: data.graduationYear,
-        degreeProgram: data.degreeProgram as DegreeProgram | undefined,
-        department: data.department,
-        currentOrganization: data.currentOrganization,
-        industry: data.industry as Industry | undefined,
-        workLocation: data.workLocation,
-        linkedInProfile: data.linkedInProfile,
-        yearsOfExperience: data.yearsOfExperience,
-        timeCommitment: data.timeCommitment as TimeCommitment | undefined,
-        preferredEngagementMode: data.preferredEngagementMode as EngagementMode | undefined,
-        otherComments: data.otherComments,
-        lookingForSupportType: data.lookingForSupportType as SupportTypeSought | undefined,
-        helpNeededDescription: data.helpNeededDescription,
-        shareProfileConsent: data.shareProfileConsent,
-        featureInSpotlightConsent: data.featureInSpotlightConsent,
-        resumeText: data.resumeText,
-        careerInterests: data.careerInterests,
-        userApiKey: data.userApiKey,
-        appointmentCoinCost: data.appointmentCoinCost,
-        referralCode: data.referralCode,
-        affiliateCode: data.affiliateCode,
-        challengeProgress: data.challengeProgress,
     };
-    
+
     if (useMockDb) {
         const newUser: UserProfile = {
             ...newUserPayload,
             lastLogin: newUserPayload.lastLogin.toISOString(),
             createdAt: newUserPayload.createdAt.toISOString(),
-            dateOfBirth: newUserPayload.dateOfBirth ? newUserPayload.dateOfBirth.toISOString() : undefined
+            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined
         };
         samplePlatformUsers.push(newUser);
         return newUser;
+    }
+
+    log(`[DataService] Creating user in real DB: ${data.email}`);
+    
+    // Ensure the default tenant exists before creating the user
+    const tenantExists = await db.tenant.findUnique({
+      where: { id: defaultTenantId },
+    });
+
+    if (!tenantExists) {
+      log(`[DataService] Default tenant '${defaultTenantId}' not found. Creating it now.`);
+      const defaultTenantData = sampleTenants.find(t => t.id === defaultTenantId);
+      if (defaultTenantData) {
+        await db.tenant.create({
+          data: {
+            id: defaultTenantData.id,
+            name: defaultTenantData.name,
+            domain: defaultTenantData.domain,
+            createdAt: new Date(defaultTenantData.createdAt),
+            settings: {
+              create: {
+                allowPublicSignup: defaultTenantData.settings?.allowPublicSignup ?? true,
+                primaryColor: defaultTenantData.settings?.primaryColor,
+                accentColor: defaultTenantData.settings?.accentColor,
+                customLogoUrl: defaultTenantData.settings?.customLogoUrl,
+              }
+            }
+          }
+        });
+      }
     }
 
     const newUser = await db.user.create({
@@ -119,8 +121,9 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
     return newUser as unknown as UserProfile;
 }
 
+
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
-  console.log(`[DataService] Updating user: ${userId} (Mock DB: ${useMockDb})`);
+  log(`[DataService] Updating user: ${userId} (Mock DB: ${useMockDb})`);
   if (useMockDb) {
     const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
