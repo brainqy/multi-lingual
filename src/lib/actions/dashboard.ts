@@ -10,7 +10,6 @@ import {
   sampleJobApplications,
   sampleAlumni,
   sampleMockInterviewSessions,
-  sampleAppointments,
   sampleSystemAlerts,
   samplePromotionalContent,
   sampleActivities,
@@ -32,6 +31,7 @@ import type {
   Badge,
   DailyChallenge,
 } from '@/types';
+import { sampleAppointments } from '../data/appointments';
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
 
