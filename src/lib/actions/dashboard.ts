@@ -59,7 +59,9 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
   // Real database fetching logic using Prisma
   try {
     const users = (await db.user.findMany()) as unknown as UserProfile[];
-    const tenants = (await db.tenant.findMany()) as unknown as Tenant[];
+    // Tenants are currently only handled by mock data, so we don't query the DB for them.
+    const tenants = sampleTenants as Tenant[];
+
     // Add other Prisma fetches as your schema grows
     // For now, we return mock data for complex types not in the DB schema yet.
     return {
