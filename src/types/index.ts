@@ -1,3 +1,4 @@
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -142,7 +143,7 @@ export interface JobApplication {
   jobTitle: string;
   status: JobApplicationStatus;
   dateApplied: string;
-  notes?: string;
+  notes?: string[];
   jobDescription?: string;
   location?: string;
   salary?: string;

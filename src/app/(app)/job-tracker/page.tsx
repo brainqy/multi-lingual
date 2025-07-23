@@ -219,14 +219,14 @@ export default function JobTrackerPage() {
       jobTitle: job.title,
       status: 'Saved',
       dateApplied: new Date().toISOString().split('T')[0],
-      notes: 'Added from job board search.',
+      notes: ['Added from job board search.'],
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
       applicationUrl: job.applicationLink,
     };
     setApplications(prevApps => [newApplication, ...prevApps]);
-    toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: job.company }) });
+    toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: job.companyName }) });
   };
 
   const onSubmit = (data: JobApplicationFormData) => {
@@ -244,7 +244,7 @@ export default function JobTrackerPage() {
               ...applicationData, 
               status: data.status as JobApplicationStatus, 
               salary: data.salary,
-              notes: Array.isArray(applicationData.notes) ? applicationData.notes.join('\n') : applicationData.notes
+              notes: applicationData.notes
             } 
           : app
       ));
@@ -252,7 +252,7 @@ export default function JobTrackerPage() {
     } else {
       const newApp: JobApplication = { 
         ...applicationData, 
-        notes: Array.isArray(applicationData.notes) ? applicationData.notes.join('\n') : applicationData.notes, 
+        notes: applicationData.notes, 
         id: String(Date.now()), 
         status: data.status as JobApplicationStatus, 
         tenantId: sampleUserProfile.tenantId, 
@@ -280,7 +280,7 @@ export default function JobTrackerPage() {
         coverLetterText: app.coverLetterText || '',
     });
     setCurrentInterviews(app.interviews || []);
-    const initialNotes = (Array.isArray(app.notes) ? app.notes : app.notes ? app.notes.split('\n') : [])
+    const initialNotes = (app.notes || [])
       .map((noteContent, index) => ({
         id: `note-${index}-${Date.now()}`,
         date: format(new Date(), 'yyyy-MM-dd'), 
@@ -600,7 +600,7 @@ export default function JobTrackerPage() {
               {interview.interviewerEmail && (
                 <p className="text-xs text-muted-foreground">✉️ {interview.interviewerEmail}</p>
               )}
-              {interview.notes && <p className="text-xs italic mt-1">{interview.notes}</p>}
+              {interview.notes && <p className="text-xs italic mt-1">{interview.notes.join(', ')}</p>}
             </Card>
           ))}
         </div>

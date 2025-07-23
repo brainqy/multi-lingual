@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { UserProfile, UserStatus } from '@/types';
+import type { UserProfile, UserStatus, Gender, DegreeProgram, Industry, TimeCommitment, EngagementMode, SupportTypeSought } from '@/types';
 import { db } from '@/lib/db';
 import { samplePlatformUsers } from '@/lib/data/users';
 
@@ -70,24 +70,22 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         offersHelpWith: [],
         pastInterviewSessions: [],
         challengeTopics: [],
-        // Ensure all required fields from UserProfile are present
-        // Add default values for any missing fields to ensure type compatibility
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-        gender: data.gender,
+        gender: data.gender as Gender | undefined,
         mobileNumber: data.mobileNumber,
         currentAddress: data.currentAddress,
         graduationYear: data.graduationYear,
-        degreeProgram: data.degreeProgram,
+        degreeProgram: data.degreeProgram as DegreeProgram | undefined,
         department: data.department,
         currentOrganization: data.currentOrganization,
-        industry: data.industry,
+        industry: data.industry as Industry | undefined,
         workLocation: data.workLocation,
         linkedInProfile: data.linkedInProfile,
         yearsOfExperience: data.yearsOfExperience,
-        timeCommitment: data.timeCommitment,
-        preferredEngagementMode: data.preferredEngagementMode,
+        timeCommitment: data.timeCommitment as TimeCommitment | undefined,
+        preferredEngagementMode: data.preferredEngagementMode as EngagementMode | undefined,
         otherComments: data.otherComments,
-        lookingForSupportType: data.lookingForSupportType,
+        lookingForSupportType: data.lookingForSupportType as SupportTypeSought | undefined,
         helpNeededDescription: data.helpNeededDescription,
         shareProfileConsent: data.shareProfileConsent,
         featureInSpotlightConsent: data.featureInSpotlightConsent,
