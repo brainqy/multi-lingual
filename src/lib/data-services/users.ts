@@ -113,7 +113,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
       data: newUserPayload as any, // Cast to any to handle potential mismatches with Prisma's generated types
     });
 
-    return newUser as UserProfile;
+    return newUser as unknown as UserProfile;
 }
 
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
@@ -131,5 +131,5 @@ export async function updateUser(userId: string, data: Partial<UserProfile>): Pr
     where: { id: userId },
     data: data as any, // Cast to any to avoid type conflicts with Prisma's generated types
   });
-  return user as UserProfile | null;
+  return user as unknown as UserProfile | null;
 }
