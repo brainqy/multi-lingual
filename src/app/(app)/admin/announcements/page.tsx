@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -181,6 +181,9 @@ export default function AnnouncementManagementPage() {
             <DialogTitle className="text-2xl">
               {editingAnnouncement ? t("announcementsAdmin.dialog.editTitle", { default: "Edit Announcement" }) : t("announcementsAdmin.dialog.createTitle", { default: "Create New Announcement" })}
             </DialogTitle>
+            <DialogUIDescription>
+                {editingAnnouncement ? 'Update the details for your announcement.' : 'Fill out the form to create a new announcement for the platform or a specific tenant.'}
+            </DialogUIDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 py-4">
             <div>
@@ -333,8 +336,3 @@ export default function AnnouncementManagementPage() {
     </div>
   );
 }
-
-    
-
-    
-    

@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // This is to fix the HMR websocket connection issue with local subdomains
+    if (!isServer) {
+      config.watchOptions.poll = 300;
+      if (config.devServer) {
+        config.devServer.hot = true;
+        config.devServer.webSocketURL = 'ws://localhost:9002/ws';
+      }
+    }
+    return config;
+  },
   devIndicators: {
     allowedDevOrigins: [
       'http://brainqy.localhost:9002',
