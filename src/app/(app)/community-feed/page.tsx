@@ -1,6 +1,5 @@
-
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon } from "lucide-react";
-import { sampleCommunityPosts, sampleUserProfile, samplePlatformUsers } from "@/lib/sample-data";
+
+import { createCommunityPost, getCommunityPosts } from '@/lib/actions/community';
+import { sampleUserProfile, samplePlatformUsers, sampleCommunityPosts } from "@/lib/sample-data";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { sampleAppointments } from "@/lib/data/appointments";
+import { USE_MOCK_DATA } from "../../../../usr/src/app/src/lib/data/users";
 
 
 const postSchema = z.object({
@@ -133,7 +135,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
 
 
 export default function CommunityFeedPage() {
-  const [posts, setPosts] = useState<CommunityPost[]>(sampleCommunityPosts);
+  const [posts, setPosts] = useState<CommunityPost[]>(USE_MOCK_DATA ? sampleCommunityPosts : []);
   const [filter, setFilter] = useState<'all' | 'text' | 'poll' | 'event' | 'request' | 'my_posts' | 'flagged'>('all');
   const { toast } = useToast();
 
@@ -143,6 +145,7 @@ export default function CommunityFeedPage() {
   const [topLevelCommentTexts, setTopLevelCommentTexts] = useState<Record<string, string>>({});
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
 
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PostFormData>({
@@ -163,15 +166,14 @@ export default function CommunityFeedPage() {
   const currentUser = sampleUserProfile;
 
   useEffect(() => {
-    let viewablePosts = sampleCommunityPosts;
-    if (currentUser.role === 'manager') {
-      viewablePosts = sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId || p.tenantId === 'platform');
-    } else if (currentUser.role === 'user') {
-      viewablePosts = sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId || p.tenantId === 'platform');
+    if (!USE_MOCK_DATA) {
+      async function fetchPosts() {
+        const dbPosts = await getCommunityPosts(currentUser.tenantId, currentUser.id);
+        setPosts(dbPosts);
+      }
+      fetchPosts();
     }
-    setPosts(viewablePosts);
-  }, [currentUser.role, currentUser.tenantId]);
-
+  }, [isPostDialogOpen, currentUser.tenantId, currentUser.id]);
 
   const mostActiveUsers = useMemo(() => {
     return [...samplePlatformUsers]
@@ -180,65 +182,77 @@ export default function CommunityFeedPage() {
       .slice(0, 5);
   }, [currentUser.role, currentUser.tenantId]);
 
-  const handleFormSubmit = (data: PostFormData) => {
+  const handleFormSubmit = async (data: PostFormData) => {
+    console.log('Post button clicked. Content:', data.content);
     let pollOptionsFinal = undefined;
     if (data.type === 'poll' && data.pollOptions) {
-        pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
-        if (pollOptionsFinal.length < 2) {
-            toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
-            return;
-        }
+      pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
+      if (pollOptionsFinal.length < 2) {
+        toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
+        return;
+      }
     }
 
+    // Prepare post payload
+    const newPostData = {
+      tenantId: sampleUserProfile.tenantId || 'platform',
+      userId: sampleUserProfile.id,
+      userName: sampleUserProfile.name,
+      userAvatar: sampleUserProfile.profilePictureUrl,
+      content: data.content,
+      type: data.type,
+      imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
+      pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
+      eventDate: data.type === 'event' ? data.eventDate : undefined,
+      eventLocation: data.type === 'event' ? data.eventLocation : undefined,
+      eventTitle: data.type === 'event' ? data.eventTitle : undefined,
+      attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
+      capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+      moderationStatus: 'visible' as CommunityPost['moderationStatus'],
+      flagCount: 0,
+      status: data.type === 'request' ? 'open' as CommunityPost['status'] : undefined,
+    };
 
-    if (editingPost) {
-      setPosts(prevPosts => prevPosts.map(p => p.id === editingPost.id
-        ? {
-          ...p,
-          content: data.content,
-          tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-          type: data.type as any,
-          imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-          pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-          eventDate: data.type === 'event' ? data.eventDate : undefined,
-          eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-          eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-          attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-          capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
-        }
-        : p
-      ));
-      toast({ title: "Post Updated", description: "Your post has been updated." });
-    } else {
-      const newPost: CommunityPost = {
-        id: String(Date.now()),
-        tenantId: sampleUserProfile.tenantId || 'platform',
-        userId: sampleUserProfile.id,
-        userName: sampleUserProfile.name,
-        userAvatar: sampleUserProfile.profilePictureUrl,
-        timestamp: new Date().toISOString(),
-        content: data.content,
-        type: data.type as any,
-        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-        eventDate: data.type === 'event' ? data.eventDate : undefined,
-        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
-        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        moderationStatus: 'visible',
-        flagCount: 0,
-        comments: [],
-        status: data.type === 'request' ? 'open' : undefined,
-      };
-      setPosts(prevPosts => [newPost, ...prevPosts]);
-      sampleCommunityPosts.unshift(newPost);
-      toast({ title: "Post Created", description: "Your post has been added to the feed." });
+    console.log('Post button clicked', { data, USE_MOCK_DATA });
+    if (!USE_MOCK_DATA) {
+      console.log('Creating post in DB with:', newPostData);
     }
-    setIsPostDialogOpen(false);
-    reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
-    setEditingPost(null);
+
+    try {
+      if (USE_MOCK_DATA) {
+        // Mock logic
+        const newPost: CommunityPost = {
+          id: `post-${Date.now()}`,
+          ...newPostData,
+          timestamp: new Date().toISOString(),
+          comments: [],
+        };
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+        sampleCommunityPosts.unshift(newPost);
+        toast({ title: "Post Created", description: "Your post has been added to the feed." });
+        console.log('Post button clicked');
+        setIsPostDialogOpen(false);
+        reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
+        setEditingPost(null);
+      } else {
+        console.log('Calling createCommunityPost...');
+        const createdPost = await createCommunityPost(newPostData);
+        console.log('createCommunityPost result:', createdPost);
+        if (!createdPost) throw new Error('Failed to create post');
+        console.log('Fetching posts from DB...');
+        const dbPosts = await getCommunityPosts(currentUser.tenantId, currentUser.id);
+        console.log('Fetched posts:', dbPosts);
+        setPosts(dbPosts);
+        toast({ title: "Post Created", description: "Your post has been added to the feed." });
+        console.log('Post button clicked');
+        setIsPostDialogOpen(false);
+        reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
+        setEditingPost(null);
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
+      console.error(err);
+    }
   };
 
   const handleCommentSubmit = (postId: string, text: string, parentId?: string) => {
@@ -476,11 +490,16 @@ export default function CommunityFeedPage() {
     });
   }, [posts, filter, currentUser.id, currentUser.role, currentUser.tenantId]);
 
+  const formRef = React.useRef<HTMLFormElement>(null);
+
   return (
     <>
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Community Feed</h1>
-         <Button onClick={openNewPostDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
+         <Button onClick={() => { 
+  console.log('Create New Post button clicked');
+  openNewPostDialog();
+}} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto">
           <PlusCircle className="mr-2 h-5 w-5" /> Create New Post
         </Button>
       </div>
@@ -498,7 +517,7 @@ export default function CommunityFeedPage() {
               <PlusCircle className="h-6 w-6 text-primary"/>{editingPost ? "Edit Post" : "Create New Post"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-4">
+          <form ref={formRef} onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-4">
             <div>
               <Label htmlFor="post-content">What's on your mind?</Label>
               <Controller
@@ -562,7 +581,7 @@ export default function CommunityFeedPage() {
                 <div className="space-y-2">
                   <Label>Poll Options (at least 2 required)</Label>
                   {(watch("pollOptions") || []).map((_, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <div key={index} className="flex items-center gap-2 mb-1 group">
                        <Controller
                          name={`pollOptions.${index}.option` as any}
                          control={control}
@@ -620,7 +639,16 @@ export default function CommunityFeedPage() {
               )}
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button
+                type="submit"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={e => {
+                  console.log('Post button explicit click, triggering form submit');
+                  if (formRef.current) {
+                    formRef.current.requestSubmit();
+                  }
+                }}
+              >
                 <Send className="mr-2 h-4 w-4" /> {editingPost ? "Save Changes" : "Post"}
               </Button>
             </DialogFooter>

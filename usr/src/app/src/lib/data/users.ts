@@ -1,4 +1,4 @@
-import type { UserProfile, AlumniProfile } from '@/types';
+import type { UserProfile, AlumniProfile, CommunityPost } from '@/types';
 import { AreasOfSupport } from '@/types';
 
 // This file now primarily provides a single sample user for client-side fallbacks
@@ -172,3 +172,6 @@ export let samplePlatformUsers: UserProfile[] = [
   ensureFullUserProfile({ id: 'alumni4', tenantId: 'Brainqy', role: 'user', name: 'Diana Prince', email: 'diana.prince@example.com', currentJobTitle: 'UX Designer', company: 'Web Wizards', skills: ['Figma', 'User Research'], shortBio: 'Creating user-centric designs.', university: 'State University', xpPoints: 2100, dailyStreak: 12, profilePictureUrl: 'https://picsum.photos/seed/diana/200/200' }),
   ensureFullUserProfile({ id: 'managerUser1', tenantId: 'tenant-2', role: 'manager', name: 'Manager Mike', email: 'manager.mike@tenant2.com', currentJobTitle: 'Engagement Lead', company: 'Corporate Partner Inc.', shortBio: 'Managing the corporate partnership program.', university: 'Business College', xpPoints: 1500, dailyStreak: 10, profilePictureUrl: 'https://avatar.vercel.sh/managermike.png' }),
 ];
+
+export const USE_MOCK_DATA = false;
+export let sampleCommunityPosts: CommunityPost[] = [];

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -20,16 +19,19 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
         ],
       },
       include: {
-        comments: {
-          orderBy: {
-            timestamp: 'asc',
-          },
-        },
+        comments: true // Only use 'true' if 'comments' is a relation field in your Prisma schema
       },
       orderBy: {
         timestamp: 'desc',
       },
       take: 50, // Limit to the latest 50 posts for performance
+    });
+    // If you want to order comments by timestamp, sort them in JS after fetching
+    posts.forEach((post: any) => {
+      if (post.comments) {
+        (post.comments as Array<{ timestamp: string }>).
+          sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      }
     });
     return posts as unknown as CommunityPost[];
   } catch (error) {

@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -174,7 +173,7 @@ model CommunityPost {
   bookmarkedBy       String[]
 
   user     User               @relation(fields: [userId], references: [id])
-  comments CommunityComment[]
+  comments  CommunityComment[]
 }
 
 model CommunityComment {
