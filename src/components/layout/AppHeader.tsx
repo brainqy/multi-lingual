@@ -23,9 +23,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
+import { sampleWalletBalance } from "@/lib/sample-data";
 import { useState, useEffect } from 'react'; 
 import { getRecentPages } from '@/lib/recent-pages'; 
+import { useAuth } from '@/hooks/use-auth';
 
 import { usePathname, useRouter } from "next/navigation"; 
 import { RecentPageItem } from "@/types";
@@ -33,18 +34,15 @@ import { RecentPageItem } from "@/types";
 export function AppHeader() {
   const { toast } = useToast();
   const { t } = useI18n();
-  const user = sampleUserProfile;
+  const { user, logout } = useAuth();
   const wallet = sampleWalletBalance;
   const [recentPages, setRecentPages] = useState<RecentPageItem[]>([]);
   const pathname = usePathname(); 
   const router = useRouter();
 
   const handleLogout = () => {
+    logout();
     toast({ title: "Logged Out", description: "You have been logged out." });
-    // In a real app, clear session/token and redirect:
-    localStorage.removeItem('currentUserInfo');
-    localStorage.removeItem('authToken'); // Or clear cookie
-    router.push('/auth/login');
   };
 
   useEffect(() => {
@@ -55,6 +53,10 @@ export function AppHeader() {
     toast({ title: "Language Switch (Mock)", description: `Language would switch to ${lang}. This app is currently single-language.` });
     // To re-enable next-intl, you'd use: router.push(`/${lang}${pathnameWithoutLocale}`);
   };
+  
+  if (!user) {
+    return null; // or a loading skeleton
+  }
 
   return (
     <TooltipProvider>

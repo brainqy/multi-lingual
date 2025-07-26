@@ -5,8 +5,9 @@ import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem,
 import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { sampleUserProfile, samplePlatformSettings } from "@/lib/sample-data";
+import { samplePlatformSettings } from "@/lib/sample-data";
 import { useI18n } from "@/hooks/use-i18n"; // <-- Add this import
+import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
   { href: "/community-feed", labelKey: "sideMenu.communityFeed", icon: MessageSquare },
@@ -82,11 +83,12 @@ const adminItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const platformName = samplePlatformSettings.platformName;
   const { t } = useI18n(); // <-- Use the translation hook
 
   const renderMenuItem = (item: any, isSubItem = false) => {
+    if (!currentUser) return null;
     let isActive;
     if (item.href === "/dashboard" && currentUser.role !== 'admin' && currentUser.role !== 'manager') {
         isActive = pathname === item.href;
@@ -119,6 +121,10 @@ export function AppSidebar() {
       </SidebarMenuItem>
     );
   };
+  
+  if (!currentUser) {
+    return null; // Or a loading skeleton for the sidebar
+  }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
