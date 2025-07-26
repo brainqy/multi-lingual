@@ -1,15 +1,14 @@
 
-      
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy } from "lucide-react";
+import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PromoCode } from "@/types";
-import { samplePromoCodes, sampleUserProfile } from "@/lib/sample-data";
+import { useAuth } from "@/hooks/use-auth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +21,7 @@ import { format, parseISO } from "date-fns";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getPromoCodes, createPromoCode, updatePromoCode, deletePromoCode } from "@/lib/actions/promo-codes";
 
 const promoCodeSchema = z.object({
   id: z.string().optional(),
@@ -46,19 +46,29 @@ const generatorSchema = z.object({
 
 type GeneratorFormData = z.infer<typeof generatorSchema>;
 
-
 export default function PromoCodeManagementPage() {
-  const [promoCodes, setPromoCodes] = useState<PromoCode[]>(samplePromoCodes);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCode, setEditingCode] = useState<PromoCode | null>(null);
   const { toast } = useToast();
   const { t } = useI18n();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
 
   const [isGeneratorDialogOpen, setIsGeneratorDialogOpen] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const codes = await getPromoCodes();
+    setPromoCodes(codes);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<PromoCodeFormData>({
     resolver: zodResolver(promoCodeSchema),
@@ -70,7 +80,7 @@ export default function PromoCodeManagementPage() {
     defaultValues: { prefix: 'ONETIME', count: 10, rewardType: 'coins', rewardValue: 10 },
   });
 
-  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
 
@@ -97,64 +107,65 @@ export default function PromoCodeManagementPage() {
     setIsDialogOpen(true);
   };
 
-  const onSubmit = (data: PromoCodeFormData) => {
+  const onSubmit = async (data: PromoCodeFormData) => {
     if (editingCode) {
-      const updatedCode = { ...editingCode, ...data, expiresAt: data.expiresAt?.toISOString() };
-      setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
-      const globalIndex = samplePromoCodes.findIndex(c => c.id === editingCode.id);
-      if (globalIndex !== -1) samplePromoCodes[globalIndex] = updatedCode;
-      toast({ title: t("promoCodes.toast.updated.title"), description: t("promoCodes.toast.updated.description", { code: data.code }) });
+      const updatedCode = await updatePromoCode(editingCode.id, data);
+      if (updatedCode) {
+        setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
+        toast({ title: t("promoCodes.toast.updated.title"), description: t("promoCodes.toast.updated.description", { code: data.code }) });
+      }
     } else {
        if (promoCodes.some(c => c.code === data.code)) {
         toast({ title: t("promoCodes.toast.exists.title"), description: t("promoCodes.toast.exists.description", { code: data.code }), variant: "destructive" });
         return;
       }
-      const newCode: PromoCode = {
+      const newCodeData: Omit<PromoCode, 'id' | 'timesUsed'> = {
         ...data,
-        id: `promo-${Date.now()}`,
-        timesUsed: 0,
-        expiresAt: data.expiresAt?.toISOString(),
+        expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
       };
-      setPromoCodes(prev => [newCode, ...prev]);
-      samplePromoCodes.unshift(newCode);
-      toast({ title: t("promoCodes.toast.created.title"), description: t("promoCodes.toast.created.description", { code: data.code }) });
+      const newCode = await createPromoCode(newCodeData as any);
+      if (newCode) {
+        setPromoCodes(prev => [newCode, ...prev]);
+        toast({ title: t("promoCodes.toast.created.title"), description: t("promoCodes.toast.created.description", { code: data.code }) });
+      }
     }
     setIsDialogOpen(false);
   };
   
-  const handleDelete = (id: string) => {
-    setPromoCodes(prev => prev.filter(c => c.id !== id));
-    const index = samplePromoCodes.findIndex(c => c.id === id);
-    if (index > -1) samplePromoCodes.splice(index, 1);
-    toast({ title: t("promoCodes.toast.deleted.title"), variant: "destructive" });
+  const handleDelete = async (id: string) => {
+    const success = await deletePromoCode(id);
+    if (success) {
+      setPromoCodes(prev => prev.filter(c => c.id !== id));
+      toast({ title: t("promoCodes.toast.deleted.title"), variant: "destructive" });
+    }
   };
 
-  const onGeneratorSubmit = (data: GeneratorFormData) => {
-    const newCodes: PromoCode[] = [];
+  const onGeneratorSubmit = async (data: GeneratorFormData) => {
     const newCodeStrings: string[] = [];
+    let createdCount = 0;
     for (let i = 0; i < data.count; i++) {
       const uniquePart = Math.random().toString(36).substring(2, 10).toUpperCase();
       const code = `${data.prefix}-${uniquePart}`;
-      const newPromoCode: PromoCode = {
-        id: `promo-${Date.now()}-${i}`,
+      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed'> = {
         code,
-        description: `One-time use code (${data.rewardValue} ${data.rewardType}) generated with prefix ${data.prefix}`,
+        description: `One-time use code (${data.rewardValue} ${data.rewardType})`,
         rewardType: data.rewardType,
         rewardValue: data.rewardValue,
         expiresAt: data.expiresAt?.toISOString(),
-        usageLimit: 1, // Key for one-time use
-        timesUsed: 0,
+        usageLimit: 1,
         isActive: true,
       };
-      newCodes.push(newPromoCode);
-      newCodeStrings.push(code);
+      const created = await createPromoCode(newPromoCodeData as any);
+      if (created) {
+        newCodeStrings.push(code);
+        createdCount++;
+      }
     }
-    setPromoCodes(prev => [...newCodes, ...prev]);
-    samplePromoCodes.unshift(...newCodes); // Add to global sample data
     setGeneratedCodes(newCodeStrings);
     setIsGeneratorDialogOpen(false);
     setIsResultsDialogOpen(true);
-    toast({ title: t("promoCodes.toast.generated.title", { count: data.count }), description: t("promoCodes.toast.generated.description") });
+    toast({ title: t("promoCodes.toast.generated.title", { count: createdCount }), description: t("promoCodes.toast.generated.description") });
+    fetchData(); // Refresh the list
   };
   
   const handleCopyGeneratedCodes = () => {
@@ -211,46 +222,54 @@ export default function PromoCodeManagementPage() {
           <CardTitle>{t("promoCodes.currentCodesTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Mobile View */}
-          <div className="md:hidden space-y-4">
-            {promoCodes.map(code => <PromoCodeCard key={code.id} code={code} />)}
-          </div>
-          {/* Desktop View */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("promoCodes.table.code")}</TableHead>
-                  <TableHead>{t("promoCodes.table.description")}</TableHead>
-                  <TableHead>{t("promoCodes.table.reward")}</TableHead>
-                  <TableHead>{t("promoCodes.table.status")}</TableHead>
-                  <TableHead>{t("promoCodes.table.usage")}</TableHead>
-                  <TableHead>{t("promoCodes.table.expires")}</TableHead>
-                  <TableHead className="text-right">{t("promoCodes.table.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {promoCodes.map(code => (
-                  <TableRow key={code.id}>
-                    <TableCell className="font-mono">{code.code}</TableCell>
-                    <TableCell>{code.description}</TableCell>
-                    <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
-                      </span>
-                    </TableCell>
-                    <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
-                    <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>
-                    </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : promoCodes.length === 0 ? (
+             <p className="text-center text-muted-foreground py-8">No promo codes found.</p>
+          ) : (
+          <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {promoCodes.map(code => <PromoCodeCard key={code.id} code={code} />)}
+            </div>
+            {/* Desktop View */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("promoCodes.table.code")}</TableHead>
+                    <TableHead>{t("promoCodes.table.description")}</TableHead>
+                    <TableHead>{t("promoCodes.table.reward")}</TableHead>
+                    <TableHead>{t("promoCodes.table.status")}</TableHead>
+                    <TableHead>{t("promoCodes.table.usage")}</TableHead>
+                    <TableHead>{t("promoCodes.table.expires")}</TableHead>
+                    <TableHead className="text-right">{t("promoCodes.table.actions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {promoCodes.map(code => (
+                    <TableRow key={code.id}>
+                      <TableCell className="font-mono">{code.code}</TableCell>
+                      <TableCell>{code.description}</TableCell>
+                      <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
+                        </span>
+                      </TableCell>
+                      <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
+                      <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+          )}
         </CardContent>
       </Card>
 

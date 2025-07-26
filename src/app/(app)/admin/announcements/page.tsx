@@ -13,8 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit3, Trash2, Megaphone, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Announcement, AnnouncementStatus, AnnouncementAudience } from "@/types";
-import { sampleTenants } from "@/lib/sample-data";
+import type { Announcement, AnnouncementStatus, AnnouncementAudience, Tenant } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,6 +21,7 @@ import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getAllAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/lib/actions/announcements";
+import { getTenants } from "@/lib/actions/tenants";
 import { useAuth } from "@/hooks/use-auth";
 
 const announcementSchemaBase = z.object({
@@ -49,22 +49,27 @@ export default function AnnouncementManagementPage() {
   });
   
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
-  const fetchAnnouncements = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
     const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
-    const fetchedAnnouncements = await getAllAnnouncements(tenantIdToFetch);
+    const [fetchedAnnouncements, fetchedTenants] = await Promise.all([
+        getAllAnnouncements(tenantIdToFetch),
+        currentUser.role === 'admin' ? getTenants() : Promise.resolve([])
+    ]);
     setAnnouncements(fetchedAnnouncements);
+    setTenants(fetchedTenants);
     setIsLoading(false);
   }, [currentUser]);
 
   useEffect(() => {
-    fetchAnnouncements();
-  }, [fetchAnnouncements]);
+    fetchData();
+  }, [fetchData]);
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementFormData>({
     resolver: zodResolver(translatedAnnouncementSchema),
@@ -94,8 +99,8 @@ export default function AnnouncementManagementPage() {
     const announcementData = {
       title: data.title,
       content: data.content,
-      startDate: data.startDate.toISOString(),
-      endDate: data.endDate?.toISOString(),
+      startDate: data.startDate,
+      endDate: data.endDate,
       audience: data.audience as AnnouncementAudience,
       audienceTarget: data.audience === 'Specific Tenant' ? audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
       status: data.status as AnnouncementStatus,
@@ -234,9 +239,9 @@ export default function AnnouncementManagementPage() {
                       <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder={t("announcementsAdmin.dialog.selectTenantPlaceholder", { default: "Select a tenant" })} /></SelectTrigger>
                       <SelectContent>
                         {currentUser.role === 'manager' ? (
-                           <SelectItem value={currentUser.tenantId!}>{sampleTenants.find(t=>t.id === currentUser.tenantId)?.name || currentUser.tenantId}</SelectItem>
+                           <SelectItem value={currentUser.tenantId!}>{tenants.find(t=>t.id === currentUser.tenantId)?.name || currentUser.tenantId}</SelectItem>
                         ) : (
-                            sampleTenants.map(tenant => (
+                            tenants.map(tenant => (
                                 <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                             ))
                         )}
@@ -322,7 +327,7 @@ export default function AnnouncementManagementPage() {
                     </TableCell>
                     <TableCell>
                       {t(`announcementsAdmin.dialog.audience${announcement.audience.replace(/\s/g, '')}` as any, { default: announcement.audience })}
-                      {announcement.audienceTarget && ` ${t("announcementsAdmin.audienceTargetDisplay", { default: "(Target: {target})", target: (announcement.audience === 'Specific Tenant' ? sampleTenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget) })}`}
+                      {announcement.audienceTarget && ` ${t("announcementsAdmin.audienceTargetDisplay", { default: "(Target: {target})", target: (announcement.audience === 'Specific Tenant' ? tenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget) })}`}
                       {announcement.audience === 'All Users' && ` ${t("announcementsAdmin.audiencePlatformWide", { default: "(Platform-wide)" })}`}
                     </TableCell>
                     <TableCell>{format(parseISO(announcement.startDate), "MMM dd, yyyy")}</TableCell>

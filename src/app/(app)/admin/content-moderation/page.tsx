@@ -2,19 +2,19 @@
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShieldAlert, CheckCircle, Trash2, Eye } from "lucide-react";
-import { sampleCommunityPosts } from "@/lib/sample-data";
+import { ShieldAlert, CheckCircle, Trash2, Eye, Loader2 } from "lucide-react";
 import type { CommunityPost } from "@/types";
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
+import { getCommunityPosts, updateCommunityPost } from "@/lib/actions/community";
 
 export default function ContentModerationPage() {
   const { user: currentUser } = useAuth();
@@ -22,38 +22,42 @@ export default function ContentModerationPage() {
   const { t } = useI18n();
   
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchPosts = useCallback(async () => {
     if (!currentUser) return;
-    setPosts(
-      currentUser.role === 'admin' 
-        ? sampleCommunityPosts 
-        : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
-    );
+    setIsLoading(true);
+    const allPosts = await getCommunityPosts(currentUser.role === 'admin' ? null : currentUser.tenantId, currentUser.id);
+    setPosts(allPosts);
+    setIsLoading(false);
   }, [currentUser]);
 
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const flaggedPosts = useMemo(() => {
     return posts.filter(post => post.moderationStatus === 'flagged');
   }, [posts]);
 
-  const handleApprove = (postId: string) => {
-    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'visible', flagCount: 0} : p));
-    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-    if (globalIndex !== -1) {
-        sampleCommunityPosts[globalIndex].moderationStatus = 'visible';
-        sampleCommunityPosts[globalIndex].flagCount = 0;
+  const handleApprove = async (postId: string) => {
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0 });
+    if (updatedPost) {
+        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        toast({ title: t("contentModeration.toast.postApproved.title", { default: "Post Approved" }), description: t("contentModeration.toast.postApproved.description", { default: "The post is now visible on the community feed." }) });
+    } else {
+        toast({ title: "Error", description: "Failed to approve post.", variant: "destructive" });
     }
-    toast({ title: t("contentModeration.toast.postApproved.title", { default: "Post Approved" }), description: t("contentModeration.toast.postApproved.description", { default: "The post is now visible on the community feed." }) });
   };
 
-  const handleRemove = (postId: string) => {
-    setPosts(prev => prev.map(p => p.id === postId ? {...p, moderationStatus: 'removed'} : p));
-    const globalIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-    if (globalIndex !== -1) {
-        sampleCommunityPosts[globalIndex].moderationStatus = 'removed';
+  const handleRemove = async (postId: string) => {
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'removed' });
+     if (updatedPost) {
+        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        toast({ title: t("contentModeration.toast.postRemoved.title", { default: "Post Removed" }), description: t("contentModeration.toast.postRemoved.description", { default: "The flagged post has been removed from the feed." }), variant: "destructive" });
+    } else {
+        toast({ title: "Error", description: "Failed to remove post.", variant: "destructive" });
     }
-    toast({ title: t("contentModeration.toast.postRemoved.title", { default: "Post Removed" }), description: t("contentModeration.toast.postRemoved.description", { default: "The flagged post has been removed from the feed." }), variant: "destructive" });
   };
 
 
@@ -77,7 +81,11 @@ export default function ContentModerationPage() {
           <CardTitle>{t("contentModeration.flaggedPostsTitle", { default: "Flagged Posts for Review" })}</CardTitle>
         </CardHeader>
         <CardContent>
-          {flaggedPosts.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : flaggedPosts.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               {currentUser.role === 'manager' ? t("contentModeration.noFlaggedPostsTenant", { default: "No posts have been flagged for review in your tenant." }) : t("contentModeration.noFlaggedPostsPlatform", { default: "No posts have been flagged for review on the platform." })}
             </p>
