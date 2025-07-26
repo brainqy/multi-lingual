@@ -11,12 +11,11 @@ import type { CommunityPost, CommunityComment } from '@/types';
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
 export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
-  console.log('[CommunityAction] getCommunityPosts called', { tenantId, currentUserId });
   try {
     const posts = await db.communityPost.findMany({
       where: {
         OR: [
-          { tenantId: tenantId },
+          { tenantId: tenantId ?? undefined },
           { tenantId: 'platform' }
         ],
       },
@@ -32,7 +31,6 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
       },
       take: 50, // Limit to the latest 50 posts for performance
     });
-    console.log('[CommunityAction] getCommunityPosts result', posts);
     return posts as unknown as CommunityPost[];
   } catch (error) {
     console.error('[CommunityAction] Error fetching posts:', error);
@@ -46,17 +44,15 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments'>): Promise<CommunityPost | null> {
-  console.log('[CommunityAction] createCommunityPost called', postData);
   try {
     const newPost = await db.communityPost.create({
       data: {
         ...postData,
         timestamp: new Date(),
-        pollOptions: postData.pollOptions || null,
+        pollOptions: postData.pollOptions || Prisma.JsonNull,
         tags: postData.tags || [],
       },
     });
-    console.log('[CommunityAction] createCommunityPost result', newPost);
     return newPost as unknown as CommunityPost;
   } catch (error) {
     console.error('[CommunityAction] Error creating post:', error);
@@ -71,7 +67,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
  * @returns The newly created CommunityComment object or null if failed.
  */
 export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' | 'timestamp' | 'replies'>): Promise<CommunityComment | null> {
-  console.log('[CommunityAction] addCommentToPost called', commentData);
   try {
     const newComment = await db.communityComment.create({
       data: {
@@ -79,7 +74,6 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         timestamp: new Date(),
       },
     });
-    console.log('[CommunityAction] addCommentToPost result', newComment);
     return newComment as unknown as CommunityComment;
   } catch (error) {
     console.error('[CommunityAction] Error adding comment:', error);
@@ -94,7 +88,6 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
  * @returns The updated CommunityPost object or null if failed.
  */
 export async function updateCommunityPost(postId: string, updateData: Partial<CommunityPost>): Promise<CommunityPost | null> {
-    console.log('[CommunityAction] updateCommunityPost called', { postId, updateData });
     try {
         const cleanUpdateData = Object.fromEntries(
             Object.entries(updateData).filter(([_, v]) => v !== undefined)
@@ -104,14 +97,13 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Co
             where: { id: postId },
             data: {
                 ...cleanUpdateData,
-                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? null : undefined),
+                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? Prisma.JsonNull : undefined),
                 tags: updateData.tags ? updateData.tags : undefined,
             },
             include: {
                 comments: true,
             }
         });
-        console.log('[CommunityAction] updateCommunityPost result', updatedPost);
         return updatedPost as unknown as CommunityPost;
     } catch (error) {
         console.error(`[CommunityAction] Error updating post ${postId}:`, error);
