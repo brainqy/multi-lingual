@@ -24,6 +24,10 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { useI18n } from "@/hooks/use-i18n";
 import { Skeleton } from "../ui/skeleton";
 
+interface AdminDashboardProps {
+  user: UserProfile;
+}
+
 interface TenantActivityStats extends Tenant {
   userCount: number;
   newUsersThisPeriod: number;
@@ -112,7 +116,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { t } = useI18n();
   const [showAdminTour, setShowAdminTour] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<'weekly' | 'monthly'>('weekly');

@@ -2,8 +2,7 @@
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useEffect, useState } from "react";
-import { sampleUserProfile } from "@/lib/sample-data";
-import type { UserRole } from "@/types";
+import type { UserProfile, UserRole } from "@/types";
 import AdminDashboard from "@/components/dashboards/AdminDashboard";
 import ManagerDashboard from "@/components/dashboards/ManagerDashboard";
 import UserDashboard from "@/components/dashboards/UserDashboard";
@@ -11,11 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DailyStreakPopup from "@/components/features/DailyStreakPopup";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import { userDashboardTourSteps, adminDashboardTourSteps, managerDashboardTourSteps } from "@/lib/sample-data";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
   const { t } = useI18n();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading } = useAuth();
   const [showStreakPopup, setShowStreakPopup] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [tourSteps, setTourSteps] = useState<any[]>([]);
@@ -23,27 +22,21 @@ export default function DashboardPage() {
   const [tourTitle, setTourTitle] = useState('');
 
   useEffect(() => {
-    if (!sampleUserProfile) {
-      console.error("[DashboardPage] sampleUserProfile is not available.");
-      setIsLoading(false);
-      return;
-    }
+    if (isLoading || !user) return;
 
-    const role = sampleUserProfile.role;
-    setUserRole(role);
-    setIsLoading(false);
-
+    const role = user.role;
+    
     const today = new Date().toISOString().split('T')[0];
     if (typeof window !== 'undefined') {
       // Condition to show popup for user, manager, or admin roles
       if (role === 'user' || role === 'manager' || role === 'admin') {
-        const popupShownKey = `dailyStreakPopupShown_${sampleUserProfile.id}_${today}`;
+        const popupShownKey = `dailyStreakPopupShown_${user.id}_${today}`;
         if (!localStorage.getItem(popupShownKey)) {
-          console.log(`[DashboardPage] Daily streak popup condition met for user ${sampleUserProfile.id}, role ${role}. Key: ${popupShownKey}`);
+          console.log(`[DashboardPage] Daily streak popup condition met for user ${user.id}, role ${role}. Key: ${popupShownKey}`);
           setShowStreakPopup(true);
           localStorage.setItem(popupShownKey, 'true');
         } else {
-          console.log(`[DashboardPage] Daily streak popup already shown today for user ${sampleUserProfile.id}. Key: ${popupShownKey}`);
+          console.log(`[DashboardPage] Daily streak popup already shown today for user ${user.id}. Key: ${popupShownKey}`);
         }
       }
 
@@ -74,7 +67,7 @@ export default function DashboardPage() {
         setShowWelcomeTour(true);
       }
     }
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, [isLoading, user]);
 
   const handleCloseStreakPopup = () => {
     setShowStreakPopup(false);
@@ -87,7 +80,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="space-y-8">
         <Skeleton className="h-10 w-1/4" />
@@ -106,25 +99,25 @@ export default function DashboardPage() {
   }
 
   const renderDashboard = () => {
-    switch (userRole) {
+    switch (user.role) {
       case 'admin':
-        return <AdminDashboard />;
+        return <AdminDashboard user={user} />;
       case 'manager':
-        return <ManagerDashboard />;
+        return <ManagerDashboard user={user} />;
       case 'user':
       default:
-        return <UserDashboard />;
+        return <UserDashboard user={user} />;
     }
   };
 
   return (
     <>
       {renderDashboard()}
-      {(userRole === 'user' || userRole === 'manager' || userRole === 'admin') && sampleUserProfile && (
+      {(user.role === 'user' || user.role === 'manager' || user.role === 'admin') && user && (
          <DailyStreakPopup
           isOpen={showStreakPopup}
           onClose={handleCloseStreakPopup}
-          userProfile={sampleUserProfile}
+          userProfile={user}
         />
       )}
       {tourSteps.length > 0 && tourKey && (

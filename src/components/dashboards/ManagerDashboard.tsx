@@ -7,7 +7,6 @@ import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
     managerDashboardTourSteps,
-    sampleUserProfile,
 } from "@/lib/sample-data";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,10 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import { Skeleton } from "../ui/skeleton";
 import type { UserProfile, Appointment, CommunityPost, ResumeScanHistoryItem, GalleryEvent } from "@/types";
+
+interface ManagerDashboardProps {
+  user: UserProfile;
+}
 
 type ManagerDashboardWidgetId =
   | 'activeUsersStat'
@@ -46,11 +49,10 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'tenantManagementActions', titleKey: 'managerDashboard.widgets.tenantManagementActions', defaultVisible: true },
 ];
 
-export default function ManagerDashboard() {
+export default function ManagerDashboard({ user }: ManagerDashboardProps) {
   const { t } = useI18n();
   const [showManagerTour, setShowManagerTour] = useState(false);
-  const currentUser = sampleUserProfile;
-  const tenantId = currentUser.tenantId;
+  const tenantId = user.tenantId;
   const { toast } = useToast();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +152,7 @@ export default function ManagerDashboard() {
       <div className="space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("managerDashboard.title", { tenantName: currentUser.currentOrganization || `Tenant ${tenantId}` })}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("managerDashboard.title", { tenantName: user.currentOrganization || `Tenant ${tenantId}` })}</h1>
             <p className="text-muted-foreground">{t("managerDashboard.description")}</p>
           </div>
           <Button variant="outline" onClick={openCustomizeDialog}>

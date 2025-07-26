@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame, Trophy, User as UserIcon, Star } from "lucide-react";
-import { sampleUserProfile, userDashboardTourSteps } from "@/lib/sample-data";
+import { userDashboardTourSteps } from "@/lib/sample-data";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { getActivePromotionalContent } from "@/lib/actions/promotional-content";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -34,6 +34,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
+
+interface UserDashboardProps {
+  user: UserProfile;
+}
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -117,10 +121,9 @@ const getRankIcon = (rank: number) => {
     return <span className="text-sm font-medium w-5 text-center">{rank}</span>;
 };
 
-export default function UserDashboard() {
+export default function UserDashboard({ user }: UserDashboardProps) {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
-  const user = sampleUserProfile;
   const { toast } = useToast();
   const [showUserTour, setShowUserTour] = useState(false);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -199,10 +202,10 @@ export default function UserDashboard() {
       }));
     
     const practiceSessions = dashboardData.mockInterviews
-        .filter((ps: PracticeSession) => ps.userId === user.id && ps.status === 'SCHEDULED' && isFuture(parseISO(ps.date)))
+        .filter((ps: PracticeSession) => ps.userId === user.id && ps.status === 'in-progress' && isFuture(parseISO(ps.createdAt))) // Assuming 'in-progress' means scheduled for future
         .map((ps: PracticeSession) => ({
-            id: ps.id, date: parseISO(ps.date), title: ps.category, type: ps.type,
-            with: ps.category.includes('AI') ? 'AI Coach' : 'Expert Mentor', link: '/interview-prep', isPractice: true,
+            id: ps.id, date: parseISO(ps.createdAt), title: ps.topic, type: 'AI Mock Interview',
+            with: 'AI Coach', link: '/interview-prep', isPractice: true,
         }));
     
     const jobInterviews = userJobApps
