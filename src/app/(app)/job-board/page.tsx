@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { sampleAlumni, sampleUserProfile, sampleJobApplications } from "@/lib/sample-data";
-import { getJobOpenings, addJobOpening } from "@/lib/data-services/jobs"; // Updated import
+import { getJobOpenings, addJobOpening } from "@/lib/actions/jobs"; // Updated import
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -509,13 +509,13 @@ export default function JobBoardPage() {
                     }`}>
                       {opening.type}
                     </span>
-                    {postingAlumni && (
+                    {opening.alumniName && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Avatar className="h-5 w-5">
-                                <AvatarImage src={postingAlumni.profilePictureUrl} alt={postingAlumni.name} data-ai-hint="person face"/>
-                                <AvatarFallback>{postingAlumni.name.substring(0,1)}</AvatarFallback>
+                                <AvatarImage src={postingAlumni?.profilePictureUrl} alt={opening.alumniName} data-ai-hint="person face"/>
+                                <AvatarFallback>{opening.alumniName.substring(0,1)}</AvatarFallback>
                             </Avatar>
-                            <span>{postingAlumni.name}</span>
+                            <span>{opening.alumniName}</span>
                         </div>
                     )}
                 </div>
