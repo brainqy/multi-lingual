@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -15,7 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { sampleTenants, ensureFullUserProfile, sampleUserProfile } from "@/lib/sample-data";
+import { sampleTenants, sampleUserProfile } from "@/lib/sample-data";
+import { ensureFullUserProfile } from "@/lib/data/users";
 import { samplePlatformUsers } from "@/lib/data/users";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -217,10 +217,10 @@ export default function UserManagementPage() {
 
           if (newUserCsv.email && !allUsers.some(u => u.email === newUserCsv.email)) {
             const fullUserProfile = ensureFullUserProfile({
-              name: newUserCsv.name,
+              name: newUserCsv.name ?? "",
               email: newUserCsv.email,
-              role: newUserCsv.role,
-              tenantId: newUserCsv.tenantId,
+              role: (newUserCsv.role ?? "user"),
+              tenantId: newUserCsv.tenantId ?? "",
               status: 'active'
             });
             newUsers.push(fullUserProfile);

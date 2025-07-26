@@ -1,4 +1,3 @@
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -232,8 +231,9 @@ export default function JobTrackerPage() {
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
-      applicationUrl: job.applicationUrl,
+      applicationUrl: job.applicationLink,
     };
+    // interviews: not needed for JobOpening
     
     const newApp = await createJobApplication(newApplicationData);
     if(newApp) {
@@ -245,10 +245,11 @@ export default function JobTrackerPage() {
   };
 
   const onSubmit = async (data: JobApplicationFormData) => {
-    const applicationData = { 
-      ...data, 
-      interviews: currentInterviews,
-      notes: currentNotes.map(n => n.content) // Convert notes back to string array for saving
+    const applicationData = {
+      ...data,
+      interviews: currentInterviews && currentInterviews.length > 0 ? currentInterviews : undefined,
+      notes: currentNotes.map(n => n.content),
+      dateApplied: data.dateApplied ? new Date(data.dateApplied).toISOString() : new Date().toISOString()
     };
 
     if (editingApplication) {
@@ -260,16 +261,22 @@ export default function JobTrackerPage() {
         toast({ title: "Error", description: "Failed to update application.", variant: "destructive"});
       }
     } else {
-      const newApp = await createJobApplication({
-        ...applicationData,
-        userId: sampleUserProfile.id,
-        tenantId: sampleUserProfile.tenantId
-      });
-      if(newApp) {
-        setApplications(apps => [newApp, ...apps]);
-        toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
-      } else {
-        toast({ title: "Error", description: "Failed to add application.", variant: "destructive"});
+      try {
+        const newApp = await createJobApplication({
+          ...applicationData,
+          userId: sampleUserProfile.id,
+          tenantId: sampleUserProfile.tenantId
+        });
+        if(newApp) {
+          setApplications(apps => [newApp, ...apps]);
+          toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
+        } else {
+          toast({ title: "Error", description: "Failed to add application. No application returned.", variant: "destructive"});
+          console.error('createJobApplication returned null/undefined', { applicationData });
+        }
+      } catch (err: any) {
+        toast({ title: "Error", description: err?.message || String(err), variant: "destructive" });
+        console.error('createJobApplication threw error:', err);
       }
     }
     setIsDialogOpen(false);

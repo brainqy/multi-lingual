@@ -26,7 +26,9 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { sampleAppointments } from "@/lib/data/appointments";
-import { USE_MOCK_DATA } from "../../../../usr/src/app/src/lib/data/users";
+
+// Toggle this to true to use mock/sample data, or false to use real backend
+const USE_MOCK_DATA = false;
 
 
 const postSchema = z.object({
