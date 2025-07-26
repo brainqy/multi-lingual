@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, Search, Globe, Mail, Phone, Briefcase, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, Search, Globe, Mail, Phone, Briefcase, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { sampleProductCompanies } from "@/lib/sample-data";
 import type { ProductCompany } from "@/types";
+import { getCompanies } from "@/lib/actions/companies";
 
 export default function CompanyDatabasePage() {
   const { t } = useI18n();
@@ -18,9 +18,19 @@ export default function CompanyDatabasePage() {
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedDomain, setSelectedDomain] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [companies, setCompanies] = useState<ProductCompany[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const companiesPerPage = 12;
-
-  const companies = sampleProductCompanies || [];
+  
+  useEffect(() => {
+    async function loadCompanies() {
+        setIsLoading(true);
+        const fetchedCompanies = await getCompanies();
+        setCompanies(fetchedCompanies);
+        setIsLoading(false);
+    }
+    loadCompanies();
+  }, []);
   
   useEffect(() => {
     setCurrentPage(1);
@@ -108,8 +118,12 @@ export default function CompanyDatabasePage() {
           </Select>
         </CardContent>
       </Card>
-
-      {paginatedCompanies.length === 0 ? (
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-10 w-10 animate-spin text-primary"/>
+        </div>
+      ) : paginatedCompanies.length === 0 ? (
         <Card className="text-center py-12 shadow-md">
             <CardHeader>
                 <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

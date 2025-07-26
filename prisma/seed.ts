@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities, sampleBlogPosts, sampleFeatureRequests, initialFeedbackSurvey, profileCompletionSurveyDefinition, samplePromoCodes, sampleMockInterviewSessions, sampleSystemAlerts, sampleChallenges } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities, sampleBlogPosts, sampleFeatureRequests, initialFeedbackSurvey, profileCompletionSurveyDefinition, samplePromoCodes, sampleMockInterviewSessions, sampleSystemAlerts, sampleChallenges, sampleProductCompanies } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -248,6 +248,16 @@ async function main() {
     });
   }
   console.log(`Seeded ${sampleChallenges.length} daily challenges.`);
+
+  // Seed Product Companies
+  for (const companyData of sampleProductCompanies) {
+    await prisma.productCompany.upsert({
+      where: { id: companyData.id },
+      update: {},
+      create: companyData,
+    });
+  }
+  console.log(`Seeded ${sampleProductCompanies.length} product companies.`);
 
   console.log(`Seeding finished.`);
 }
