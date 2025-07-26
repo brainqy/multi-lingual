@@ -2,20 +2,6 @@
 'use server';
 
 import { db } from '@/lib/db';
-import {
-  samplePlatformUsers,
-  sampleTenants,
-  sampleResumeScanHistory,
-  sampleCommunityPosts,
-  sampleJobApplications,
-  sampleAlumni,
-  sampleMockInterviewSessions,
-  sampleSystemAlerts,
-  samplePromotionalContent,
-  sampleActivities,
-  sampleBadges,
-  sampleChallenges,
-} from '@/lib/sample-data';
 import type {
   UserProfile,
   Tenant,
@@ -31,14 +17,31 @@ import type {
   Badge,
   DailyChallenge,
 } from '@/types';
-import { sampleAppointments } from '../data/appointments';
+
+// Mock data is now only used as a fallback in case of a DB error during development.
+import {
+  samplePlatformUsers,
+  sampleTenants,
+  sampleResumeScanHistory,
+  sampleCommunityPosts,
+  sampleJobApplications,
+  sampleAlumni,
+  sampleMockInterviewSessions,
+  sampleAppointments,
+  sampleSystemAlerts,
+  samplePromotionalContent,
+  sampleActivities,
+  sampleBadges,
+  sampleChallenges,
+} from '@/lib/sample-data';
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
 
-// This is a simplified data fetching function. A real-world app would have more complex queries.
+// This is the primary data fetching function for all dashboards.
 export async function getDashboardData(tenantId?: string | null, userId?: string | null) {
   console.log(`[DashboardAction] Fetching data... (Mock DB: ${useMockDb})`);
   if (useMockDb) {
+    // Keep mock DB path for rapid testing if needed
     return {
       users: samplePlatformUsers,
       tenants: sampleTenants,
@@ -70,11 +73,10 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
         include: { interviews: true }
     })) as unknown as JobApplication[];
     const appointments = (await db.appointment.findMany()) as unknown as Appointment[];
-    const activities = (await db.activity.findMany()) as unknown as Activity[];
+    const activities = (await db.activity.findMany({ orderBy: { timestamp: 'desc' }, take: 50 })) as unknown as Activity[];
     const badges = (await db.badge.findMany()) as unknown as Badge[];
 
-
-    // For data not yet in DB schema, we fall back to mock data
+    // For data not yet in DB schema, we can still fall back to mock data
     return {
       users,
       tenants,
@@ -84,11 +86,11 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       appointments,
       activities,
       badges,
-      alumni: sampleAlumni, // Mocked
-      mockInterviews: sampleMockInterviewSessions, // Mocked
-      systemAlerts: sampleSystemAlerts, // Mocked
-      promotions: samplePromotionalContent, // Mocked
-      challenges: sampleChallenges, // Mocked
+      alumni: users as AlumniProfile[], // Use users as the base for alumni profiles
+      mockInterviews: sampleMockInterviewSessions, // Still mock until DB model is added
+      systemAlerts: sampleSystemAlerts, // Still mock until DB model is added
+      promotions: (await db.promotionalContent.findMany()) as unknown as PromotionalContent[],
+      challenges: sampleChallenges, // Still mock until DB model is added
     };
   } catch (error) {
     console.error('[DashboardAction] Error fetching data from database:', error);
