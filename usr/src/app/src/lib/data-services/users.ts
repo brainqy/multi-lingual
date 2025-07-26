@@ -69,6 +69,10 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
     const defaultTenantId = 'Brainqy';
 
+    // In a real app, you would hash the password here before saving.
+    // For this demo, we store it as is, which is NOT secure for production.
+    const password = data.password;
+
     const newUserPayload = {
         id: `user-${Date.now()}`,
         tenantId: data.tenantId || defaultTenantId,
@@ -78,7 +82,8 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         status: data.status || 'active',
         lastLogin: new Date(),
         createdAt: new Date(),
-        // Add defaults for all other fields to ensure a complete object
+        password: password, // Storing password (insecure, for demo only)
+        sessionId: `session-${Date.now()}`, // Assign initial session ID
         currentJobTitle: data.currentJobTitle || '',
         skills: data.skills || [],
         bio: data.bio || '',
@@ -93,7 +98,6 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         isDistinguished: false,
         shortBio: '',
         university: '',
-        sessionId: data.sessionId,
     };
 
     if (useMockDb) {
@@ -102,20 +106,18 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
           lastLogin: newUserPayload.lastLogin.toISOString(),
           createdAt: newUserPayload.createdAt.toISOString(),
           dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined
-        } as unknown as UserProfile; // Cast to satisfy all optional fields
+        } as unknown as UserProfile;
         samplePlatformUsers.push(newUser);
         return newUser;
     }
 
     log(`[DataService] Creating user in real DB: ${data.email}`);
     
-    // Ensure the default tenant exists before creating the user
     const tenantExists = await db.tenant.findUnique({
-      where: { id: defaultTenantId },
+      where: { id: newUserPayload.tenantId },
     });
 
     if (!tenantExists) {
-      log(`[DataService] Default tenant '${defaultTenantId}' not found. Creating it now.`);
       const defaultTenantData = sampleTenants.find((t: Tenant) => t.id === defaultTenantId);
       if (defaultTenantData) {
         await db.tenant.create({
@@ -138,7 +140,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
     }
 
     const newUser = await db.user.create({
-      data: newUserPayload as any, // Cast to any to handle potential mismatches with Prisma's generated types
+      data: newUserPayload as any,
     });
 
     return newUser as unknown as UserProfile;
@@ -147,10 +149,14 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
   log(`[DataService] Updating user: ${userId} (Mock DB: ${useMockDb})`);
+  
+  // Clean the data to avoid passing undefined values to Prisma
+  const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+
   if (useMockDb) {
     const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-      const updatedUser = { ...samplePlatformUsers[userIndex], ...data };
+      const updatedUser = { ...samplePlatformUsers[userIndex], ...cleanData };
       samplePlatformUsers[userIndex] = updatedUser as UserProfile;
       return updatedUser as UserProfile;
     }
@@ -159,7 +165,7 @@ export async function updateUser(userId: string, data: Partial<UserProfile>): Pr
  try {
     const user = await db.user.update({
         where: { id: userId },
-        data: data as any, // Cast to any to avoid type conflicts with Prisma's generated types
+        data: cleanData as any,
     });
     return user as unknown as UserProfile | null;
   } catch (error) {

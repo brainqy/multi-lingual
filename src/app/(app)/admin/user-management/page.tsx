@@ -29,7 +29,7 @@ const userSchema = z.object({
   role: z.enum(['user', 'manager', 'admin']),
   tenantId: z.string().min(1, "Tenant is required."),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
-  password: z.string().optional(),
+  password: z.string().optional(), // Password is now optional
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -140,10 +140,7 @@ export default function UserManagementPage() {
         await fetchUsers(); // Refetch after update
       }
     } else {
-      if (!data.password || data.password.length < 8) {
-        toast({ title: t("userManagement.toast.passwordRequired.title"), description: t("userManagement.toast.passwordRequired.description"), variant: "destructive" });
-        return;
-      }
+      // Password is no longer required when an admin creates a user
       const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
 
       const newUser = await createUser({
@@ -152,7 +149,7 @@ export default function UserManagementPage() {
         role: data.role as UserRole,
         tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
-        // Password would be handled by a secure auth system, not stored directly
+        password: data.password, // Pass it if provided, can be used for initial setup
       });
       
       if (newUser) {
@@ -477,9 +474,9 @@ export default function UserManagementPage() {
             </div>
             {!editingUser && (
               <div>
-                <Label htmlFor="password">{t("userManagement.form.passwordLabel")}</Label>
+                <Label htmlFor="password">{t("userManagement.form.passwordLabel")} (Optional)</Label>
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
-                <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelp")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelpAdmin")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
               </div>
             )}

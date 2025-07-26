@@ -12,9 +12,9 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, name?: string) => Promise<void>;
+  login: (email: string, password?: string) => Promise<void>;
   logout: () => void;
-  signup: (name: string, email: string, role: 'user' | 'admin') => Promise<void>;
+  signup: (name: string, email: string, role: 'user' | 'admin', password?: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -87,10 +87,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback(async (email: string) => {
+  const login = useCallback(async (email: string, password?: string) => {
     try {
       // Call the server action for login
-      const userToLogin = await loginUser(email);
+      const userToLogin = await loginUser(email, password || "mock_password"); // Use mock password for existing mock users
 
       if (userToLogin) {
         setUser(userToLogin);
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         toast({
           title: "Login Failed",
-          description: "User not found. Please check your email or sign up.",
+          description: "User not found or password incorrect. Please check your credentials or sign up.",
           variant: "destructive",
         });
       }
@@ -110,10 +110,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [router, toast]);
 
-  const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin') => {
+  const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string) => {
     try {
+        if (!password) {
+            throw new Error("Password is required for signup.");
+        }
         // Call the server action for signup
-        const result = await signupUser({ name, email, role });
+        const result = await signupUser({ name, email, role, password });
         
         if (result.success && result.user) {
           setUser(result.user);

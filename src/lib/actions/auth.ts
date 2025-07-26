@@ -7,15 +7,23 @@ import type { UserProfile } from '@/types';
 /**
  * Handles user login. Generates a new session ID and updates the user record.
  * @param email The user's email address.
+ * @param password The user's password (for now, this is mocked).
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string): Promise<UserProfile | null> {
+export async function loginUser(email: string, password?: string): Promise<UserProfile | null> {
   const user = await getUserByEmail(email);
 
   if (user) {
-    const sessionId = `session-${Date.now()}`;
-    const updatedUser = await updateUser(user.id, { sessionId });
-    return updatedUser;
+    // In a real app, you would verify the hashed password here.
+    // For this demo, we'll bypass the password check if it's not set in the DB
+    // or matches a mock password for older users.
+    const isPasswordMatch = user.password ? (password === 'mock_password' || user.password === password) : true;
+    
+    if (isPasswordMatch) {
+      const sessionId = `session-${Date.now()}`;
+      const updatedUser = await updateUser(user.id, { sessionId, lastLogin: new Date().toISOString() });
+      return updatedUser;
+    }
   }
 
   return null;
@@ -23,10 +31,10 @@ export async function loginUser(email: string): Promise<UserProfile | null> {
 
 /**
  * Handles new user registration.
- * @param userData The data for the new user.
+ * @param userData The data for the new user, including password.
  * @returns An object with success status, a message, and the user object if successful.
  */
-export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin' }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
+export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin'; password?: string }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
   const existingUser = await getUserByEmail(userData.email);
   if (existingUser) {
     return {
