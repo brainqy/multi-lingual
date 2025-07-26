@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { sampleAlumni, sampleUserProfile, sampleJobApplications } from "@/lib/sample-data";
-import { getJobOpenings, addJobOpening } from "@/lib/data-services"; // Updated import
+import { getJobOpenings, addJobOpening } from "@/lib/data-services/jobs"; // Updated import
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -225,7 +225,7 @@ export default function JobBoardPage() {
       location: opening.location,
       sourceJobOpeningId: opening.id,
       applicationUrl: opening.applicationLink,
-      notes: status === 'Saved' ? 'Saved from Job Board' : 'Applied from Job Board',
+      notes: status === 'Saved' ? ['Saved from Job Board'] : ['Applied from Job Board'],
     };
   };
 
@@ -260,7 +260,7 @@ export default function JobBoardPage() {
       }
       sampleJobApplications[existingApplicationIndex].status = 'Applied';
       sampleJobApplications[existingApplicationIndex].dateApplied = new Date().toISOString().split('T')[0];
-      sampleJobApplications[existingApplicationIndex].notes = "Updated to 'Applied' from Job Board";
+      sampleJobApplications[existingApplicationIndex].notes = ["Updated to 'Applied' from Job Board"];
       toast({ title: "Application Tracked", description: `${opening.title} status updated to 'Applied' in your Job Tracker.` });
     } else {
       const newApplication = createJobApplicationFromOpening(opening, 'Applied');
