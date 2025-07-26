@@ -20,7 +20,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-import { getUsers, createUser, updateUser, deleteUser } from "@/lib/data-services/users";
+import { createUser, deleteUser, getUsers, updateUser } from "../../../../../usr/src/app/src/lib/data-services/users";
 
 const userSchema = z.object({
   id: z.string().optional(),
