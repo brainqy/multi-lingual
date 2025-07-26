@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Target } from "lucide-react";
+import { Target, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Affiliate, AffiliateStatus } from "@/types";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
@@ -22,9 +22,11 @@ export default function AffiliateManagementPage() {
   const { user: currentUser } = useAuth();
   const [stats, setStats] = useState({ totalAffiliates: 0, totalClicks: 0, totalSignups: 0, totalCommissionsPaid: 0 });
   const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { signups: number; earned: number }>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       const allAffiliates = await getAffiliates();
       setAffiliates(allAffiliates);
       
@@ -48,10 +50,13 @@ export default function AffiliateManagementPage() {
       
       setStats({ totalAffiliates: allAffiliates.length, totalClicks, totalSignups, totalCommissionsPaid });
       setAffiliateDetails(details);
+      setIsLoading(false);
     }
     
     if (currentUser?.role === 'admin') {
       loadData();
+    } else {
+      setIsLoading(false);
     }
   }, [currentUser?.role]);
 
@@ -102,12 +107,16 @@ export default function AffiliateManagementPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <AffiliateTable 
-            affiliates={filteredAffiliates} 
-            handleAffiliateStatusChange={handleAffiliateStatusChange}
-            getAffiliateSignupsCount={(id) => affiliateDetails[id]?.signups || 0}
-            getAffiliateEarnedAmount={(id) => affiliateDetails[id]?.earned || 0}
-          />
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : (
+            <AffiliateTable 
+              affiliates={filteredAffiliates} 
+              handleAffiliateStatusChange={handleAffiliateStatusChange}
+              getAffiliateSignupsCount={(id) => affiliateDetails[id]?.signups || 0}
+              getAffiliateEarnedAmount={(id) => affiliateDetails[id]?.earned || 0}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

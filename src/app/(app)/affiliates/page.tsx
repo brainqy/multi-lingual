@@ -7,28 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award } from "lucide-react";
+import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile } from "@/lib/sample-data";
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from "@/types";
 import { format, subDays, isAfter, parseISO } from "date-fns";
 import Link from "next/link";
 import { useI18n } from "@/hooks/use-i18n";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAffiliateByUserId, createAffiliate, getAffiliateSignups, getAffiliateClicks } from "@/lib/actions/affiliates";
+import { useAuth } from "@/hooks/use-auth";
 
 
 export default function AffiliatesPage() {
   const { toast } = useToast();
   const { t } = useI18n();
-  const user = sampleUserProfile;
+  const { user } = useAuth();
   const [userAffiliateProfile, setUserAffiliateProfile] = useState<Affiliate | null>(null);
   const [userSignups, setUserSignups] = useState<AffiliateSignup[]>([]);
   const [userClicks, setUserClicks] = useState<AffiliateClick[]>([]);
   const [durationFilter, setDurationFilter] = useState<'7d' | '30d' | 'all'>('all');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAffiliateData() {
+      if (!user) return;
+      setIsLoading(true);
       const affiliateData = await getAffiliateByUserId(user.id);
       setUserAffiliateProfile(affiliateData);
 
@@ -40,9 +43,10 @@ export default function AffiliatesPage() {
         setUserSignups(signups);
         setUserClicks(clicks);
       }
+      setIsLoading(false);
     }
     fetchAffiliateData();
-  }, [user.id]);
+  }, [user]);
 
   const affiliateLink = userAffiliateProfile ? `https://JobMatch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
 
@@ -107,8 +111,8 @@ export default function AffiliatesPage() {
   };
 
   const handleBecomeAffiliate = async () => {
-    if (userAffiliateProfile) {
-        toast({title: "Already an Affiliate", description: `Your status is: ${userAffiliateProfile.status}`});
+    if (!user || userAffiliateProfile) {
+        toast({title: "Already an Affiliate", description: `Your status is: ${userAffiliateProfile?.status}`});
         return;
     }
     
@@ -117,11 +121,11 @@ export default function AffiliatesPage() {
         name: user.name,
         email: user.email,
         status: 'pending' as AffiliateStatus,
-        affiliateCode: `TEMP${user.id.slice(-4)}${Date.now().toString().slice(-4)}`, // Temp code
+        affiliateCode: `${user.name.substring(0,4).toUpperCase()}${user.id.slice(-4)}`,
         commissionRate: 0.10, // Default rate
     };
     
-    const created = await createAffiliate(newAffiliateApplication);
+    const created = await createAffiliate(newAffiliateApplication as Omit<Affiliate, 'id' | 'totalEarned' | 'createdAt' | 'updatedAt'>);
 
     if (created) {
         setUserAffiliateProfile(created);
@@ -131,6 +135,9 @@ export default function AffiliatesPage() {
     }
   };
 
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
+  }
 
   if (!userAffiliateProfile) {
     return (
