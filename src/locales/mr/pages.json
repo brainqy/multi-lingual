@@ -12,6 +12,440 @@
       "logout": "लॉग आउट"
     }
   },
+  "platformSettings": {
+    "title": "प्लॅटफॉर्म सेटिंग्ज",
+    "description": "JobMatch AI प्लॅटफॉर्मसाठी जागतिक सेटिंग्ज व्यवस्थापित करा.",
+    "saveButton": "सर्व सेटिंग्ज जतन करा",
+    "validation": {
+      "platformNameMin": "प्लॅटफॉर्मचे नाव किमान 3 अक्षरे असणे आवश्यक आहे.",
+      "maxJobPostingDaysMin": "नोकरी पोस्टिंगचे कमाल दिवस किमान 1 असणे आवश्यक आहे.",
+      "maxJobPostingDaysMax": "नोकरी पोस्टिंगचे कमाल दिवस 365 पेक्षा जास्त असू शकत नाहीत.",
+      "xpMin": "XP गुण नकारात्मक नसावेत.",
+      "appointmentCostMin": "अपॉइंटमेंटची किंमत नकारात्मक नसावी.",
+      "maxResumesMin": "कमाल रेझ्युमे अपलोड किमान 1 असणे आवश्यक आहे.",
+      "maxResumesMax": "कमाल रेझ्युमे अपलोड 50 पेक्षा जास्त असू शकत नाहीत.",
+      "sessionTimeoutMin": "सेशन कालबाह्यता किमान 5 मिनिटे असणे आवश्यक आहे.",
+      "sessionTimeoutMax": "सेशन कालबाह्यता 1440 मिनिटांपेक्षा (24 तास) जास्त असू शकत नाही.",
+      "maxEventRegistrationsMin": "प्रति वापरकर्ता कमाल इव्हेंट नोंदणी किमान 1 असणे आवश्यक आहे.",
+      "maxEventRegistrationsMax": "प्रति वापरकर्ता कमाल इव्हेंट नोंदणी 100 पेक्षा जास्त असू शकत नाही.",
+      "globalAnnouncementMax": "जागतिक घोषणा 500 अक्षरांपेक्षा जास्त असू शकत नाही.",
+      "pointsForAffiliateMin": "अफिलिएट साइनअपसाठी गुण नकारात्मक नसावेत."
+    },
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्ज जतन केल्या",
+        "description": "प्लॅटफॉर्म सेटिंग्ज यशस्वीरित्या अद्यतनित केल्या आहेत."
+      }
+    },
+    "general": {
+      "sectionTitle": "सामान्य सेटिंग्ज",
+      "platformName": {
+        "label": "प्लॅटफॉर्मचे नाव",
+        "description": "संपूर्ण प्लॅटफॉर्मवर प्रदर्शित होणारे नाव."
+      },
+      "maintenanceMode": {
+        "label": "देखभाल मोड",
+        "description": "वापरकर्त्यांसाठी प्लॅटफॉर्म ऑफलाइन घेण्यासाठी सक्षम करा."
+      },
+      "defaultProfileVisibility": {
+        "label": "डीफॉल्ट प्रोफाइल दृश्यमानता",
+        "description": "नवीन वापरकर्ता प्रोफाइलसाठी डीफॉल्ट दृश्यमानता सेट करा.",
+        "options": {
+          "public": "सार्वजनिक",
+          "alumni_only": "केवळ माजी विद्यार्थी",
+          "private": "खाजगी"
+        }
+      },
+      "maxResumesPerUser": {
+        "label": "प्रति वापरकर्ता कमाल रेझ्युमे अपलोड",
+        "description": "एका वापरकर्त्याला तयार/अपलोड करता येणाऱ्या रेझ्युमे प्रोफाइलची मर्यादा."
+      },
+      "defaultTheme": {
+        "label": "डीफॉल्ट थीम",
+        "description": "नवीन वापरकर्त्यांसाठी डीफॉल्ट थीम सेट करा.",
+        "options": {
+          "light": "लाइट",
+          "dark": "डार्क"
+        }
+      },
+      "enablePublicProfilePages": {
+        "label": "सार्वजनिक प्रोफाइल पृष्ठे सक्षम करा",
+        "description": "वापरकर्त्यांना सार्वजनिकरित्या प्रवेश करण्यायोग्य प्रोफाइल URL ठेवण्याची परवानगी द्या."
+      },
+      "sessionTimeoutMinutes": {
+        "label": "सेशन कालबाह्यता (मिनिटे)",
+        "description": "या कालावधीनंतर निष्क्रिय वापरकर्ता सत्रे कालबाह्य होतील."
+      },
+      "globalAnnouncement": {
+        "label": "जागतिक घोषणा बार मजकूर",
+        "description": "संपूर्ण प्लॅटफॉर्मवर बॅनरमध्ये प्रदर्शित होणारा मजकूर (लपवण्यासाठी रिक्त सोडा).",
+        "placeholder": "उदा., नवीन वैशिष्ट्ये लाँच झाली! पहा..."
+      }
+    },
+    "community": {
+      "sectionTitle": "समुदाय आणि फीड",
+      "communityFeedEnabled": {
+        "label": "समुदाय फीड सक्षम करा"
+      },
+      "autoModeratePosts": {
+        "label": "पोस्टसाठी AI स्वयं-नियमन सक्षम करा",
+        "description": "सक्षम केल्यास, AI संभाव्य अयोग्य सामग्रीला ध्वजांकित करण्याचा प्रयत्न करेल."
+      }
+    },
+    "career": {
+      "sectionTitle": "करिअर साधने",
+      "jobBoardEnabled": {
+        "label": "नोकरी मंडळ सक्षम करा"
+      },
+      "maxJobPostingDays": {
+        "label": "कमाल नोकरी पोस्टिंग कालावधी (दिवस)",
+        "description": "नोकरी पोस्ट डीफॉल्टनुसार किती काळ सक्रिय राहतील."
+      },
+      "resumeAnalyzerEnabled": {
+        "label": "रेझ्युमे विश्लेषक सक्षम करा"
+      },
+      "aiResumeWriterEnabled": {
+        "label": "AI रेझ्युमे लेखक सक्षम करा"
+      },
+      "coverLetterGeneratorEnabled": {
+        "label": "कव्हर लेटर जनरेटर सक्षम करा"
+      },
+      "mockInterviewEnabled": {
+        "label": "मॉक मुलाखत वैशिष्ट्ये सक्षम करा"
+      }
+    },
+    "engagement": {
+      "sectionTitle": "सहभाग आणि बक्षिसे",
+      "gamificationEnabled": {
+        "label": "गेमिफिकेशन सक्षम करा (XP, बॅजेस)"
+      },
+      "xpForLogin": {
+        "label": "दैनिक लॉगिनसाठी XP",
+        "description": "दैनिक सक्रिय वापरासाठी दिलेले गुण."
+      },
+      "xpForNewPost": {
+        "label": "नवीन समुदाय पोस्टसाठी XP",
+        "description": "पोस्ट तयार करण्यासाठी दिलेले गुण."
+      },
+      "referralsEnabled": {
+        "label": "वापरकर्ता रेफरल्स सक्षम करा"
+      },
+      "affiliateProgramEnabled": {
+        "label": "अफिलिएट प्रोग्राम सक्षम करा"
+      },
+      "pointsForAffiliateSignup": {
+        "label": "यशस्वी अफिलिएट साइनअपसाठी गुण",
+        "description": "अफिलिएट साइनअप पूर्ण झाल्यावर रेफररला दिलेले गुण."
+      },
+      "featureRequestsEnabled": {
+        "label": "वैशिष्ट्य विनंती प्रणाली सक्षम करा"
+      }
+    },
+    "alumniConnect": {
+      "sectionTitle": "माजी विद्यार्थी कनेक्ट आणि कार्यक्रम",
+      "alumniConnectEnabled": {
+        "label": "माजी विद्यार्थी कनेक्ट सक्षम करा (निर्देशिका, भेटी)"
+      },
+      "defaultAppointmentCost": {
+        "label": "माजी विद्यार्थी भेटीसाठी डीफॉल्ट खर्च (नाणी)",
+        "description": "विनंतीकर्त्याच्या वॉलेटमधून कापलेली नाणी."
+      },
+      "maxEventRegistrationsPerUser": {
+        "label": "प्रति वापरकर्ता कमाल कार्यक्रम नोंदणी",
+        "description": "प्रति वापरकर्ता सक्रिय कार्यक्रम नोंदणीची मर्यादा."
+      }
+    },
+    "tenantCustomization": {
+      "sectionTitle": "भाडेकरू सानुकूलन पर्याय",
+      "description": "भाडेकरूंना त्यांच्या उदाहरणासाठी कोणते पैलू सानुकूलित करण्याची परवानगी आहे ते नियंत्रित करा.",
+      "allowTenantCustomBranding": {
+        "label": "भाडेकरूंना ब्रँडिंग सानुकूलित करण्याची परवानगी द्या",
+        "description": "सक्षम केल्यास, भाडेकरू व्यवस्थापक लोगो अपलोड करू शकतात आणि थीम रंग सेट करू शकतात."
+      },
+      "allowTenantEmailCustomization": {
+        "label": "भाडेकरूंना ईमेल टेम्पलेट सानुकूलित करण्याची परवानगी द्या",
+        "description": "सक्षम केल्यास, भाडेकरू व्यवस्थापक काही आउटगोइंग ईमेल टेम्पलेटमध्ये बदल करू शकतात."
+      }
+    }
+  },
+  "tenantManagement": {
+    "title": "भाडेकरू व्यवस्थापन",
+    "description": "प्लॅटफॉर्मवरील सर्व संघटनात्मक भाडेकरूंचे पर्यवेक्षण आणि व्यवस्थापन करा.",
+    "createNewButton": "नवीन भाडेकरू तयार करा",
+    "tenantListTitle": "सध्याचे भाडेकरू",
+    "noTenantsFound": "अद्याप कोणीही भाडेकरू ऑनबोर्ड केलेले नाही. प्रारंभ करण्यासाठी 'नवीन भाडेकरू तयार करा' वर क्लिक करा.",
+    "editActionMock": "भाडेकरू {tenantId} साठी संपादन क्रिया एक मॉक आहे.",
+    "deleteActionToast": "भाडेकरू {tenantId} आणि संबंधित डेटा काढला जाईल (मॉक).",
+    "table": {
+      "name": "भाडेकरूचे नाव",
+      "id": "भाडेकरू आयडी",
+      "createdAt": "तयार केल्याची तारीख",
+      "publicSignup": "सार्वजनिक साइनअप",
+      "actions": "क्रिया"
+    }
+  },
+  "tenantOnboarding": {
+    "title": "भाडेकरू ऑनबोर्डिंग विझार्ड",
+    "toast": {
+      "tenantCreated": {
+        "title": "भाडेकरू तयार झाला!",
+        "description": "{tenantName} यशस्वीरित्या ऑनबोर्ड झाला आहे."
+      }
+    },
+    "steps": {
+      "basicInfo": "मूलभूत माहिती",
+      "branding": "ब्रँडिंग",
+      "features": "वैशिष्ट्ये",
+      "adminUser": "प्रशासक वापरकर्ता",
+      "review": "पुनरावलोकन आणि तयार करा"
+    },
+    "currentStep": "पायरी {current} पैकी {total}",
+    "formLabels": {
+      "tenantName": "भाडेकरूचे नाव (उदा. विद्यापीठाचे नाव, कंपनी)",
+      "tenantDomain": "भाडेकरू डोमेन (पर्यायी)",
+      "tenantDomainPlaceholder": "उदा. myuni.JobMatch.ai",
+      "customLogoUrl": "सानुकूल लोगो URL (पर्यायी)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (HSL किंवा Hex)",
+      "primaryColorPlaceholder": "उदा. hsl(180 100% 25%) किंवा #008080",
+      "accentColor": "ॲक्सेंट रंग (HSL किंवा Hex)",
+      "accentColorPlaceholder": "उदा. hsl(180 100% 30%) किंवा #009999",
+      "coreFeaturesTitle": "मुख्य वैशिष्ट्ये",
+      "featureCommunityFeed": "समुदाय फीड",
+      "featureJobBoard": "नोकरी मंडळ",
+      "featureGamification": "गेमिफिकेशन (XP आणि बॅजेस)",
+      "featureWallet": "डिजिटल वॉलेट (नाणी)",
+      "featureEventRegistration": "कार्यक्रम नोंदणी",
+      "signupTitle": "साइनअप सेटिंग्ज",
+      "allowPublicSignup": "सार्वजनिक साइनअपला परवानगी द्या",
+      "adminFullName": "प्रारंभिक प्रशासकाचे पूर्ण नाव",
+      "adminEmail": "प्रशासक ईमेल",
+      "adminPassword": "प्रशासक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "तपशील पुनरावलोकन करा",
+      "nameLabel": "नाव:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो URL:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "ॲक्सेंट रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "सक्षम वैशिष्ट्ये:",
+      "initialAdminUserTitle": "प्रारंभिक प्रशासक वापरकर्ता",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "मागे",
+      "next": "पुढे",
+      "createTenant": "भाडेकरू तयार करा"
+    }
+  },
+  "announcementsAdmin": {
+    "title": "घोषणा व्यवस्थापन",
+    "manageTenant": "{tenantId} साठी घोषणा व्यवस्थापित करा",
+    "createNewButton": "नवीन घोषणा तयार करा",
+    "managePlatform": "संपूर्ण प्लॅटफॉर्मसाठी घोषणा व्यवस्थापित करा.",
+    "currentAnnouncementsTitle": "सध्याच्या घोषणा",
+    "noAnnouncementsTenant": "तुमच्या भाडेकरूसाठी कोणत्याही घोषणा सापडल्या नाहीत.",
+    "noAnnouncementsPlatform": "अद्याप कोणत्याही घोषणा तयार केल्या नाहीत.",
+    "audienceTargetDisplay": "(लक्ष्य: {target})",
+    "audiencePlatformWide": "(प्लॅटफॉर्म-व्यापी)",
+    "endDateOngoing": "सुरू आहे",
+    "dialog": {
+      "editTitle": "घोषणा संपादित करा",
+      "createTitle": "नवीन घोषणा तयार करा",
+      "titleLabel": "शीर्षक",
+      "contentLabel": "सामग्री",
+      "contentPlaceholder": "येथे घोषणेची सामग्री प्रविष्ट करा (मार्कडाउन समर्थित).",
+      "startDateLabel": "प्रारंभ तारीख",
+      "endDateLabel": "शेवटची तारीख (पर्यायी)",
+      "audienceLabel": "प्रेक्षक",
+      "audienceAllUsers": "सर्व वापरकर्ते (प्लॅटफॉर्म-व्यापी)",
+      "audienceSpecificTenant": "विशिष्ट भाडेकरू",
+      "audienceSpecificRole": "विशिष्ट भूमिका",
+      "targetTenantLabel": "लक्ष्य भाडेकरू",
+      "selectTenantPlaceholder": "एक भाडेकरू निवडा",
+      "targetRoleLabel": "लक्ष्य भूमिका",
+      "selectRolePlaceholder": "एक भूमिका निवडा",
+      "roleUser": "वापरकर्ता",
+      "roleManager": "व्यवस्थापक",
+      "roleAdmin": "प्रशासक",
+      "statusLabel": "स्थिती",
+      "statusDraft": "मसुदा",
+      "statusPublished": "प्रकाशित",
+      "statusArchived": "संग्रहित",
+      "cancelButton": "रद्द करा",
+      "saveChangesButton": "बदल जतन करा",
+      "createButton": "घोषणा तयार करा"
+    },
+    "table": {
+      "title": "शीर्षक",
+      "status": "स्थिती",
+      "audience": "प्रेक्षक",
+      "startDate": "प्रारंभ तारीख",
+      "endDate": "शेवटची तारीख",
+      "actions": "क्रिया"
+    },
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "परवानगी नाकारली",
+        "description": "तुम्हाला ही घोषणा संपादित करण्याची परवानगी नाही."
+      },
+      "announcementUpdated": {
+        "title": "घोषणा अद्यतनित केली",
+        "description": "घोषणा '{title}' अद्यतनित केली आहे."
+      },
+      "announcementCreated": {
+        "title": "घोषणा तयार केली",
+        "description": "घोषणा '{title}' तयार केली आहे."
+      },
+      "permissionDeniedDelete": {
+        "title": "परवानगी नाकारली",
+        "description": "तुम्हाला ही घोषणा हटवण्याची परवानगी नाही."
+      },
+      "announcementDeleted": {
+        "title": "घोषणा हटवली",
+        "description": "घोषणा हटवली आहे."
+      }
+    }
+  },
+  "contentModeration": {
+    "title": "सामग्री मॉडरेशन",
+    "descriptionTenant": "तुमच्या भाडेकरूमध्ये ध्वजांकित सामग्रीचे पुनरावलोकन आणि व्यवस्थापन करा: {tenantId}.",
+    "descriptionPlatform": "संपूर्ण प्लॅटफॉर्मवरून ध्वजांकित सामग्रीचे पुनरावलोकन आणि व्यवस्थापन करा.",
+    "flaggedPostsTitle": "पुनरावलोकनासाठी ध्वजांकित पोस्ट",
+    "noFlaggedPostsTenant": "तुमच्या भाडेकरूमध्ये पुनरावलोकनासाठी कोणत्याही पोस्ट ध्वजांकित नाहीत.",
+    "noFlaggedPostsPlatform": "प्लॅटफॉर्मवर पुनरावलोकनासाठी कोणत्याही पोस्ट ध्वजांकित नाहीत.",
+    "viewOnFeedTitle": "फीडवर पोस्ट पहा",
+    "toast": {
+      "postApproved": {
+        "title": "पोस्ट मंजूर",
+        "description": "पोस्ट आता समुदाय फीडवर दृश्यमान आहे."
+      },
+      "postRemoved": {
+        "title": "पोस्ट काढले",
+        "description": "ध्वजांकित पोस्ट फीडमधून काढले आहे."
+      }
+    },
+    "table": {
+      "author": "लेखक",
+      "contentSnippet": "सामग्रीचा तुकडा",
+      "flagCount": "ध्वज संख्या",
+      "dateFlagged": "ध्वजांकित तारीख",
+      "actions": "क्रिया"
+    }
+  },
+  "blogSettingsAdmin": {
+    "title": "एआय ब्लॉग सेटिंग्ज",
+    "description": "स्वयंचलित ब्लॉग पोस्ट निर्मिती कॉन्फिगर करा आणि एआयसह मॅन्युअली पोस्ट तयार करा.",
+    "automationSettingsTitle": "ऑटोमेशन सेटिंग्ज",
+    "generationIntervalLabel": "जनरेशन अंतराल (तास)",
+    "generationIntervalHelp": "स्वयंचलितपणे तयार केलेल्या ब्लॉग पोस्टमधील तासांमधील वेळ (उदा. दररोजसाठी 24).",
+    "topicsLabel": "ऑटोमेशनसाठी विषय",
+    "topicsPlaceholder": "करिअर सल्ला, मुलाखत टिप्स, नेटवर्किंग...",
+    "topicsHelp": "स्वयंचलित पोस्टसाठी एआय निवडेल अशा विषयांची कॉमा-सेपरेटेड यादी.",
+    "styleLabel": "लेखन शैली",
+    "stylePlaceholder": "एक लेखन शैली निवडा...",
+    "styleInformative": "माहितीपूर्ण",
+    "styleCasual": "अनौपचारिक",
+    "styleFormal": "औपचारिक",
+    "styleTechnical": "तांत्रिक",
+    "styleStorytelling": "कथाकथन",
+    "saveAutomationButton": "ऑटोमेशन सेटिंग्ज जतन करा",
+    "manualGenerationTitle": "मॅन्युअल निर्मिती",
+    "lastGeneratedPrefix": "शेवटची निर्मिती:",
+    "lastGeneratedNever": "कधीही नाही",
+    "selectTopicManualLabel": "विषय निवडा किंवा सानुकूल प्रविष्ट करा",
+    "selectTopicManualPlaceholder": "एक पूर्वनिर्धारित विषय निवडा",
+    "customTopicPlaceholder": "किंवा एक सानुकूल विषय प्रविष्ट करा...",
+    "generatingButton": "तयार होत आहे...",
+    "generateNowButton": "आता तयार करा",
+    "importantNoteTitle": "एआय वापरावरील महत्त्वपूर्ण टीप",
+    "importantNoteContent": "मॅन्युअल आणि स्वयंचलित ब्लॉग पोस्ट निर्मिती दोन्ही एआय एपीआय क्रेडिट्स वापरतात. तुमच्या एपीआय कीमध्ये पुरेसा कोटा असल्याची खात्री करा. एपीआय त्रुटी आढळल्यास स्वयंचलित निर्मिती थांबेल.",
+    "validation": {
+      "intervalMin": "अंतराल किमान 1 तास असणे आवश्यक आहे.",
+      "intervalMax": "अंतराल 720 तासांपेक्षा (30 दिवस) जास्त असू शकत नाही.",
+      "topicsRequired": "किमान एक विषय आवश्यक आहे."
+    },
+    "toast": {
+      "settingsSaved": {
+        "title": "सेटिंग्ज जतन केल्या",
+        "description": "ब्लॉग ऑटोमेशन सेटिंग्ज अद्यतनित केल्या आहेत."
+      },
+      "noTopicSelected": {
+        "title": "कोणताही विषय निवडलेला नाही",
+        "description": "ब्लॉग पोस्ट तयार करण्यासाठी कृपया एक विषय निवडा किंवा प्रविष्ट करा."
+      },
+      "postGenerated": {
+        "title": "पोस्ट तयार झाली!",
+        "description": "नवीन ब्लॉग पोस्ट '{title}' यशस्वीरित्या तयार झाली."
+      },
+      "generationFailed": {
+        "title": "निर्मिती अयशस्वी",
+        "description": "ब्लॉग पोस्ट तयार करता आली नाही. कृपया पुन्हा प्रयत्न करा."
+      }
+    }
+  },
+  "featureRequests": {
+    "pageTitle": "वैशिष्ट्य विनंत्या आणि सूचना"
+  },
+  "referrals": {
+    "pageTitle": "रेफरल प्रोग्राम",
+    "pageDescription": "मित्रांना JobMatch AI वर रेफर करा आणि प्रत्येक यशस्वी साइनअपवर बक्षिसे मिळवा!",
+    "yourReferralCardTitle": "तुमची रेफरल लिंक",
+    "yourReferralCardDescription": "तुमची युनिक लिंक किंवा कोड शेअर करा. कोणीतरी साइन अप केल्यावर, तुम्हाला बक्षीस मिळते.",
+    "referralCodeLabel": "तुमचा युनिक रेफरल कोड",
+    "referralLinkLabel": "तुमची रेफरल लिंक",
+    "copyButton": "कॉपी करा",
+    "shareButton": "शेअर करा",
+    "statsCardTitle": "तुमची आकडेवारी",
+    "statsCardDescription": "तुमच्या रेफरल कामगिरीचा मागोवा घ्या.",
+    "totalReferralsLabel": "एकूण रेफरल्स",
+    "successfulSignupsLabel": "यशस्वी साइनअप्स",
+    "rewardsInfo": "रेफरल सत्यापित झाल्यावर बक्षिसे तुमच्या वॉलेटमध्ये जमा केली जातात.",
+    "historyCardTitle": "रेफरल इतिहास",
+    "historyCardDescription": "तुमच्या रेफरल क्रियाकलापांचा लॉग.",
+    "noHistory": "तुम्ही अद्याप कोणालाही रेफर केलेले नाही. प्रारंभ करण्यासाठी तुमची लिंक शेअर करा!",
+    "tableReferredUser": "रेफर केलेला वापरकर्ता",
+    "tableDateReferred": "रेफर करण्याची तारीख",
+    "tableStatus": "स्थिती",
+    "tableReward": "बक्षीस",
+    "statusPending": "प्रलंबित",
+    "statusSignedUp": "साइन अप केले",
+    "statusRewardEarned": "बक्षीस मिळाले",
+    "statusExpired": "कालबाह्य",
+    "howItWorksCardTitle": "हे कसे कार्य करते",
+    "howItWorks": [
+      {
+        "title": "तुमची लिंक शेअर करा",
+        "description": "तुमची युनिक रेफरल लिंक सोशल मीडिया, ईमेल किंवा तुमच्या वेबसाइटद्वारे वितरित करा."
+      },
+      {
+        "title": "मित्र साइन अप करतो",
+        "description": "तुमचा मित्र तुमच्या युनिक रेफरल लिंकवर क्लिक करतो आणि JobMatch AI प्लॅटफॉर्मवर यशस्वीरित्या साइन अप करतो."
+      },
+      {
+        "title": "बक्षिसे मिळवा",
+        "description": "जेव्हा त्यांचे साइनअप सत्यापित होते आणि ते सक्रिय वापरकर्ता बनतात तेव्हा तुम्ही नाणी किंवा XP मिळवता."
+      },
+      {
+        "title": "प्रगतीचा मागोवा घ्या",
+        "description": "तुमच्या डॅशबोर्डमध्ये तुमच्या सर्व रेफरल्स आणि बक्षिसांचे निरीक्षण करा."
+      }
+    ],
+    "toastCopied": {
+      "title": "क्लिपबोर्डवर कॉपी केले!",
+      "description": "तुमची रेफरल लिंक शेअर करण्यासाठी तयार आहे."
+    },
+    "toastCopyFailed": {
+      "title": "कॉपी अयशस्वी",
+      "description": "मजकूर कॉपी करता आला नाही."
+    },
+    "toastShareAPINotSupported": {
+      "title": "शेअर API समर्थित नाही",
+      "description": "तुमचा ब्राउझर वेब शेअर API ला समर्थन देत नाही. त्याऐवजी लिंक क्लिपबोर्डवर कॉपी केली आहे."
+    }
+  },
   "userSettings": {
     "pageTitle": "सेटिंग्ज",
     "appearanceCardTitle": "स्वरूप",
@@ -124,136 +558,35 @@
       }
     }
   },
-  "aiMockInterview": {
-    "title": "AI मॉक इंटरव्यू",
-    "setup": "सेटअप",
-    "interview": "मुलाखत",
-    "feedback": "अभिप्राय",
-    "restart": "पुन्हा सुरू करा",
-    "loadingMessage": "तुमचे वैयक्तिकृत मुलाखत प्रश्न तयार करत आहे...",
-    "interviewerTitle": "AI मुलाखतकार{topic}",
-    "aiThinking": "AI तुमच्या उत्तराचे मूल्यांकन करत आहे...",
-    "feedbackReady": "अभिप्राय खाली तयार आहे.",
-    "questionHeader": "प्रश्न {current} पैकी {total}",
-    "questionCategory": "{category} - {difficulty}",
-    "yourAnswerLabel": "तुमचे उत्तर",
-    "answerPlaceholder": "तुमचे उत्तर येथे टाइप करा किंवा रेकॉर्ड करा...",
-    "listeningPlaceholder": "ऐकत आहे... स्पष्टपणे बोला.",
-    "record": "रेकॉर्ड करा",
-    "stopRecord": "रेकॉर्डिंग थांबवा",
-    "submit": "उत्तर सबमिट करा",
-    "feedbackTitle": "AI अभिप्राय",
-    "scoreLabel": "गुण",
-    "strengthsLabel": "सामर्थ्ये",
-    "improvementsLabel": "सुधारणेसाठी क्षेत्रे",
-    "nextQuestion": "पुढील प्रश्न",
-    "viewOverallReport": "एकूण अहवाल पहा",
-    "timesUpAlert": "वेळ संपली! कृपया तुमचे उत्तर सबमिट करा.",
-    "endAndReport": "समाप्त करा आणि अहवाल तयार करा",
-    "end": "समाप्त करा",
-    "youLabel": "तुम्ही",
-    "camDeniedTitle": "कॅमेरा नाकारला",
-    "camDeniedDesc": "कृपया कॅमेरा परवानगी सक्षम करा.",
-    "enterFullscreen": "पूर्णस्क्रीन प्रविष्ट करा",
-    "exitFullscreen": "पूर्णस्क्रीनमधून बाहेर पडा",
-    "unmute": "अनम्यूट करा",
-    "mute": "म्यूट करा",
-    "startVideo": "व्हिडिओ सुरू करा",
-    "stopVideo": "व्हिडिओ थांबवा",
-    "startRecording": "सत्र रेकॉर्डिंग सुरू करा",
-    "stopRecording": "सत्र रेकॉर्डिंग थांबवा",
-    "toast": {
-      "speechError": {
-        "title": "बोलण्यात त्रुटी",
-        "description": "एक त्रुटी आली: {error}. कृपया पुन्हा प्रयत्न करा किंवा तुमचे उत्तर टाइप करा."
-      },
-      "cameraError": {
-        "title": "कॅमेरा त्रुटी",
-        "description": "तुमच्या ब्राउझरद्वारे कॅमेरा प्रवेश समर्थित नाही."
-      },
-      "cameraDenied": {
-        "title": "कॅमेरा प्रवेश नाकारला",
-        "description": "हे वैशिष्ट्य वापरण्यासाठी कृपया तुमच्या ब्राउझर सेटिंग्जमध्ये कॅमेरा परवानगी सक्षम करा."
-      },
-      "fullscreenError": {
-        "title": "पूर्णस्क्रीन त्रुटी",
-        "description": "पूर्णस्क्रीन मोडमध्ये प्रवेश/बाहेर पडता आले नाही: {message}"
-      },
-      "setupFailed": {
-        "title": "सेटअप अयशस्वी",
-        "description": "मुलाखतीचे प्रश्न तयार करता आले नाहीत. कृपया भिन्न पर्याय वापरून पहा किंवा समर्थनाशी संपर्क साधा."
-      },
-      "apiQuotaError": {
-        "title": "API वापर मर्यादा ओलांडली",
-        "description": "तुम्ही तुमची Gemini API वापर मर्यादा ओलांडली आहे. कृपया तुमचे Google Cloud बिलिंग खाते तपासा."
-      },
-      "interviewReady": {
-        "title": "मुलाखत तयार!",
-        "description": "तुमच्यासाठी {count} प्रश्न तयार केले. शुभेच्छा!"
-      },
-      "evaluationFailed": {
-        "title": "मूल्यांकन अयशस्वी",
-        "description": "यावेळी तुमच्या उत्तराचे मूल्यांकन करता आले नाही. कृपया पुन्हा प्रयत्न करा."
-      },
-      "sessionIssue": {
-        "title": "सत्र समस्या",
-        "description": "मुलाखत पूर्ण करण्यासाठी सत्र डेटा सापडला नाही."
-      },
-      "noAnswers": {
-        "title": "कोणतेही उत्तर दिले नाही",
-        "description": "अभिप्राय मिळविण्यासाठी कृपया किमान एका प्रश्नाचे उत्तर द्या."
-      },
-      "feedbackFailed": {
-        "title": "अभिप्राय निर्मिती अयशस्वी",
-        "description": "एकूण मुलाखत अभिप्राय तयार करता आला नाही. कृपया पुन्हा प्रयत्न करा."
-      },
-      "interviewComplete": {
-        "title": "मुलाखत पूर्ण!",
-        "description": "तुमचा एकूण अभिप्राय अहवाल खाली तयार आहे."
-      },
-      "micMuted": {
-        "title": "माइक म्यूट केले"
-      },
-      "micUnmuted": {
-        "title": "माइक अनम्यूट केले"
-      },
-      "notSupported": {
-        "title": "समर्थित नाही",
-        "description": "तुमच्या ब्राउझरमध्ये स्पीच रेकग्निशन समर्थित नाही. कृपया तुमचे उत्तर टाइप करा."
-      },
-      "recordingNotSupported": {
-        "title": "रेकॉर्डिंग समर्थित नाही",
-        "description": "तुमच्या ब्राउझरद्वारे सत्र ऑडिओ रेकॉर्डिंग समर्थित नाही."
-      },
-      "micError": {
-        "title": "माइक प्रवेश त्रुटी",
-        "description": "रेकॉर्डिंगसाठी मायक्रोफोन प्रवेश मिळवता आला नाही."
-      },
-      "noAudioInput": {
-        "title": "ऑडिओ इनपुट नाही",
-        "description": "मायक्रोफोन म्यूट असल्यामुळे रेकॉर्डिंग सुरू करता येत नाही."
-      },
-      "recordingError": {
-        "title": "रेकॉर्डिंग त्रुटी",
-        "description": "रेकॉर्ड करण्यासाठी मीडिया स्ट्रीम तयार करण्यात अयशस्वी."
-      },
-      "recordingInitError": {
-        "title": "रेकॉर्डिंग सुरू करण्यात त्रुटी",
-        "description": "MediaRecorder सुरू करण्यात अयशस्वी."
-      },
-      "recordingStopped": {
-        "title": "रेकॉर्डिंग थांबले",
-        "description": "ऑडिओ रेकॉर्डिंग या सत्रात सेव्ह केले आहे."
-      },
-      "recordingStarted": {
-        "title": "रेकॉर्डिंग सुरू झाले"
-      },
-      "timesUp": {
-        "title": "वेळ संपली!",
-        "description": "कृपया तुमचे उत्तर सबमिट करा."
-      }
-    }
+  "interviewPrep": {
+    "pageTitle": "मुलाखत तयारी केंद्र"
   },
+    "dailyChallenge": {
+      "title": "दैनिक मुलाखत आव्हान",
+      "refresh": "नवीन आव्हान मिळवा",
+      "category": "श्रेणी",
+      "difficulty": "काठिण्य",
+      "yourAnswer": "तुमचे उत्तर येथे टाइप करा...",
+      "showHint": "इशारा दाखवा",
+      "submit": "सबमिट करा",
+      "footerNote": "दररोज एक नवीन आव्हान पोस्ट केले जाते. तुमच्या मुलाखत कौशल्यात सुधारणा करण्यासाठी नियमित सराव करा!",
+      "completeTasksButton": "XP मिळवण्यासाठी कार्ये पूर्ण करा",
+      "flipChallengeTitle": "फ्लिप आव्हान",
+      "toast": {
+        "newChallenge": {
+          "title": "नवीन आव्हाने लोड केली",
+          "description": "तुमच्यासाठी एक नवीन मानक आणि फ्लिप आव्हान आणले आहे."
+        },
+        "showHint": {
+          "title": "इशारा",
+          "noHint": "या प्रश्नासाठी कोणताही विशिष्ट इशारा उपलब्ध नाही."
+        },
+        "submitMock": {
+          "title": "सबमिशन प्राप्त झाले (मॉक)",
+          "description": "एका वास्तविक अॅपमध्ये, तुमच्या उत्तराचे मूल्यांकन केले जाईल. हे वैशिष्ट्य लवकरच येत आहे!"
+        }
+      }
+    },
   "translateTool": {
     "title": "भाषांतर साधन",
     "enterTextLabel": "भाषांतरासाठी मजकूर प्रविष्ट करा",
@@ -514,7 +847,53 @@
         "description": "मिळालेल्या ऑफर्स."
       }
     }
+  },
+  "profile": {
+    "title": "माझे प्रोफाइल",
+    "editProfile": "प्रोफाइल संपादित करा",
+    "completion": "प्रोफाइल पूर्णता",
+    "completionTooltip": "अधिक वैशिष्ट्ये अनलॉक करण्यासाठी आणि चांगल्या शिफारसी मिळविण्यासाठी आपले प्रोफाइल पूर्ण करा.",
+    "completionPercent": "तुमचे प्रोफाइल {percent}% पूर्ण आहे.",
+    "aiSkillSuggestions": "AI कौशल्य सूचना",
+    "aiSkillDesc": "तुमच्या प्रोफाइलवर आधारित AI-शक्तीशाली कौशल्य सूचना मिळवा.",
+    "aiAnalyzing": "AI तुमच्या प्रोफाइलचे कौशल्य सूचनांसाठी विश्लेषण करत आहे...",
+    "noSkillSuggestions": "यावेळी नवीन कौशल्य सूचना नाहीत. तुमची बायो आणि करिअरची आवड भरलेली असल्याची खात्री करा!",
+    "relevance": "संबंध",
+    "addSkill": "कौशल्य जोडा",
+    "reasoning": "तर्क",
+    "getSkillSuggestions": "कौशल्य सूचना मिळवा",
+    "editToGetSuggestions": "सूचना मिळवण्यासाठी प्रोफाइल संपादित करा",
+    "savedTitle": "प्रोफाइल यशस्वीरित्या सेव्ह झाले!",
+    "savedDesc": "तुमची प्रोफाइल माहिती अद्यतनित झाली आहे.",
+    "ok": "ठीक आहे"
+  },
+  "wallet": {
+    "title": "डिजिटल वॉलेट",
+    "addCoins": "नाणी जोडा",
+    "currentBalance": "सध्याची शिल्लक",
+    "coins": "नाणी",
+    "usageHint": "माजी विद्यार्थी मार्गदर्शकांसोबत भेटी बुक करण्यासाठी नाण्यांचा वापर करा.",
+    "addFundsToastTitle": "निधी जोडा (मॉक)",
+    "addFundsToastDesc": "हे अधिक नाणी जोडण्यासाठी पेमेंट गेटवेवर नेईल.",
+    "transactionHistory": "व्यवहार इतिहास",
+    "recentActivity": "तुमचे अलीकडील क्रेडिट आणि डेबिट.",
+    "noTransactions": "तुमचे अद्याप कोणतेही व्यवहार नाहीत.",
+    "date": "तारीख",
+    "description": "वर्णन",
+    "amount": "रक्कम"
+  },
+  "spreadTheWord": {
+    "title": "शब्द पसरवा!",
+    "description": "आमचे प्लॅटफॉर्म वापरणे आवडते? ते तुमच्या मित्रांसह आणि नेटवर्कसह सामायिक करा आणि आमच्या समुदायाला वाढण्यास मदत करा.",
+    "toast": {
+      "copied": {
+        "title": "लिंक कॉपी केली!",
+        "description": "तुमची युनिक रेफरल लिंक शेअर करण्यासाठी तयार आहे."
+      }
+    }
+  },
+  "adminDashboard": {
+    "title": "प्रशासक डॅशबोर्ड"
   }
 }
 
-    
