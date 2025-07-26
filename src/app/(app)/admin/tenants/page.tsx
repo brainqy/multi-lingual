@@ -4,35 +4,59 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, PlusCircle, Edit3, Trash2 } from "lucide-react";
+import { Building2, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Tenant } from "@/types"; 
-import { useState } from "react";
-import { sampleTenants, sampleUserProfile } from "@/lib/sample-data";
+import { useState, useEffect } from "react";
+import { sampleUserProfile } from "@/lib/sample-data";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { getTenants, deleteTenant } from "@/lib/actions/tenants";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function TenantManagementPage() {
-  const [tenants, setTenants] = useState<Tenant[]>(sampleTenants);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
   const { t } = useI18n();
+
+  useEffect(() => {
+    async function loadTenants() {
+      setIsLoading(true);
+      const fetchedTenants = await getTenants();
+      setTenants(fetchedTenants);
+      setIsLoading(false);
+    }
+    loadTenants();
+  }, []);
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
-
   const handleEditTenant = (tenantId: string) => {
     toast({ title: t("tenantManagement.editActionMock", { default: "Edit action for tenant {tenantId} is a mock.", tenantId}), description: "" });
   };
 
-  const handleDeleteTenant = (tenantId: string) => {
-    setTenants(prev => prev.filter(t => t.id !== tenantId));
-    // Also remove from global sample data for demo persistence
-    const index = sampleTenants.findIndex(t => t.id === tenantId);
-    if (index > -1) sampleTenants.splice(index, 1);
-    toast({ title: t("tenantManagement.deleteActionToast", { default: "Tenant {tenantId} and associated data would be removed (mock).", tenantId}), variant: "destructive" });
+  const handleDeleteTenant = async (tenantId: string, tenantName: string) => {
+    const success = await deleteTenant(tenantId);
+    if (success) {
+      setTenants(prev => prev.filter(t => t.id !== tenantId));
+      toast({ title: t("tenantManagement.deleteActionToast", { default: "Tenant '{tenantName}' and all its data have been removed.", tenantName}), variant: "destructive" });
+    } else {
+      toast({ title: "Error", description: `Could not delete tenant '${tenantName}'.`, variant: "destructive" });
+    }
   };
 
   return (
@@ -54,7 +78,9 @@ export default function TenantManagementPage() {
           <CardTitle>{t("tenantManagement.tenantListTitle", { default: "Current Tenants" })}</CardTitle>
         </CardHeader>
         <CardContent>
-          {tenants.length === 0 ? (
+          {isLoading ? (
+             <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : tenants.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">{t("tenantManagement.noTenantsFound", { default: "No tenants have been onboarded yet. Click 'Create New Tenant' to get started." })}</p>
           ) : (
             <Table>
@@ -78,9 +104,27 @@ export default function TenantManagementPage() {
                       <Button variant="outline" size="sm" onClick={() => handleEditTenant(tenant.id)}>
                         <Edit3 className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteTenant(tenant.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="destructive" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the tenant "{tenant.name}" and all associated users and data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteTenant(tenant.id, tenant.name)} className="bg-destructive hover:bg-destructive/90">
+                              Delete Tenant
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -92,7 +136,3 @@ export default function TenantManagementPage() {
     </div>
   );
 }
-
-    
-
-    

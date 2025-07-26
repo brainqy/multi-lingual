@@ -12,11 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Building2, Palette, Settings, UserPlus, Eye, Layers3, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, Palette, Settings, UserPlus, Eye, Layers3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Tenant, TenantSettings } from "@/types";
-import { sampleTenants, sampleUserProfile } from "@/lib/sample-data"; 
-import Link from "next/link";
+import { sampleUserProfile } from "@/lib/sample-data"; 
+import { useRouter } from "next/navigation";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { createTenantWithAdmin } from "@/lib/actions/tenants";
 
 const tenantOnboardingSchema = z.object({
   tenantName: z.string().min(3),
@@ -32,7 +33,6 @@ const tenantOnboardingSchema = z.object({
   eventRegistrationEnabled: z.boolean().default(true),
   adminEmail: z.string().email(),
   adminName: z.string().min(1),
-  adminPassword: z.string().min(8),
 });
 
 type TenantOnboardingFormData = z.infer<typeof tenantOnboardingSchema>;
@@ -48,7 +48,9 @@ const STEPS_CONFIG = [
 export default function TenantOnboardingPage() {
   const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const translatedSchema = z.object({
     tenantName: z.string().min(3, t("validation.tenantNameMin", { default: "Tenant name must be at least 3 characters." })),
@@ -64,7 +66,6 @@ export default function TenantOnboardingPage() {
     eventRegistrationEnabled: z.boolean().default(true),
     adminEmail: z.string().email(t("validation.adminEmailInvalid", { default: "Please enter a valid admin email address." })),
     adminName: z.string().min(1, t("validation.adminNameRequired", { default: "Admin name is required." })),
-    adminPassword: z.string().min(8, t("validation.adminPasswordMin", { default: "Password must be at least 8 characters." })),
   });
 
 
@@ -83,7 +84,7 @@ export default function TenantOnboardingPage() {
   });
 
   const currentUser = sampleUserProfile; 
-    if (currentUser.role !== 'admin') {
+  if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
@@ -93,7 +94,7 @@ export default function TenantOnboardingPage() {
     switch (currentStep) {
       case 0: fieldsToValidate = ['tenantName', 'tenantDomain']; break;
       case 1: fieldsToValidate = ['customLogoUrl', 'primaryColor', 'accentColor']; break;
-      case 3: fieldsToValidate = ['adminEmail', 'adminName', 'adminPassword']; break;
+      case 3: fieldsToValidate = ['adminEmail', 'adminName']; break;
     }
     
     const isValid = fieldsToValidate.length > 0 ? await trigger(fieldsToValidate) : true;
@@ -109,8 +110,9 @@ export default function TenantOnboardingPage() {
     }
   };
 
-  const onSubmit = (data: TenantOnboardingFormData) => {
-    const newTenantSettings: TenantSettings = {
+  const onSubmit = async (data: TenantOnboardingFormData) => {
+    setIsSubmitting(true);
+    const tenantSettings: Omit<TenantSettings, 'id'> = {
       allowPublicSignup: data.allowPublicSignup,
       customLogoUrl: data.customLogoUrl,
       primaryColor: data.primaryColor,
@@ -124,20 +126,26 @@ export default function TenantOnboardingPage() {
       }
     };
 
-    const newTenant: Tenant = {
-      id: `tenant-${Date.now()}`,
+    const tenantData = {
       name: data.tenantName,
       domain: data.tenantDomain,
-      settings: newTenantSettings,
-      createdAt: new Date().toISOString(),
+      settings: tenantSettings,
+    };
+    
+    const adminUserData = {
+        name: data.adminName,
+        email: data.adminEmail,
     };
 
-    sampleTenants.push(newTenant); 
-    console.log("New Tenant Created (Mock):", newTenant);
-    console.log("Initial Admin User (Mock):", { email: data.adminEmail, name: data.adminName });
+    const newTenant = await createTenantWithAdmin(tenantData, adminUserData);
 
-    toast({ title: t("tenantOnboarding.toast.tenantCreated.title", { default: "Tenant Created!" }), description: t("tenantOnboarding.toast.tenantCreated.description", { default: "{tenantName} has been successfully onboarded.", tenantName: data.tenantName}) });
-    setCurrentStep(0); 
+    if (newTenant) {
+        toast({ title: t("tenantOnboarding.toast.tenantCreated.title", { default: "Tenant Created!" }), description: t("tenantOnboarding.toast.tenantCreated.description", { default: "{tenantName} has been successfully onboarded.", tenantName: data.tenantName}) });
+        router.push('/admin/tenants');
+    } else {
+        toast({ title: "Error", description: "Failed to create the new tenant.", variant: "destructive"});
+        setIsSubmitting(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -224,11 +232,6 @@ export default function TenantOnboardingPage() {
               <Controller name="adminEmail" control={control} render={({ field }) => <Input id="adminEmail" type="email" {...field} />} />
               {errors.adminEmail && <p className="text-sm text-destructive mt-1">{errors.adminEmail.message}</p>}
             </div>
-            <div>
-              <Label htmlFor="adminPassword">{t("tenantOnboarding.formLabels.adminPassword", { default: "Admin Password" })}</Label>
-              <Controller name="adminPassword" control={control} render={({ field }) => <Input id="adminPassword" type="password" {...field} />} />
-              {errors.adminPassword && <p className="text-sm text-destructive mt-1">{errors.adminPassword.message}</p>}
-            </div>
           </div>
         );
       case 4: 
@@ -280,7 +283,7 @@ export default function TenantOnboardingPage() {
             {renderStepContent()}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
-            <Button type="button" variant="outline" onClick={handlePrevStep} disabled={currentStep === 0}>
+            <Button type="button" variant="outline" onClick={handlePrevStep} disabled={currentStep === 0 || isSubmitting}>
               <ChevronLeft className="mr-2 h-4 w-4" /> {t("tenantOnboarding.buttons.previous", { default: "Previous" })}
             </Button>
             {currentStep < STEPS_CONFIG.length - 1 ? (
@@ -288,8 +291,9 @@ export default function TenantOnboardingPage() {
                 {t("tenantOnboarding.buttons.next", { default: "Next" })} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" className="bg-green-600 hover:bg-green-700 text-primary-foreground">
-                {t("tenantOnboarding.buttons.createTenant", { default: "Create Tenant" })}
+              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.createTenant", { default: "Create Tenant" })}
               </Button>
             )}
           </CardFooter>
@@ -298,7 +302,3 @@ export default function TenantOnboardingPage() {
     </div>
   );
 }
-
-    
-
-    
