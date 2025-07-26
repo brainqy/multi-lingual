@@ -11,159 +11,544 @@ datasource db {
 }
 
 model User {
-  id                        String      @id @default(cuid())
-  tenantId                  String
-  name                      String
-  email                     String      @unique
-  role                      String // 'admin', 'manager', 'user'
-  status                    String?
-  lastLogin                 DateTime?
-  dateOfBirth               DateTime?
-  gender                    String?
-  mobileNumber              String?
-  currentAddress            String?
-  graduationYear            String?
-  degreeProgram             String?
-  department                String?
-  currentJobTitle           String?
-  company                   String?
-  currentOrganization       String?
-  industry                  String?
-  workLocation              String?
-  linkedInProfile           String?
-  yearsOfExperience         String?
-  skills                    String[]
-  areasOfSupport            String[]
-  timeCommitment            String?
-  preferredEngagementMode   String?
-  otherComments             String?
-  lookingForSupportType     String?
-  helpNeededDescription     String?
-  shareProfileConsent       Boolean?
-  featureInSpotlightConsent Boolean?
-  profilePictureUrl         String?
-  resumeText                String?
-  careerInterests           String?
-  bio                       String?
-  interests                 String[]
-  offersHelpWith            String[]
-  appointmentCoinCost       Int?
-  xpPoints                  Int?
-  dailyStreak               Int?
-  longestStreak             Int?
-  totalActiveDays           Int?
-  weeklyActivity            Boolean[]
-  referralCode              String?
-  earnedBadges              String[]
-  affiliateCode             String?
-  pastInterviewSessions     String[]
-  interviewCredits          Int?
-  createdAt                 DateTime    @default(now())
-  isDistinguished           Boolean?
-  userApiKey                String?
-  challengeTopics           String[]
-  shortBio                  String?
-  university                String?
-  sessionId                 String?
-
-  @@unique(fields: [sessionId], name: "User_sessionId_key", nullsNotDistinct: false)
+  id                            String                 @id @default(cuid())
+  tenantId                      String?
+  name                          String
+  email                         String                 @unique
+  password                      String?
+  role                          String                 @default("user") // admin, manager, user
+  status                        String                 @default("active") // active, inactive, pending, suspended
+  lastLogin                     DateTime?
+  createdAt                     DateTime               @default(now())
+  updatedAt                     DateTime               @updatedAt
+  sessionId                     String?                @unique
+  dateOfBirth                   String?
+  gender                        String?
+  mobileNumber                  String?
+  currentAddress                String?
+  graduationYear                String?
+  degreeProgram                 String?
+  department                    String?
+  currentJobTitle               String?
+  currentOrganization           String?
+  industry                      String?
+  workLocation                  String?
+  linkedInProfile               String?
+  yearsOfExperience             String?
+  skills                        String[]
+  areasOfSupport                Json?
+  timeCommitment                String?
+  preferredEngagementMode       String?
+  otherComments                 String?
+  lookingForSupportType         String?
+  helpNeededDescription         String?
+  shareProfileConsent           Boolean?
+  featureInSpotlightConsent     Boolean?
+  profilePictureUrl             String?
+  resumeText                    String?
+  careerInterests               String?
+  bio                           String?
+  interests                     String[]
+  offersHelpWith                String[]
+  appointmentCoinCost           Int?
+  xpPoints                      Int?
+  dailyStreak                   Int?
+  longestStreak                 Int?
+  totalActiveDays               Int?
+  weeklyActivity                Boolean[]
+  referralCode                  String?                @unique
+  earnedBadges                  String[]
+  affiliateCode                 String?
+  pastInterviewSessions         String[]
+  interviewCredits              Int?
+  isDistinguished               Boolean?
+  challengeTopics               String[]
+  challengeProgress             Json?
+  company                       String?
+  university                    String?
+  userApiKey                    String?
+  createdAnnouncements          Announcement[]
+  createdJobOpenings            JobOpening[]
+  jobApplications               JobApplication[]
+  requesterAppointments         Appointment[]          @relation("Requester")
+  alumniAppointments            Appointment[]          @relation("Alumni")
+  resumeProfiles                ResumeProfile[]
+  resumeScanHistories           ResumeScanHistory[]
+  createdFeatureRequests        FeatureRequest[]
+  communityPosts                CommunityPost[]
+  communityComments             CommunityComment[]
+  activities                    Activity[]
+  affiliateProfile              Affiliate?
+  createdPromoCodes             PromoCode[]
+  createdSurveys                Survey[]
+  surveyResponses               SurveyResponse[]
+  wallet                        Wallet?
+  affiliateSignups              AffiliateSignup[]      @relation("ReferredBy")
+  referredByUser                AffiliateSignup?       @relation("NewUserSignup")
+  referredByAffiliateSignupId   String?                @unique
+  // Relations for Mock Interviews
+  createdMockInterviewSessions  MockInterviewSession[]
+  createdInterviewQuestions     InterviewQuestion[]
+  ratedInterviewQuestions       Json? // Storing as JSON: InterviewQuestionUserRating[]
+  commentedOnInterviewQuestions Json? // Storing as JSON: InterviewQuestionUserComment[]
 }
 
 model Tenant {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  domain    String?  @unique
-  createdAt DateTime @default(now())
-  settings  Json?
+  domain    String?         @unique
+  createdAt DateTime        @default(now())
+  settings  TenantSettings?
+}
+
+model TenantSettings {
+  id                        String         @id @default(cuid())
+  tenantId                  String         @unique
+  tenant                    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  allowPublicSignup         Boolean        @default(true)
+  customLogoUrl             String?
+  primaryColor              String?
+  accentColor               String?
+  features                  Json?
+  emailTemplates            Json?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+}
+
+model Language {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+}
+
+model Translation {
+  id             String @id @default(cuid())
+  languageId     String
+  language       Language @relation(fields: [languageId], references: [id])
+  key            String
+  value          String
+  isAutoTranslated Boolean @default(false)
+  qualityScore   Int?
+
+  @@unique([languageId, key])
+}
+
+model JobOpening {
+  id               String   @id @default(cuid())
+  tenantId         String?
+  title            String
+  company          String
+  location         String
+  description      String
+  datePosted       DateTime @default(now())
+  type             String
+  postedByAlumniId String
+  postedBy         User     @relation(fields: [postedByAlumniId], references: [id])
+  alumniName       String
+  applicationLink  String?
 }
 
 model JobApplication {
   id                   String      @id @default(cuid())
-  tenantId             String
+  tenantId             String?
   userId               String
+  user                 User        @relation(fields: [userId], references: [id])
   companyName          String
   jobTitle             String
-  status               String // JobApplicationStatus
-  dateApplied          String
+  status               String
+  dateApplied          DateTime
   notes                String[]
   jobDescription       String?
   location             String?
   salary               String?
-  reminderDate         String?
+  reminderDate         DateTime?
   sourceJobOpeningId   String?
   applicationUrl       String?
   resumeIdUsed         String?
   coverLetterText      String?
-  interviews           Json[] // Storing Interview objects as JSON
+  interviews           Interview[]
 }
 
-model ResumeScanHistory {
-  id                   String  @id @default(cuid())
-  tenantId             String
-  userId               String
-  resumeId             String
-  resumeName           String
-  jobTitle             String
-  companyName          String
-  resumeTextSnapshot   String
-  jobDescriptionText   String
-  scanDate             String
-  matchScore           Int?
-  bookmarked           Boolean?
-}
-
-model CommunityPost {
-  id                String   @id @default(cuid())
-  tenantId          String
-  userId            String
-  userName          String
-  userAvatar        String?
-  timestamp         String
-  content           String?
-  type              String // 'text', 'poll', 'event', 'request'
-  tags              String[]
-  imageUrl          String?
-  pollOptions       Json[] // { option: string, votes: number }[]
-  eventTitle        String?
-  eventDate         String?
-  eventLocation     String?
-  attendees         Int?
-  capacity          Int?
-  assignedTo        String?
-  status            String? // 'open', 'assigned', 'completed'
-  moderationStatus  String // 'visible', 'flagged', 'removed'
-  flagCount         Int
-  comments          Json[] // CommunityComment[]
-  bookmarkedBy      String[]
+model Interview {
+  id               String        @id @default(cuid())
+  jobApplicationId String
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  date             DateTime
+  type             String
+  interviewer      String
+  interviewerEmail String?
+  interviewerMobile String?
+  notes            String[]
 }
 
 model Appointment {
-  id                String @id @default(cuid())
-  tenantId          String
-  requesterUserId   String
-  alumniUserId      String
-  title             String
-  dateTime          String
-  status            String // AppointmentStatus
-  withUser          String
-  reminderDate      String?
-  costInCoins       Int?
-  notes             String?
+  id              String   @id @default(cuid())
+  tenantId        String?
+  requesterUserId String
+  requesterUser   User     @relation("Requester", fields: [requesterUserId], references: [id])
+  alumniUserId    String
+  alumniUser      User     @relation("Alumni", fields: [alumniUserId], references: [id])
+  title           String
+  dateTime        DateTime
+  status          String
+  meetingLink     String?
+  location        String?
+  notes           String?
+  costInCoins     Int?
+  reminderDate    DateTime?
+}
+
+model ResumeProfile {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
+  resumeText   String
+  lastAnalyzed DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ResumeScanHistory {
+  id                  String   @id @default(cuid())
+  tenantId            String?
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  resumeId            String
+  resumeName          String
+  jobTitle            String
+  companyName         String
+  resumeTextSnapshot  String
+  jobDescriptionText  String
+  scanDate            DateTime @default(now())
+  matchScore          Int?
+  bookmarked          Boolean?
+}
+
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  userName    String
+  userAvatar  String?
+  timestamp   DateTime @default(now())
+  title       String
+  description String
+  status      String
+  upvotes     Int      @default(0)
+}
+
+model CommunityPost {
+  id               String             @id @default(cuid())
+  tenantId         String?
+  userId           String
+  user             User               @relation(fields: [userId], references: [id])
+  userName         String
+  userAvatar       String?
+  timestamp        DateTime           @default(now())
+  content          String?
+  type             String
+  tags             String[]
+  imageUrl         String?
+  pollOptions      Json?
+  eventTitle       String?
+  eventDate        DateTime?
+  eventLocation    String?
+  attendees        Int?
+  capacity         Int?
+  assignedTo       String?
+  status           String?
+  moderationStatus String
+  flagCount        Int                @default(0)
+  bookmarkedBy     String[]
+  comments         CommunityComment[]
+}
+
+model CommunityComment {
+  id        String         @id @default(cuid())
+  postId    String
+  post      CommunityPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  userName  String
+  userAvatar String?
+  timestamp DateTime       @default(now())
+  comment   String
+  parentId  String?
+  parent    CommunityComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   CommunityComment[] @relation("CommentReplies")
 }
 
 model Activity {
-    id          String @id @default(cuid())
-    tenantId    String
-    userId      String
-    timestamp   String
-    description String
+  id          String   @id @default(cuid())
+  tenantId    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  timestamp   DateTime @default(now())
+  description String
+}
+
+model Announcement {
+  id             String    @id @default(cuid())
+  tenantId       String?
+  title          String
+  content        String
+  startDate      DateTime
+  endDate        DateTime?
+  audience       String
+  audienceTarget String?
+  status         String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+  creator        User      @relation(fields: [createdBy], references: [id])
+}
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  userId       String
+  userName     String
+  userAvatar   String?
+  title        String
+  slug         String   @unique
+  author       String
+  date         DateTime
+  imageUrl     String?
+  dataAiHint   String?
+  content      String
+  excerpt      String
+  tags         String[]
+  comments     Json? // Simplified for now
+  bookmarkedBy String[]
+}
+
+model BlogGenerationSettings {
+  id                      String   @id @default(cuid())
+  generationIntervalHours Int
+  topics                  String[]
+  style                   String?
+  lastGenerated           DateTime?
 }
 
 model Badge {
-    id               String @id @default(cuid())
-    name             String
-    description      String
-    icon             String
-    xpReward         Int?
-    triggerCondition String?
+  id               String  @id @default(cuid())
+  name             String  @unique
+  description      String
+  icon             String
+  xpReward         Int?
+  triggerCondition String?
 }
+
+model GamificationRule {
+  actionId    String @id
+  description String
+  xpPoints    Int
+}
+
+model PromoCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  description String
+  rewardType  String
+  rewardValue Int
+  expiresAt   DateTime?
+  usageLimit  Int       @default(0)
+  timesUsed   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdBy   String?
+  creator     User?     @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model Survey {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  questions   Json
+  createdBy   String
+  creator     User             @relation(fields: [createdBy], references: [id])
+  tenantId    String?
+  createdAt   DateTime         @default(now())
+  responses   SurveyResponse[]
+}
+
+model SurveyResponse {
+  id           String   @id @default(cuid())
+  surveyId     String
+  survey       Survey   @relation(fields: [surveyId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  userName     String
+  responseDate DateTime @default(now())
+  data         Json
+}
+
+model Wallet {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  user         User                @relation(fields: [userId], references: [id])
+  coins        Int                 @default(0)
+  flashCoins   Json?
+  transactions WalletTransaction[]
+  updatedAt    DateTime            @updatedAt
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  date        DateTime @default(now())
+  description String
+  amount      Int
+  type        String // "credit" or "debit"
+}
+
+model Affiliate {
+  id           String            @id @default(cuid())
+  userId       String            @unique
+  user         User              @relation(fields: [userId], references: [id])
+  name         String
+  email        String
+  status       String // pending, approved, rejected
+  affiliateCode String            @unique
+  commissionRate Float
+  totalEarned  Float             @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  clicks       AffiliateClick[]
+  signups      AffiliateSignup[] @relation("AffiliateReferrer")
+}
+
+model AffiliateClick {
+  id                String    @id @default(cuid())
+  affiliateId       String
+  affiliate         Affiliate @relation(fields: [affiliateId], references: [id])
+  timestamp         DateTime  @default(now())
+  ipAddress         String?
+  convertedToSignup Boolean   @default(false)
+}
+
+model AffiliateSignup {
+  id               String    @id @default(cuid())
+  affiliateId      String
+  affiliate        Affiliate @relation("AffiliateReferrer", fields: [affiliateId], references: [id])
+  newUserId        String    @unique
+  newUser          User      @relation("NewUserSignup", fields: [newUserId], references: [id])
+  signupDate       DateTime  @default(now())
+  commissionEarned Float?
+  referrer         User      @relation("ReferredBy", fields: [referrerId], references: [id])
+  referrerId       String
+}
+
+model InterviewQuestion {
+  id              String   @id @default(cuid())
+  category        String
+  questionText    String   @unique
+  isMCQ           Boolean? @default(false)
+  mcqOptions      Json?
+  correctAnswer   String?
+  answerOrTip     String
+  tags            String[]
+  difficulty      String?
+  rating          Float?   @default(0)
+  ratingsCount    Int?     @default(0)
+  userRatings     Json?
+  userComments    Json?
+  createdBy       String
+  creator         User     @relation(fields: [createdBy], references: [id])
+  approved        Boolean? @default(true)
+  createdAt       DateTime @default(now())
+  bookmarkedBy    String[]
+  baseScore       Int?     @default(10)
+}
+
+model MockInterviewSession {
+  id                 String                @id @default(cuid())
+  userId             String
+  user               User                  @relation(fields: [userId], references: [id])
+  topic              String
+  description        String?
+  jobDescription     String?
+  questions          Json
+  answers            MockInterviewAnswer[]
+  overallFeedback    Json?
+  overallScore       Float?
+  status             String
+  createdAt          DateTime              @default(now())
+  timerPerQuestion   Int?
+  difficulty         String?
+  questionCategories String[]
+  recordingReferences Json?
+}
+
+model MockInterviewAnswer {
+  id                    String               @id @default(cuid())
+  sessionId             String
+  session               MockInterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId            String
+  questionText          String
+  userAnswer            String
+  aiFeedback            String?
+  aiScore               Float?
+  strengths             String[]
+  areasForImprovement   String[]
+  suggestedImprovements String[]
+}
+
+model SystemAlert {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  timestamp DateTime @default(now())
+  linkTo    String?
+  linkText  String?
+  isRead    Boolean  @default(false)
+}
+
+model DailyChallenge {
+  id          String  @id @default(cuid())
+  type        String // "standard" or "flip"
+  date        String? // For standard daily challenges
+  title       String
+  description String
+  difficulty  String?
+  category    String?
+  solution    String?
+  xpReward    Int?
+  tasks       Json?
+}
+
+model PromotionalContent {
+  id           String   @id @default(cuid())
+  isActive     Boolean  @default(true)
+  title        String
+  description  String
+  imageUrl     String
+  imageAlt     String
+  imageHint    String?
+  buttonText   String
+  buttonLink   String
+  gradientFrom String?
+  gradientVia  String?
+  gradientTo   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ProductCompany {
+  id            String  @id @default(cuid())
+  name          String  @unique
+  location      String
+  websiteUrl    String
+  domain        String
+  hrName        String?
+  hrEmail       String?
+  contactNumber String?
+  logoUrl       String?
+}
+
+    
