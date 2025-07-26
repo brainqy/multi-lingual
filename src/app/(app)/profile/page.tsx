@@ -25,6 +25,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { useAuth } from '@/hooks/use-auth';
+import { updateUser } from '@/lib/data-services/users';
+
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -69,7 +72,7 @@ type SuggestedSkill = SuggestDynamicSkillsOutput['suggestedSkills'][0];
 
 export default function ProfilePage() {
   const { t } = useI18n();
-  const [userProfile, setUserProfile] = useState<UserProfile>(sampleUserProfile);
+  const { user, login } = useAuth(); // Use auth context
   const [isEditing, setIsEditing] = useState(false); 
   const [suggestedSkills, setSuggestedSkills] = useState<SuggestedSkill[] | null>(null);
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
@@ -78,48 +81,20 @@ export default function ProfilePage() {
 
   const { control, handleSubmit, watch, reset, setValue, formState: { errors, isDirty } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: userProfile.name,
-      email: userProfile.email,
-      dateOfBirth: userProfile.dateOfBirth ? new Date(userProfile.dateOfBirth) : undefined,
-      gender: userProfile.gender,
-      mobileNumber: userProfile.mobileNumber || '',
-      currentAddress: userProfile.currentAddress || '',
-      graduationYear: userProfile.graduationYear || '',
-      degreeProgram: userProfile.degreeProgram,
-      department: userProfile.department || '',
-      currentJobTitle: userProfile.currentJobTitle || '',
-      currentOrganization: userProfile.currentOrganization || '',
-      industry: userProfile.industry,
-      workLocation: userProfile.workLocation || '',
-      linkedInProfile: userProfile.linkedInProfile || '',
-      yearsOfExperience: userProfile.yearsOfExperience || '',
-      skills: userProfile.skills?.join(', ') || '',
-      areasOfSupport: userProfile.areasOfSupport || [],
-      timeCommitment: userProfile.timeCommitment,
-      preferredEngagementMode: userProfile.preferredEngagementMode,
-      otherComments: userProfile.otherComments || '',
-      lookingForSupportType: userProfile.lookingForSupportType,
-      helpNeededDescription: userProfile.helpNeededDescription || '',
-      shareProfileConsent: userProfile.shareProfileConsent ?? true,
-      featureInSpotlightConsent: userProfile.featureInSpotlightConsent ?? false,
-      profilePictureUrl: userProfile.profilePictureUrl || '',
-      resumeText: userProfile.resumeText || '',
-      careerInterests: userProfile.careerInterests || '',
-      bio: userProfile.bio || '',
-    }
   });
   
   useEffect(() => {
-    reset({
-      ...sampleUserProfile,
-      dateOfBirth: sampleUserProfile.dateOfBirth ? new Date(sampleUserProfile.dateOfBirth) : undefined,
-      skills: sampleUserProfile.skills?.join(', ') || '',
-      areasOfSupport: sampleUserProfile.areasOfSupport || [],
-      shareProfileConsent: sampleUserProfile.shareProfileConsent ?? true,
-      featureInSpotlightConsent: sampleUserProfile.featureInSpotlightConsent ?? false,
-    });
-  }, [sampleUserProfile, reset]);
+    if (user) {
+      reset({
+        ...user,
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
+        skills: user.skills?.join(', ') || '',
+        areasOfSupport: user.areasOfSupport || [],
+        shareProfileConsent: user.shareProfileConsent ?? true,
+        featureInSpotlightConsent: user.featureInSpotlightConsent ?? false,
+      });
+    }
+  }, [user, reset]);
 
 
   const watchedFields = watch();
@@ -145,9 +120,10 @@ export default function ProfilePage() {
 
   const profileCompletion = calculateProfileCompletion();
 
-  const onSubmit = (data: ProfileFormData) => {
-    const updatedProfileData: UserProfile = {
-      ...userProfile, 
+  const onSubmit = async (data: ProfileFormData) => {
+    if (!user) return;
+
+    const updatedProfileData: Partial<UserProfile> = {
       ...data,
       dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : undefined,
       skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
@@ -158,14 +134,22 @@ export default function ProfilePage() {
       preferredEngagementMode: data.preferredEngagementMode,
       lookingForSupportType: data.lookingForSupportType,
     };
-    setUserProfile(updatedProfileData);
 
-    if (sampleUserProfile.id === updatedProfileData.id) {
-        Object.assign(sampleUserProfile, updatedProfileData);
+    const updatedUser = await updateUser(user.id, updatedProfileData);
+
+    if (updatedUser) {
+      // Re-login to update the user in the auth context
+      await login(updatedUser.email);
+      setIsEditing(false); 
+      setIsProfileSavedDialogOpen(true);
+      reset(updatedUser); // Reset form to show new clean state
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "Could not save your profile changes. Please try again.",
+        variant: "destructive",
+      });
     }
-    setIsEditing(false); 
-    console.log("Updated Profile Data (mock):", updatedProfileData);
-    setIsProfileSavedDialogOpen(true);
   };
   
   const renderSectionHeader = (title: string, icon: React.ElementType, tooltipText?: string) => {
@@ -240,6 +224,14 @@ export default function ProfilePage() {
   };
 
 
+  if (!user) {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
     <TooltipProvider>
@@ -279,8 +271,8 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div className="relative group">
                   <Avatar className="h-24 w-24 border-2 border-primary">
-                    <AvatarImage src={watchedFields.profilePictureUrl || "https://picsum.photos/seed/defaultavatar/200/200"} alt={userProfile.name} data-ai-hint="person portrait"/>
-                    <AvatarFallback className="text-3xl">{userProfile.name?.substring(0,1).toUpperCase() || 'U'}</AvatarFallback>
+                    <AvatarImage src={watchedFields.profilePictureUrl || "https://picsum.photos/seed/defaultavatar/200/200"} alt={user.name} data-ai-hint="person portrait"/>
+                    <AvatarFallback className="text-3xl">{user.name?.substring(0,1).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                   {isEditing && (
                     <>
