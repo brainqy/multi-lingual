@@ -14,7 +14,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent, Badge } from '@/types';
+import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent } from '@/types';
+import type { Badge as BadgeType } from '@/types';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
@@ -178,7 +179,7 @@ export default function UserDashboard() {
       .sort((a: ActivityType, b: ActivityType) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 5);
 
-    const badges = dashboardData.badges.filter((badge: Badge) => user.earnedBadges?.includes(badge.id));
+    const badges = dashboardData.badges.filter((badge: BadgeType) => user.earnedBadges?.includes(badge.id));
 
     const leaders = [...dashboardData.users]
       .filter((u: UserProfile) => typeof u.xpPoints === 'number' && u.xpPoints > 0)
@@ -457,7 +458,7 @@ export default function UserDashboard() {
                     {earnedBadges.length > 0 ? (
                         <TooltipProvider>
                             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                                {earnedBadges.slice(0, 12).map((badge: Badge) => (
+                                {earnedBadges.slice(0, 12).map((badge: BadgeType) => (
                                     <UITooltip key={badge.id}>
                                         <TooltipTrigger asChild>
                                             <div className="flex flex-col items-center p-2 border rounded-lg bg-primary/10 text-center transition-transform hover:scale-105">
