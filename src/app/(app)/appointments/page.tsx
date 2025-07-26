@@ -4,14 +4,14 @@
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, PlusCircle, Video, CheckCircle, Clock, XCircle, ThumbsUp, Filter, Edit3, CalendarPlus, MessageSquare as FeedbackIcon, Star as StarIcon, Users as UsersIcon } from "lucide-react";
-import {  sampleAlumni, sampleUserProfile, sampleCommunityPosts } from "@/lib/sample-data";
+import { CalendarDays, PlusCircle, Video, CheckCircle, Clock, XCircle, ThumbsUp, Filter, Edit3, CalendarPlus, MessageSquare as FeedbackIcon, Star as StarIcon, Users as UsersIcon, Loader2 } from "lucide-react";
+import { sampleAlumni, sampleUserProfile, sampleCommunityPosts } from "@/lib/sample-data";
 import type { Appointment, AlumniProfile, AppointmentStatus, PreferredTimeSlot, CommunityPost } from "@/types";
 import { AppointmentStatuses, PreferredTimeSlots } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, parseISO, isFuture, differenceInDays } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Badge } from '@/components/ui/badge';
-import { sampleAppointments } from "@/lib/data/appointments";
+import { getAppointments, updateAppointment } from "@/lib/actions/appointments";
 
 const rescheduleSchema = z.object({
   preferredDate: z.date({ required_error: "New date is required." }),
@@ -45,7 +45,8 @@ type FeedbackFormData = z.infer<typeof feedbackSchema>;
 export default function AppointmentsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const [appointments, setAppointments] = useState<Appointment[]>(sampleAppointments.filter(a => a.requesterUserId === sampleUserProfile.id || a.alumniUserId === sampleUserProfile.id));
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
   const [filterStartDate, setFilterStartDate] = useState<Date | undefined>();
   const [filterEndDate, setFilterEndDate] = useState<Date | undefined>();
@@ -63,6 +64,18 @@ export default function AppointmentsPage() {
     resolver: zodResolver(feedbackSchema),
     defaultValues: { rating: 0, comments: ''}
   });
+  
+  const fetchAppointments = useCallback(async () => {
+    setIsLoading(true);
+    const userAppointments = await getAppointments(sampleUserProfile.id);
+    setAppointments(userAppointments);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
 
   const assignedPosts = useMemo(() => {
     return sampleCommunityPosts.filter(
@@ -82,34 +95,26 @@ export default function AppointmentsPage() {
     return sampleAlumni.find(a => a.name === name);
   };
 
+  const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, successToast: { title: string, description: string }, variant?: "destructive") => {
+    const updated = await updateAppointment(appointmentId, { status });
+    if(updated) {
+        setAppointments(prev => prev.map(appt => appt.id === appointmentId ? updated : appt));
+        toast({ title: successToast.title, description: successToast.description, variant });
+    } else {
+        toast({ title: "Update Failed", description: "Could not update the appointment status.", variant: "destructive"});
+    }
+  };
+
   const handleAcceptAppointment = (appointmentId: string) => {
-    const updateGlobalAndLocal = (updater: (appt: Appointment) => Appointment) => {
-        setAppointments(prevAppointments => prevAppointments.map(appt => appt.id === appointmentId ? updater(appt) : appt));
-        const globalIndex = sampleAppointments.findIndex(sa => sa.id === appointmentId);
-        if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
-    };
-    updateGlobalAndLocal(appt => ({ ...appt, status: 'Confirmed' as AppointmentStatus }));
-    toast({ title: t("appointments.toastConfirmed", { default: "Appointment Confirmed!" }), description: t("appointments.toastConfirmedDesc", { default: "The appointment has been accepted." }) });
+    updateAppointmentStatus(appointmentId, 'Confirmed', { title: t("appointments.toastConfirmed", { default: "Appointment Confirmed!" }), description: t("appointments.toastConfirmedDesc", { default: "The appointment has been accepted." }) });
   };
 
   const handleDeclineAppointment = (appointmentId: string) => {
-     const updateGlobalAndLocal = (updater: (appt: Appointment) => Appointment) => {
-        setAppointments(prevAppointments => prevAppointments.map(appt => appt.id === appointmentId ? updater(appt) : appt));
-        const globalIndex = sampleAppointments.findIndex(sa => sa.id === appointmentId);
-        if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
-    };
-    updateGlobalAndLocal(appt => ({ ...appt, status: 'Cancelled' as AppointmentStatus }));
-    toast({ title: t("appointments.toastDeclined", { default: "Appointment Declined" }), description: t("appointments.toastDeclinedDesc", { default: "The appointment request has been declined." }), variant: "destructive" });
+    updateAppointmentStatus(appointmentId, 'Cancelled', { title: t("appointments.toastDeclined", { default: "Appointment Declined" }), description: t("appointments.toastDeclinedDesc", { default: "The appointment request has been declined." }) }, "destructive");
   };
 
   const handleMarkComplete = (appointmentId: string) => {
-    const updateGlobalAndLocal = (updater: (appt: Appointment) => Appointment) => {
-        setAppointments(prevAppointments => prevAppointments.map(appt => appt.id === appointmentId ? updater(appt) : appt));
-        const globalIndex = sampleAppointments.findIndex(sa => sa.id === appointmentId);
-        if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
-    };
-    updateGlobalAndLocal(appt => ({ ...appt, status: 'Completed' as AppointmentStatus }));
-    toast({ title: t("appointments.toastCompleted", { default: "Appointment Completed" }), description: t("appointments.toastCompletedDesc", { default: "The appointment has been marked as complete." }) });
+    updateAppointmentStatus(appointmentId, 'Completed', { title: t("appointments.toastCompleted", { default: "Appointment Completed" }), description: t("appointments.toastCompletedDesc", { default: "The appointment has been marked as complete." }) });
   };
 
   const openRescheduleDialog = (appointment: Appointment) => {
@@ -122,7 +127,7 @@ export default function AppointmentsPage() {
     setIsRescheduleDialogOpen(true);
   };
 
-  const onRescheduleSubmit = (data: RescheduleFormData) => {
+  const onRescheduleSubmit = async (data: RescheduleFormData) => {
     if (!appointmentToReschedule) return;
     const newDateTime = new Date(data.preferredDate);
     const timeParts = data.preferredTimeSlot.match(/(\d+)(AM|PM)/);
@@ -133,20 +138,15 @@ export default function AppointmentsPage() {
       newDateTime.setHours(hour, 0, 0, 0);
     }
 
-    const updateGlobalAndLocal = (updater: (appt: Appointment) => Appointment) => {
-        setAppointments(prevAppointments => prevAppointments.map(appt => appt.id === appointmentToReschedule.id ? updater(appt) : appt));
-        const globalIndex = sampleAppointments.findIndex(sa => sa.id === appointmentToReschedule.id);
-        if (globalIndex !== -1) sampleAppointments[globalIndex] = updater(sampleAppointments[globalIndex]);
-    };
+    const updated = await updateAppointment(appointmentToReschedule.id, { dateTime: newDateTime.toISOString(), status: 'Pending' });
 
-    updateGlobalAndLocal(appt => ({ 
-        ...appt, 
-        dateTime: newDateTime.toISOString(), 
-        status: 'Pending' as AppointmentStatus
-    }));
-
-    toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: appointmentToReschedule.withUser }) });
-    setIsRescheduleDialogOpen(false);
+    if (updated) {
+        setAppointments(prev => prev.map(appt => appt.id === appointmentToReschedule.id ? updated : appt));
+        toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: appointmentToReschedule.withUser }) });
+        setIsRescheduleDialogOpen(false);
+    } else {
+        toast({ title: "Reschedule Failed", description: "Could not send reschedule request.", variant: "destructive" });
+    }
   };
 
   const openFeedbackDialog = (appointment: Appointment) => {
@@ -157,6 +157,8 @@ export default function AppointmentsPage() {
 
   const onFeedbackSubmit = (data: FeedbackFormData) => {
     if (!appointmentForFeedback) return;
+    // In a real app, this would be an API call to save the feedback
+    console.log("Feedback submitted (mock):", { appointmentId: appointmentForFeedback.id, ...data });
     toast({ title: t("appointments.toastFeedback", { default: "Feedback Submitted" }), description: t("appointments.toastFeedbackDesc", { default: "Thank you for your feedback on your session with {user}.", user: appointmentForFeedback.withUser }) });
     setIsFeedbackDialogOpen(false);
   };
@@ -181,6 +183,14 @@ export default function AppointmentsPage() {
       return matchesStatus && matchesStartDate && matchesEndDate && matchesName;
     });
   }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName]);
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -194,27 +204,6 @@ export default function AppointmentsPage() {
       </div>
       <CardDescription>{t("appointments.pageDescription", { default: "View and manage your scheduled appointments, mock interviews, and assigned community requests." })}</CardDescription>
 
-      {/* Assigned Posts Section */}
-      {assignedPosts.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4 text-foreground">{t("appointments.assignedPosts", { default: "Assigned Posts" })}</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {assignedPosts.map(post => (
-              <Card key={post.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="text-lg">{post.content}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{t("appointments.assignedTo", { default: "Assigned to" })} {post.assignedTo}</p>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{post.tags?.join(', ') || t("appointments.noTags", { default: "No tags" })}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Existing Appointments Section */}
       <Accordion type="single" collapsible className="w-full bg-card shadow-lg rounded-lg">
         <AccordionItem value="filters">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">

@@ -28,6 +28,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from "@/hooks/use-i18n";
+import { createAppointment } from '@/lib/actions/appointments';
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
@@ -138,7 +139,7 @@ export default function AlumniConnectPage() {
     setIsBookingDialogOpen(true);
   };
 
-  const onBookAppointmentSubmit = (data: BookingFormData) => {
+  const onBookAppointmentSubmit = async (data: BookingFormData) => {
     if (!alumniToBook) return;
     const cost = alumniToBook.appointmentCoinCost || 10;
 
@@ -150,25 +151,51 @@ export default function AlumniConnectPage() {
       });
       return;
     }
+    
+    const [hourStr] = data.preferredTimeSlot.match(/\d+/) || ['0'];
+    const isPM = data.preferredTimeSlot.includes('PM');
+    let hour = parseInt(hourStr, 10);
+    if (isPM && hour !== 12) hour += 12;
+    if (!isPM && hour === 12) hour = 0;
+    
+    const finalDate = new Date(data.preferredDate);
+    finalDate.setHours(hour, 30, 0, 0);
 
-    // Deduct coins and create a transaction record
-    sampleWalletBalance.coins -= cost;
-    sampleWalletBalance.transactions.unshift({
-      id: `txn-appt-${Date.now()}`,
-      tenantId: currentUser.tenantId,
-      userId: currentUser.id,
-      date: new Date().toISOString(),
-      description: `Appointment fee for ${alumniToBook.name}`,
-      amount: -cost,
-      type: 'debit',
-    });
+    const newAppointmentData = {
+        tenantId: alumniToBook.tenantId,
+        requesterUserId: currentUser.id,
+        alumniUserId: alumniToBook.id,
+        title: data.purpose,
+        dateTime: finalDate.toISOString(),
+        status: 'Pending' as const,
+        notes: data.message,
+        costInCoins: cost,
+        withUser: alumniToBook.name
+    };
 
-    toast({
-      title: `-${cost} Coins`,
-      description: `Your appointment request with ${alumniToBook.name} has been sent.`,
-    });
-    // In a real app, you would also create the appointment record here.
-    setIsBookingDialogOpen(false);
+    const newAppointment = await createAppointment(newAppointmentData);
+
+    if (newAppointment) {
+        // Deduct coins and create a transaction record
+        sampleWalletBalance.coins -= cost;
+        sampleWalletBalance.transactions.unshift({
+          id: `txn-appt-${Date.now()}`,
+          tenantId: currentUser.tenantId,
+          userId: currentUser.id,
+          date: new Date().toISOString(),
+          description: `Appointment fee for ${alumniToBook.name}`,
+          amount: -cost,
+          type: 'debit',
+        });
+
+        toast({
+          title: `-${cost} Coins`,
+          description: `Your appointment request with ${alumniToBook.name} has been sent.`,
+        });
+        setIsBookingDialogOpen(false);
+    } else {
+        toast({ title: "Booking Failed", description: "Could not create the appointment. Please try again.", variant: "destructive" });
+    }
   };
 
   const handleToggleDistinguished = async (alumniId: string) => {
@@ -524,7 +551,7 @@ export default function AlumniConnectPage() {
               <p className="text-sm text-muted-foreground">
                 {t("alumniConnect.feeNotice_part1", { default: "A fee of " })}
                 <strong className="text-primary">{alumniToBook.appointmentCoinCost || 10} coins</strong>
-                {t("alumniConnect.feeNotice_part2", { default: " coins will be deducted upon confirmation." })}
+                {t("alumniConnect.feeNotice_part2", { default: " will be deducted upon confirmation." })}
               </p>
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="outline">{t("alumniConnect.cancel", { default: "Cancel" })}</Button></DialogClose>
