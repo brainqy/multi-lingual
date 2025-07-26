@@ -2,93 +2,68 @@
 "use client";
 
 import type { JobOpening, UserProfile } from '@/types';
-import { sampleJobOpenings } from './data/jobs';
-import { sampleUserProfile } from './data/users';
+import { db } from '@/lib/db'; // Import db client
 
 const useMockDb = process.env.USE_MOCK_DB === 'true';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const getHeaders = () => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (sampleUserProfile?.tenantId) {
-    headers['X-Private-Tenant'] = sampleUserProfile.tenantId;
-  }
-  return headers;
-};
+// This is a server action file for interacting with the database.
+// All functions are marked as server-side and will not run on the client.
 
-
+/**
+ * Fetches all job openings, respecting tenant boundaries.
+ * In a multi-tenant app, you'd pass a tenantId here. For simplicity, we show all.
+ * @returns A promise that resolves to an array of JobOpening objects.
+ */
 export async function getJobOpenings(): Promise<JobOpening[]> {
+  'use server';
   if (useMockDb) {
-    console.log('[DataService] DEV MODE: Using sample job openings.');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return Promise.resolve([...sampleJobOpenings]);
+    // This part is now just for fallback or specific testing
+    return []; 
   }
   
-  // The following block will run only if USE_MOCK_DB is not 'true'.
-  // It's kept for when you have a live jobs API.
-  if (API_BASE_URL) {
-    try {
-      console.log(`[DataService] Fetching job openings from ${API_BASE_URL}/job-board`);
-      const response = await fetch(`${API_BASE_URL}/job-board`, { headers: getHeaders() }); 
-      if (!response.ok) {
-        console.error(`[DataService] Error fetching job openings: ${response.status} ${response.statusText}`);
-        return Promise.resolve([]); // Return empty on API error if not using mock
-      }
-      const data = await response.json();
-      console.log('[DataService] Fetched job openings from API:', data);
-      return data as JobOpening[];
-    } catch (error) {
-      console.error('[DataService] Exception fetching job openings:', error);
-      return Promise.resolve([]); // Return empty on exception
-    }
+  try {
+    const openings = await db.jobOpening.findMany({
+      orderBy: {
+        datePosted: 'desc',
+      },
+    });
+    return openings as unknown as JobOpening[];
+  } catch (error) {
+    console.error('[DataService] Error fetching job openings from DB:', error);
+    return [];
   }
-
-  console.warn('[DataService] No API_BASE_URL and mock DB is off. Returning empty job list.');
-  return Promise.resolve([]);
 }
 
+/**
+ * Adds a new job opening to the database.
+ * @param jobData The data for the new job opening.
+ * @param currentUser The user who is posting the job.
+ * @returns The newly created JobOpening object or null if failed.
+ */
 export async function addJobOpening(
   jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
-  const newOpeningBase: JobOpening = {
+  'use server';
+  if (useMockDb) {
+    return null;
+  }
+
+  const newOpeningData = {
     ...jobData,
-    id: `temp-${Date.now()}`,
-    datePosted: new Date().toISOString().split('T')[0],
+    datePosted: new Date(),
     postedByAlumniId: currentUser.id,
     alumniName: currentUser.name,
     tenantId: currentUser.tenantId,
   };
 
-  if (useMockDb) {
-    console.log('[DataService] DEV MODE: Adding job opening to sample data:', newOpeningBase);
-    sampleJobOpenings.unshift(newOpeningBase);
-    return Promise.resolve(newOpeningBase);
+  try {
+    const newOpening = await db.jobOpening.create({
+      data: newOpeningData,
+    });
+    return newOpening as unknown as JobOpening;
+  } catch (error) {
+    console.error('[DataService] Error creating job opening in DB:', error);
+    return null;
   }
-
-  if (API_BASE_URL) {
-    try {
-      console.log(`[DataService] Posting job opening to ${API_BASE_URL}/job-board`);
-      const response = await fetch(`${API_BASE_URL}/job-board`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(jobData),
-      });
-      if (!response.ok) {
-        console.error(`[DataService] Error posting job opening: ${response.status} ${response.statusText}`);
-        return Promise.resolve(null);
-      }
-      const savedJob = await response.json();
-      console.log('[DataService] Job opening posted to API:', savedJob);
-      return savedJob as JobOpening;
-    } catch (error) {
-      console.error('[DataService] Exception posting job opening:', error);
-      return Promise.resolve(null);
-    }
-  }
-  
-  console.error('[DataService] Cannot add job opening: No API_BASE_URL and mock DB is disabled.');
-  return Promise.resolve(null);
 }
