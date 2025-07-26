@@ -13,9 +13,9 @@ datasource db {
 model User {
   id                            String    @id @default(cuid())
   tenantId                      String
-  role                          String
   name                          String
   email                         String    @unique
+  role                          String
   status                        String?
   lastLogin                     DateTime?
   dateOfBirth                   DateTime? @db.Date
@@ -26,7 +26,6 @@ model User {
   degreeProgram                 String?
   department                    String?
   currentJobTitle               String?
-  company                       String?
   currentOrganization           String?
   industry                      String?
   workLocation                  String?
@@ -59,41 +58,60 @@ model User {
   pastInterviewSessions         String[]
   interviewCredits              Int?
   createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
   isDistinguished               Boolean?
   userApiKey                    String?
   challengeTopics               String[]
   challengeProgress             Json?
   sessionId                     String?
-  jobApplications               JobApplication[]
-  requesterAppointments         Appointment[]    @relation("RequesterAppointments")
-  alumniAppointments            Appointment[]    @relation("AlumniAppointments")
-  resumeProfiles                ResumeProfile[]
-  resumeScanHistories           ResumeScanHistory[]
+
+  // Relations
+  jobApplications    JobApplication[]
+  resumeProfiles     ResumeProfile[]
+  resumeScanHistory  ResumeScanHistory[]
+  requesterAppointments Appointment[] @relation("RequesterAppointments")
+  alumniAppointments    Appointment[] @relation("AlumniAppointments")
 
   @@index([tenantId])
 }
 
-model Tenant {
-  id        String   @id
-  name      String
-  domain    String?
-  createdAt DateTime
-  settings  TenantSettings?
+model JobApplication {
+  id                   String       @id @default(cuid())
+  tenantId             String
+  userId               String
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName          String
+  jobTitle             String
+  status               String
+  dateApplied          DateTime     @db.Date
+  notes                String[]
+  jobDescription       String?
+  location             String?
+  salary               String?
+  reminderDate         DateTime?    @db.Timestamp(6)
+  sourceJobOpeningId   String?
+  applicationUrl       String?
+  resumeIdUsed         String?
+  coverLetterText      String?
+  interviews           Interview[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([userId])
 }
 
-model TenantSettings {
-  id                       String   @id @default(cuid())
-  tenantId                 String   @unique
-  tenant                   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  allowPublicSignup        Boolean
-  customLogoUrl            String?
-  primaryColor             String?
-  accentColor              String?
-  // JSON fields for features and emailTemplates
-  features                 Json?
-  emailTemplates           Json?
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+model Interview {
+  id               String          @id @default(cuid())
+  jobApplicationId String
+  jobApplication   JobApplication  @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  date             DateTime        @db.Timestamp(6)
+  type             String
+  interviewer      String
+  interviewerEmail String?
+  interviewerMobile String?
+  notes            String[]
+
+  @@index([jobApplicationId])
 }
 
 model JobOpening {
@@ -102,45 +120,16 @@ model JobOpening {
   title            String
   company          String
   location         String
-  description      String
-  datePosted       DateTime @default(now())
+  description      String   @db.Text
+  datePosted       DateTime @default(now()) @db.Date
   type             String
   postedByAlumniId String
   alumniName       String
   applicationLink  String?
-}
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-model JobApplication {
-  id                  String      @id @default(cuid())
-  tenantId            String
-  userId              String
-  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName         String
-  jobTitle            String
-  status              String
-  dateApplied         DateTime
-  notes               String[]
-  jobDescription      String?
-  location            String?
-  salary              String?
-  reminderDate        DateTime?
-  sourceJobOpeningId  String?
-  applicationUrl      String?
-  resumeIdUsed        String?
-  coverLetterText     String?
-  interviews          Interview[]
-}
-
-model Interview {
-  id               String         @id @default(cuid())
-  jobApplicationId String
-  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  date             DateTime
-  type             String
-  interviewer      String
-  interviewerMobile String?
-  interviewerEmail  String?
-  notes            String[]
+  @@index([tenantId])
 }
 
 model Appointment {
@@ -151,93 +140,135 @@ model Appointment {
   alumniUserId    String
   alumniUser      User     @relation("AlumniAppointments", fields: [alumniUserId], references: [id], onDelete: Cascade)
   title           String
-  dateTime        DateTime
+  dateTime        DateTime @db.Timestamp(6)
   status          String
   meetingLink     String?
   location        String?
   notes           String?
   costInCoins     Int?
   withUser        String
-  reminderDate    DateTime?
-}
+  reminderDate    DateTime? @db.Timestamp(6)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-model CommunityPost {
-  id                  String             @id @default(cuid())
-  tenantId            String
-  userId              String
-  userName            String
-  userAvatar          String?
-  timestamp           DateTime           @default(now())
-  content             String?
-  type                String
-  tags                String[]
-  imageUrl            String?
-  pollOptions         Json? // Using Json type for pollOptions
-  eventTitle          String?
-  eventDate           String?
-  eventLocation       String?
-  attendees           Int?
-  capacity            Int?
-  assignedTo          String?
-  status              String?
-  moderationStatus    String
-  flagCount           Int
-  comments            CommunityComment[]
-}
-
-model CommunityComment {
-  id        String        @id @default(cuid())
-  postId    String
-  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  userName  String
-  userAvatar String?
-  timestamp DateTime      @default(now())
-  comment   String
-  parentId  String?
-}
-
-model Badge {
-  id               String @id @default(cuid())
-  name             String
-  description      String
-  icon             String
-  xpReward         Int?
-  triggerCondition String?
-}
-
-model Activity {
-  id          String   @id @default(cuid())
-  tenantId    String
-  userId      String?
-  timestamp   DateTime @default(now())
-  description String
+  @@index([requesterUserId])
+  @@index([alumniUserId])
 }
 
 model ResumeProfile {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   tenantId     String
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
-  resumeText   String
-  lastAnalyzed DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  resumeText   String    @db.Text
+  lastAnalyzed DateTime? @db.Date
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model ResumeScanHistory {
-  id                   String    @id @default(cuid())
-  tenantId             String
-  userId               String
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resumeId             String
-  resumeName           String
-  jobTitle             String
-  companyName          String
-  resumeTextSnapshot   String
-  jobDescriptionText   String
-  scanDate             DateTime  @default(now())
-  matchScore           Int?
-  bookmarked           Boolean?
+  id                 String   @id @default(cuid())
+  tenantId           String
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeId           String
+  resumeName         String
+  jobTitle           String
+  companyName        String
+  resumeTextSnapshot String   @db.Text
+  jobDescriptionText String   @db.Text
+  scanDate           DateTime @default(now())
+  matchScore         Int?
+  bookmarked         Boolean?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model CommunityPost {
+  id               String              @id @default(cuid())
+  tenantId         String
+  userId           String
+  userName         String
+  userAvatar       String?
+  timestamp        DateTime
+  content          String?             @db.Text
+  type             String
+  tags             String[]
+  imageUrl         String?
+  pollOptions      Json?
+  eventTitle       String?
+  eventDate        DateTime?           @db.Timestamp(6)
+  eventLocation    String?
+  attendees        Int?
+  capacity         Int?
+  assignedTo       String?
+  status           String?
+  moderationStatus String
+  flagCount        Int
+  bookmarkedBy     String[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  comments         CommunityComment[]
+
+  @@index([tenantId])
+}
+
+model CommunityComment {
+  id         String        @id @default(cuid())
+  postId     String
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId     String
+  userName   String
+  userAvatar String?
+  timestamp  DateTime
+  comment    String        @db.Text
+  parentId   String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([postId])
+}
+
+model Announcement {
+  id             String    @id @default(cuid())
+  tenantId       String?
+  title          String
+  content        String    @db.Text
+  startDate      DateTime  @db.Timestamp(6)
+  endDate        DateTime? @db.Timestamp(6)
+  audience       String    // e.g., 'All Users', 'Specific Tenant', 'Specific Role'
+  audienceTarget String?   // e.g., tenantId or role name
+  status         String    // e.g., 'Draft', 'Published', 'Archived'
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+
+  @@index([tenantId])
+  @@index([status, startDate, endDate])
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?  @unique
+  createdAt DateTime @default(now())
+  settings  TenantSettings?
+}
+
+model TenantSettings {
+  id                        String   @id @default(cuid())
+  tenantId                  String   @unique
+  tenant                    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  allowPublicSignup         Boolean  @default(true)
+  customLogoUrl             String?
+  primaryColor              String?
+  accentColor               String?
+  // JSON fields for complex settings
+  features                  Json?
+  emailTemplates            Json?
 }

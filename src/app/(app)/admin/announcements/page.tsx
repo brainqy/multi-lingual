@@ -2,7 +2,7 @@
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,22 +11,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Megaphone } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, Megaphone, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Announcement, AnnouncementStatus, AnnouncementAudience } from "@/types";
-import { sampleAnnouncements, sampleUserProfile, sampleTenants } from "@/lib/sample-data";
+import { sampleUserProfile, sampleTenants } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
-import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { getAllAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/lib/actions/announcements";
 
 const announcementSchemaBase = z.object({
   id: z.string().optional(),
-  title: z.string().min(5, "Title must be at least 5 characters.").max(100, "Title cannot exceed 100 characters."), // Added max
-  content: z.string().min(10, "Content must be at least 10 characters.").max(2000, "Content cannot exceed 2000 characters."), // Added max
+  title: z.string().min(5, "Title must be at least 5 characters.").max(100, "Title cannot exceed 100 characters."),
+  content: z.string().min(10, "Content must be at least 10 characters.").max(2000, "Content cannot exceed 2000 characters."),
   startDate: z.date({ required_error: "Start date is required" }),
   endDate: z.date().optional(),
   audience: z.enum(['All Users', 'Specific Tenant', 'Specific Role']),
@@ -48,19 +48,21 @@ export default function AnnouncementManagementPage() {
   });
   
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
-  useEffect(() => {
-    if (currentUser.role === 'admin') {
-      setAnnouncements(sampleAnnouncements);
-    } else if (currentUser.role === 'manager') {
-      setAnnouncements(sampleAnnouncements.filter(a =>
-        a.tenantId === currentUser.tenantId || a.audience === 'All Users'
-      ));
-    }
+  const fetchAnnouncements = useCallback(async () => {
+    setIsLoading(true);
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
+    const fetchedAnnouncements = await getAllAnnouncements(tenantIdToFetch);
+    setAnnouncements(fetchedAnnouncements);
+    setIsLoading(false);
   }, [currentUser.role, currentUser.tenantId]);
-  
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementFormData>({
     resolver: zodResolver(translatedAnnouncementSchema),
@@ -81,13 +83,13 @@ export default function AnnouncementManagementPage() {
     return <AccessDeniedMessage />;
   }
 
-  const onSubmitForm = (data: AnnouncementFormData) => {
+  const onSubmitForm = async (data: AnnouncementFormData) => {
     let audienceTarget = data.audienceTarget;
     if (currentUser.role === 'manager' && data.audience === 'Specific Tenant') {
         audienceTarget = currentUser.tenantId; 
     }
 
-    const announcementData: Announcement = {
+    const announcementData = {
       title: data.title,
       content: data.content,
       startDate: data.startDate.toISOString(),
@@ -95,26 +97,26 @@ export default function AnnouncementManagementPage() {
       audience: data.audience as AnnouncementAudience,
       audienceTarget: data.audience === 'Specific Tenant' ? audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
       status: data.status as AnnouncementStatus,
-      id: editingAnnouncement ? editingAnnouncement.id : `announce-${Date.now()}`,
-      createdAt: editingAnnouncement ? editingAnnouncement.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       createdBy: currentUser.id,
       tenantId: data.audience === 'Specific Tenant' ? audienceTarget : (data.audience === 'All Users' ? 'platform' : currentUser.tenantId) 
     };
 
     if (editingAnnouncement) {
       if (currentUser.role === 'manager' && editingAnnouncement.createdBy !== currentUser.id && editingAnnouncement.tenantId !== currentUser.tenantId && editingAnnouncement.audience !== 'All Users') {
-        toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title", { default: "Permission Denied" }), description: t("announcementsAdmin.toast.permissionDeniedEdit.description", { default: "You do not have permission to edit this announcement." }), variant: "destructive" });
+        toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
         return;
       }
-      setAnnouncements(prev => prev.map(a => a.id === editingAnnouncement.id ? announcementData : a));
-      const globalIndex = sampleAnnouncements.findIndex(sa => sa.id === editingAnnouncement.id);
-      if (globalIndex !== -1) sampleAnnouncements[globalIndex] = announcementData;
-      toast({ title: t("announcementsAdmin.toast.announcementUpdated.title", { default: "Announcement Updated" }), description: t("announcementsAdmin.toast.announcementUpdated.description", { default: "The announcement '{title}' has been updated.", title: data.title }) });
+      const updated = await updateAnnouncement(editingAnnouncement.id, announcementData);
+      if (updated) {
+        setAnnouncements(prev => prev.map(a => a.id === editingAnnouncement.id ? updated : a));
+        toast({ title: t("announcementsAdmin.toast.announcementUpdated.title"), description: t("announcementsAdmin.toast.announcementUpdated.description", { title: data.title }) });
+      }
     } else {
-      setAnnouncements(prev => [announcementData, ...prev]);
-      sampleAnnouncements.unshift(announcementData);
-      toast({ title: t("announcementsAdmin.toast.announcementCreated.title", { default: "Announcement Created" }), description: t("announcementsAdmin.toast.announcementCreated.description", { default: "The announcement '{title}' has been created.", title: data.title }) });
+      const created = await createAnnouncement(announcementData as Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>);
+      if (created) {
+        setAnnouncements(prev => [created, ...prev]);
+        toast({ title: t("announcementsAdmin.toast.announcementCreated.title"), description: t("announcementsAdmin.toast.announcementCreated.description", { title: data.title }) });
+      }
     }
     setIsFormDialogOpen(false);
     reset({ title: '', content: '', audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users', audienceTarget: currentUser.role === 'manager' ? currentUser.tenantId : '', status: 'Draft' });
@@ -129,7 +131,7 @@ export default function AnnouncementManagementPage() {
 
   const openEditAnnouncementDialog = (announcement: Announcement) => {
      if (currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users') {
-      toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title", { default: "Permission Denied" }), description: t("announcementsAdmin.toast.permissionDeniedEdit.description", { default: "You do not have permission to edit this announcement." }), variant: "destructive" });
+      toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
       return;
     }
     setEditingAnnouncement(announcement);
@@ -143,16 +145,17 @@ export default function AnnouncementManagementPage() {
     setIsFormDialogOpen(true);
   };
 
-  const handleDeleteAnnouncement = (announcementId: string) => {
+  const handleDeleteAnnouncement = async (announcementId: string) => {
     const announcementToDelete = announcements.find(a => a.id === announcementId);
      if (currentUser.role === 'manager' && announcementToDelete && announcementToDelete.createdBy !== currentUser.id && announcementToDelete.tenantId !== currentUser.tenantId && announcementToDelete.audience !== 'All Users') {
-      toast({ title: t("announcementsAdmin.toast.permissionDeniedDelete.title", { default: "Permission Denied" }), description: t("announcementsAdmin.toast.permissionDeniedDelete.description", { default: "You do not have permission to delete this announcement." }), variant: "destructive" });
+      toast({ title: t("announcementsAdmin.toast.permissionDeniedDelete.title"), description: t("announcementsAdmin.toast.permissionDeniedDelete.description"), variant: "destructive" });
       return;
     }
-    setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
-    const globalIndex = sampleAnnouncements.findIndex(sa => sa.id === announcementId);
-    if (globalIndex !== -1) sampleAnnouncements.splice(globalIndex, 1);
-    toast({ title: t("announcementsAdmin.toast.announcementDeleted.title", { default: "Announcement Deleted" }), description: t("announcementsAdmin.toast.announcementDeleted.description", { default: "The announcement has been deleted." }), variant: "destructive" });
+    const success = await deleteAnnouncement(announcementId);
+    if (success) {
+      setAnnouncements(prev => prev.filter(a => a.id !== announcementId));
+      toast({ title: t("announcementsAdmin.toast.announcementDeleted.title"), description: t("announcementsAdmin.toast.announcementDeleted.description"), variant: "destructive" });
+    }
   };
 
   return (
@@ -284,7 +287,11 @@ export default function AnnouncementManagementPage() {
           <CardTitle>{t("announcementsAdmin.currentAnnouncementsTitle", { default: "Current Announcements" })}</CardTitle>
         </CardHeader>
         <CardContent>
-          {announcements.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : announcements.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">{currentUser.role === 'manager' ? t("announcementsAdmin.noAnnouncementsTenant", { default: "No announcements found for your tenant." }) : t("announcementsAdmin.noAnnouncementsPlatform", { default: "No announcements have been created yet." })}</p>
           ) : (
             <Table>

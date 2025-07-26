@@ -2,43 +2,27 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { sampleAnnouncements, sampleUserProfile } from '@/lib/sample-data';
 import type { Announcement } from '@/types';
 import { AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/hooks/use-i18n'; 
+import { getVisibleAnnouncements } from '@/lib/actions/announcements';
 
 export default function AnnouncementBanner() {
   const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const currentUser = sampleUserProfile;
+  const [isVisible, setIsVisible] = useState(false);
   const { t } = useI18n(); 
 
   useEffect(() => {
-    const now = new Date();
-    const filtered = sampleAnnouncements.filter(ann => {
-      const startDate = new Date(ann.startDate);
-      const endDate = ann.endDate ? new Date(ann.endDate) : null;
-      
-      const isActiveDate = startDate <= now && (!endDate || endDate >= now);
-      const isPublished = ann.status === 'Published';
-      
-      let matchesAudience = false;
-      if (ann.audience === 'All Users') {
-        matchesAudience = true;
-      } else if (ann.audience === 'Specific Tenant' && ann.audienceTarget === currentUser.tenantId) {
-        matchesAudience = true;
-      } else if (ann.audience === 'Specific Role' && ann.audienceTarget === currentUser.role) {
-        matchesAudience = true;
-      }
-
-      return isPublished && isActiveDate && matchesAudience;
-    });
-    setActiveAnnouncements(filtered);
-    setIsVisible(filtered.length > 0);
-  }, [currentUser.tenantId, currentUser.role]);
+    async function fetchAnnouncements() {
+      const announcements = await getVisibleAnnouncements();
+      setActiveAnnouncements(announcements);
+      setIsVisible(announcements.length > 0);
+    }
+    fetchAnnouncements();
+  }, []);
 
   useEffect(() => {
     if (activeAnnouncements.length > 1) {
@@ -98,7 +82,3 @@ export default function AnnouncementBanner() {
     </div>
   );
 }
-
-    
-
-    
