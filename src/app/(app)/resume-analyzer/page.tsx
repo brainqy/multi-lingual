@@ -1,15 +1,18 @@
 
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
 import type { AnalyzeResumeAndJobDescriptionOutput, ResumeScanHistoryItem, ResumeProfile } from '@/types';
-import { sampleResumeScanHistory as initialScanHistory, sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
+import { sampleUserProfile } from '@/lib/sample-data';
 import { Loader2 } from "lucide-react";
 import ResumeInputForm from '@/components/features/resume-analyzer/ResumeInputForm';
 import AnalysisReport from '@/components/features/resume-analyzer/AnalysisReport';
 import ScanHistory from '@/components/features/resume-analyzer/ScanHistory';
+import { getResumeProfiles } from '@/lib/actions/resumes';
+import { getScanHistory, createScanHistory, updateScanHistory } from '@/lib/actions/resumes';
+
 
 export default function ResumeAnalyzerPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,14 +20,24 @@ export default function ResumeAnalyzerPage() {
   const [currentJobDescription, setCurrentJobDescription] = useState('');
   const [currentResumeText, setCurrentResumeText] = useState('');
 
-  const [scanHistory, setScanHistory] = useState<ResumeScanHistoryItem[]>(
-    initialScanHistory.filter(item => item.userId === sampleUserProfile.id)
-  );
-  const [resumes, setResumes] = useState<ResumeProfile[]>(
-    sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id)
-  );
+  const [scanHistory, setScanHistory] = useState<ResumeScanHistoryItem[]>([]);
+  const [resumes, setResumes] = useState<ResumeProfile[]>([]);
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function loadInitialData() {
+      setIsLoading(true);
+      const [userResumes, userScanHistory] = await Promise.all([
+        getResumeProfiles(sampleUserProfile.id),
+        getScanHistory(sampleUserProfile.id)
+      ]);
+      setResumes(userResumes);
+      setScanHistory(userScanHistory);
+      setIsLoading(false);
+    }
+    loadInitialData();
+  }, []);
 
   const handleAnalysisSubmit = useCallback(async (formData: {
     resumeText: string;
@@ -61,8 +74,7 @@ export default function ResumeAnalyzerPage() {
       });
       setAnalysisReport(detailedReportRes);
 
-      const newScanEntry: ResumeScanHistoryItem = {
-        id: `scan-${Date.now()}`,
+      const newScanEntryData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'> = {
         tenantId: sampleUserProfile.tenantId,
         userId: sampleUserProfile.id,
         resumeId: currentResumeProfile?.id || (resumeFile ? `file-${resumeFile.name}` : 'pasted-text'),
@@ -71,22 +83,23 @@ export default function ResumeAnalyzerPage() {
         companyName: companyName || "N/A",
         resumeTextSnapshot: resumeText,
         jobDescriptionText: jobDescription,
-        scanDate: new Date().toISOString(),
         matchScore: detailedReportRes.overallQualityScore ?? detailedReportRes.hardSkillsScore ?? 0,
         bookmarked: false,
       };
-      setScanHistory(prev => [newScanEntry, ...prev]);
 
+      const newScanEntry = await createScanHistory(newScanEntryData);
+      if (newScanEntry) {
+        setScanHistory(prev => [newScanEntry, ...prev]);
+      }
+
+      // This logic for updating resume lastAnalyzed should be a server action
       if (currentResumeProfile) {
+        // In a real app: await updateResumeProfile(currentResumeProfile.id, { lastAnalyzed: new Date() });
         setResumes(prevResumes =>
           prevResumes.map(r =>
-            r.id === currentResumeProfile.id ? { ...r, lastAnalyzed: new Date().toISOString().split('T')[0] } : r
+            r.id === currentResumeProfile.id ? { ...r, lastAnalyzed: new Date().toISOString() } : r
           )
         );
-        const globalResumeIndex = sampleResumeProfiles.findIndex(r => r.id === currentResumeProfile.id);
-        if (globalResumeIndex !== -1) {
-          sampleResumeProfiles[globalResumeIndex].lastAnalyzed = new Date().toISOString().split('T')[0];
-        }
       }
       toast({ title: "Analysis Complete", description: "Resume analysis results are ready." });
     } catch (error: any) {
@@ -110,23 +123,19 @@ export default function ResumeAnalyzerPage() {
   }, [resumes, toast]);
 
   const handleRewriteComplete = useCallback((newResumeText: string) => {
-    // This will trigger a re-render in ResumeInputForm via its props
     setCurrentResumeText(newResumeText);
 
-    const currentReportData = analysisReport;
     const currentJobData = scanHistory[0] || {};
     
-    // Trigger a new analysis with the rewritten resume
     handleAnalysisSubmit({
       resumeText: newResumeText,
       jobDescription: currentJobDescription,
       jobTitle: currentJobData.jobTitle || '',
       companyName: currentJobData.companyName || '',
       selectedResumeId: currentJobData.resumeId.startsWith('file-') || currentJobData.resumeId === 'pasted-text' ? null : currentJobData.resumeId,
-      resumeFile: null, // We don't have the file object anymore, but it's not needed for re-analysis
+      resumeFile: null,
     });
-  }, [analysisReport, scanHistory, currentJobDescription, handleAnalysisSubmit]);
-
+  }, [scanHistory, currentJobDescription, handleAnalysisSubmit]);
 
   return (
     <div className="space-y-8">
@@ -134,18 +143,18 @@ export default function ResumeAnalyzerPage() {
         resumes={resumes}
         isLoading={isLoading}
         onSubmit={handleAnalysisSubmit}
-        key={currentResumeText} // Force re-mount if text is changed by rewrite
+        key={currentResumeText}
         initialResumeText={currentResumeText}
       />
 
-      {isLoading && (
+      {isLoading && !analysisReport && (
         <div className="text-center py-8">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="mt-2 text-muted-foreground">AI is working its magic... Please wait.</p>
         </div>
       )}
 
-      {analysisReport && !isLoading && (
+      {analysisReport && (
         <AnalysisReport
           analysisReport={analysisReport}
           resumeText={currentResumeText}

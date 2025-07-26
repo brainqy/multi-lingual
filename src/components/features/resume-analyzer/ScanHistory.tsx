@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
 import ScoreCircle from '@/components/ui/score-circle';
 import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
-import { sampleResumeScanHistory } from '@/lib/sample-data'; // This should be the single source of truth
+import { updateScanHistory, deleteScanHistory } from '@/lib/actions/resumes';
 
 interface ScanHistoryProps {
   scanHistory: ResumeScanHistoryItem[];
@@ -53,7 +53,6 @@ export default function ScanHistory({
   }, [scanHistory, historyFilter]);
 
   const handleViewReport = async (item: ResumeScanHistoryItem) => {
-    // This logic now resides in the parent page, passed down via props
     if (!item.resumeTextSnapshot || !item.jobDescriptionText) {
       toast({ title: "Cannot View Report", description: "Missing data for this historical scan.", variant: "destructive" });
       return;
@@ -81,31 +80,29 @@ export default function ScanHistory({
     }
   };
 
-  const handleToggleBookmark = (scanId: string) => {
-    const updatedHistory = scanHistory.map(item =>
-      item.id === scanId ? { ...item, bookmarked: !item.bookmarked } : item
-    );
-    setScanHistory(updatedHistory);
+  const handleToggleBookmark = async (scanId: string) => {
+    const scanItem = scanHistory.find(item => item.id === scanId);
+    if (!scanItem) return;
 
-    const bookmarkedItem = updatedHistory.find(item => item.id === scanId);
-    const globalIndex = sampleResumeScanHistory.findIndex(item => item.id === scanId);
-    if (globalIndex !== -1) {
-      const historyItem = sampleResumeScanHistory[globalIndex];
-      if (historyItem) {
-        historyItem.bookmarked = bookmarkedItem?.bookmarked;
-      }
+    const newBookmarkedState = !scanItem.bookmarked;
+    const updatedScan = await updateScanHistory(scanId, { bookmarked: newBookmarkedState });
+
+    if (updatedScan) {
+      setScanHistory(prev => prev.map(item => item.id === scanId ? updatedScan : item));
+      toast({ title: newBookmarkedState ? "Scan Bookmarked" : "Bookmark Removed" });
+    } else {
+      toast({ title: "Error", description: "Could not update bookmark status.", variant: "destructive" });
     }
-    
-    toast({
-      title: bookmarkedItem?.bookmarked ? "Scan Bookmarked" : "Bookmark Removed",
-    });
   };
 
-  const handleDeleteScan = (scanId: string) => {
-    setScanHistory(prev => prev.filter(item => item.id !== scanId));
-    const globalIndex = sampleResumeScanHistory.findIndex(item => item.id === scanId);
-    if (globalIndex !== -1) sampleResumeScanHistory.splice(globalIndex, 1);
-    toast({ title: "Scan Deleted", description: "Scan history entry removed." });
+  const handleDeleteScan = async (scanId: string) => {
+    const success = await deleteScanHistory(scanId);
+    if (success) {
+      setScanHistory(prev => prev.filter(item => item.id !== scanId));
+      toast({ title: "Scan Deleted", description: "Scan history entry removed." });
+    } else {
+      toast({ title: "Error", description: "Could not delete scan history.", variant: "destructive" });
+    }
   };
 
   return (

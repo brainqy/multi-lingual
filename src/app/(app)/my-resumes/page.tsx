@@ -1,10 +1,11 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, FileText, Edit3, Trash2, Eye } from "lucide-react";
+import { PlusCircle, FileText, Edit3, Trash2, Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ResumeProfile } from "@/types";
 import {
   AlertDialog,
@@ -18,43 +19,61 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { sampleResumeProfiles, sampleUserProfile } from "@/lib/sample-data"; // Import sample resumes
+import { sampleUserProfile } from "@/lib/sample-data";
+import { getResumeProfiles, createResumeProfile, deleteResumeProfile } from "@/lib/actions/resumes";
 
 export default function MyResumesPage() {
-  // Filter resumes for the current user's tenant
-  const [resumes, setResumes] = useState<ResumeProfile[]>(
-    sampleResumeProfiles.filter(r => r.tenantId === sampleUserProfile.tenantId && r.userId === sampleUserProfile.id)
-  );
+  const [resumes, setResumes] = useState<ResumeProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleDeleteResume = (resumeId: string) => {
-    setResumes(currentResumes => currentResumes.filter(r => r.id !== resumeId));
-    // In a real app, also delete from backend / database
-    toast({ title: "Resume Deleted", description: "The resume profile has been removed." });
+  useEffect(() => {
+    async function loadResumes() {
+      setIsLoading(true);
+      const userResumes = await getResumeProfiles(sampleUserProfile.id);
+      setResumes(userResumes);
+      setIsLoading(false);
+    }
+    loadResumes();
+  }, []);
+
+  const handleDeleteResume = async (resumeId: string) => {
+    const success = await deleteResumeProfile(resumeId);
+    if (success) {
+      setResumes(currentResumes => currentResumes.filter(r => r.id !== resumeId));
+      toast({ title: "Resume Deleted", description: "The resume profile has been removed." });
+    } else {
+      toast({ title: "Error", description: "Could not delete the resume profile.", variant: "destructive" });
+    }
   };
 
-  // Placeholder for future "Add New Resume" functionality
-  const handleAddNewResume = () => {
-     // Mock adding a new resume
-    const newResume: ResumeProfile = {
-      id: `resume-${Date.now()}`,
+  const handleAddNewResume = async () => {
+    const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
       tenantId: sampleUserProfile.tenantId,
       userId: sampleUserProfile.id,
       name: `New Resume ${resumes.length + 1}`,
       resumeText: "Paste your new resume text here...",
-      lastAnalyzed: undefined,
     };
-    setResumes(currentResumes => [newResume, ...currentResumes]);
-    toast({ title: "New Resume Added", description: "A new resume profile has been created. Click Edit to add content."});
+    const newResume = await createResumeProfile(newResumeData);
+    if (newResume) {
+      setResumes(currentResumes => [newResume, ...currentResumes]);
+      toast({ title: "New Resume Added", description: "A new resume profile has been created. Click Edit to add content."});
+    } else {
+      toast({ title: "Error", description: "Could not create a new resume profile.", variant: "destructive" });
+    }
   };
 
-   const handleEditResume = (resumeId: string) => {
-    // In a real app, this would navigate to an edit page or open a modal
-    toast({ title: "Edit Action (Mock)", description: `Navigating to edit page for resume ${resumeId}.` });
-    // Example navigation (replace with actual routing if needed):
-    // router.push(`/my-resumes/edit/${resumeId}`);
+  const handleEditResume = (resumeId: string) => {
+    toast({ title: "Edit Action (Mock)", description: `This would navigate to an edit page for resume ${resumeId}.` });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -65,7 +84,7 @@ export default function MyResumesPage() {
         </Button>
       </div>
 
-      {resumes.length === 0 && (
+      {resumes.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -75,59 +94,59 @@ export default function MyResumesPage() {
             </CardDescription>
           </CardHeader>
         </Card>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {resumes.map((resume) => (
-          <Card key={resume.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <FileText className="h-8 w-8 text-primary mt-1" />
-                <div className="ml-4 flex-1">
-                  <CardTitle className="text-xl">{resume.name}</CardTitle>
-                  <CardDescription>Last Analyzed: {resume.lastAnalyzed || "Never"}</CardDescription>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {resumes.map((resume) => (
+            <Card key={resume.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <FileText className="h-8 w-8 text-primary mt-1" />
+                  <div className="ml-4 flex-1">
+                    <CardTitle className="text-xl">{resume.name}</CardTitle>
+                    <CardDescription>Last Analyzed: {resume.lastAnalyzed ? new Date(resume.lastAnalyzed).toLocaleDateString() : "Never"}</CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                {resume.resumeText?.substring(0, 150) || "No content yet."}...
-              </p>
-            </CardContent>
-            <CardFooter className="flex justify-end space-x-2 border-t pt-4 mt-auto">
-              <Link href={`/resume-analyzer?resumeId=${resume.id}`} passHref>
-                <Button variant="outline" size="sm" title="Analyze">
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Button variant="outline" size="sm" title="Edit" onClick={() => handleEditResume(resume.id)}>
-                <Edit3 className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" title="Delete">
-                    <Trash2 className="h-4 w-4" />
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {resume.resumeText?.substring(0, 150) || "No content yet."}...
+                </p>
+              </CardContent>
+              <CardFooter className="flex justify-end space-x-2 border-t pt-4 mt-auto">
+                <Link href={`/resume-analyzer?resumeId=${resume.id}`} passHref>
+                  <Button variant="outline" size="sm" title="Analyze">
+                    <Eye className="h-4 w-4" />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the resume profile "{resume.name}".
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDeleteResume(resume.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                </Link>
+                <Button variant="outline" size="sm" title="Edit" onClick={() => handleEditResume(resume.id)}>
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" title="Delete">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the resume profile "{resume.name}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDeleteResume(resume.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
