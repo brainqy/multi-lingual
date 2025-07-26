@@ -185,7 +185,7 @@ export default function QuizPage() {
     if (direction === 'next' && currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else if (direction === 'prev' && currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
   
@@ -687,3 +687,4 @@ export default function QuizPage() {
     </div>
   );
 }
+
