@@ -402,6 +402,7 @@ model AffiliateSignup {
   commissionEarned   Float?
   referringUser      User      @relation("ReferringUser", fields: [affiliateId], references: [id])
   newUser            User      @relation("NewUserSignup", fields: [newUserId], references: [id])
+  affiliate          Affiliate @relation("ReferringUser", fields: [affiliateId], references: [id]) // Added missing back-relation
 }
 
 enum ReferralStatus {
