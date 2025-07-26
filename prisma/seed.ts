@@ -1,5 +1,6 @@
+
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities, sampleBlogPosts, sampleFeatureRequests, initialFeedbackSurvey, profileCompletionSurveyDefinition, samplePromoCodes } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -138,6 +139,71 @@ async function main() {
     });
   }
   console.log(`Seeded ${sampleActivities.length} activities.`);
+
+  // Seed Blog Posts
+  for (const postData of sampleBlogPosts) {
+      const { id, comments, ...restOfData } = postData;
+      await prisma.blogPost.upsert({
+          where: { slug: postData.slug },
+          update: {},
+          create: {
+              ...restOfData,
+              date: new Date(restOfData.date),
+          },
+      });
+      console.log(`Created/updated blog post: ${postData.title}`);
+  }
+
+  // Seed Feature Requests
+  for (const reqData of sampleFeatureRequests) {
+      const { id, ...restOfData } = reqData;
+      await prisma.featureRequest.upsert({
+        where: { id: reqData.id },
+        update: { ...restOfData },
+        create: {
+          ...restOfData,
+          timestamp: new Date(restOfData.timestamp),
+        }
+      });
+      console.log(`Created/updated feature request: ${reqData.title}`);
+  }
+
+  // Seed Surveys
+  await prisma.survey.upsert({
+    where: { name: 'Initial User Feedback' },
+    update: {},
+    create: {
+      name: 'Initial User Feedback',
+      description: 'Gather first impressions from users.',
+      steps: initialFeedbackSurvey as Prisma.JsonArray,
+      tenantId: 'platform',
+    }
+  });
+  await prisma.survey.upsert({
+    where: { name: 'Profile Completion Survey' },
+    update: {},
+    create: {
+      name: 'Profile Completion Survey',
+      description: 'Guide users to complete their profile.',
+      steps: profileCompletionSurveyDefinition as Prisma.JsonArray,
+      tenantId: 'platform',
+    }
+  });
+  console.log('Seeded survey definitions.');
+
+  // Seed Promo Codes
+  for (const codeData of samplePromoCodes) {
+      const { id, ...restOfData } = codeData;
+      await prisma.promoCode.upsert({
+          where: { code: codeData.code },
+          update: {},
+          create: {
+              ...restOfData,
+              expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : null,
+          }
+      });
+      console.log(`Created/updated promo code: ${codeData.code}`);
+  }
 
 
   console.log(`Seeding finished.`);
