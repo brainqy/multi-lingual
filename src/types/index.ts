@@ -315,6 +315,7 @@ export interface UserProfile extends AlumniProfile {
   role: UserRole;
   name: string;
   email: string;
+  password?: string; // Add this line
   status?: UserStatus;
   lastLogin?: string;
 
@@ -1239,3 +1240,4 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+
