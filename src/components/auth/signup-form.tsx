@@ -53,7 +53,7 @@ export function SignupForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    signup(values.name, values.email, 'user');
+    signup(values.name, values.email, 'user', values.password);
   }
 
   return (
