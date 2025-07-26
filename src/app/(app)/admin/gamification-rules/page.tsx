@@ -1,14 +1,14 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Award, Star, PlusCircle, Edit3, Trash2, ListChecks, HelpCircle } from "lucide-react";
+import { Award, Star, PlusCircle, Edit3, Trash2, ListChecks, HelpCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, GamificationRule } from "@/types";
-import { sampleBadges as initialBadges, sampleXpRules as initialXpRules, sampleUserProfile } from "@/lib/sample-data";
+import { sampleUserProfile } from "@/lib/sample-data";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import * as LucideIcons from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { getBadges, createBadge, updateBadge, deleteBadge, getGamificationRules, createGamificationRule, updateGamificationRule, deleteGamificationRule } from "@/lib/actions/gamification";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -45,65 +46,82 @@ type XpRuleFormData = z.infer<typeof xpRuleSchema>;
 
 export default function GamificationRulesPage() {
   const { t } = useI18n();
-  const [badges, setBadges] = useState<Badge[]>(initialBadges);
-  const [xpRules, setXpRules] = useState<GamificationRule[]>(initialXpRules);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [xpRules, setXpRules] = useState<GamificationRule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isBadgeDialogOpen, setIsBadgeDialogOpen] = useState(false);
   const [isXpRuleDialogOpen, setIsXpRuleDialogOpen] = useState(false);
   const [editingBadge, setEditingBadge] = useState<Badge | null>(null);
   const [editingXpRule, setEditingXpRule] = useState<GamificationRule | null>(null);
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
-
+  
   const { control: badgeControl, handleSubmit: handleBadgeSubmit, reset: resetBadgeForm, setValue: setBadgeValue, formState: { errors: badgeErrors } } = useForm<BadgeFormData>({
     resolver: zodResolver(badgeSchema),
-    defaultValues: {
-        name: '',
-        description: '',
-        icon: 'Award',
-        xpReward: 0,
-        triggerCondition: ''
-    }
+    defaultValues: { name: '', description: '', icon: 'Award', xpReward: 0, triggerCondition: '' }
   });
 
   const { control: xpRuleControl, handleSubmit: handleXpRuleSubmit, reset: resetXpRuleForm, setValue: setXpRuleValue, formState: { errors: xpRuleErrors } } = useForm<XpRuleFormData>({
     resolver: zodResolver(xpRuleSchema),
-    defaultValues: {
-        actionId: '',
-        description: '',
-        xpPoints: 0
-    }
+    defaultValues: { actionId: '', description: '', xpPoints: 0 }
   });
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const [fetchedBadges, fetchedRules] = await Promise.all([
+      getBadges(),
+      getGamificationRules(),
+    ]);
+    setBadges(fetchedBadges);
+    setXpRules(fetchedRules);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
-  const onBadgeFormSubmit = (data: BadgeFormData) => {
+  const onBadgeFormSubmit = async (data: BadgeFormData) => {
     if (editingBadge) {
-      setBadges(prev => prev.map(b => b.id === editingBadge.id ? { ...b, ...data } : b));
-      toast({ title: t("gamificationRules.toast.badgeUpdated.title"), description: t("gamificationRules.toast.badgeUpdated.description", { name: data.name }) });
+      const updated = await updateBadge(editingBadge.id, data);
+      if(updated) {
+        setBadges(prev => prev.map(b => b.id === editingBadge.id ? updated : b));
+        toast({ title: t("gamificationRules.toast.badgeUpdated.title"), description: t("gamificationRules.toast.badgeUpdated.description", { name: data.name }) });
+      }
     } else {
-      const newBadge: Badge = { ...data, id: `badge-${Date.now()}` };
-      setBadges(prev => [newBadge, ...prev]);
-      toast({ title: t("gamificationRules.toast.badgeCreated.title"), description: t("gamificationRules.toast.badgeCreated.description", { name: data.name }) });
+      const created = await createBadge(data);
+      if (created) {
+        setBadges(prev => [created, ...prev]);
+        toast({ title: t("gamificationRules.toast.badgeCreated.title"), description: t("gamificationRules.toast.badgeCreated.description", { name: data.name }) });
+      }
     }
     setIsBadgeDialogOpen(false);
     resetBadgeForm();
     setEditingBadge(null);
   };
 
-  const onXpRuleFormSubmit = (data: XpRuleFormData) => {
+  const onXpRuleFormSubmit = async (data: XpRuleFormData) => {
     if (editingXpRule) {
-        setXpRules(prev => prev.map(r => r.actionId === editingXpRule.actionId ? { ...r, description: data.description, xpPoints: data.xpPoints } : r));
+      const updated = await updateGamificationRule(editingXpRule.actionId, { description: data.description, xpPoints: data.xpPoints });
+      if (updated) {
+        setXpRules(prev => prev.map(r => r.actionId === editingXpRule.actionId ? updated : r));
         toast({ title: t("gamificationRules.toast.xpRuleUpdated.title"), description: t("gamificationRules.toast.xpRuleUpdated.description", { description: data.description }) });
+      }
     } else {
-        if (xpRules.some(r => r.actionId === data.actionId)) {
-            toast({ title: t("gamificationRules.toast.error.title"), description: t("gamificationRules.toast.error.description", { actionId: data.actionId }), variant: "destructive" });
-            return;
-        }
-        const newRule: GamificationRule = { ...data };
-        setXpRules(prev => [newRule, ...prev]);
+      if (xpRules.some(r => r.actionId === data.actionId)) {
+          toast({ title: t("gamificationRules.toast.error.title"), description: t("gamificationRules.toast.error.description", { actionId: data.actionId }), variant: "destructive" });
+          return;
+      }
+      const created = await createGamificationRule(data);
+      if (created) {
+        setXpRules(prev => [created, ...prev]);
         toast({ title: t("gamificationRules.toast.xpRuleCreated.title"), description: t("gamificationRules.toast.xpRuleCreated.description", { description: data.description }) });
+      }
     }
     setIsXpRuleDialogOpen(false);
     resetXpRuleForm();
@@ -128,9 +146,12 @@ export default function GamificationRulesPage() {
     setIsBadgeDialogOpen(true);
   };
 
-  const handleDeleteBadge = (badgeId: string) => {
-    setBadges(prev => prev.filter(b => b.id !== badgeId));
-    toast({ title: t("gamificationRules.toast.badgeDeleted.title"), description: t("gamificationRules.toast.badgeDeleted.description"), variant: "destructive" });
+  const handleDeleteBadge = async (badgeId: string) => {
+    const success = await deleteBadge(badgeId);
+    if (success) {
+      setBadges(prev => prev.filter(b => b.id !== badgeId));
+      toast({ title: t("gamificationRules.toast.badgeDeleted.title"), description: t("gamificationRules.toast.badgeDeleted.description"), variant: "destructive" });
+    }
   };
 
   const openNewXpRuleDialog = () => {
@@ -147,9 +168,12 @@ export default function GamificationRulesPage() {
     setIsXpRuleDialogOpen(true);
   };
 
-  const handleDeleteXpRule = (actionId: string) => {
-    setXpRules(prev => prev.filter(r => r.actionId !== actionId));
-    toast({ title: t("gamificationRules.toast.xpRuleDeleted.title"), description: t("gamificationRules.toast.xpRuleDeleted.description"), variant: "destructive" });
+  const handleDeleteXpRule = async (actionId: string) => {
+    const success = await deleteGamificationRule(actionId);
+    if (success) {
+      setXpRules(prev => prev.filter(r => r.actionId !== actionId));
+      toast({ title: t("gamificationRules.toast.xpRuleDeleted.title"), description: t("gamificationRules.toast.xpRuleDeleted.description"), variant: "destructive" });
+    }
   };
 
   function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.LucideProps) {
@@ -225,7 +249,9 @@ export default function GamificationRulesPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          {badges.length === 0 ? (
+          {isLoading ? (
+             <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : badges.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">{t("gamificationRules.badgeConfig.noBadges")}</p>
           ) : (
             <>
@@ -283,7 +309,9 @@ export default function GamificationRulesPage() {
            </Button>
         </CardHeader>
         <CardContent>
-          {xpRules.length === 0 ? (
+          {isLoading ? (
+             <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : xpRules.length === 0 ? (
              <p className="text-center text-muted-foreground py-8">{t("gamificationRules.xpRules.noRules")}</p>
           ) : (
             <>
