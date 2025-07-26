@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useMemo, useEffect, type ChangeEvent } from "react";
+import { useState, useMemo, useEffect, type ChangeEvent, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,13 +15,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { sampleTenants, sampleUserProfile } from "@/lib/sample-data";
-import { ensureFullUserProfile } from "@/lib/data/users";
-import { samplePlatformUsers } from "@/lib/data/users";
+import { sampleTenants, sampleUserProfile, ensureFullUserProfile } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { getUsers, createUser, updateUser, deleteUser } from "@/lib/data-services/users";
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -47,7 +47,8 @@ export default function UserManagementPage() {
   const { toast } = useToast();
   const { t } = useI18n();
   
-  const [allUsers, setAllUsers] = useState<UserProfile[]>(samplePlatformUsers);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -62,33 +63,29 @@ export default function UserManagementPage() {
     resolver: zodResolver(userSchema),
   });
 
+  const fetchUsers = useCallback(async () => {
+    setIsLoading(true);
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
+    const usersFromDb = await getUsers(tenantIdToFetch);
+    setAllUsers(usersFromDb);
+    setIsLoading(false);
+  }, [currentUser.role, currentUser.tenantId]);
+
   useEffect(() => {
-    setAllUsers(samplePlatformUsers);
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const usersToDisplay = useMemo(() => {
-    if (!currentUser) return [];
-    if (currentUser.role === 'admin') {
-      return allUsers;
-    }
-    if (currentUser.role === 'manager') {
-      return allUsers.filter(u => u.tenantId === currentUser.tenantId && u.role !== 'admin');
-    }
-    return [];
-  }, [allUsers, currentUser]);
-
-
   const filteredUsers = useMemo(() => {
-    return usersToDisplay.filter(user =>
+    return allUsers.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.tenantId && user.tenantId.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }, [usersToDisplay, searchTerm]);
+  }, [allUsers, searchTerm]);
 
   const paginatedUsers = useMemo(() => {
     const startIndex = (currentPage - 1) * usersPerPage;
@@ -129,13 +126,19 @@ export default function UserManagementPage() {
     setIsFormDialogOpen(true);
   };
 
-  const onSubmitForm = (data: UserFormData) => {
+  const onSubmitForm = async (data: UserFormData) => {
     if (editingUser) {
-      const updatedUser: UserProfile = { ...editingUser, ...data, role: data.role as UserRole, status: data.status as UserStatus };
-      setAllUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUser : u));
-      const globalIndex = samplePlatformUsers.findIndex(u => u.id === editingUser.id);
-      if (globalIndex !== -1) samplePlatformUsers[globalIndex] = updatedUser;
-      toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
+      const updatedUser = await updateUser(editingUser.id, {
+        name: data.name,
+        email: data.email,
+        role: data.role as UserRole,
+        status: data.status as UserStatus,
+        tenantId: data.tenantId,
+      });
+      if (updatedUser) {
+        toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
+        await fetchUsers(); // Refetch after update
+      }
     } else {
       if (!data.password || data.password.length < 8) {
         toast({ title: t("userManagement.toast.passwordRequired.title"), description: t("userManagement.toast.passwordRequired.description"), variant: "destructive" });
@@ -143,32 +146,38 @@ export default function UserManagementPage() {
       }
       const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
 
-      const newUser = ensureFullUserProfile({
-        id: `user-${Date.now()}`,
+      const newUser = await createUser({
         name: data.name,
         email: data.email,
         role: data.role as UserRole,
         tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
-        createdAt: new Date().toISOString(),
+        // Password would be handled by a secure auth system, not stored directly
       });
-      setAllUsers(prev => [newUser, ...prev]);
-      samplePlatformUsers.push(newUser); 
-      toast({ title: t("userManagement.toast.created.title"), description: t("userManagement.toast.created.description", { name: data.name }) });
+      
+      if (newUser) {
+        toast({ title: t("userManagement.toast.created.title"), description: t("userManagement.toast.created.description", { name: data.name }) });
+        await fetchUsers(); // Refetch after creation
+      } else {
+        toast({ title: "Error", description: "Failed to create user.", variant: "destructive"});
+      }
     }
     setIsFormDialogOpen(false);
     setEditingUser(null);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (userId === currentUser?.id) {
         toast({ title: t("userManagement.toast.deleteSelf.title"), description: t("userManagement.toast.deleteSelf.description"), variant: "destructive" });
         return;
     }
-    setAllUsers(prev => prev.filter(u => u.id !== userId));
-    const globalIndex = samplePlatformUsers.findIndex(u => u.id !== userId);
-    if (globalIndex !== -1) samplePlatformUsers.splice(globalIndex, 1);
-    toast({ title: t("userManagement.toast.deleted.title"), description: t("userManagement.toast.deleted.description"), variant: "destructive" });
+    const success = await deleteUser(userId);
+    if (success) {
+        toast({ title: t("userManagement.toast.deleted.title"), description: t("userManagement.toast.deleted.description"), variant: "destructive" });
+        await fetchUsers(); // Refetch after deletion
+    } else {
+        toast({ title: "Error", description: "Failed to delete user.", variant: "destructive"});
+    }
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +195,7 @@ export default function UserManagementPage() {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target?.result as string;
       try {
         const rows = text.split('\n').map(row => row.trim()).filter(row => row);
@@ -204,7 +213,7 @@ export default function UserManagementPage() {
         const tenantIdIndex = header.indexOf('tenantid');
         
         let addedCount = 0;
-        const newUsers: UserProfile[] = [];
+        const creationPromises: Promise<UserProfile | null>[] = [];
 
         for (let i = 1; i < rows.length; i++) {
           const values = rows[i].split(',').map(v => v.trim());
@@ -216,27 +225,25 @@ export default function UserManagementPage() {
           };
 
           if (newUserCsv.email && !allUsers.some(u => u.email === newUserCsv.email)) {
-            const fullUserProfile = ensureFullUserProfile({
-              name: newUserCsv.name ?? "",
+            creationPromises.push(createUser({
+              name: newUserCsv.name,
               email: newUserCsv.email,
-              role: (newUserCsv.role ?? "user"),
-              tenantId: newUserCsv.tenantId ?? "",
+              role: newUserCsv.role,
+              tenantId: newUserCsv.tenantId,
               status: 'active'
-            });
-            newUsers.push(fullUserProfile);
+            }));
             addedCount++;
           }
         }
         
-        // Batch update state and sample data
-        setAllUsers(prev => [...newUsers, ...prev]);
-        samplePlatformUsers.unshift(...newUsers);
-
+        await Promise.all(creationPromises);
+        
         toast({
           title: t("userManagement.toast.uploaded.title"),
           description: t("userManagement.toast.uploaded.description", { count: addedCount }),
         });
         
+        await fetchUsers(); // Refresh the list from DB
         setIsUploadDialogOpen(false);
         setCsvFile(null);
 
@@ -351,73 +358,81 @@ export default function UserManagementPage() {
           </div>
         </CardHeader>
         <CardContent>
-            {/* Mobile View */}
-            <div className="md:hidden">
-              {paginatedUsers.map(user => <UserCard key={user.id} user={user} />)}
-            </div>
-            {/* Desktop View */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("userManagement.table.user")}</TableHead>
-                    <TableHead>{t("userManagement.table.role")}</TableHead>
-                    {currentUser.role === 'admin' && <TableHead>{t("userManagement.table.tenant")}</TableHead>}
-                    <TableHead>{t("userManagement.table.status")}</TableHead>
-                    <TableHead className="text-right">{t("userManagement.table.actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9">
-                            <AvatarImage src={user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`} alt={user.name} />
-                            <AvatarFallback><UserCircle /></AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium text-foreground">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="capitalize">{user.role}</TableCell>
-                      {currentUser.role === 'admin' && <TableCell>{getTenantName(user.tenantId)}</TableCell>}
-                      <TableCell>
-                        <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${getStatusClass(user.status)}`}>
-                          {user.status || 'unknown'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                           <AlertDialogTrigger asChild>
-                             <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
-                           </AlertDialogTrigger>
-                           <AlertDialogContent>
-                             <AlertDialogHeader>
-                               <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
-                               <AlertDialogDescription>
-                                 {t("userManagement.deleteDialog.description", { name: user.name })}
-                               </AlertDialogDescription>
-                             </AlertDialogHeader>
-                             <AlertDialogFooter>
-                               <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-                               <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
-                             </AlertDialogFooter>
-                           </AlertDialogContent>
-                         </AlertDialog>
-                      </TableCell>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : (
+                <>
+                {/* Mobile View */}
+                <div className="md:hidden">
+                {paginatedUsers.map(user => <UserCard key={user.id} user={user} />)}
+                </div>
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>{t("userManagement.table.user")}</TableHead>
+                        <TableHead>{t("userManagement.table.role")}</TableHead>
+                        {currentUser.role === 'admin' && <TableHead>{t("userManagement.table.tenant")}</TableHead>}
+                        <TableHead>{t("userManagement.table.status")}</TableHead>
+                        <TableHead className="text-right">{t("userManagement.table.actions")}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                    {paginatedUsers.map((user) => (
+                        <TableRow key={user.id}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src={user.profilePictureUrl || `https://avatar.vercel.sh/${user.email}.png`} alt={user.name} />
+                                <AvatarFallback><UserCircle /></AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-medium text-foreground">{user.name}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                            </div>
+                        </TableCell>
+                        <TableCell className="capitalize">{user.role}</TableCell>
+                        {currentUser.role === 'admin' && <TableCell>{getTenantName(user.tenantId)}</TableCell>}
+                        <TableCell>
+                            <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${getStatusClass(user.status)}`}>
+                            {user.status || 'unknown'}
+                            </span>
+                        </TableCell>
+                        <TableCell className="text-right space-x-2">
+                            <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
+                            <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
+                                <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>{t("userManagement.deleteDialog.title")}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    {t("userManagement.deleteDialog.description", { name: user.name })}
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">{t("userManagement.deleteDialog.deleteButton")}</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                            </AlertDialog>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </div>
+                </>
+            )}
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex flex-wrap justify-center items-center gap-2 pt-4">
