@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,15 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Save, Megaphone, PlusCircle, Edit3, Trash2 } from "lucide-react";
+import { Save, Megaphone, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PromotionalContent } from '@/types';
-import { samplePromotionalContent } from '@/lib/sample-data';
 import AccessDeniedMessage from '@/components/ui/AccessDeniedMessage';
 import { sampleUserProfile } from '@/lib/sample-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from '@/hooks/use-i18n';
+import { getPromotionalContent, createPromotionalContent, updatePromotionalContent, deletePromotionalContent } from '@/lib/actions/promotional-content';
 
 const promoSchema = z.object({
   id: z.string().optional(),
@@ -38,7 +38,8 @@ const promoSchema = z.object({
 type PromoFormData = z.infer<typeof promoSchema>;
 
 export default function PromotionalContentPage() {
-  const [contentItems, setContentItems] = useState<PromotionalContent[]>(samplePromotionalContent);
+  const [contentItems, setContentItems] = useState<PromotionalContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<PromotionalContent | null>(null);
   const { toast } = useToast();
@@ -48,6 +49,16 @@ export default function PromotionalContentPage() {
   const { control, handleSubmit, reset } = useForm<PromoFormData>({
     resolver: zodResolver(promoSchema),
   });
+  
+  useEffect(() => {
+    async function loadContent() {
+      setIsLoading(true);
+      const items = await getPromotionalContent();
+      setContentItems(items);
+      setIsLoading(false);
+    }
+    loadContent();
+  }, []);
   
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
@@ -76,33 +87,31 @@ export default function PromotionalContentPage() {
     setIsDialogOpen(true);
   };
 
-  const onSubmit = (data: PromoFormData) => {
+  const onSubmit = async (data: PromoFormData) => {
     if (editingContent) {
-      const updatedItems = contentItems.map(item => item.id === editingContent.id ? { ...item, ...data } : item);
-      setContentItems(updatedItems);
-      // In a real app, this would be an API call. For this demo, we mutate the sample data object.
-      const globalIndex = samplePromotionalContent.findIndex(p => p.id === editingContent.id);
-      if (globalIndex !== -1) {
-        samplePromotionalContent[globalIndex] = { ...samplePromotionalContent[globalIndex], ...data };
+      const updated = await updatePromotionalContent(editingContent.id, data);
+      if (updated) {
+        setContentItems(prev => prev.map(item => item.id === editingContent.id ? updated : item));
+        toast({ title: t("promotionalContent.toast.updated.title"), description: t("promotionalContent.toast.updated.description", { title: data.title }) });
       }
-      toast({ title: t("promotionalContent.toast.updated.title"), description: t("promotionalContent.toast.updated.description", { title: data.title }) });
     } else {
-      const newItem: PromotionalContent = { ...data, id: `promo-${Date.now()}` };
-      const updatedItems = [newItem, ...contentItems];
-      setContentItems(updatedItems);
-      samplePromotionalContent.unshift(newItem);
-      toast({ title: t("promotionalContent.toast.created.title"), description: t("promotionalContent.toast.created.description", { title: data.title }) });
+      const created = await createPromotionalContent(data as Omit<PromotionalContent, 'id'>);
+      if (created) {
+        setContentItems(prev => [created, ...prev]);
+        toast({ title: t("promotionalContent.toast.created.title"), description: t("promotionalContent.toast.created.description", { title: data.title }) });
+      }
     }
     setIsDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setContentItems(items => items.filter(item => item.id !== id));
-    const globalIndex = samplePromotionalContent.findIndex(p => p.id === id);
-    if (globalIndex !== -1) {
-      samplePromotionalContent.splice(globalIndex, 1);
+  const handleDelete = async (id: string) => {
+    const success = await deletePromotionalContent(id);
+    if (success) {
+      setContentItems(items => items.filter(item => item.id !== id));
+      toast({ title: t("promotionalContent.toast.deleted.title"), description: t("promotionalContent.toast.deleted.description"), variant: "destructive" });
+    } else {
+      toast({ title: "Error", description: "Failed to delete promotional content.", variant: "destructive" });
     }
-    toast({ title: t("promotionalContent.toast.deleted.title"), description: t("promotionalContent.toast.deleted.description"), variant: "destructive" });
   };
   
   return (
@@ -126,6 +135,9 @@ export default function PromotionalContentPage() {
               <CardTitle>{t("promotionalContent.currentCardsTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+              ) : (
               <Table>
                   <TableHeader>
                       <TableRow>
@@ -151,6 +163,7 @@ export default function PromotionalContentPage() {
                       ))}
                   </TableBody>
               </Table>
+              )}
           </CardContent>
       </Card>
       

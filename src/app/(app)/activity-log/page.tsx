@@ -1,14 +1,31 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BarChart2, Clock } from "lucide-react";
-import { sampleActivities } from "@/lib/sample-data";
+import { BarChart2, Clock, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
+import { useState, useEffect, useCallback } from "react";
+import type { Activity as ActivityType } from "@/types";
+import { getActivities } from "@/lib/actions/activities";
+import { sampleUserProfile } from "@/lib/sample-data";
 
 export default function ActivityLogPage() {
   const { t } = useI18n();
+  const [activities, setActivities] = useState<ActivityType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchActivities = useCallback(async () => {
+    setIsLoading(true);
+    const userActivities = await getActivities(sampleUserProfile.id);
+    setActivities(userActivities);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchActivities();
+  }, [fetchActivities]);
 
   return (
     <div className="space-y-8">
@@ -25,14 +42,16 @@ export default function ActivityLogPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sampleActivities.length === 0 ? (
+          {isLoading ? (
+             <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : activities.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               {t("activityLog.noActivities", { default: "No activities recorded yet." })}
             </p>
           ) : (
             <ScrollArea className="h-[500px] pr-4">
               <ul className="space-y-4">
-                {sampleActivities.map((activity) => (
+                {activities.map((activity) => (
                   <li key={activity.id} className="flex items-start space-x-3 p-4 bg-card border rounded-lg shadow-sm hover:bg-secondary/30 transition-colors">
                     <div className="flex-shrink-0 pt-1">
                       <Clock className="h-5 w-5 text-primary" />

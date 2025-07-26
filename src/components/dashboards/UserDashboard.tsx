@@ -6,6 +6,7 @@ import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame, Trophy, User as UserIcon, Star } from "lucide-react";
 import { sampleUserProfile, userDashboardTourSteps } from "@/lib/sample-data";
 import { getDashboardData } from "@/lib/actions/dashboard";
+import { getActivePromotionalContent } from "@/lib/actions/promotional-content";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { format, parseISO, isFuture, differenceInDays, isToday, compareAsc, formatDistanceToNow } from "date-fns";
@@ -123,6 +124,7 @@ export default function UserDashboard() {
   const [showUserTour, setShowUserTour] = useState(false);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activePromotions, setActivePromotions] = useState<PromotionalContent[]>([]);
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(
     new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
@@ -134,8 +136,12 @@ export default function UserDashboard() {
   useEffect(() => {
     async function loadData() {
         setIsLoading(true);
-        const data = await getDashboardData(user.tenantId, user.id);
+        const [data, promotions] = await Promise.all([
+            getDashboardData(user.tenantId, user.id),
+            getActivePromotionalContent()
+        ]);
         setDashboardData(data);
+        setActivePromotions(promotions);
         setIsLoading(false);
     }
     loadData();
@@ -155,9 +161,8 @@ export default function UserDashboard() {
     leaderboardUsers,
     upcomingReminders,
     upcomingAppointmentsAndSessions,
-    activePromotions
   } = useMemo(() => {
-    if (!dashboardData) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [], activePromotions: [] };
+    if (!dashboardData) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
 
     const userJobApps = dashboardData.jobApplications.filter((app: JobApplication) => app.userId === user.id);
     const statusData = userJobApps.reduce((acc: any, curr: JobApplication) => {
@@ -192,7 +197,6 @@ export default function UserDashboard() {
         with: appt.withUser, link: '/appointments', isPractice: false,
       }));
     
-    // samplePracticeSessions is still local as it's not in DB
     const practiceSessions = dashboardData.mockInterviews
         .filter((ps: PracticeSession) => ps.userId === user.id && ps.status === 'SCHEDULED' && isFuture(parseISO(ps.date)))
         .map((ps: PracticeSession) => ({
@@ -214,10 +218,8 @@ export default function UserDashboard() {
     const allSessions = [...appointments, ...practiceSessions, ...jobInterviews]
       .sort((a, b) => compareAsc(a.date, b.date))
       .slice(0, 5);
-    
-    const promotions = dashboardData.promotions.filter((p: PromotionalContent) => p.isActive);
 
-    return { jobApplicationStatusData: statusData, recentUserActivities: activities, earnedBadges: badges, leaderboardUsers: leaders, upcomingReminders: reminders, upcomingAppointmentsAndSessions: allSessions, activePromotions: promotions };
+    return { jobApplicationStatusData: statusData, recentUserActivities: activities, earnedBadges: badges, leaderboardUsers: leaders, upcomingReminders: reminders, upcomingAppointmentsAndSessions: allSessions };
   }, [dashboardData, user.id, user.earnedBadges]);
 
   useEffect(() => {

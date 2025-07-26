@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -116,6 +116,28 @@ async function main() {
     });
     console.log(`Created/updated affiliate: ${affiliateData.name}`);
   }
+
+  // Seed Promotional Content
+  for (const promoData of samplePromotionalContent) {
+    await prisma.promotionalContent.upsert({
+      where: { id: promoData.id },
+      update: { ...promoData },
+      create: { ...promoData },
+    });
+    console.log(`Created/updated promotional content: ${promoData.title}`);
+  }
+
+  // Seed Activities
+  for (const activityData of sampleActivities) {
+    const { id, ...restOfData } = activityData;
+    await prisma.activity.create({
+      data: {
+        ...restOfData,
+        timestamp: new Date(restOfData.timestamp),
+      },
+    });
+  }
+  console.log(`Seeded ${sampleActivities.length} activities.`);
 
 
   console.log(`Seeding finished.`);
