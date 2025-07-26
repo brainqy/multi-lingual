@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { samplePlatformSettings } from "@/lib/sample-data";
 import { useI18n } from "@/hooks/use-i18n"; // <-- Add this import
 import { useAuth } from "@/hooks/use-auth";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const navItems = [
   { href: "/community-feed", labelKey: "sideMenu.communityFeed", icon: MessageSquare },
@@ -85,7 +86,16 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user: currentUser } = useAuth();
   const platformName = samplePlatformSettings.platformName;
-  const { t } = useI18n(); // <-- Use the translation hook
+  const { t } = useI18n();
+  const { isMobile, setOpen, setOpenMobile, open } = useSidebar();
+
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    } else if (open) {
+      setOpen(false);
+    }
+  };
 
   const renderMenuItem = (item: any, isSubItem = false) => {
     if (!currentUser) return null;
@@ -107,7 +117,13 @@ export function AppSidebar() {
       <SidebarMenuItem key={item.href || item.labelKey}>
          {item.href ? (
            <Link href={item.href} passHref legacyBehavior>
-            <SidebarMenuButton isActive={isActive} size={isSubItem ? "sm" : "default"} className="w-full justify-start">
+            <SidebarMenuButton 
+              as="a"
+              isActive={isActive} 
+              size={isSubItem ? "sm" : "default"} 
+              className="w-full justify-start"
+              onClick={handleMenuItemClick}
+            >
               <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
               <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
             </SidebarMenuButton>
