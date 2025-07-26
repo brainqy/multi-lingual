@@ -82,7 +82,7 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
         <CardDescription className="text-sm">{session.category}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-1 text-xs text-muted-foreground">
-        <p className="flex items-center gap-1"><Badge variant="outline">{session.type}</Badge></p>
+        <div className="flex items-center gap-1"><Badge variant="outline">{session.type}</Badge></div>
         {session.category === "Practice with AI" && (
           <>
             {session.aiNumQuestions && <p className="text-xs">Questions: {session.aiNumQuestions}</p>}
