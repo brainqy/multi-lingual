@@ -14,9 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Briefcase, GraduationCap, MessageSquare, Eye, CalendarDays, Coins, Filter as FilterIcon, User as UserIcon, Mail, CalendarPlus, Star, ChevronLeft, ChevronRight, Edit3 } from "lucide-react";
-import { sampleAlumni, sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
-import type { AlumniProfile, PreferredTimeSlot } from "@/types";
+import { Users, Search, Briefcase, GraduationCap, MessageSquare, Eye, CalendarDays, Coins, Filter as FilterIcon, User as UserIcon, Mail, CalendarPlus, Star, ChevronLeft, ChevronRight, Edit3, Loader2 } from "lucide-react";
+import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
+import { getUsers, updateUser } from "@/lib/data-services/users";
+import type { AlumniProfile, PreferredTimeSlot, UserProfile } from "@/types";
 import { PreferredTimeSlots } from "@/types";
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
@@ -38,7 +39,8 @@ type BookingFormData = z.infer<typeof bookingSchema>;
 
 export default function AlumniConnectPage() {
   const { t } = useI18n();
-  const [allAlumniData, setAllAlumniData] = useState<AlumniProfile[]>(sampleAlumni);
+  const [allAlumniData, setAllAlumniData] = useState<AlumniProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const currentUser = sampleUserProfile;
@@ -63,24 +65,30 @@ export default function AlumniConnectPage() {
   });
 
   useEffect(() => {
-    setAllAlumniData(sampleAlumni); // Ensure local state is in sync with potentially mutated global sample
-  }, [sampleAlumni]); // Add sampleAlumni to dependency array if it can be mutated globally and needs to trigger refresh
+    const fetchAlumni = async () => {
+      setIsLoading(true);
+      const users = await getUsers();
+      setAllAlumniData(users as AlumniProfile[]);
+      setIsLoading(false);
+    };
+    fetchAlumni();
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
   const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
-  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company))).sort(), [allAlumniData]);
+  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company).filter(Boolean))).sort(), [allAlumniData]);
   const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
-  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university))).sort(), [allAlumniData]);
+  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
 
   const filteredAlumni = useMemo(() => {
     let results = allAlumniData;
     if (searchTerm) {
       results = results.filter(alumni =>
         alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alumni.currentJobTitle.toLowerCase().includes(searchTerm.toLowerCase())
+        (alumni.currentJobTitle && alumni.currentJobTitle.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     if (selectedCompanies.size > 0) {
@@ -90,7 +98,7 @@ export default function AlumniConnectPage() {
       results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
     }
     if (selectedUniversities.size > 0) {
-      results = results.filter(alumni => selectedUniversities.has(alumni.university));
+      results = results.filter(alumni => alumni.university && selectedUniversities.has(alumni.university));
     }
     return results;
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData]);
@@ -163,31 +171,38 @@ export default function AlumniConnectPage() {
     setIsBookingDialogOpen(false);
   };
 
-  const handleToggleDistinguished = (alumniId: string) => {
+  const handleToggleDistinguished = async (alumniId: string) => {
     const alumniToUpdate = allAlumniData.find(a => a.id === alumniId);
     if (!alumniToUpdate) return;
 
-    // Updated Permission check: Admin or Manager can toggle anyone's distinguished status.
     if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
-      toast({ title: "Permission Denied", description: "You do not have permission to change this alumnus's distinguished status.", variant: "destructive" });
+      toast({ title: "Permission Denied", description: "You do not have permission to change this status.", variant: "destructive" });
       return;
     }
 
     const newDistinguishedStatus = !alumniToUpdate.isDistinguished;
-
-    // Update the global sampleAlumni (for demo persistence across app)
-    const globalAlumniIndex = sampleAlumni.findIndex(a => a.id === alumniId);
-    if (globalAlumniIndex !== -1) {
-        sampleAlumni[globalAlumniIndex].isDistinguished = newDistinguishedStatus;
-    }
-
-    // Update the local state for immediate UI refresh
+    
+    // Optimistically update UI
     setAllAlumniData(prevAlumni =>
         prevAlumni.map(a =>
             a.id === alumniId ? { ...a, isDistinguished: newDistinguishedStatus } : a
         )
     );
-    toast({ title: "Status Updated", description: `${alumniToUpdate.name} marked as ${newDistinguishedStatus ? "distinguished" : "not distinguished"}.` });
+    
+    // Update database
+    const updatedUser = await updateUser(alumniId, { isDistinguished: newDistinguishedStatus });
+
+    if (updatedUser) {
+        toast({ title: "Status Updated", description: `${updatedUser.name} marked as ${newDistinguishedStatus ? "distinguished" : "not distinguished"}.` });
+    } else {
+        // Revert UI on failure
+        setAllAlumniData(prevAlumni =>
+            prevAlumni.map(a =>
+                a.id === alumniId ? { ...a, isDistinguished: !newDistinguishedStatus } : a
+            )
+        );
+        toast({ title: "Update Failed", description: "Could not update the user's status.", variant: "destructive"});
+    }
   };
 
   const renderTags = (tags: string[] | undefined, maxVisible: number = 3) => {
@@ -205,6 +220,14 @@ export default function AlumniConnectPage() {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
 
   return (
@@ -387,8 +410,6 @@ export default function AlumniConnectPage() {
                         id={`distinguished-${alumni.id}`}
                         checked={alumni.isDistinguished}
                         onCheckedChange={() => handleToggleDistinguished(alumni.id)}
-                        // A manager can toggle any alumnus's distinguished status. An admin can too.
-                        // This switch is primarily for admin/manager roles. Regular users won't see it.
                       />
                       <Label htmlFor={`distinguished-${alumni.id}`} className="text-xs font-normal">Mark as Distinguished</Label>
                     </div>
