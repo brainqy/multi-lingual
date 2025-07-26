@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleAffiliates, sampleAffiliateClicks, sampleAffiliateSignups } from "@/lib/sample-data";
+import { sampleUserProfile } from "@/lib/sample-data";
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from "@/types";
 import { format, subDays, isAfter, parseISO } from "date-fns";
 import Link from "next/link";
 import { useI18n } from "@/hooks/use-i18n";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAffiliateByUserId, createAffiliate, getAffiliateSignups, getAffiliateClicks } from "@/lib/actions/affiliates";
 
 
 export default function AffiliatesPage() {
@@ -27,14 +28,20 @@ export default function AffiliatesPage() {
   const [durationFilter, setDurationFilter] = useState<'7d' | '30d' | 'all'>('all');
 
   useEffect(() => {
-    // Find if the current user is an affiliate
-    const affiliateData = sampleAffiliates.find(aff => aff.userId === user.id);
-    setUserAffiliateProfile(affiliateData || null);
+    async function fetchAffiliateData() {
+      const affiliateData = await getAffiliateByUserId(user.id);
+      setUserAffiliateProfile(affiliateData);
 
-    if (affiliateData) {
-      setUserSignups(sampleAffiliateSignups.filter(s => s.affiliateId === affiliateData.id));
-      setUserClicks(sampleAffiliateClicks.filter(c => c.affiliateId === affiliateData.id));
+      if (affiliateData) {
+        const [signups, clicks] = await Promise.all([
+          getAffiliateSignups(affiliateData.id),
+          getAffiliateClicks(affiliateData.id),
+        ]);
+        setUserSignups(signups);
+        setUserClicks(clicks);
+      }
     }
+    fetchAffiliateData();
   }, [user.id]);
 
   const affiliateLink = userAffiliateProfile ? `https://JobMatch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
@@ -99,28 +106,29 @@ export default function AffiliatesPage() {
     }
   };
 
-  const handleBecomeAffiliate = () => {
-    // Mock application / joining process
-    const existingAffiliate = sampleAffiliates.find(a => a.userId === user.id);
-    if (existingAffiliate) {
-        toast({title: "Already an Affiliate", description: `Your status is: ${existingAffiliate.status}`});
+  const handleBecomeAffiliate = async () => {
+    if (userAffiliateProfile) {
+        toast({title: "Already an Affiliate", description: `Your status is: ${userAffiliateProfile.status}`});
         return;
     }
     
-    const newAffiliateApplication: Affiliate = {
-        id: user.id,
+    const newAffiliateApplication = {
         userId: user.id,
         name: user.name,
         email: user.email,
         status: 'pending' as AffiliateStatus,
-        affiliateCode: `TEMP${Date.now().toString().slice(-5)}`, // Temp code
+        affiliateCode: `TEMP${user.id.slice(-4)}${Date.now().toString().slice(-4)}`, // Temp code
         commissionRate: 0.10, // Default rate
-        totalEarned: 0,
-        createdAt: new Date().toISOString(),
     };
-    sampleAffiliates.push(newAffiliateApplication); // Add to global sample list for admin to see
-    setUserAffiliateProfile(newAffiliateApplication); // Update local state for immediate UI change
-    toast({ title: "Affiliate Application Submitted", description: "Your application is pending approval. You will be notified once reviewed."});
+    
+    const created = await createAffiliate(newAffiliateApplication);
+
+    if (created) {
+        setUserAffiliateProfile(created);
+        toast({ title: "Affiliate Application Submitted", description: "Your application is pending approval. You will be notified once reviewed."});
+    } else {
+        toast({ title: "Error", description: "Could not submit your application. Please try again.", variant: "destructive"});
+    }
   };
 
 

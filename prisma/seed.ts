@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -104,6 +104,17 @@ async function main() {
         },
     });
     console.log(`Created/updated interview question: ${questionData.questionText.substring(0, 30)}...`);
+  }
+
+  // Seed Affiliates
+  for (const affiliateData of sampleAffiliates) {
+    const { id, ...restOfData } = affiliateData; // Prisma generates ID
+    await prisma.affiliate.upsert({
+        where: { userId: affiliateData.userId },
+        update: { ...restOfData },
+        create: { ...affiliateData },
+    });
+    console.log(`Created/updated affiliate: ${affiliateData.name}`);
   }
 
 

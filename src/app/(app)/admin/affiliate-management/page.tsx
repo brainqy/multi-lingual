@@ -7,41 +7,69 @@ import { Input } from "@/components/ui/input";
 import { Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Affiliate, AffiliateStatus } from "@/types";
-import { sampleAffiliates, sampleAffiliateClicks, sampleAffiliateSignups, sampleUserProfile } from "@/lib/sample-data";
+import { sampleUserProfile } from "@/lib/sample-data";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import AffiliateStatCards from "@/components/features/affiliate-management/AffiliateStatCards";
 import AffiliateTable from "@/components/features/affiliate-management/AffiliateTable";
 import { useI18n } from "@/hooks/use-i18n";
+import { getAffiliates, updateAffiliateStatus, getAffiliateSignups, getAffiliateClicks } from "@/lib/actions/affiliates";
 
 export default function AffiliateManagementPage() {
-  const [affiliates, setAffiliates] = useState<Affiliate[]>(sampleAffiliates);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const { t } = useI18n();
   const currentUser = sampleUserProfile;
+  const [stats, setStats] = useState({ totalAffiliates: 0, totalClicks: 0, totalSignups: 0, totalCommissionsPaid: 0 });
+  const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { signups: number; earned: number }>>({});
 
   useEffect(() => {
-    setAffiliates(sampleAffiliates);
-  }, []);
+    async function loadData() {
+      const allAffiliates = await getAffiliates();
+      setAffiliates(allAffiliates);
+      
+      let totalClicks = 0;
+      let totalSignups = 0;
+      let totalCommissionsPaid = 0;
+      const details: Record<string, { signups: number; earned: number }> = {};
+
+      for (const aff of allAffiliates) {
+        const [clicks, signups] = await Promise.all([
+          getAffiliateClicks(aff.id),
+          getAffiliateSignups(aff.id)
+        ]);
+        
+        totalClicks += clicks.length;
+        totalSignups += signups.length;
+        const earned = signups.reduce((sum, s) => sum + (s.commissionEarned || 0), 0);
+        totalCommissionsPaid += earned;
+        details[aff.id] = { signups: signups.length, earned };
+      }
+      
+      setStats({ totalAffiliates: allAffiliates.length, totalClicks, totalSignups, totalCommissionsPaid });
+      setAffiliateDetails(details);
+    }
+    
+    if (currentUser.role === 'admin') {
+      loadData();
+    }
+  }, [currentUser.role]);
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
-  const handleAffiliateStatusChange = (affiliateId: string, newStatus: AffiliateStatus) => {
-    setAffiliates(prev =>
-      prev.map(aff =>
-        aff.id === affiliateId ? { ...aff, status: newStatus } : aff
-      )
-    );
-    const globalIndex = sampleAffiliates.findIndex(a => a.id === affiliateId);
-    if(globalIndex !== -1) sampleAffiliates[globalIndex].status = newStatus;
-    
-    const affiliate = affiliates.find(a => a.id === affiliateId);
-    toast({
-      title: t("affiliateManagement.toast.statusUpdate.title", { status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }),
-      description: t("affiliateManagement.toast.statusUpdate.description", { name: affiliate?.name || affiliateId, status: newStatus }),
-    });
+  const handleAffiliateStatusChange = async (affiliateId: string, newStatus: AffiliateStatus) => {
+    const updatedAffiliate = await updateAffiliateStatus(affiliateId, newStatus);
+    if (updatedAffiliate) {
+      setAffiliates(prev => prev.map(aff => aff.id === affiliateId ? updatedAffiliate : aff));
+      toast({
+        title: t("affiliateManagement.toast.statusUpdate.title", { status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1) }),
+        description: t("affiliateManagement.toast.statusUpdate.description", { name: updatedAffiliate.name || affiliateId, status: newStatus }),
+      });
+    } else {
+      toast({ title: "Error", description: "Failed to update affiliate status.", variant: "destructive" });
+    }
   };
 
   const filteredAffiliates = useMemo(() => {
@@ -52,24 +80,6 @@ export default function AffiliateManagementPage() {
     );
   }, [affiliates, searchTerm]);
 
-  const affiliateStats = useMemo(() => {
-    const totalAffiliates = affiliates.length;
-    const totalClicks = sampleAffiliateClicks.length;
-    const totalSignups = sampleAffiliateSignups.length;
-    const totalCommissionsPaid = sampleAffiliateSignups.reduce((sum, signup) => sum + (signup.commissionEarned || 0), 0);
-    return { totalAffiliates, totalClicks, totalSignups, totalCommissionsPaid };
-  }, [affiliates]);
-
-  const getAffiliateSignupsCount = (affiliateId: string) => {
-    return sampleAffiliateSignups.filter(s => s.affiliateId === affiliateId).length;
-  };
-
-  const getAffiliateEarnedAmount = (affiliateId: string) => {
-    return sampleAffiliateSignups
-      .filter(s => s.affiliateId === affiliateId)
-      .reduce((sum, signup) => sum + (signup.commissionEarned || 0), 0);
-  };
-
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -77,7 +87,7 @@ export default function AffiliateManagementPage() {
       </h1>
       <CardDescription>{t("affiliateManagement.description")}</CardDescription>
 
-      <AffiliateStatCards stats={affiliateStats} />
+      <AffiliateStatCards stats={stats} />
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -95,8 +105,8 @@ export default function AffiliateManagementPage() {
           <AffiliateTable 
             affiliates={filteredAffiliates} 
             handleAffiliateStatusChange={handleAffiliateStatusChange}
-            getAffiliateSignupsCount={getAffiliateSignupsCount}
-            getAffiliateEarnedAmount={getAffiliateEarnedAmount}
+            getAffiliateSignupsCount={(id) => affiliateDetails[id]?.signups || 0}
+            getAffiliateEarnedAmount={(id) => affiliateDetails[id]?.earned || 0}
           />
         </CardContent>
       </Card>
