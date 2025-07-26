@@ -47,7 +47,7 @@ const databaseItems = [
 const utilityItems = [
   { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
   { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: WalletCards },
-  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", icon: ShieldQuestion, adminOnly: true },
+  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", adminOnly: true },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
 ];
@@ -87,13 +87,11 @@ export function AppSidebar() {
   const { user: currentUser } = useAuth();
   const platformName = samplePlatformSettings.platformName;
   const { t } = useI18n();
-  const { isMobile, setOpen, setOpenMobile, open } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const handleMenuItemClick = () => {
     if (isMobile) {
       setOpenMobile(false);
-    } else if (open) {
-      setOpen(false);
     }
   };
 
