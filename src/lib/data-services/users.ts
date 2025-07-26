@@ -11,6 +11,27 @@ const log = console.log;
 
 // This file acts as a database service. It will use Prisma for a real DB
 // or a simple in-memory array for mock data based on the USE_MOCK_DB env variable.
+export async function getUsers(tenantId?: string): Promise<UserProfile[]> {
+  log(`[DataService] Fetching users for tenant: ${tenantId || 'all'} (Mock DB: ${useMockDb})`);
+  if (useMockDb) {
+    if (tenantId) {
+      return samplePlatformUsers.filter(u => u.tenantId === tenantId);
+    }
+    return samplePlatformUsers;
+  }
+  try {
+    const users = await db.user.findMany({
+      where: tenantId ? { tenantId } : {},
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return users as unknown as UserProfile[];
+  } catch (error) {
+    console.error('[DataService] Error fetching users:', error);
+    return [];
+  }
+}
 
 export async function getUserByEmail(email: string): Promise<UserProfile | null> {
   log(`[DataService] Fetching user by email: ${email} (Mock DB: ${useMockDb})`);
@@ -46,6 +67,10 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
     const defaultTenantId = 'Brainqy';
 
+    // In a real app, you would hash the password here before saving.
+    // For this demo, we store it as is, which is NOT secure for production.
+    const password = data.password;
+
     const newUserPayload = {
         id: `user-${Date.now()}`,
         tenantId: data.tenantId || defaultTenantId,
@@ -55,7 +80,8 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         status: data.status || 'active',
         lastLogin: new Date(),
         createdAt: new Date(),
-        // Add defaults for all other fields to ensure a complete object
+        password: password, // Storing password (insecure, for demo only)
+        sessionId: `session-${Date.now()}`, // Assign initial session ID
         currentJobTitle: data.currentJobTitle || '',
         skills: data.skills || [],
         bio: data.bio || '',
@@ -70,7 +96,6 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         isDistinguished: false,
         shortBio: '',
         university: '',
-        sessionId: data.sessionId,
     };
 
     if (useMockDb) {
@@ -86,13 +111,11 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
     log(`[DataService] Creating user in real DB: ${data.email}`);
     
-    // Ensure the default tenant exists before creating the user
     const tenantExists = await db.tenant.findUnique({
-      where: { id: defaultTenantId },
+      where: { id: newUserPayload.tenantId },
     });
 
     if (!tenantExists) {
-      log(`[DataService] Default tenant '${defaultTenantId}' not found. Creating it now.`);
       const defaultTenantData = sampleTenants.find((t: Tenant) => t.id === defaultTenantId);
       if (defaultTenantData) {
         await db.tenant.create({
@@ -115,7 +138,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
     }
 
     const newUser = await db.user.create({
-      data: newUserPayload as any, // Cast to any to handle potential mismatches with Prisma's generated types
+      data: newUserPayload as any,
     });
 
     return newUser as unknown as UserProfile;
@@ -124,19 +147,48 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
   log(`[DataService] Updating user: ${userId} (Mock DB: ${useMockDb})`);
+  
+  // Clean the data to avoid passing undefined values to Prisma
+  const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+
   if (useMockDb) {
     const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-      const updatedUser = { ...samplePlatformUsers[userIndex], ...data };
+      const updatedUser = { ...samplePlatformUsers[userIndex], ...cleanData };
       samplePlatformUsers[userIndex] = updatedUser as UserProfile;
       return updatedUser as UserProfile;
     }
     return null;
   }
+ try {
+    const user = await db.user.update({
+        where: { id: userId },
+        data: cleanData as any,
+    });
+    return user as unknown as UserProfile | null;
+  } catch (error) {
+    console.error(`[DataService] Error updating user ${userId}:`, error);
+    return null;
+  }
+}
 
-  const user = await db.user.update({
-    where: { id: userId },
-    data: data as any, // Cast to any to avoid type conflicts with Prisma's generated types
-  });
-  return user as unknown as UserProfile | null;
+export async function deleteUser(userId: string): Promise<boolean> {
+  log(`[DataService] Deleting user: ${userId} (Mock DB: ${useMockDb})`);
+  if (useMockDb) {
+    const userIndex = samplePlatformUsers.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+      samplePlatformUsers.splice(userIndex, 1);
+      return true;
+    }
+    return false;
+  }
+  try {
+    await db.user.delete({
+      where: { id: userId },
+    });
+    return true;
+  } catch (error) {
+    console.error(`[DataService] Error deleting user ${userId}:`, error);
+    return false;
+  }
 }

@@ -15,11 +15,11 @@ import { Save, Megaphone, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import type { PromotionalContent } from '@/types';
 import AccessDeniedMessage from '@/components/ui/AccessDeniedMessage';
-import { sampleUserProfile } from '@/lib/sample-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from '@/hooks/use-i18n';
 import { getPromotionalContent, createPromotionalContent, updatePromotionalContent, deletePromotionalContent } from '@/lib/actions/promotional-content';
+import { useAuth } from '@/hooks/use-auth';
 
 const promoSchema = z.object({
   id: z.string().optional(),
@@ -43,7 +43,7 @@ export default function PromotionalContentPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<PromotionalContent | null>(null);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { t } = useI18n();
 
   const { control, handleSubmit, reset } = useForm<PromoFormData>({
@@ -60,7 +60,7 @@ export default function PromotionalContentPage() {
     loadContent();
   }, []);
   
-  if (currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 

@@ -15,13 +15,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { sampleUserProfile } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getTenants } from "@/lib/actions/tenants";
-import { createUser, deleteUser, getUsers, updateUser } from "../../../../../usr/src/app/src/lib/data-services/users";
+import { createUser, deleteUser, getUsers, updateUser } from "@/lib/data-services/users";
+import { useAuth } from "@/hooks/use-auth";
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -44,7 +44,7 @@ type CsvUser = {
 
 
 export default function UserManagementPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   
@@ -66,6 +66,7 @@ export default function UserManagementPage() {
   });
 
   const fetchAllData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
     const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const [usersFromDb, tenantsFromDb] = await Promise.all([
@@ -75,7 +76,7 @@ export default function UserManagementPage() {
     setAllUsers(usersFromDb);
     setTenants(tenantsFromDb);
     setIsLoading(false);
-  }, [currentUser.role, currentUser.tenantId]);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchAllData();

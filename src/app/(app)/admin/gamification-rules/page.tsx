@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Award, Star, PlusCircle, Edit3, Trash2, ListChecks, HelpCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, GamificationRule } from "@/types";
-import { sampleUserProfile } from "@/lib/sample-data";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getBadges, createBadge, updateBadge, deleteBadge, getGamificationRules, createGamificationRule, updateGamificationRule, deleteGamificationRule } from "@/lib/actions/gamification";
+import { useAuth } from "@/hooks/use-auth";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -54,7 +54,7 @@ export default function GamificationRulesPage() {
   const [editingBadge, setEditingBadge] = useState<Badge | null>(null);
   const [editingXpRule, setEditingXpRule] = useState<GamificationRule | null>(null);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   
   const { control: badgeControl, handleSubmit: handleBadgeSubmit, reset: resetBadgeForm, setValue: setBadgeValue, formState: { errors: badgeErrors } } = useForm<BadgeFormData>({
     resolver: zodResolver(badgeSchema),
@@ -82,7 +82,7 @@ export default function GamificationRulesPage() {
   }, [fetchData]);
 
 
-  if (currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 

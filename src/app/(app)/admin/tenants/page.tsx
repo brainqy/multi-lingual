@@ -8,7 +8,6 @@ import { Building2, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Tenant } from "@/types"; 
 import { useState, useEffect } from "react";
-import { sampleUserProfile } from "@/lib/sample-data";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getTenants, deleteTenant } from "@/lib/actions/tenants";
@@ -23,12 +22,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function TenantManagementPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { t } = useI18n();
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function TenantManagementPage() {
     loadTenants();
   }, []);
 
-  if (currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
