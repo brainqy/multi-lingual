@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -21,8 +21,8 @@ async function main() {
           create: {
             ...settings,
             // features and emailTemplates are JSON fields, so they should be created as such
-            features: settings.features || null,
-            emailTemplates: settings.emailTemplates || null,
+            features: settings.features || Prisma.JsonNull,
+            emailTemplates: settings.emailTemplates || Prisma.JsonNull,
           },
         } : undefined,
       },
@@ -48,12 +48,12 @@ async function main() {
       createdAt: userData.createdAt ? new Date(userData.createdAt) : new Date(),
       dateOfBirth: userData.dateOfBirth ? new Date(userData.dateOfBirth) : null,
       // Ensure arrays are handled correctly for Prisma's JSON type
-      skills: userData.skills || [],
-      areasOfSupport: userData.areasOfSupport || [],
-      interests: userData.interests || [],
-      offersHelpWith: userData.offersHelpWith || [],
-      earnedBadges: userData.earnedBadges || [],
-      challengeTopics: userData.challengeTopics || [],
+      skills: userData.skills || Prisma.JsonNull,
+      areasOfSupport: userData.areasOfSupport || Prisma.JsonNull,
+      interests: userData.interests || Prisma.JsonNull,
+      offersHelpWith: userData.offersHelpWith || Prisma.JsonNull,
+      earnedBadges: userData.earnedBadges || Prisma.JsonNull,
+      challengeTopics: userData.challengeTopics || Prisma.JsonNull,
     };
     
     await prisma.user.upsert({
@@ -63,6 +63,27 @@ async function main() {
     });
     console.log(`Created/updated user with email: ${userData.email}`);
   }
+  
+  // Seed Badges
+  for (const badgeData of sampleBadges) {
+    await prisma.badge.upsert({
+      where: { name: badgeData.name },
+      update: {},
+      create: badgeData,
+    });
+    console.log(`Created/updated badge: ${badgeData.name}`);
+  }
+
+  // Seed Gamification Rules
+  for (const ruleData of sampleXpRules) {
+    await prisma.gamificationRule.upsert({
+      where: { actionId: ruleData.actionId },
+      update: {},
+      create: ruleData,
+    });
+    console.log(`Created/updated gamification rule: ${ruleData.actionId}`);
+  }
+
 
   console.log(`Seeding finished.`);
 }
