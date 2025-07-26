@@ -26,7 +26,20 @@ async function main() {
 
   console.log('Seeded languages:', { english, marathi, hindi })
 
-  // Create a default admin user
+  // Create a default Platform tenant for the admin user
+  const platformTenant = await prisma.tenant.upsert({
+    where: { id: 'platform' },
+    update: {},
+    create: {
+      id: 'platform',
+      name: 'Bhasha Setu Platform',
+    },
+  })
+
+  console.log('Seeded platform tenant:', platformTenant)
+
+
+  // Create a default admin user and connect to the platform tenant
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@bhashasetu.com' },
     update: {},
@@ -35,6 +48,7 @@ async function main() {
       name: 'Admin User',
       password: 'password123',
       role: 'ADMIN',
+      tenantId: platformTenant.id,
     },
   })
 
