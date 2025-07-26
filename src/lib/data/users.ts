@@ -132,7 +132,7 @@ export let sampleAlumni: AlumniProfile[] = [
   },
 ];
 
-const ensureFullUserProfile = (
+export const ensureFullUserProfile = (
   user: Partial<UserProfile> & Pick<UserProfile, 'name' | 'email' | 'role' | 'tenantId'>
 ): UserProfile => ({
   id: user.id || `user-${Date.now()}`,
