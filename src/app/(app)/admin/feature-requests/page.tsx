@@ -1,15 +1,14 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, ShieldQuestion, Lightbulb, Send, Edit3, CheckCircle, Zap, Clock, RefreshCw, ThumbsUp, XCircle } from "lucide-react"; // Added XCircle
-import { sampleFeatureRequests, sampleUserProfile } from "@/lib/sample-data";
+import { PlusCircle, ShieldQuestion, Lightbulb, Send, Edit3, CheckCircle, Zap, Clock, RefreshCw, ThumbsUp, XCircle, Loader2 } from "lucide-react";
 import type { FeatureRequest } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from 'date-fns';
@@ -17,13 +16,14 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-
+import { useAuth } from "@/hooks/use-auth";
+import { getFeatureRequests, createFeatureRequest, updateFeatureRequest, upvoteFeatureRequest } from "@/lib/actions/feature-requests";
 
 export default function FeatureRequestsPage() {
-  const currentUser = sampleUserProfile;
-  const [requests, setRequests] = useState<FeatureRequest[]>(sampleFeatureRequests);
+  const { user: currentUser } = useAuth();
+  const [requests, setRequests] = useState<FeatureRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSuggestDialogOpen, setIsSuggestDialogOpen] = useState(false);
   const [editingRequest, setEditingRequest] = useState<FeatureRequest | null>(null);
   const { toast } = useToast();
@@ -39,32 +39,47 @@ export default function FeatureRequestsPage() {
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FeatureRequestFormData>({
     resolver: zodResolver(featureRequestSchema)
   });
+  
+  const fetchRequests = useCallback(async () => {
+    setIsLoading(true);
+    const fetchedRequests = await getFeatureRequests();
+    setRequests(fetchedRequests);
+    setIsLoading(false);
+  }, []);
 
-  if (currentUser.role !== 'admin') {
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
+
+
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
-  const onSubmitSuggestion = (data: FeatureRequestFormData) => {
+  const onSubmitSuggestion = async (data: FeatureRequestFormData) => {
+    if (!currentUser) return;
+    
     if (editingRequest) {
-      setRequests(prevRequests => prevRequests.map(req => 
-        req.id === editingRequest.id ? { ...req, title: data.title, description: data.description, timestamp: new Date().toISOString() } : req
-      ));
-      toast({ title: t("featureRequests.toastSuggestionUpdated.title"), description: t("featureRequests.toastSuggestionUpdated.description") });
+      const updated = await updateFeatureRequest(editingRequest.id, { title: data.title, description: data.description });
+      if (updated) {
+        setRequests(prev => prev.map(req => req.id === editingRequest.id ? updated : req));
+        toast({ title: t("featureRequests.toastSuggestionUpdated.title"), description: t("featureRequests.toastSuggestionUpdated.description") });
+      }
     } else {
-      const newRequest: FeatureRequest = {
-        id: String(Date.now()),
-        tenantId: sampleUserProfile.tenantId, 
-        userId: sampleUserProfile.id, 
-        userName: sampleUserProfile.name,
-        userAvatar: sampleUserProfile.profilePictureUrl,
-        timestamp: new Date().toISOString(),
+      const newRequestData = {
+        tenantId: currentUser.tenantId, 
+        userId: currentUser.id, 
+        userName: currentUser.name,
+        userAvatar: currentUser.profilePictureUrl,
         title: data.title,
         description: data.description,
-        status: 'Pending',
-        upvotes: 0,
+        status: 'Pending' as const,
       };
-      setRequests(prevRequests => [newRequest, ...prevRequests]);
-      toast({ title: t("featureRequests.toastSuggestionSubmitted.title"), description: t("featureRequests.toastSuggestionSubmitted.description") });
+      const created = await createFeatureRequest(newRequestData);
+      if (created) {
+        setRequests(prev => [created, ...prev]);
+        toast({ title: t("featureRequests.toastSuggestionSubmitted.title"), description: t("featureRequests.toastSuggestionSubmitted.description") });
+      }
     }
     setIsSuggestDialogOpen(false);
     reset({ title: '', description: '' });
@@ -88,7 +103,7 @@ export default function FeatureRequestsPage() {
   };
 
   const openEditRequestDialog = (request: FeatureRequest) => {
-    if (currentUser.role !== 'admin' && (request.userId !== sampleUserProfile.id || request.status !== 'Pending')) {
+    if (currentUser.role !== 'admin' && (request.userId !== currentUser.id || request.status !== 'Pending')) {
       toast({ title: t("featureRequests.toastCannotEdit.title"), description: t("featureRequests.toastCannotEdit.description"), variant: "destructive"});
       return;
     }
@@ -98,13 +113,16 @@ export default function FeatureRequestsPage() {
     setIsSuggestDialogOpen(true);
   };
   
-  const handleUpvote = (requestId: string) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === requestId ? { ...req, upvotes: (req.upvotes || 0) + 1 } : req
-      )
-    );
-    toast({ title: t("featureRequests.toastUpvoted.title"), description: t("featureRequests.toastUpvoted.description") });
+  const handleUpvote = async (requestId: string) => {
+    const updated = await upvoteFeatureRequest(requestId);
+    if (updated) {
+        setRequests(prevRequests =>
+          prevRequests.map(req =>
+            req.id === requestId ? updated : req
+          )
+        );
+        toast({ title: t("featureRequests.toastUpvoted.title"), description: t("featureRequests.toastUpvoted.description") });
+    }
   };
 
   return (
@@ -163,8 +181,10 @@ export default function FeatureRequestsPage() {
           </form>
         </DialogContent>
       </Dialog>
-
-      {requests.length === 0 ? (
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+      ) : requests.length === 0 ? (
          <Card className="text-center py-16 shadow-lg border-dashed border-2">
           <CardHeader>
             <ShieldQuestion className="h-20 w-20 text-muted-foreground mx-auto mb-4" />
@@ -187,7 +207,7 @@ export default function FeatureRequestsPage() {
                         <StatusIcon className="h-3.5 w-3.5" />
                         {statusInfo.label}
                     </span>
-                    {(request.userId === sampleUserProfile.id && request.status === 'Pending') || currentUser.role === 'admin' ? (
+                    {(request.userId === currentUser?.id && request.status === 'Pending') || currentUser?.role === 'admin' ? (
                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => openEditRequestDialog(request)}>
                          <Edit3 className="h-4 w-4"/>
                        </Button>
