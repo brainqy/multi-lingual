@@ -2,27 +2,30 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Announcement } from '@/types';
+import type { Announcement, UserProfile } from '@/types';
 import { AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/hooks/use-i18n'; 
+import { useI18n } from '@/hooks/use-i18n';
 import { getVisibleAnnouncements } from '@/lib/actions/announcements';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AnnouncementBanner() {
   const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const { t } = useI18n(); 
+  const { t } = useI18n();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchAnnouncements() {
-      const announcements = await getVisibleAnnouncements();
+      if (!user) return;
+      const announcements = await getVisibleAnnouncements(user as UserProfile);
       setActiveAnnouncements(announcements);
       setIsVisible(announcements.length > 0);
     }
     fetchAnnouncements();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (activeAnnouncements.length > 1) {

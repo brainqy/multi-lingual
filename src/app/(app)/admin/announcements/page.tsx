@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Edit3, Trash2, Megaphone, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Announcement, AnnouncementStatus, AnnouncementAudience } from "@/types";
-import { sampleUserProfile, sampleTenants } from "@/lib/sample-data";
+import { sampleTenants } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,6 +22,7 @@ import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getAllAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from "@/lib/actions/announcements";
+import { useAuth } from "@/hooks/use-auth";
 
 const announcementSchemaBase = z.object({
   id: z.string().optional(),
@@ -37,7 +38,7 @@ const announcementSchemaBase = z.object({
 type AnnouncementFormData = z.infer<typeof announcementSchemaBase>;
 
 export default function AnnouncementManagementPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
@@ -53,12 +54,13 @@ export default function AnnouncementManagementPage() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
   const fetchAnnouncements = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
     const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const fetchedAnnouncements = await getAllAnnouncements(tenantIdToFetch);
     setAnnouncements(fetchedAnnouncements);
     setIsLoading(false);
-  }, [currentUser.role, currentUser.tenantId]);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -66,20 +68,20 @@ export default function AnnouncementManagementPage() {
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementFormData>({
     resolver: zodResolver(translatedAnnouncementSchema),
-    defaultValues: { status: 'Draft', audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users' }
+    defaultValues: { status: 'Draft', audience: currentUser?.role === 'manager' ? 'Specific Tenant' : 'All Users' }
   });
 
   const watchedAudience = watch("audience");
   
   useEffect(() => {
-    if (currentUser.role === 'manager') {
+    if (currentUser?.role === 'manager') {
       setValue('audience', 'Specific Tenant');
       setValue('audienceTarget', currentUser.tenantId || '');
     }
-  }, [currentUser.role, currentUser.tenantId, setValue]);
+  }, [currentUser?.role, currentUser?.tenantId, setValue]);
 
 
-  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
 

@@ -9,19 +9,21 @@ import { formatDistanceToNow } from 'date-fns';
 import { useState, useEffect, useCallback } from "react";
 import type { Activity as ActivityType } from "@/types";
 import { getActivities } from "@/lib/actions/activities";
-import { sampleUserProfile } from "@/lib/sample-data";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ActivityLogPage() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchActivities = useCallback(async () => {
+    if (!user) return;
     setIsLoading(true);
-    const userActivities = await getActivities(sampleUserProfile.id);
+    const userActivities = await getActivities(user.id);
     setActivities(userActivities);
     setIsLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchActivities();

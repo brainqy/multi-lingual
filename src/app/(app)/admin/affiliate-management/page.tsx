@@ -7,19 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Affiliate, AffiliateStatus } from "@/types";
-import { sampleUserProfile } from "@/lib/sample-data";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import AffiliateStatCards from "@/components/features/affiliate-management/AffiliateStatCards";
 import AffiliateTable from "@/components/features/affiliate-management/AffiliateTable";
 import { useI18n } from "@/hooks/use-i18n";
 import { getAffiliates, updateAffiliateStatus, getAffiliateSignups, getAffiliateClicks } from "@/lib/actions/affiliates";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AffiliateManagementPage() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const { t } = useI18n();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const [stats, setStats] = useState({ totalAffiliates: 0, totalClicks: 0, totalSignups: 0, totalCommissionsPaid: 0 });
   const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { signups: number; earned: number }>>({});
 
@@ -50,12 +50,12 @@ export default function AffiliateManagementPage() {
       setAffiliateDetails(details);
     }
     
-    if (currentUser.role === 'admin') {
+    if (currentUser?.role === 'admin') {
       loadData();
     }
-  }, [currentUser.role]);
+  }, [currentUser?.role]);
 
-  if (currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 

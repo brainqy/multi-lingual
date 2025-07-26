@@ -2,7 +2,54 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { JobApplication, Interview } from '@/types';
+import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
+
+/**
+ * Fetches all job openings from the database.
+ * @returns A promise that resolves to an array of JobOpening objects.
+ */
+export async function getJobOpenings(): Promise<JobOpening[]> {
+  try {
+    const openings = await db.jobOpening.findMany({
+      orderBy: {
+        datePosted: 'desc',
+      },
+    });
+    return openings as unknown as JobOpening[];
+  } catch (error) {
+    console.error('[JobAction] Error fetching job openings:', error);
+    return [];
+  }
+}
+
+/**
+ * Adds a new job opening to the database.
+ * @param jobData The data for the new job opening.
+ * @param currentUser The user who is posting the job.
+ * @returns The newly created JobOpening object or null if failed.
+ */
+export async function addJobOpening(
+  jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
+  currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
+): Promise<JobOpening | null> {
+  const newOpeningData = {
+    ...jobData,
+    datePosted: new Date(),
+    postedByAlumniId: currentUser.id,
+    alumniName: currentUser.name,
+    tenantId: currentUser.tenantId,
+  };
+
+  try {
+    const newOpening = await db.jobOpening.create({
+      data: newOpeningData,
+    });
+    return newOpening as unknown as JobOpening;
+  } catch (error) {
+    console.error('[JobAction] Error creating job opening:', error);
+    return null;
+  }
+}
 
 /**
  * Fetches all job applications for a specific user.

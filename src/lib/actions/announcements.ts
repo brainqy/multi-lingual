@@ -1,17 +1,20 @@
+
 'use server';
 
 import { db } from '@/lib/db';
-import type { Announcement } from '@/types';
-import { sampleUserProfile } from '../sample-data'; // For getting user context
+import type { Announcement, UserProfile } from '@/types';
 
 /**
  * Fetches announcements visible to the current user.
  * It considers tenant, role, and platform-wide announcements.
+ * @param currentUser The user object for whom to fetch announcements.
  * @returns A promise that resolves to an array of Announcement objects.
  */
-export async function getVisibleAnnouncements(): Promise<Announcement[]> {
+export async function getVisibleAnnouncements(currentUser: UserProfile): Promise<Announcement[]> {
   try {
-    const currentUser = sampleUserProfile; // In a real app, get this from session
+    if (!currentUser) {
+      return [];
+    }
     const now = new Date();
 
     const announcements = await db.announcement.findMany({

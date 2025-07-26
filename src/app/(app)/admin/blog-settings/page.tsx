@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Settings, Loader2, Sparkles, Send, CalendarClock, Tag, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BlogGenerationSettings, BlogPost } from "@/types";
-import { sampleBlogGenerationSettings, sampleBlogPosts, sampleUserProfile } from "@/lib/sample-data";
+import { sampleBlogGenerationSettings, sampleBlogPosts } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +20,7 @@ import { generateAiBlogPost, type GenerateAiBlogPostInput, type GenerateAiBlogPo
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 const settingsSchemaBase = z.object({
   generationIntervalHours: z.coerce.number().min(1).max(720),
@@ -33,12 +34,12 @@ const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-')
 
 export default function AdminBlogSettingsPage() {
   const { t } = useI18n();
+  const { user: currentUser } = useAuth();
   const [settings, setSettings] = useState<BlogGenerationSettings>(sampleBlogGenerationSettings);
   const [isLoading, setIsLoading] = useState(false);
   const [manualTopic, setManualTopic] = useState(settings.topics[0] || "");
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
-
+  
   const translatedSettingsSchema = settingsSchemaBase.extend({
     generationIntervalHours: z.coerce.number().min(1, t("blogSettingsAdmin.validation.intervalMin", { default: "Interval must be at least 1 hour." })).max(720, t("blogSettingsAdmin.validation.intervalMax", { default: "Interval cannot exceed 720 hours (30 days)." })),
     topics: z.string().min(1, t("blogSettingsAdmin.validation.topicsRequired", { default: "At least one topic is required." })),
@@ -61,7 +62,7 @@ export default function AdminBlogSettingsPage() {
     });
   }, [settings, reset]);
 
-  if (currentUser.role !== 'admin') {
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
@@ -249,8 +250,6 @@ export default function AdminBlogSettingsPage() {
           </p>
         </CardContent>
       </Card>
-
     </div>
   );
 }
-    

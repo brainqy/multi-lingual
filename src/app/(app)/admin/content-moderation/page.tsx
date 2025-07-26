@@ -8,27 +8,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShieldAlert, CheckCircle, Trash2, Eye } from "lucide-react";
-import { sampleCommunityPosts, sampleUserProfile } from "@/lib/sample-data";
+import { sampleCommunityPosts } from "@/lib/sample-data";
 import type { CommunityPost } from "@/types";
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ContentModerationPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   
   const [posts, setPosts] = useState<CommunityPost[]>([]);
 
   useEffect(() => {
-     setPosts(
+    if (!currentUser) return;
+    setPosts(
       currentUser.role === 'admin' 
         ? sampleCommunityPosts 
         : sampleCommunityPosts.filter(p => p.tenantId === currentUser.tenantId)
     );
-  }, [currentUser.role, currentUser.tenantId]);
+  }, [currentUser]);
 
 
   const flaggedPosts = useMemo(() => {
@@ -55,7 +57,7 @@ export default function ContentModerationPage() {
   };
 
 
-  if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
 
