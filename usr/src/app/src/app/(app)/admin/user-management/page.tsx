@@ -15,12 +15,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlusCircle, Edit3, Trash2, UserCog, UserCircle, Search, Loader2, UploadCloud, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { UserProfile, UserRole, UserStatus, Tenant } from "@/types";
-import { sampleTenants, sampleUserProfile, ensureFullUserProfile } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-import { getUsers, createUser, updateUser, deleteUser } from "@/lib/data-services/users";
+import { getTenants } from "@/lib/actions/tenants";
+import { createUser, deleteUser, getUsers, updateUser } from "@/lib/data-services/users";
+import { useAuth } from "@/hooks/use-auth";
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -29,7 +30,7 @@ const userSchema = z.object({
   role: z.enum(['user', 'manager', 'admin']),
   tenantId: z.string().min(1, "Tenant is required."),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
-  password: z.string().optional(),
+  password: z.string().optional(), // Password is now optional
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -43,11 +44,12 @@ type CsvUser = {
 
 
 export default function UserManagementPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
   
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -63,17 +65,22 @@ export default function UserManagementPage() {
     resolver: zodResolver(userSchema),
   });
 
-  const fetchUsers = useCallback(async () => {
+  const fetchAllData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
     const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
-    const usersFromDb = await getUsers(tenantIdToFetch);
+    const [usersFromDb, tenantsFromDb] = await Promise.all([
+      getUsers(tenantIdToFetch),
+      getTenants()
+    ]);
     setAllUsers(usersFromDb);
+    setTenants(tenantsFromDb);
     setIsLoading(false);
-  }, [currentUser.role, currentUser.tenantId]);
+  }, [currentUser]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchAllData();
+  }, [fetchAllData]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -136,14 +143,11 @@ export default function UserManagementPage() {
         tenantId: data.tenantId,
       });
       if (updatedUser) {
-        setAllUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUser : u));
         toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
+        await fetchAllData(); // Refetch after update
       }
     } else {
-      if (!data.password || data.password.length < 8) {
-        toast({ title: t("userManagement.toast.passwordRequired.title"), description: t("userManagement.toast.passwordRequired.description"), variant: "destructive" });
-        return;
-      }
+      // Password is no longer required when an admin creates a user
       const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
 
       const newUser = await createUser({
@@ -152,12 +156,12 @@ export default function UserManagementPage() {
         role: data.role as UserRole,
         tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
-        // Password would be handled by a secure auth system, not stored directly
+        password: data.password, // Pass it if provided, can be used for initial setup
       });
       
       if (newUser) {
-        setAllUsers(prev => [newUser, ...prev]);
         toast({ title: t("userManagement.toast.created.title"), description: t("userManagement.toast.created.description", { name: data.name }) });
+        await fetchAllData(); // Refetch after creation
       } else {
         toast({ title: "Error", description: "Failed to create user.", variant: "destructive"});
       }
@@ -173,8 +177,8 @@ export default function UserManagementPage() {
     }
     const success = await deleteUser(userId);
     if (success) {
-        setAllUsers(prev => prev.filter(u => u.id !== userId));
         toast({ title: t("userManagement.toast.deleted.title"), description: t("userManagement.toast.deleted.description"), variant: "destructive" });
+        await fetchAllData(); // Refetch after deletion
     } else {
         toast({ title: "Error", description: "Failed to delete user.", variant: "destructive"});
     }
@@ -214,6 +218,7 @@ export default function UserManagementPage() {
         
         let addedCount = 0;
         const creationPromises: Promise<UserProfile | null>[] = [];
+        const currentUsers = await getUsers(); // Fetch all users to check for existence
 
         for (let i = 1; i < rows.length; i++) {
           const values = rows[i].split(',').map(v => v.trim());
@@ -224,7 +229,7 @@ export default function UserManagementPage() {
             tenantId: values[tenantIdIndex],
           };
 
-          if (newUserCsv.email && !allUsers.some(u => u.email === newUserCsv.email)) {
+          if (newUserCsv.email && !currentUsers.some(u => u.email === newUserCsv.email)) {
             creationPromises.push(createUser({
               name: newUserCsv.name,
               email: newUserCsv.email,
@@ -243,7 +248,7 @@ export default function UserManagementPage() {
           description: t("userManagement.toast.uploaded.description", { count: addedCount }),
         });
         
-        await fetchUsers(); // Refresh the list from DB
+        await fetchAllData(); // Refresh the list from DB
         setIsUploadDialogOpen(false);
         setCsvFile(null);
 
@@ -269,7 +274,7 @@ export default function UserManagementPage() {
   };
 
   const getTenantName = (tenantId: string) => {
-    return sampleTenants.find(t => t.id === tenantId)?.name || tenantId;
+    return tenants.find(t => t.id === tenantId)?.name || tenantId;
   };
   
   const UserCard = ({ user }: { user: UserProfile }) => (
@@ -477,9 +482,9 @@ export default function UserManagementPage() {
             </div>
             {!editingUser && (
               <div>
-                <Label htmlFor="password">{t("userManagement.form.passwordLabel")}</Label>
+                <Label htmlFor="password">{t("userManagement.form.passwordLabel")} (Optional)</Label>
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
-                <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelp")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelpAdmin")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
               </div>
             )}
@@ -519,7 +524,7 @@ export default function UserManagementPage() {
                   <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
                     <SelectTrigger id="tenantId"><SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} /></SelectTrigger>
                     <SelectContent>
-                      {sampleTenants.map(tenant => (
+                      {tenants.map(tenant => (
                         <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
                       ))}
                     </SelectContent>

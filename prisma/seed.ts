@@ -1,6 +1,5 @@
-
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities, sampleBlogPosts, sampleFeatureRequests, initialFeedbackSurvey, profileCompletionSurveyDefinition, samplePromoCodes } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions, sampleAffiliates, samplePromotionalContent, sampleActivities, sampleBlogPosts, sampleFeatureRequests, initialFeedbackSurvey, profileCompletionSurveyDefinition, samplePromoCodes, sampleMockInterviewSessions, sampleSystemAlerts, sampleChallenges } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +8,6 @@ async function main() {
 
   // Seed Tenants first to satisfy foreign key constraints
   for (const tenantData of sampleTenants) {
-    // Prisma doesn't like a nested 'settings' object on create, handle it separately
     const { settings, ...restOfTenantData } = tenantData;
     
     await prisma.tenant.upsert({
@@ -17,11 +15,9 @@ async function main() {
       update: {},
       create: {
         ...restOfTenantData,
-        // Create TenantSettings if they exist in the sample data
         settings: settings ? {
           create: {
             ...settings,
-            // features and emailTemplates are JSON fields, so they should be created as such
             features: settings.features || Prisma.JsonNull,
             emailTemplates: settings.emailTemplates || Prisma.JsonNull,
           },
@@ -34,7 +30,6 @@ async function main() {
   // Seed Users
   for (const userData of samplePlatformUsers) {
     const {
-      // Exclude relational or complex fields that Prisma handles differently
       company,
       pastInterviewSessions,
       challengeProgress,
@@ -42,19 +37,18 @@ async function main() {
       ...restOfUserData
     } = userData;
 
-    // Convert date strings to Date objects where necessary
     const createData = {
       ...restOfUserData,
       lastLogin: userData.lastLogin ? new Date(userData.lastLogin) : new Date(),
       createdAt: userData.createdAt ? new Date(userData.createdAt) : new Date(),
       dateOfBirth: userData.dateOfBirth ? new Date(userData.dateOfBirth) : null,
-      // Ensure arrays are handled correctly for Prisma's JSON type
       skills: userData.skills || Prisma.JsonNull,
       areasOfSupport: userData.areasOfSupport || Prisma.JsonNull,
       interests: userData.interests || Prisma.JsonNull,
       offersHelpWith: userData.offersHelpWith || Prisma.JsonNull,
       earnedBadges: userData.earnedBadges || Prisma.JsonNull,
-      challengeTopics: userData.challengeTopics || Prisma.JsonNull,
+      challengeTopics: userData.challengeTopics || [],
+      weeklyActivity: userData.weeklyActivity || [],
     };
     
     await prisma.user.upsert({
@@ -205,6 +199,55 @@ async function main() {
       console.log(`Created/updated promo code: ${codeData.code}`);
   }
 
+  // Seed Mock Interview Sessions
+  for (const sessionData of sampleMockInterviewSessions) {
+    const { answers, ...restSessionData } = sessionData;
+    await prisma.mockInterviewSession.upsert({
+      where: { id: sessionData.id },
+      update: {},
+      create: {
+        ...restSessionData,
+        overallFeedback: sessionData.overallFeedback || Prisma.JsonNull,
+        questions: sessionData.questions || Prisma.JsonNull,
+        answers: {
+          create: answers.map(answer => ({
+            ...answer,
+            strengths: answer.strengths || [],
+            areasForImprovement: answer.areasForImprovement || [],
+            suggestedImprovements: answer.suggestedImprovements || [],
+          })),
+        },
+      },
+    });
+    console.log(`Seeded mock interview session: ${sessionData.topic}`);
+  }
+
+  // Seed System Alerts
+  for (const alertData of sampleSystemAlerts) {
+    await prisma.systemAlert.upsert({
+      where: { id: alertData.id },
+      update: {},
+      create: {
+        ...alertData,
+        timestamp: new Date(alertData.timestamp),
+      },
+    });
+  }
+  console.log(`Seeded ${sampleSystemAlerts.length} system alerts.`);
+
+  // Seed Daily Challenges
+  for (const challengeData of sampleChallenges) {
+    await prisma.dailyChallenge.upsert({
+      where: { id: challengeData.id },
+      update: {},
+      create: {
+        ...challengeData,
+        date: challengeData.date ? new Date(challengeData.date) : null,
+        tasks: challengeData.tasks || Prisma.JsonNull,
+      },
+    });
+  }
+  console.log(`Seeded ${sampleChallenges.length} daily challenges.`);
 
   console.log(`Seeding finished.`);
 }
