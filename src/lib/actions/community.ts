@@ -49,7 +49,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
       data: {
         ...postData,
         timestamp: new Date(),
-        pollOptions: postData.pollOptions || Prisma.JsonNull,
+        pollOptions: postData.pollOptions || null, // Prisma expects JsonNull for empty JSON
         tags: postData.tags || [],
       },
     });
@@ -97,7 +97,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Co
             where: { id: postId },
             data: {
                 ...cleanUpdateData,
-                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? Prisma.JsonNull : undefined),
+                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? null : undefined),
                 tags: updateData.tags ? updateData.tags : undefined,
             },
             include: {

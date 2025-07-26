@@ -57,7 +57,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         name: data.name,
         email: data.email,
         role: data.role,
-        status: data.status || 'active',
+        status: data?.status || 'active',
         lastLogin: new Date(),
         createdAt: new Date(),
         password: password,
