@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules } from '../src/lib/sample-data';
+import { samplePlatformUsers, sampleTenants, sampleBadges, sampleXpRules, sampleInterviewQuestions } from '../src/lib/sample-data';
 
 const prisma = new PrismaClient();
 
@@ -82,6 +82,28 @@ async function main() {
       create: ruleData,
     });
     console.log(`Created/updated gamification rule: ${ruleData.actionId}`);
+  }
+
+  // Seed Interview Questions
+  for (const questionData of sampleInterviewQuestions) {
+    const { id, rating, ratingsCount, userRatings, userComments, bookmarkedBy, ...restOfQuestionData } = questionData;
+    const createData = {
+        ...restOfQuestionData,
+        mcqOptions: questionData.mcqOptions || Prisma.JsonNull,
+        userRatings: questionData.userRatings || Prisma.JsonNull,
+        userComments: questionData.userComments || Prisma.JsonNull,
+        bookmarkedBy: questionData.bookmarkedBy || [],
+        tags: questionData.tags || [],
+    };
+    await prisma.interviewQuestion.upsert({
+        where: { id: questionData.id },
+        update: {},
+        create: {
+            id: questionData.id,
+            ...createData,
+        },
+    });
+    console.log(`Created/updated interview question: ${questionData.questionText.substring(0, 30)}...`);
   }
 
 
