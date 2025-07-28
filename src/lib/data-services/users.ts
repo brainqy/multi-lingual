@@ -3,7 +3,6 @@
 
 import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
-import { sampleTenants } from '@/lib/data/platform';
 
 const log = console.log;
 
@@ -85,25 +84,8 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
     });
 
     if (!tenantExists) {
-      const defaultTenantData = sampleTenants.find((t: Tenant) => t.id === defaultTenantId);
-      if (defaultTenantData) {
-        await db.tenant.create({
-          data: {
-            id: defaultTenantData.id,
-            name: defaultTenantData.name,
-            domain: defaultTenantData.domain,
-            createdAt: new Date(defaultTenantData.createdAt),
-            settings: {
-              create: {
-                allowPublicSignup: defaultTenantData.settings?.allowPublicSignup ?? true,
-                primaryColor: defaultTenantData.settings?.primaryColor,
-                accentColor: defaultTenantData.settings?.accentColor,
-                customLogoUrl: defaultTenantData.settings?.customLogoUrl,
-              }
-            }
-          }
-        });
-      }
+      log(`[DataService] Tenant ${tenantId} not found, cannot create user.`);
+      throw new Error(`Tenant with ID ${tenantId} does not exist.`);
     }
 
     const newUser = await db.user.create({
@@ -150,3 +132,5 @@ export async function deleteUser(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+    

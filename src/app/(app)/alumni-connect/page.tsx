@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Search, Briefcase, GraduationCap, MessageSquare, Eye, CalendarDays, Coins, Filter as FilterIcon, User as UserIcon, Mail, CalendarPlus, Star, ChevronLeft, ChevronRight, Edit3, Loader2 } from "lucide-react";
-import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
 import { getUsers, updateUser } from "@/lib/data-services/users";
 import type { AlumniProfile, PreferredTimeSlot, UserProfile } from "@/types";
 import { PreferredTimeSlots } from "@/types";
@@ -29,6 +28,8 @@ import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from "@/hooks/use-i18n";
 import { createAppointment } from '@/lib/actions/appointments';
+import { useAuth } from '@/hooks/use-auth';
+import { getWallet, updateWallet } from '@/lib/actions/wallet';
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
@@ -40,11 +41,11 @@ type BookingFormData = z.infer<typeof bookingSchema>;
 
 export default function AlumniConnectPage() {
   const { t } = useI18n();
+  const { user: currentUser } = useAuth();
   const [allAlumniData, setAllAlumniData] = useState<AlumniProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
 
   const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
@@ -65,15 +66,16 @@ export default function AlumniConnectPage() {
     }
   });
 
-  useEffect(() => {
-    const fetchAlumni = async () => {
-      setIsLoading(true);
-      const users = await getUsers();
-      setAllAlumniData(users as AlumniProfile[]);
-      setIsLoading(false);
-    };
-    fetchAlumni();
+  const fetchAlumni = useCallback(async () => {
+    setIsLoading(true);
+    const users = await getUsers();
+    setAllAlumniData(users as AlumniProfile[]);
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchAlumni();
+  }, [fetchAlumni]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -85,7 +87,8 @@ export default function AlumniConnectPage() {
   const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
 
   const filteredAlumni = useMemo(() => {
-    let results = allAlumniData;
+    if (!currentUser) return [];
+    let results = allAlumniData.filter(a => a.id !== currentUser.id); // Exclude self
     if (searchTerm) {
       results = results.filter(alumni =>
         alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,7 +105,7 @@ export default function AlumniConnectPage() {
       results = results.filter(alumni => alumni.university && selectedUniversities.has(alumni.university));
     }
     return results;
-  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData]);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData, currentUser]);
 
   const paginatedAlumni = useMemo(() => {
     const startIndex = (currentPage - 1) * alumniPerPage;
@@ -140,13 +143,15 @@ export default function AlumniConnectPage() {
   };
 
   const onBookAppointmentSubmit = async (data: BookingFormData) => {
-    if (!alumniToBook) return;
+    if (!alumniToBook || !currentUser) return;
     const cost = alumniToBook.appointmentCoinCost || 10;
+    
+    const userWallet = await getWallet(currentUser.id);
 
-    if (sampleWalletBalance.coins < cost) {
+    if (!userWallet || userWallet.coins < cost) {
       toast({
         title: "Insufficient Coins",
-        description: `You need ${cost} coins for this appointment. You currently have ${sampleWalletBalance.coins}.`,
+        description: `You need ${cost} coins for this appointment. You currently have ${userWallet?.coins || 0}.`,
         variant: "destructive",
       });
       return;
@@ -176,17 +181,9 @@ export default function AlumniConnectPage() {
     const newAppointment = await createAppointment(newAppointmentData);
 
     if (newAppointment) {
-        // Deduct coins and create a transaction record
-        sampleWalletBalance.coins -= cost;
-        sampleWalletBalance.transactions.unshift({
-          id: `txn-appt-${Date.now()}`,
-          tenantId: currentUser.tenantId,
-          userId: currentUser.id,
-          date: new Date().toISOString(),
-          description: `Appointment fee for ${alumniToBook.name}`,
-          amount: -cost,
-          type: 'debit',
-        });
+        await updateWallet(currentUser.id, {
+            coins: userWallet.coins - cost,
+        }, `Appointment fee for ${alumniToBook.name}`);
 
         toast({
           title: `-${cost} Coins`,
@@ -199,6 +196,7 @@ export default function AlumniConnectPage() {
   };
 
   const handleToggleDistinguished = async (alumniId: string) => {
+    if (!currentUser) return;
     const alumniToUpdate = allAlumniData.find(a => a.id === alumniId);
     if (!alumniToUpdate) return;
 
@@ -248,7 +246,7 @@ export default function AlumniConnectPage() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -566,3 +564,5 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
+
+    

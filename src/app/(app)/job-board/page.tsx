@@ -13,8 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
-import { sampleAlumni, sampleUserProfile, sampleJobApplications } from "@/lib/sample-data";
-import { getJobOpenings, addJobOpening } from "@/lib/actions/jobs"; // Updated import
+import { getJobOpenings, addJobOpening, createJobApplication, updateJobApplication } from "@/lib/actions/jobs";
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -23,6 +22,7 @@ import * as z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { personalizedJobRecommendations, type PersonalizedJobRecommendationsInput, type PersonalizedJobRecommendationsOutput } from "@/ai/flows/personalized-job-recommendations";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 
 const jobOpeningSchema = z.object({
   id: z.string().optional(),
@@ -37,12 +37,13 @@ const jobOpeningSchema = z.object({
 type JobOpeningFormData = z.infer<typeof jobOpeningSchema>;
 type RecommendedJob = PersonalizedJobRecommendationsOutput['recommendedJobs'][0];
 
-
 const JOB_TYPES: JobOpening['type'][] = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Mentorship'];
 
 export default function JobBoardPage() {
   const { t } = useI18n();
+  const { user: currentUser } = useAuth();
   const [openings, setOpenings] = useState<JobOpening[]>([]);
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const [isLoadingOpenings, setIsLoadingOpenings] = useState(true);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [editingOpening, setEditingOpening] = useState<JobOpening | null>(null);
@@ -62,38 +63,29 @@ export default function JobBoardPage() {
     defaultValues: { type: 'Full-time' }
   });
 
-  const currentUser = sampleUserProfile; 
+  const loadOpenings = useCallback(async () => {
+    setIsLoadingOpenings(true);
+    try {
+      const data = await getJobOpenings();
+      setOpenings(data);
+    } catch (error) {
+      console.error("Failed to load job openings:", error);
+      toast({ title: "Error Loading Jobs", description: "Could not fetch job openings.", variant: "destructive" });
+    } finally {
+      setIsLoadingOpenings(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function loadOpenings() {
-      setIsLoadingOpenings(true);
-      try {
-        const data = await getJobOpenings();
-        setOpenings(data);
-      } catch (error) {
-        console.error("Failed to load job openings:", error);
-        toast({ title: "Error Loading Jobs", description: "Could not fetch job openings.", variant: "destructive" });
-      } finally {
-        setIsLoadingOpenings(false);
-      }
-    }
     loadOpenings();
-  }, [toast]);
+  }, [loadOpenings]);
   
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedJobTypes, selectedLocations, selectedCompanies]);
 
-
-  const uniqueLocations = useMemo(() => {
-    const locations = new Set(openings.map(op => op.location));
-    return Array.from(locations).sort();
-  }, [openings]);
-
-  const uniqueCompanies = useMemo(() => {
-    const companies = new Set(openings.map(op => op.company));
-    return Array.from(companies).sort();
-  }, [openings]);
+  const uniqueLocations = useMemo(() => Array.from(new Set(openings.map(op => op.location))).sort(), [openings]);
+  const uniqueCompanies = useMemo(() => Array.from(new Set(openings.map(op => op.company))).sort(), [openings]);
 
   const filteredOpenings = useMemo(() => {
     return openings.filter(opening => {
@@ -123,21 +115,12 @@ export default function JobBoardPage() {
   };
 
   const onPostSubmit = async (data: JobOpeningFormData) => {
+    if (!currentUser) return;
     if (editingOpening) {
-      // In a real app, you'd call an update function here
-      const updatedOpening = { ...editingOpening, ...data, applicationLink: data.applicationLink || undefined };
-      setOpenings(prev => prev.map(op => op.id === editingOpening.id ? updatedOpening : op));
-      toast({ title: "Opportunity Updated", description: `${data.title} at ${data.company} has been updated.` });
+      // Logic for updating job openings would go here.
+      toast({ title: "Update Mocked", description: "Job opening update functionality is for demonstration."});
     } else {
-      const newJobData = {
-        title: data.title,
-        company: data.company,
-        location: data.location,
-        description: data.description,
-        type: data.type,
-        applicationLink: data.applicationLink || undefined,
-      };
-      const savedOpening = await addJobOpening(newJobData, currentUser);
+      const savedOpening = await addJobOpening(data, currentUser);
       if (savedOpening) {
         setOpenings(prev => [savedOpening, ...prev]);
         toast({ title: "Opportunity Posted", description: `${data.title} at ${data.company} has been posted.` });
@@ -168,6 +151,7 @@ export default function JobBoardPage() {
   };
 
   const handleGetRecommendations = async () => {
+    if (!currentUser) return;
     setIsRecLoading(true);
     setRecommendedJobs(null);
     try {
@@ -212,63 +196,87 @@ export default function JobBoardPage() {
     }
   };
 
-  const createJobApplicationFromOpening = (opening: JobOpening, status: JobApplicationStatus): JobApplication => {
-    return {
-      id: `app-${opening.id}-${Date.now()}`, 
+  const handleSaveJob = async (opening: JobOpening) => {
+    if (!currentUser) return;
+    const existingApplication = jobApplications.find(
+      app => app.sourceJobOpeningId === opening.id && app.userId === currentUser.id
+    );
+
+    if (existingApplication) {
+      toast({ title: "Already Tracked", description: `This job is already in your tracker as '${existingApplication.status}'.`});
+      return;
+    }
+
+    const newApplication = await createJobApplication({
       tenantId: opening.tenantId,
       userId: currentUser.id,
       companyName: opening.company,
       jobTitle: opening.title,
-      status: status,
-      dateApplied: new Date().toISOString().split('T')[0],
+      status: 'Saved',
+      dateApplied: new Date().toISOString(),
       jobDescription: opening.description,
       location: opening.location,
       sourceJobOpeningId: opening.id,
       applicationUrl: opening.applicationLink,
-      notes: status === 'Saved' ? ['Saved from Job Board'] : ['Applied from Job Board'],
-    };
-  };
+      notes: ['Saved from Job Board'],
+    });
 
-  const handleSaveJob = (opening: JobOpening) => {
-    const existingApplication = sampleJobApplications.find(
-      app => app.sourceJobOpeningId === opening.id && app.userId === currentUser.id
-    );
-
-    if (existingApplication && (existingApplication.status === 'Saved' || existingApplication.status === 'Applied')) {
-      toast({ title: "Already Tracked", description: `This job is already in your tracker as '${existingApplication.status}'.`, variant: "default" });
-      return;
+    if (newApplication) {
+        setJobApplications(prev => [newApplication, ...prev]);
+        toast({ title: "Job Saved!", description: `${opening.title} at ${opening.company} has been saved to your Job Tracker.` });
+    } else {
+        toast({ title: "Error", description: "Could not save job to tracker.", variant: "destructive" });
     }
-
-    const newApplication = createJobApplicationFromOpening(opening, 'Saved');
-    sampleJobApplications.unshift(newApplication); 
-    toast({ title: "Job Saved!", description: `${opening.title} at ${opening.company} has been saved to your Job Tracker.` });
   };
 
-  const handleApplyJob = (opening: JobOpening) => {
+  const handleApplyJob = async (opening: JobOpening) => {
+    if (!currentUser) return;
     if (opening.applicationLink) {
       window.open(opening.applicationLink, '_blank');
     }
 
-    const existingApplicationIndex = sampleJobApplications.findIndex(
+    const existingApplication = jobApplications.find(
       app => app.sourceJobOpeningId === opening.id && app.userId === currentUser.id
     );
 
-    if (existingApplicationIndex !== -1) {
-      if (sampleJobApplications[existingApplicationIndex].status === 'Applied') {
-        toast({ title: "Already Applied", description: `You've already marked this job as 'Applied' in your tracker.`, variant: "default" });
+    if (existingApplication) {
+      if (existingApplication.status === 'Applied') {
+        toast({ title: "Already Applied", description: `You've already marked this job as 'Applied'.` });
         return;
       }
-      sampleJobApplications[existingApplicationIndex].status = 'Applied';
-      sampleJobApplications[existingApplicationIndex].dateApplied = new Date().toISOString().split('T')[0];
-      sampleJobApplications[existingApplicationIndex].notes = ["Updated to 'Applied' from Job Board"];
-      toast({ title: "Application Tracked", description: `${opening.title} status updated to 'Applied' in your Job Tracker.` });
+      const updatedApp = await updateJobApplication(existingApplication.id, {
+        status: 'Applied',
+        dateApplied: new Date().toISOString(),
+        notes: ["Updated to 'Applied' from Job Board"],
+      });
+      if (updatedApp) {
+        setJobApplications(prev => prev.map(app => app.id === updatedApp.id ? updatedApp : app));
+        toast({ title: "Application Tracked", description: `${opening.title} status updated to 'Applied'.` });
+      }
     } else {
-      const newApplication = createJobApplicationFromOpening(opening, 'Applied');
-      sampleJobApplications.unshift(newApplication);
-      toast({ title: "Application Tracked", description: `${opening.title} at ${opening.company} has been added to your Job Tracker as 'Applied'.` });
+      const newApplication = await createJobApplication({
+        tenantId: opening.tenantId,
+        userId: currentUser.id,
+        companyName: opening.company,
+        jobTitle: opening.title,
+        status: 'Applied',
+        dateApplied: new Date().toISOString(),
+        jobDescription: opening.description,
+        location: opening.location,
+        sourceJobOpeningId: opening.id,
+        applicationUrl: opening.applicationLink,
+        notes: ['Applied from Job Board'],
+      });
+       if (newApplication) {
+        setJobApplications(prev => [newApplication, ...prev]);
+        toast({ title: "Application Tracked", description: `${opening.title} at ${opening.company} has been added as 'Applied'.` });
+       }
     }
   };
 
+  if (!currentUser) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary"/></div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -496,7 +504,6 @@ export default function JobBoardPage() {
         <>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginatedOpenings.map((opening) => {
-            const postingAlumni = sampleAlumni.find(a => a.id === opening.postedByAlumniId);
             const isOwnPosting = opening.postedByAlumniId === currentUser.id || currentUser.role === 'admin';
             return (
             <Card key={opening.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
@@ -512,7 +519,7 @@ export default function JobBoardPage() {
                     {opening.alumniName && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Avatar className="h-5 w-5">
-                                <AvatarImage src={postingAlumni?.profilePictureUrl} alt={opening.alumniName} data-ai-hint="person face"/>
+                                <AvatarImage src={`https://avatar.vercel.sh/${opening.postedByAlumniId}.png`} alt={opening.alumniName} data-ai-hint="person face"/>
                                 <AvatarFallback>{opening.alumniName.substring(0,1)}</AvatarFallback>
                             </Avatar>
                             <span>{opening.alumniName}</span>
@@ -584,3 +591,5 @@ export default function JobBoardPage() {
     </div>
   );
 }
+
+    

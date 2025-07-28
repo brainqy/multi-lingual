@@ -12,6 +12,13 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const posts = await db.blogPost.findMany({
       orderBy: { date: 'desc' },
+      include: {
+        comments: {
+          orderBy: {
+            timestamp: 'asc',
+          }
+        }
+      }
     });
     return posts as unknown as BlogPost[];
   } catch (error) {
@@ -29,6 +36,13 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const post = await db.blogPost.findUnique({
       where: { slug },
+      include: {
+        comments: {
+          orderBy: {
+            timestamp: 'asc',
+          }
+        }
+      }
     });
     return post as unknown as BlogPost | null;
   } catch (error) {
@@ -107,3 +121,5 @@ export async function updateBlogGenerationSettings(settingsData: Partial<Omit<Bl
     return null;
   }
 }
+
+    
