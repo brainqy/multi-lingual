@@ -27,11 +27,6 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
           },
           take: 50, // Get recent transactions
         },
-        flashCoins: {
-            orderBy: {
-                expiresAt: 'asc',
-            }
-        }
       },
     });
 
@@ -53,11 +48,15 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
         },
         include: {
           transactions: true,
-          flashCoins: true,
         },
       });
     }
 
+    // Manually sort flashCoins if they exist
+    if (wallet && Array.isArray((wallet as any).flashCoins)) {
+      (wallet as any).flashCoins.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
+    }
+    
     return wallet as unknown as Wallet;
   } catch (error) {
     console.error(`[WalletAction] Error fetching wallet for user ${userId}:`, error);
@@ -90,7 +89,6 @@ export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'c
             },
             include: {
                 transactions: { orderBy: { date: 'desc' }, take: 50 },
-                flashCoins: { orderBy: { expiresAt: 'asc' } }
             }
         });
 
