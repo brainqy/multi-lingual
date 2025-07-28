@@ -14,7 +14,7 @@ import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { redeemPromoCode } from "@/lib/actions/promo-codes";
+import { redeemPromoCode } from "../../../../lib/actions/promo-codes";
 
 export default function WalletPage() {
   const { t } = useI18n();
