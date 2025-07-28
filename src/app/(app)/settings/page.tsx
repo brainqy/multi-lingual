@@ -8,9 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle } from "lucide-react";
+import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
+import { sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
 import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory, TourStep } from "@/types";
 import { ALL_CATEGORIES } from "@/types";
 import {
@@ -26,20 +26,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import WelcomeTourDialog from "@/components/features/WelcomeTourDialog";
+import { useAuth } from "@/hooks/use-auth";
+import { updateUser } from "@/lib/data-services/users";
 
 export default function SettingsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<UserProfile>(sampleUserProfile);
+  const { user: currentUser, login } = useAuth(); // Use live user data
+  
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
-  const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>(currentUser.challengeTopics || []);
+  const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
   const [appNotificationsEnabled, setAppNotificationsEnabled] = useState(true);
   const [gamificationNotificationsEnabled, setGamificationNotificationsEnabled] = useState(true);
   const [referralNotificationsEnabled, setReferralNotificationsEnabled] = useState(true);
   const [walletEnabled, setWalletEnabled] = useState(platformSettings.walletEnabled);
-  const [userApiKey, setUserApiKey] = useState(currentUser.userApiKey || "");
+  const [userApiKey, setUserApiKey] = useState("");
   const [tenantNameInput, setTenantNameInput] = useState("");
   const [tenantLogoUrlInput, setTenantLogoUrlInput] = useState("");
   const [currentPrimaryColor, setCurrentPrimaryColor] = useState("");
@@ -58,6 +61,13 @@ export default function SettingsPage() {
     { title: t("userSettings.apiKeyTour.step2.title"), description: t("userSettings.apiKeyTour.step2.description"), targetId: "developer-settings-card" },
     { title: t("userSettings.apiKeyTour.step3.title"), description: t("userSettings.apiKeyTour.step3.description"), targetId: "user-api-key-input" }
   ];
+  
+  useEffect(() => {
+    if (currentUser) {
+      setChallengeTopics(currentUser.challengeTopics || []);
+      setUserApiKey(currentUser.userApiKey || "");
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     // This effect runs only on the client side
@@ -70,7 +80,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (currentUser.role === 'manager' && currentUser.tenantId) {
+    if (currentUser?.role === 'manager' && currentUser.tenantId) {
       const currentTenant = sampleTenants.find(t => t.id === currentUser.tenantId);
       if (currentTenant) {
         setTenantNameInput(currentTenant.name);
@@ -88,7 +98,7 @@ export default function SettingsPage() {
         setShowApiKeyTour(true);
       }
     }
-  }, [currentUser.role, currentUser.tenantId, platformSettings.walletEnabled, platformSettings.allowUserApiKey]);
+  }, [currentUser?.role, currentUser?.tenantId, platformSettings.walletEnabled, platformSettings.allowUserApiKey]);
 
 
   const toggleTheme = () => {
@@ -112,35 +122,43 @@ export default function SettingsPage() {
     if (colorType === 'accent') setCurrentAccentColor(value);
   };
 
-  const handleSaveSettings = () => {
-    const updatedUser = { ...currentUser, challengeTopics, userApiKey };
-    Object.assign(sampleUserProfile, updatedUser);
-    setCurrentUser(updatedUser);
+  const handleSaveSettings = async () => {
+    if (!currentUser) return;
+    
+    const updatedUserData = { ...currentUser, challengeTopics, userApiKey };
+    const updatedUser = await updateUser(currentUser.id, updatedUserData);
 
-    console.log("General settings saved (mocked):", {
-      isDarkMode, emailNotificationsEnabled, appNotificationsEnabled,
-      gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics, userApiKey
-    });
+    if (updatedUser) {
+        // Re-login to update user in context
+        await login(updatedUser.email);
+        
+        console.log("General settings saved:", {
+          isDarkMode, emailNotificationsEnabled, appNotificationsEnabled,
+          gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics, userApiKey
+        });
 
-    if(currentUser.role === 'admin'){
-        Object.assign(samplePlatformSettings, { walletEnabled });
-        toast({ title: t("userSettings.toast.platformSettingsSaved.title"), description: t("userSettings.toast.platformSettingsSaved.description") });
-    }
+        if(currentUser.role === 'admin'){
+            Object.assign(samplePlatformSettings, { walletEnabled });
+            toast({ title: t("userSettings.toast.platformSettingsSaved.title"), description: t("userSettings.toast.platformSettingsSaved.description") });
+        }
 
-    if (currentUser.role === 'manager' && currentUser.tenantId) {
-      const tenantIndex = sampleTenants.findIndex(t => t.id === currentUser.tenantId);
-      if (tenantIndex !== -1) {
-        const updatedTenant = { ...sampleTenants[tenantIndex] };
-        updatedTenant.name = tenantNameInput;
-        if (!updatedTenant.settings) updatedTenant.settings = { allowPublicSignup: true };
-        updatedTenant.settings.customLogoUrl = tenantLogoUrlInput;
-        updatedTenant.settings.primaryColor = currentPrimaryColor;
-        updatedTenant.settings.accentColor = currentAccentColor;
-        sampleTenants[tenantIndex] = updatedTenant;
-        toast({ title: t("userSettings.toast.tenantBrandingSaved.title"), description: t("userSettings.toast.tenantBrandingSaved.description", { tenantName: tenantNameInput }) });
-      }
-    } else if (currentUser.role !== 'admin') {
-      toast({ title: t("userSettings.toast.userSettingsSaved.title"), description: t("userSettings.toast.userSettingsSaved.description") });
+        if (currentUser.role === 'manager' && currentUser.tenantId) {
+          const tenantIndex = sampleTenants.findIndex(t => t.id === currentUser.tenantId);
+          if (tenantIndex !== -1) {
+            const updatedTenant = { ...sampleTenants[tenantIndex] };
+            updatedTenant.name = tenantNameInput;
+            if (!updatedTenant.settings) updatedTenant.settings = { allowPublicSignup: true };
+            updatedTenant.settings.customLogoUrl = tenantLogoUrlInput;
+            updatedTenant.settings.primaryColor = currentPrimaryColor;
+            updatedTenant.settings.accentColor = currentAccentColor;
+            sampleTenants[tenantIndex] = updatedTenant;
+            toast({ title: t("userSettings.toast.tenantBrandingSaved.title"), description: t("userSettings.toast.tenantBrandingSaved.description", { tenantName: tenantNameInput }) });
+          }
+        } else if (currentUser.role !== 'admin') {
+          toast({ title: t("userSettings.toast.userSettingsSaved.title"), description: t("userSettings.toast.userSettingsSaved.description") });
+        }
+    } else {
+        toast({ title: "Save Failed", description: "Could not save settings.", variant: "destructive" });
     }
   };
 
@@ -176,6 +194,10 @@ export default function SettingsPage() {
         }
     });
   };
+  
+  if (!currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
