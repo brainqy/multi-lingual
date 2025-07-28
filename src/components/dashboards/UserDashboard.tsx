@@ -148,15 +148,17 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         setActivePromotions(promotions);
         setIsLoading(false);
     }
-    loadData();
+    if (user) {
+      loadData();
 
-    if (typeof window !== 'undefined') {
-      const tourSeen = localStorage.getItem('userDashboardTourSeen');
-      if (!tourSeen) {
-        setShowUserTour(true);
+      if (typeof window !== 'undefined') {
+        const tourSeen = localStorage.getItem('userDashboardTourSeen');
+        if (!tourSeen) {
+          setShowUserTour(true);
+        }
       }
     }
-  }, [user.id, user.tenantId]);
+  }, [user]);
   
   const {
     jobApplicationStatusData,
@@ -166,7 +168,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     upcomingReminders,
     upcomingAppointmentsAndSessions,
   } = useMemo(() => {
-    if (!dashboardData) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
+    if (!dashboardData || !user) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
 
     const userJobApps = dashboardData.jobApplications.filter((app: JobApplication) => app.userId === user.id);
     const statusData = userJobApps.reduce((acc: any, curr: JobApplication) => {
@@ -224,10 +226,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
       .slice(0, 5);
 
     return { jobApplicationStatusData: statusData, recentUserActivities: activities, earnedBadges: badges, leaderboardUsers: leaders, upcomingReminders: reminders, upcomingAppointmentsAndSessions: allSessions };
-  }, [dashboardData, user.id, user.earnedBadges]);
+  }, [dashboardData, user]);
 
   useEffect(() => {
-    if (!dashboardData) return;
+    if (!dashboardData || !user) return;
     const today = new Date();
     dashboardData.appointments.forEach((appt: Appointment) => {
         if (appt.requesterUserId === user.id || appt.alumniUserId === user.id) {
@@ -252,7 +254,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         setDailyChallenge(standardChallenges[Math.floor(Math.random() * standardChallenges.length)]);
       }
     }
-  }, [user.id, toast, t, user.challengeTopics, dashboardData]);
+  }, [user, toast, t, dashboardData]);
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setActiveIndex(index);
