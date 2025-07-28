@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
 
 import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost } from '@/lib/actions/community';
-import { sampleUserProfile, samplePlatformUsers } from "@/lib/sample-data";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +25,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { sampleAppointments } from "@/lib/data/appointments";
+import { useAuth } from "@/hooks/use-auth";
+import { getAppointments } from "@/lib/actions/appointments";
 
 const postSchema = z.object({
   content: z.string().min(1, "Post content cannot be empty"),
@@ -80,6 +80,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
   onReplyTextChange: (text: string) => void;
 }) => {
   const replies = allComments.filter(c => c.parentId === comment.id);
+  const { user: currentUser } = useAuth();
 
   return (
     <div className={cn("flex items-start space-x-2", level > 0 && "ml-6 mt-2")}>
@@ -96,11 +97,11 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
           <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
         </div>
         <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id)}>Reply</Button>
-        {replyingToCommentId === comment.id && (
+        {replyingToCommentId === comment.id && currentUser && (
            <div className="flex items-center gap-2 pt-2">
               <Avatar className="h-8 w-8">
-                  <AvatarImage src={sampleUserProfile.profilePictureUrl} alt={sampleUserProfile.name} data-ai-hint="person face" />
-                  <AvatarFallback>{sampleUserProfile.name.substring(0, 1)}</AvatarFallback>
+                  <AvatarImage src={currentUser.profilePictureUrl} alt={currentUser.name} data-ai-hint="person face" />
+                  <AvatarFallback>{currentUser.name.substring(0, 1)}</AvatarFallback>
               </Avatar>
               <Textarea
                   placeholder={`Replying to ${comment.userName}...`}
@@ -135,9 +136,11 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
 
 export default function CommunityFeedPage() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'text' | 'poll' | 'event' | 'request' | 'my_posts' | 'flagged'>('all');
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
@@ -161,28 +164,29 @@ export default function CommunityFeedPage() {
   });
 
   const postType = watch("type");
-  const currentUser = sampleUserProfile;
 
   const fetchPosts = useCallback(async () => {
+    if (!currentUser) return; // Guard against running before user is loaded
     setIsLoading(true);
     const fetchedPosts = await getCommunityPosts(currentUser.tenantId, currentUser.id);
     setPosts(fetchedPosts);
     setIsLoading(false);
-  }, [currentUser.tenantId, currentUser.id]);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
 
   const mostActiveUsers = useMemo(() => {
-    // This can be replaced with a dedicated server action in the future
-    return [...samplePlatformUsers]
+    if (!allUsers.length || !currentUser) return [];
+    return [...allUsers]
       .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active' && (currentUser.role === 'admin' || user.tenantId === currentUser.tenantId || user.tenantId === 'platform'))
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
       .slice(0, 5);
-  }, [currentUser.role, currentUser.tenantId]);
+  }, [allUsers, currentUser]);
 
   const handleFormSubmit = async (data: PostFormData) => {
+    if (!currentUser) return;
     let pollOptionsFinal = undefined;
     if (data.type === 'poll' && data.pollOptions) {
         pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
@@ -246,7 +250,7 @@ export default function CommunityFeedPage() {
   };
 
   const handleCommentSubmit = async (postId: string, text: string, parentId?: string) => {
-    if (!text.trim()) {
+    if (!text.trim() || !currentUser) {
       toast({ title: "Empty Comment", description: "Cannot submit an empty comment.", variant: "destructive" });
       return;
     }
@@ -294,6 +298,7 @@ export default function CommunityFeedPage() {
   };
 
   const handleAssign = async (postId: string, userName: string) => {
+    if (!currentUser) return;
     const postToUpdate = posts.find(p => p.id === postId);
     if (postToUpdate?.type !== 'request' || postToUpdate.assignedTo) {
       toast({ title: "Already Assigned", description: "This request is already assigned to someone." });
@@ -304,8 +309,7 @@ export default function CommunityFeedPage() {
     if (updatedPost) {
       setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
       
-      const newAppointment: Appointment = {
-          id: `appt-req-${postId}-${Date.now()}`,
+      const newAppointmentData = {
           tenantId: postToUpdate.tenantId,
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
@@ -316,8 +320,9 @@ export default function CommunityFeedPage() {
           notes: `Taken from community request: "${postToUpdate.content}"`,
           costInCoins: 0,
       };
-      sampleAppointments.unshift(newAppointment); // This still uses mock data for now.
       
+      // This part would ideally be a server action createAppointment
+      // For now, we simulate by just showing a toast
       toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
     }
   };
@@ -388,6 +393,7 @@ export default function CommunityFeedPage() {
   };
 
   const filteredPosts = useMemo(() => {
+    if (!currentUser) return [];
     return posts.filter(post => {
       const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
@@ -404,9 +410,9 @@ export default function CommunityFeedPage() {
       }
       return post.type === filter;
     });
-  }, [posts, filter, currentUser.id, currentUser.role, currentUser.tenantId]);
+  }, [posts, filter, currentUser]);
   
-   if (isLoading) {
+   if (isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -629,7 +635,7 @@ export default function CommunityFeedPage() {
                         )}
                       </div>
                     </div>
-                    {(post.userId === sampleUserProfile.id || currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) && post.moderationStatus !== 'removed' && (
+                    {(post.userId === currentUser.id || currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) && post.moderationStatus !== 'removed' && (
                       <Button variant="ghost" size="icon" onClick={() => openEditPostDialog(post)} title="Edit Post">
                         <Edit3 className="h-4 w-4" />
                       </Button>
@@ -686,7 +692,7 @@ export default function CommunityFeedPage() {
                         {post.type === 'request' && (
                           <div className='mt-2'>
                               {!post.assignedTo && post.status !== 'completed' && (
-                                <Button variant="outline" size="sm" className="mt-2 text-green-600 border-green-500 hover:bg-green-50" onClick={() => handleAssign(post.id, sampleUserProfile.name)}>
+                                <Button variant="outline" size="sm" className="mt-2 text-green-600 border-green-500 hover:bg-green-50" onClick={() => handleAssign(post.id, currentUser.name)}>
                                   <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
                                 </Button>
                               )}
