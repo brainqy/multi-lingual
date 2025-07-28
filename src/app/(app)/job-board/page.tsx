@@ -1,7 +1,7 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect, useMemo, type FormEvent } from "react";
+import { useState, useEffect, useMemo, type FormEvent, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -13,7 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Aperture, Briefcase, Users, MapPin, Building, CalendarDays, Search, Filter as FilterIcon, Edit3, Sparkles, Loader2, ExternalLink, ThumbsUp, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
-import { getJobOpenings, addJobOpening, createJobApplication, updateJobApplication } from "@/lib/actions/jobs";
+import { getJobOpenings, addJobOpening, createJobApplication, updateJobApplication, getUserJobApplications } from "@/lib/actions/jobs";
 import type { JobOpening, UserProfile, JobApplication, JobApplicationStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
@@ -63,22 +63,27 @@ export default function JobBoardPage() {
     defaultValues: { type: 'Full-time' }
   });
 
-  const loadOpenings = useCallback(async () => {
+  const loadData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoadingOpenings(true);
     try {
-      const data = await getJobOpenings();
-      setOpenings(data);
+      const [openingsData, applicationsData] = await Promise.all([
+        getJobOpenings(),
+        getUserJobApplications(currentUser.id),
+      ]);
+      setOpenings(openingsData);
+      setJobApplications(applicationsData);
     } catch (error) {
-      console.error("Failed to load job openings:", error);
-      toast({ title: "Error Loading Jobs", description: "Could not fetch job openings.", variant: "destructive" });
+      console.error("Failed to load job board data:", error);
+      toast({ title: "Error Loading Data", description: "Could not fetch job openings and applications.", variant: "destructive" });
     } finally {
       setIsLoadingOpenings(false);
     }
-  }, [toast]);
+  }, [toast, currentUser]);
 
   useEffect(() => {
-    loadOpenings();
-  }, [loadOpenings]);
+    loadData();
+  }, [loadData]);
   
   useEffect(() => {
     setCurrentPage(1);
