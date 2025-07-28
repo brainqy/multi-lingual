@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { BlogPost, BlogGenerationSettings } from '@/types';
+import { Prisma } from '@prisma/client';
 
 /**
  * Fetches all blog posts from the database.
@@ -53,15 +54,26 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 
 
 /**
- * Creates a new blog post.
+ * Creates a new blog post, ensuring the slug is unique.
  * @param postData The data for the new blog post.
  * @returns The newly created BlogPost object or null.
  */
 export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' | 'bookmarkedBy'>): Promise<BlogPost | null> {
   try {
+    let slug = postData.slug;
+    const existingPost = await db.blogPost.findUnique({
+      where: { slug },
+    });
+
+    if (existingPost) {
+      // If slug exists, append a unique identifier (timestamp)
+      slug = `${slug}-${Date.now()}`;
+    }
+
     const newPost = await db.blogPost.create({
       data: {
         ...postData,
+        slug, // Use the potentially modified, unique slug
         tags: postData.tags || [],
         bookmarkedBy: [],
       },
@@ -69,6 +81,11 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
     return newPost as unknown as BlogPost;
   } catch (error) {
     console.error('[BlogAction] Error creating blog post:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          console.error('This is a unique constraint violation, likely on the slug.');
+        }
+    }
     return null;
   }
 }
@@ -121,5 +138,3 @@ export async function updateBlogGenerationSettings(settingsData: Partial<Omit<Bl
     return null;
   }
 }
-
-    
