@@ -1,17 +1,19 @@
 
 import type { Wallet, PromoCode, Affiliate, AffiliateClick, AffiliateSignup, ReferralHistoryItem } from '@/types';
-import { sampleUserProfile } from './users';
+
+const MOCK_USER_ID = 'alumni1';
+const MOCK_TENANT_ID = 'Brainqy';
 
 export let sampleWalletBalance: Wallet = {
-    tenantId: sampleUserProfile.tenantId,
-    userId: sampleUserProfile.id,
-    coins: sampleUserProfile.role === 'manager' ? 525 : (sampleUserProfile.role === 'admin' ? 1000 : 150),
+    tenantId: MOCK_TENANT_ID,
+    userId: MOCK_USER_ID,
+    coins: 150,
     transactions: [
         { id: 'txn-ref2', tenantId: 'managerUser1', userId: 'managerUser1', date: new Date(Date.now() - 86400000 * 5).toISOString(), description: 'Reward for referral: colleague@example.com', amount: 25, type: 'credit' },
-        { id: 'txn1', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), description: 'Reward for profile completion', amount: 50, type: 'credit' },
-        { id: 'txn2', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), description: 'Used for premium report', amount: -20, type: 'debit' },
-        { id: 'txn3', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), description: 'Appointment booking fee (Bob B.)', amount: -10, type: 'debit' },
-        { id: 'txn4', tenantId: sampleUserProfile.tenantId, userId: sampleUserProfile.id, date: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(), description: 'Daily login bonus', amount: 5, type: 'credit' },
+        { id: 'txn1', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), description: 'Reward for profile completion', amount: 50, type: 'credit' },
+        { id: 'txn2', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), description: 'Used for premium report', amount: -20, type: 'debit' },
+        { id: 'txn3', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), description: 'Appointment booking fee (Bob B.)', amount: -10, type: 'debit' },
+        { id: 'txn4', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(), description: 'Daily login bonus', amount: 5, type: 'credit' },
     ]
 };
 

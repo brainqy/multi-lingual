@@ -1,14 +1,15 @@
 
 import type { MockInterviewSession, PracticeSession, LiveInterviewSession, InterviewQuestionCategory, InterviewQuestionDifficulty } from '@/types';
-import { sampleUserProfile } from './users';
 import { SAMPLE_DATA_BASE_DATE } from './platform';
 import { LiveInterviewSessionStatuses } from '@/types';
 import { sampleInterviewQuestions } from './questions';
 
+const MOCK_USER_ID = 'alumni1';
+
 export const sampleMockInterviewSessions: MockInterviewSession[] = [
   {
     id: 'session-hist-1',
-    userId: sampleUserProfile.id,
+    userId: MOCK_USER_ID,
     topic: 'Frontend Developer Interview',
     jobDescription: 'Looking for a skilled frontend dev for a challenging role requiring React, TypeScript, and state management expertise.',
     questions: sampleInterviewQuestions.slice(0, 2).map(q => ({ id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty, baseScore: q.baseScore || 10 })),
@@ -32,7 +33,7 @@ export const sampleMockInterviewSessions: MockInterviewSession[] = [
   },
   {
     id: 'session-hist-2',
-    userId: sampleUserProfile.id,
+    userId: MOCK_USER_ID,
     topic: 'Data Analyst Role',
     questions: sampleInterviewQuestions.slice(2, 3).map(q => ({ id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty, baseScore: q.baseScore || 10 })),
     answers: [
@@ -157,7 +158,7 @@ export let sampleLiveInterviewSessions: LiveInterviewSession[] = [
     tenantId: 'tenant-2',
     title: 'Angular Frontend Practice (Expert Mock for Mike)',
     participants: [
-      { userId: 'managerUser1', name: 'Manager Mike', role: 'interviewer', profilePictureUrl: sampleUserProfile.profilePictureUrl },
+      { userId: 'managerUser1', name: 'Manager Mike', role: 'interviewer', profilePictureUrl: `https://avatar.vercel.sh/managerUser1.png` },
       { userId: 'expert-angular-candidate', name: 'Expert Angular Interviewer', role: 'candidate', profilePictureUrl: 'https://avatar.vercel.sh/expert-angular.png' }
     ],
     scheduledTime: new Date(SAMPLE_DATA_BASE_DATE.getTime() + 86400000 * 3).toISOString(),
@@ -186,7 +187,7 @@ export let sampleLiveInterviewSessions: LiveInterviewSession[] = [
     title: 'System Design Practice (for Alice)',
     participants: [
       { userId: 'system-expert-sd', name: 'System Design Expert', role: 'interviewer', profilePictureUrl: 'https://avatar.vercel.sh/system-expert.png' },
-      { userId: 'alumni1', name: 'Alice Wonderland', role: 'candidate', profilePictureUrl: sampleUserProfile.profilePictureUrl }
+      { userId: 'alumni1', name: 'Alice Wonderland', role: 'candidate', profilePictureUrl: `https://avatar.vercel.sh/alumni1.png` }
     ],
     scheduledTime: new Date(SAMPLE_DATA_BASE_DATE.getTime() + 86400000 * 5).toISOString(),
     status: LiveInterviewSessionStatuses[0], // 'Scheduled'
@@ -206,8 +207,8 @@ export let sampleLiveInterviewSessions: LiveInterviewSession[] = [
     tenantId: 'Brainqy',
     title: 'Frontend Developer Screening (Live)',
     participants: [
-      { userId: 'alumni1', name: 'Alice Wonderland', role: 'interviewer', profilePictureUrl: sampleUserProfile.profilePictureUrl },
-      { userId: 'alumni2', name: 'Bob The Builder', role: 'candidate', profilePictureUrl: sampleUserProfile.profilePictureUrl }
+      { userId: 'alumni1', name: 'Alice Wonderland', role: 'interviewer', profilePictureUrl: `https://avatar.vercel.sh/alumni1.png` },
+      { userId: 'alumni2', name: 'Bob The Builder', role: 'candidate', profilePictureUrl: `https://avatar.vercel.sh/alumni2.png` }
     ],
     scheduledTime: new Date(SAMPLE_DATA_BASE_DATE.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     status: LiveInterviewSessionStatuses[0], // 'Scheduled'
@@ -227,8 +228,8 @@ export let sampleLiveInterviewSessions: LiveInterviewSession[] = [
     tenantId: 'tenant-2',
     title: 'Data Structures Practice with Mike',
     participants: [
-      { userId: 'managerUser1', name: 'Manager Mike', role: 'interviewer', profilePictureUrl: sampleUserProfile.profilePictureUrl },
-      { userId: 'alumni3', name: 'Charlie Brown', role: 'candidate', profilePictureUrl: sampleUserProfile.profilePictureUrl }
+      { userId: 'managerUser1', name: 'Manager Mike', role: 'interviewer', profilePictureUrl: `https://avatar.vercel.sh/managerUser1.png` },
+      { userId: 'alumni3', name: 'Charlie Brown', role: 'candidate', profilePictureUrl: `https://avatar.vercel.sh/alumni3.png` }
     ],
     scheduledTime: new Date(SAMPLE_DATA_BASE_DATE.getTime() + 86400000 * 4).toISOString(),
     status: LiveInterviewSessionStatuses[0], // 'Scheduled'
@@ -243,5 +244,3 @@ export let sampleLiveInterviewSessions: LiveInterviewSession[] = [
     finalScore: undefined,
   },
 ];
-
-    

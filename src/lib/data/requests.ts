@@ -1,6 +1,5 @@
 
 import type { FeatureRequest } from '@/types';
-import { sampleUserProfile } from './users';
 
 export const sampleFeatureRequests: FeatureRequest[] = [
   { id: 'fr1', tenantId: 'Brainqy', userId: 'alumni1', userName: 'Alice Wonderland', userAvatar: 'https://picsum.photos/seed/alice/50/50', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), title: 'Integrate with LinkedIn for profile import', description: 'It would be great to automatically pull resume data from LinkedIn.', status: 'Pending', upvotes: 15 },
