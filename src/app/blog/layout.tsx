@@ -23,7 +23,7 @@ export default function PublicBlogLayout({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
             <FileText className="h-7 w-7 text-primary" />
-            {platformName}
+            <span className="hidden sm:inline">{platformName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
@@ -32,9 +32,14 @@ export default function PublicBlogLayout({
                 <Button variant="outline">Go to Dashboard</Button>
               </Link>
             ) : (
-              <Link href="/auth/login">
-                <Button>Login</Button>
-              </Link>
+              <div className="flex gap-2">
+                <Button asChild variant="ghost">
+                  <Link href="/auth/login">Login</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/auth/signup">Sign Up</Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>

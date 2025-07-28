@@ -116,7 +116,7 @@ export default function BlogPostClientView() {
   }
 
   return (
-     <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8 py-8">
+     <div className="max-w-4xl mx-auto space-y-8 py-8">
         <Button asChild variant="outline" size="sm" className="mb-4">
             <Link href="/blog"><ArrowLeft className="mr-2 h-4 w-4"/>Back to Blog</Link>
         </Button>

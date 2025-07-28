@@ -51,7 +51,7 @@ export default function BlogPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <BookOpen className="h-8 w-8" /> {t("blog.title", { default: "Blog & Insights" })}
         </h1>
@@ -92,7 +92,7 @@ export default function BlogPage() {
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <CardTitle className="text-2xl">{t("blog.noArticlesFound", { default: "No Articles Found" })}</CardTitle>
             <CardDescription>
-              {t("blog.noArticlesHint", { default: "There are no blog posts matching your criteria. Try a different search or filter." })}
+              {t("blog.noArticlesHint", { default: "There are no blog posts yet. Why not be the first to create one?" })}
             </CardDescription>
           </CardHeader>
         </Card>
