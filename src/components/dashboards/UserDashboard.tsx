@@ -229,7 +229,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
   }, [dashboardData, user]);
 
   useEffect(() => {
-    if (!dashboardData || !user) return;
+    if (!dashboardData || !user) return; // FIX: Add user check here
     const today = new Date();
     dashboardData.appointments.forEach((appt: Appointment) => {
         if (appt.requesterUserId === user.id || appt.alumniUserId === user.id) {
