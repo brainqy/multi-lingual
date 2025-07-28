@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { sampleWalletBalance } from "@/lib/sample-data";
 import { useState, useEffect } from 'react'; 
 import { getRecentPages } from '@/lib/recent-pages'; 
 import { useAuth } from '@/hooks/use-auth';
@@ -34,8 +33,7 @@ import { RecentPageItem } from "@/types";
 export function AppHeader() {
   const { toast } = useToast();
   const { t } = useI18n();
-  const { user, logout } = useAuth();
-  const wallet = sampleWalletBalance;
+  const { user, logout, wallet } = useAuth();
   const [recentPages, setRecentPages] = useState<RecentPageItem[]>([]);
   const pathname = usePathname(); 
   const router = useRouter();
@@ -158,7 +156,7 @@ export function AppHeader() {
                 <Link href="/wallet" passHref>
                   <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-pointer hover:text-primary transition-colors">
                     <Coins className="h-5 w-5 text-green-500" />
-                    <span>{wallet.coins || 0}</span>
+                    <span>{wallet?.coins ?? 0}</span>
                   </div>
                  </Link>
             </TooltipTrigger>

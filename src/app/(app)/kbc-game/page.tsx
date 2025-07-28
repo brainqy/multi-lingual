@@ -3,19 +3,20 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
-import { sampleInterviewQuestions, sampleUserProfile, sampleWalletBalance, sampleActivities } from '@/lib/sample-data';
+import { sampleInterviewQuestions } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, ChevronsRight, Users, Phone, X, Check, Repeat, Zap, Loader2, Trophy, Puzzle, Maximize, Minimize, Diamond, XCircle, Coins } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory } from '@/types';
-import { ALL_CATEGORIES } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from '@/hooks/use-auth';
+import { createActivity } from '@/lib/actions/activities';
 
 
 const KBC_QUESTION_COUNT = 10;
@@ -27,6 +28,7 @@ const techTopics = ['Python', 'Java', 'Angular', 'React', 'SpringBoot', 'AWS'];
 export default function KBCGamePage() {
   const { t } = useI18n();
   const { toast } = useToast();
+  const { user, wallet, refreshWallet } = useAuth();
 
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'gameOver'>('setup');
   const [allQuestions, setAllQuestions] = useState<InterviewQuestion[]>([]);
@@ -66,8 +68,13 @@ export default function KBCGamePage() {
   }, []);
 
 
-  const startNewGame = () => {
-    if (sampleWalletBalance.coins < GAME_COST) {
+  const startNewGame = async () => {
+    if (!wallet) {
+      toast({ title: "Wallet not loaded", description: "Please wait a moment for your wallet to load.", variant: "destructive" });
+      return;
+    }
+
+    if (wallet.coins < GAME_COST) {
         toast({
             title: "Insufficient Coins",
             description: `You need ${GAME_COST} coins to play. Earn more through referrals or other activities!`,
@@ -90,17 +97,16 @@ export default function KBCGamePage() {
         return;
     }
 
-    // Deduct cost and add transaction
-    sampleWalletBalance.coins -= GAME_COST;
-    sampleWalletBalance.transactions.unshift({
-        id: `txn-kbc-cost-${Date.now()}`,
-        tenantId: sampleUserProfile.tenantId,
-        userId: sampleUserProfile.id,
-        date: new Date().toISOString(),
-        description: `Fee for KBC Game (${selectedTopic})`,
-        amount: -GAME_COST,
-        type: 'debit',
-    });
+    // This part should be an atomic server action in a real app
+    // For now, we update client-side, then call the server action
+    await refreshWallet(); // Ensure we have the latest balance
+    // Deduct cost and add transaction via the new auth context method
+    // In a real app, this should be a single server action like `startGame(userId, cost)`
+    // For now, we simulate by directly calling updateWallet from the imported actions.
+    const { updateWallet } = await import('@/lib/actions/wallet');
+    await updateWallet(user!.id, { coins: wallet.coins - GAME_COST }, `Fee for KBC Game (${selectedTopic})`);
+    await refreshWallet(); // Refresh wallet state in context
+
     toast({
         title: `-${GAME_COST} Coins`,
         description: "Good luck in the game!",
@@ -132,8 +138,8 @@ export default function KBCGamePage() {
     setSelectedAnswer(option);
   };
 
-  const handleLockAnswer = () => {
-    if (!selectedAnswer) {
+  const handleLockAnswer = async () => {
+    if (!selectedAnswer || !user) {
       toast({ title: "No Answer Selected", description: "Please select an answer before locking.", variant: 'destructive' });
       return;
     }
@@ -146,9 +152,9 @@ export default function KBCGamePage() {
 
       if (currentQuestionIndex === questions.length - 1) {
         const totalXPWon = nextXpLevel;
-        sampleUserProfile.xpPoints = (sampleUserProfile.xpPoints || 0) + totalXPWon;
-        sampleActivities.unshift({ id: `act-kbc-win-${Date.now()}`, tenantId: 'platform', userId: sampleUserProfile.id, timestamp: new Date().toISOString(), description: `Won the KBC game and earned ${totalXPWon} XP!` });
-
+        await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Won the KBC game and earned ${totalXPWon} XP!` });
+        // In a real app: await updateUser(user.id, { xpPoints: user.xpPoints + totalXPWon });
+        
         setGameMessage(`Congratulations! You've won the game with ${nextXpLevel} XP!`);
         toast({
           title: "You've Won!",
@@ -166,8 +172,8 @@ export default function KBCGamePage() {
     } else {
       const totalXPWon = currentXpLevel;
       if(totalXPWon > 0) {
-        sampleUserProfile.xpPoints = (sampleUserProfile.xpPoints || 0) + totalXPWon;
-        sampleActivities.unshift({ id: `act-kbc-loss-${Date.now()}`, tenantId: 'platform', userId: sampleUserProfile.id, timestamp: new Date().toISOString(), description: `Finished KBC game and earned ${totalXPWon} XP.` });
+        await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Finished KBC game and earned ${totalXPWon} XP.` });
+        // In a real app: await updateUser(user.id, { xpPoints: user.xpPoints + totalXPWon });
       }
       setFeedbackMessage({
         correctAnswer: currentQuestion.correctAnswer || "Not provided",

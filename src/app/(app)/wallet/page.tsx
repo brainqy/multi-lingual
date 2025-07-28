@@ -14,29 +14,14 @@ import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { getWallet } from "@/lib/actions/wallet";
 import { redeemPromoCode } from "@/lib/actions/promo-codes";
 
 export default function WalletPage() {
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, wallet, isLoading: isAuthLoading, refreshWallet } = useAuth();
   const { toast } = useToast();
-  const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [promoCodeInput, setPromoCodeInput] = useState('');
-
-  const fetchWallet = useCallback(async () => {
-    if (!user) return;
-    setIsLoading(true);
-    const walletData = await getWallet(user.id);
-    setWallet(walletData);
-    setIsLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    fetchWallet();
-  }, [fetchWallet]);
-
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   const totalFlashCoins = useMemo(() => {
     if (!wallet || !wallet.flashCoins) return 0;
@@ -45,19 +30,21 @@ export default function WalletPage() {
 
   const handleRedeemCode = async () => {
     if (!promoCodeInput.trim() || !user) return;
+    setIsRedeeming(true);
     
     const result = await redeemPromoCode(promoCodeInput, user.id);
 
     if (result.success) {
       toast({ title: "Success!", description: result.message });
-      await fetchWallet(); // Refetch wallet to show updated balance
+      await refreshWallet(); // Re-fetch wallet from the auth context
     } else {
       toast({ title: "Redemption Failed", description: result.message, variant: "destructive" });
     }
     setPromoCodeInput('');
+    setIsRedeeming(false);
   };
 
-  if (isLoading) {
+  if (isAuthLoading) {
       return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
   }
   
@@ -130,7 +117,10 @@ export default function WalletPage() {
                     <Label htmlFor="promo-code-input">Enter Code</Label>
                     <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
                 </div>
-                <Button onClick={handleRedeemCode} className="w-full sm:w-auto">Redeem</Button>
+                <Button onClick={handleRedeemCode} disabled={isRedeeming} className="w-full sm:w-auto">
+                    {isRedeeming && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Redeem
+                </Button>
             </div>
         </CardContent>
       </Card>

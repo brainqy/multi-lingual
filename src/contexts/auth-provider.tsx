@@ -3,19 +3,22 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import type { UserProfile } from '@/types';
+import type { UserProfile, Wallet } from '@/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
+import { getWallet } from '@/lib/actions/wallet';
 
 interface AuthContextType {
   user: UserProfile | null;
+  wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string) => Promise<void>;
   isLoading: boolean;
+  refreshWallet: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,13 +29,20 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
 
+  const fetchWalletForUser = useCallback(async (userId: string) => {
+    const walletData = await getWallet(userId);
+    setWallet(walletData);
+  }, []);
+
   const logout = useCallback(() => {
     setUser(null);
+    setWallet(null);
     localStorage.removeItem('bhashaSetuUser');
     if (!pathname.startsWith('/auth')) {
       router.push('/auth/login');
@@ -45,31 +55,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const storedUserJSON = localStorage.getItem('bhashaSetuUser');
         if (storedUserJSON) {
           const storedUser = JSON.parse(storedUserJSON);
-          // Call the server action to validate the session
           const freshUser = await validateSession(storedUser.email, storedUser.sessionId);
           if (freshUser) {
             setUser(freshUser);
+            await fetchWalletForUser(freshUser.id);
           } else {
-            setUser(null);
-            localStorage.removeItem('bhashaSetuUser');
+            logout();
           }
         }
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
-        setUser(null);
-        localStorage.removeItem('bhashaSetuUser');
+        logout();
       } finally {
         setIsLoading(false);
       }
     };
     checkUserSession();
-  }, []);
+  }, [logout, fetchWalletForUser]);
   
-  // Session validation effect for multi-device logout
   useEffect(() => {
     const interval = setInterval(async () => {
       if (user && user.email && user.sessionId) {
-        // Call the server action to validate the session
         const serverUser = await validateSession(user.email, user.sessionId);
         if (!serverUser) {
           toast({
@@ -81,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           logout();
         }
       }
-    }, 15000); // Check every 15 seconds
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [user, logout, toast]);
@@ -89,11 +95,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password?: string) => {
     try {
-      // Call the server action for login
-      const userToLogin = await loginUser(email, password || "mock_password"); // Use mock password for existing mock users
+      const userToLogin = await loginUser(email, password || "mock_password");
 
       if (userToLogin) {
         setUser(userToLogin);
+        await fetchWalletForUser(userToLogin.id);
         localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
         router.push('/dashboard');
         toast({ title: "Login Successful", description: `Welcome back, ${userToLogin.name}!` });
@@ -108,18 +114,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error("Login error:", error);
       toast({ title: "Login Error", description: "An unexpected error occurred.", variant: "destructive" });
     }
-  }, [router, toast]);
+  }, [router, toast, fetchWalletForUser]);
 
   const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string) => {
     try {
         if (!password) {
             throw new Error("Password is required for signup.");
         }
-        // Call the server action for signup
         const result = await signupUser({ name, email, role, password });
         
         if (result.success && result.user) {
           setUser(result.user);
+          await fetchWalletForUser(result.user.id);
           localStorage.setItem('bhashaSetuUser', JSON.stringify(result.user));
           router.push('/dashboard');
           toast({
@@ -137,13 +143,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.error("Signup error:", error);
         toast({ title: "Signup Error", description: "An unexpected error occurred.", variant: "destructive" });
     }
-  }, [router, toast]);
+  }, [router, toast, fetchWalletForUser]);
+
+  const refreshWallet = useCallback(async () => {
+    if (user) {
+      await fetchWalletForUser(user.id);
+    }
+  }, [user, fetchWalletForUser]);
 
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, logout, signup, isLoading }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet }}>
       {children}
     </AuthContext.Provider>
   );
