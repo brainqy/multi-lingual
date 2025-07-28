@@ -175,6 +175,7 @@ export default function AlumniConnectPage() {
         status: 'Pending' as const,
         notes: data.message,
         costInCoins: cost,
+        withUser: alumniToBook.name
     };
 
     const newAppointment = await createAppointment(newAppointmentData);
