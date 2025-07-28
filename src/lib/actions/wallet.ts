@@ -12,12 +12,6 @@ import { Prisma } from '@prisma/client';
  */
 export async function getWallet(userId: string): Promise<Wallet | null> {
   try {
-    const user = await db.user.findUnique({ where: { id: userId } });
-    if (!user) {
-        console.error(`[WalletAction] User not found for ID: ${userId}`);
-        return null;
-    }
-      
     let wallet = await db.wallet.findUnique({
       where: { userId },
       include: {
@@ -31,25 +25,37 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
     });
 
     if (!wallet) {
-      // Create a wallet for the user if it doesn't exist in a transaction
-      wallet = await db.wallet.create({
+      // Create a wallet for the user if it doesn't exist
+      const newWallet = await db.wallet.create({
         data: {
-          user: {
-            connect: { id: userId }
-          },
+          userId,
           coins: 100, // Starting bonus
-          transactions: {
-            create: [{
-              description: "Initial account bonus",
-              amount: 100,
-              type: 'credit',
-            }]
-          }
         },
         include: {
           transactions: true,
         },
       });
+      // Add initial transaction
+       await db.walletTransaction.create({
+        data: {
+            walletId: newWallet.id,
+            description: "Initial account bonus",
+            amount: 100,
+            type: 'credit',
+        }
+       });
+       // Refetch the wallet to include the new transaction correctly
+       wallet = await db.wallet.findUnique({
+        where: { userId },
+        include: {
+          transactions: {
+            orderBy: {
+              date: 'desc',
+            },
+            take: 50,
+          }
+        }
+       });
     }
 
     // Manually sort flashCoins if they exist
