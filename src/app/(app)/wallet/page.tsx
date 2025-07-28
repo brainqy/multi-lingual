@@ -4,112 +4,66 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History } from "lucide-react";
-import { sampleWalletBalance, samplePromoCodes } from "@/lib/sample-data";
+import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { format, isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
+import { isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
 import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/use-auth";
+import { getWallet } from "@/lib/actions/wallet";
+import { redeemPromoCode } from "@/lib/actions/promo-codes";
 
 export default function WalletPage() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [wallet, setWallet] = useState<Wallet>(sampleWalletBalance);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [promoCodeInput, setPromoCodeInput] = useState('');
 
-  // Augment wallet with flash coins on component mount for demo purposes
+  const fetchWallet = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    const walletData = await getWallet(user.id);
+    setWallet(walletData);
+    setIsLoading(false);
+  }, [user]);
+
   useEffect(() => {
-    // This ensures we only add flash coins once and don't modify the original sample data import
-    if (!wallet.flashCoins) {
-      setWallet(currentWallet => ({
-        ...currentWallet,
-        flashCoins: [
-          { id: 'fc1', amount: 20, expiresAt: new Date(Date.now() + 86400000 * 3).toISOString(), source: 'Daily Login Bonus' },
-          { id: 'fc2', amount: 50, expiresAt: new Date(Date.now() + 86400000 * 7).toISOString(), source: 'Special Promotion' },
-          { id: 'fc3', amount: 10, expiresAt: new Date(Date.now() - 86400000 * 1).toISOString(), source: 'Expired Offer' },
-        ]
-      }));
-    }
-  }, [wallet.flashCoins]);
+    fetchWallet();
+  }, [fetchWallet]);
+
 
   const totalFlashCoins = useMemo(() => {
-    return wallet.flashCoins?.filter(fc => !isPast(parseISO(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0) || 0;
-  }, [wallet.flashCoins]);
+    if (!wallet || !wallet.flashCoins) return 0;
+    return wallet.flashCoins.filter(fc => !isPast(parseISO(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0);
+  }, [wallet]);
 
-  const handleRedeemCode = () => {
-    if (!promoCodeInput.trim()) {
-        toast({ title: "No Code Entered", description: "Please enter a promo code to redeem.", variant: "destructive" });
-        return;
-    }
-    const codeToRedeem = samplePromoCodes.find(c => c.code.toUpperCase() === promoCodeInput.trim().toUpperCase());
-
-    if (!codeToRedeem) {
-        toast({ title: "Invalid Code", description: "The promo code you entered is not valid.", variant: "destructive" });
-        return;
-    }
-    if (!codeToRedeem.isActive) {
-        toast({ title: "Code Inactive", description: "This promo code is currently inactive.", variant: "destructive" });
-        return;
-    }
-    if (codeToRedeem.expiresAt && isPast(parseISO(codeToRedeem.expiresAt))) {
-        toast({ title: "Code Expired", description: "This promo code has expired.", variant: "destructive" });
-        return;
-    }
-    if (codeToRedeem.usageLimit > 0 && (codeToRedeem.timesUsed || 0) >= codeToRedeem.usageLimit) {
-        toast({ title: "Usage Limit Reached", description: "This promo code has reached its usage limit.", variant: "destructive" });
-        return;
-    }
+  const handleRedeemCode = async () => {
+    if (!promoCodeInput.trim() || !user) return;
     
-    let newBalance = wallet.coins;
-    let newTransactions = [...wallet.transactions];
-    if (codeToRedeem.rewardType === 'coins') {
-        newBalance += codeToRedeem.rewardValue;
-        newTransactions.unshift({
-            id: `txn-promo-${Date.now()}`,
-            tenantId: wallet.tenantId,
-            userId: wallet.userId,
-            date: new Date().toISOString(),
-            description: `Promo Code Redeemed: ${codeToRedeem.code}`,
-            amount: codeToRedeem.rewardValue,
-            type: 'credit',
-        });
-        setWallet({
-            ...wallet,
-            coins: newBalance,
-            transactions: newTransactions,
-        });
-        toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} coins!` });
+    const result = await redeemPromoCode(promoCodeInput, user.id);
 
-        sampleWalletBalance.coins = newBalance;
-        sampleWalletBalance.transactions = newTransactions;
-        codeToRedeem.timesUsed = (codeToRedeem.timesUsed || 0) + 1;
-    } else if (codeToRedeem.rewardType === 'flash_coins') {
-        const newFlashCoins = [
-            ...(wallet.flashCoins || []),
-            {
-                id: `fc-promo-${Date.now()}`,
-                amount: codeToRedeem.rewardValue,
-                expiresAt: new Date(Date.now() + 86400000 * 30).toISOString(), // Expires in 30 days
-                source: `Promo Code: ${codeToRedeem.code}`,
-            }
-        ];
-        setWallet(prevWallet => ({
-            ...prevWallet,
-            flashCoins: newFlashCoins,
-        }));
-        toast({ title: "Success!", description: `You've received ${codeToRedeem.rewardValue} Flash Coins!` });
-        codeToRedeem.timesUsed = (codeToRedeem.timesUsed || 0) + 1;
+    if (result.success) {
+      toast({ title: "Success!", description: result.message });
+      await fetchWallet(); // Refetch wallet to show updated balance
+    } else {
+      toast({ title: "Redemption Failed", description: result.message, variant: "destructive" });
     }
-    else {
-        toast({ title: "Reward Type Not Supported", description: `The reward type '${codeToRedeem.rewardType}' is not redeemable at this time.` });
-    }
-
     setPromoCodeInput('');
   };
+
+  if (isLoading) {
+      return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
+  }
+  
+  if (!wallet) {
+      return <p>Could not load wallet information.</p>;
+  }
 
   return (
     <div className="space-y-8">
