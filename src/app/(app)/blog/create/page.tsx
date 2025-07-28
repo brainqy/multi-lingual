@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Send, Loader2, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sampleBlogPosts, sampleUserProfile } from "@/lib/sample-data";
+import { createBlogPost } from "@/lib/actions/blog";
 import type { BlogPost } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/hooks/use-i18n";
+import { useAuth } from "@/hooks/use-auth";
 
 const blogPostSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -32,7 +33,7 @@ type BlogPostFormData = z.infer<typeof blogPostSchema>;
 export default function CreateBlogPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   const router = useRouter();
   const { t } = useI18n();
 
@@ -40,33 +41,47 @@ export default function CreateBlogPage() {
     resolver: zodResolver(blogPostSchema),
   });
 
-  const onSubmit = (data: BlogPostFormData) => {
+  const onSubmit = async (data: BlogPostFormData) => {
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in to create a post.", variant: "destructive" });
+        return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
-      const newPost: BlogPost = {
-        id: `blog-${Date.now()}`,
-        tenantId: currentUser.tenantId,
-        userId: currentUser.id,
-        userName: currentUser.name,
-        userAvatar: currentUser.profilePictureUrl ?? "",
-        title: data.title,
-        slug: data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-        author: currentUser.name,
-        date: new Date().toISOString(),
-        imageUrl: data.imageUrl || "",
-        content: data.content,
-        excerpt: data.excerpt,
-        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        comments: [],
-        bookmarkedBy: []
-      };
-      sampleBlogPosts.unshift(newPost);
-      toast({ title: t("blog.toastCreatedTitle", { default: "Post Created!" }), description: t("blog.toastCreatedDesc", { default: "Your blog post has been published." }) });
-      reset();
-      setIsLoading(false);
-      router.push(`/blog/${newPost.slug}`);
-    }, 1500);
+    
+    const newPostData = {
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userAvatar: currentUser.profilePictureUrl ?? "",
+      title: data.title,
+      slug: data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+      author: currentUser.name,
+      date: new Date().toISOString(),
+      imageUrl: data.imageUrl || "https://placehold.co/800x400.png",
+      content: data.content,
+      excerpt: data.excerpt,
+      tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+    };
+    
+    const newPost = await createBlogPost(newPostData);
+
+    if (newPost) {
+        toast({ title: t("blog.toastCreatedTitle", { default: "Post Created!" }), description: t("blog.toastCreatedDesc", { default: "Your blog post has been published." }) });
+        reset();
+        router.push(`/blog/${newPost.slug}`);
+    } else {
+        toast({ title: "Error", description: "Failed to create blog post.", variant: "destructive" });
+    }
+    setIsLoading(false);
   };
+
+  if (!currentUser) {
+    return (
+        <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
