@@ -99,8 +99,8 @@ export default function AnnouncementManagementPage() {
     const announcementData = {
       title: data.title,
       content: data.content,
-      startDate: data.startDate,
-      endDate: data.endDate,
+      startDate: data.startDate.toISOString(),
+      endDate: data.endDate ? data.endDate.toISOString() : undefined,
       audience: data.audience as AnnouncementAudience,
       audienceTarget: data.audience === 'Specific Tenant' ? audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
       status: data.status as AnnouncementStatus,
