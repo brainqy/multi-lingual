@@ -1,9 +1,22 @@
 
 "use client";
 
-// This page has been moved to /src/app/(app)/blog/create/page.tsx to resolve a routing conflict.
-// This file is now a placeholder and can be safely deleted in the future.
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
-export default function DeprecatedCreateBlogPage() {
-  return null;
+// This page now redirects to the correct location to resolve the Next.js routing conflict.
+export default function RedirectCreateBlogPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/blog/create');
+  }, [router]);
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="ml-2 text-muted-foreground">Redirecting...</p>
+    </div>
+  );
 }
