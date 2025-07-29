@@ -1,16 +1,16 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, CalendarDays, User, Tag, ArrowRight, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Search, CalendarDays, User, Tag, ArrowRight, PlusCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { sampleBlogPosts } from "@/lib/sample-data";
+import { getBlogPosts } from "@/lib/actions/blog";
 import type { BlogPost } from "@/types";
 import { format, parseISO } from 'date-fns';
 
@@ -19,10 +19,23 @@ export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const postsPerPage = 6;
-  const allPosts = sampleBlogPosts; 
 
-  const allTags = Array.from(new Set(allPosts.flatMap(post => post.tags || [])));
+  useEffect(() => {
+    async function loadPosts() {
+      setIsLoading(true);
+      const posts = await getBlogPosts();
+      setAllPosts(posts);
+      setIsLoading(false);
+    }
+    loadPosts();
+  }, []);
+
+  const allTags = useMemo(() => {
+    return Array.from(new Set(allPosts.flatMap(post => post.tags || [])));
+  }, [allPosts]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -47,7 +60,6 @@ export default function BlogPage() {
   }, [filteredPosts, currentPage, postsPerPage]);
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-
 
   return (
     <div className="space-y-8">
@@ -86,7 +98,11 @@ export default function BlogPage() {
       </div>
       <CardDescription>{t("blog.pageDescription", { default: "Explore articles, tips, and success stories from the community and career experts." })}</CardDescription>
 
-      {filteredPosts.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      ) : filteredPosts.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

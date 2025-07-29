@@ -3,8 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { sampleUserProfile, sampleBlogPosts } from '@/lib/sample-data';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { format, parseISO, formatDistanceToNow } from 'date-fns';
@@ -16,45 +15,58 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { CommunityComment, BlogPost } from '@/types';
+import { useAuth } from '@/hooks/use-auth';
+import { getBlogPostBySlug, getBlogPosts } from '@/lib/actions/blog';
+import { addCommentToPost } from '@/lib/actions/community';
 
 export default function BlogPostClientView() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
 
   const [post, setPost] = useState<BlogPost | null>(null);
-  const [postIndex, setPostIndex] = useState<number>(-1);
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
 
   useEffect(() => {
-    const slug = params.slug as string;
-    if (slug) {
-      const foundIndex = sampleBlogPosts.findIndex(p => p.slug === slug);
-      if (foundIndex !== -1) {
-        setPost(sampleBlogPosts[foundIndex]);
-        setPostIndex(foundIndex);
-      } else {
+    async function loadPostAndAllPosts() {
+      const slug = params.slug as string;
+      if (!slug) {
+        setIsLoading(false);
         router.push('/blog');
+        return;
+      }
+      setIsLoading(true);
+      const [postData, allPostsData] = await Promise.all([
+        getBlogPostBySlug(slug),
+        getBlogPosts() 
+      ]);
+
+      if (postData) {
+        setPost(postData);
+        setAllPosts(allPostsData);
+      } else {
         toast({
           title: "Post Not Found",
           description: "The requested blog post could not be found.",
           variant: "destructive"
         });
+        router.push('/blog');
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
+    loadPostAndAllPosts();
   }, [params.slug, router, toast]);
   
   const relatedPosts = useMemo(() => {
     if (!post || !post.tags || post.tags.length === 0) return [];
 
-    return sampleBlogPosts.filter(otherPost => {
-      // Exclude the current post and find posts with at least one common tag
+    return allPosts.filter(otherPost => {
       return otherPost.id !== post.id && otherPost.tags?.some(tag => post.tags!.includes(tag));
-    }).slice(0, 3); // Limit to 3 related posts
-  }, [post]);
+    }).slice(0, 3);
+  }, [post, allPosts]);
 
 
   const handleCopyToClipboard = () => {
@@ -78,29 +90,30 @@ export default function BlogPostClientView() {
     }
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim() || !post) {
-      toast({ title: "Empty Comment", description: "Cannot submit an empty comment.", variant: "destructive"});
+    if (!commentText.trim() || !post || !currentUser) {
+      toast({ title: "Error", description: "Cannot submit empty comment or user not logged in.", variant: "destructive"});
       return;
     }
 
-    const newComment: CommunityComment = {
-      id: `comment-${Date.now()}`,
+    const newCommentData: Omit<CommunityComment, 'id' | 'timestamp'> = {
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
-      timestamp: new Date().toISOString(),
       comment: commentText.trim(),
-      postId: post.id,
+      postId: post.id, // This is now blogPostId in the prisma schema
     };
 
-    const updatedPost = { ...post, comments: [...(post.comments || []), newComment] };
-    sampleBlogPosts[postIndex] = updatedPost;
-    setPost(updatedPost);
+    const newComment = await addCommentToPost(newCommentData);
 
-    setCommentText('');
-    toast({ title: "Comment Added", description: "Your comment has been posted." });
+    if (newComment) {
+      setPost(prevPost => prevPost ? { ...prevPost, comments: [...(prevPost.comments || []), newComment] } : null);
+      setCommentText('');
+      toast({ title: "Comment Added", description: "Your comment has been posted." });
+    } else {
+      toast({ title: "Error", description: "Failed to post comment.", variant: "destructive" });
+    }
   };
   
   if (isLoading) {
