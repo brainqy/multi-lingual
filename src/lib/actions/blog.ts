@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { BlogPost, BlogGenerationSettings } from '@/types';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 /**
  * Fetches all blog posts from the database.
@@ -81,7 +81,7 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
     return newPost as unknown as BlogPost;
   } catch (error) {
     console.error('[BlogAction] Error creating blog post:', error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           console.error('This is a unique constraint violation, likely on the slug.');
         }
