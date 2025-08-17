@@ -3,18 +3,20 @@
 
 import { useState, useEffect } from "react";
 import { useI18n } from "@/hooks/use-i18n";
-import { sampleChallenges, sampleUserProfile } from "@/lib/sample-data";
+import { sampleChallenges } from "@/lib/sample-data";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap } from 'lucide-react';
-import type { DailyChallenge } from '@/types';
+import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2 } from 'lucide-react';
+import type { DailyChallenge, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   
   const [standardChallenge, setStandardChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'standard'));
   const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'flip'));
@@ -93,10 +95,9 @@ export default function DailyInterviewChallengePage() {
     </Card>
   );
   
-  const renderFlipChallenge = (challenge: DailyChallenge) => {
-    const user = sampleUserProfile;
+  const renderFlipChallenge = (challenge: DailyChallenge, currentUser: UserProfile) => {
     const totalXP = challenge.tasks?.reduce((acc, task) => {
-        const progress = user.challengeProgress?.[task.action];
+        const progress = currentUser.challengeProgress?.[task.action];
         if (progress && progress.current >= task.target) {
             return acc + (challenge.xpReward || 0) / (challenge.tasks?.length || 1);
         }
@@ -119,7 +120,7 @@ export default function DailyInterviewChallengePage() {
             <h4 className="font-semibold mb-2 text-foreground">Your Tasks:</h4>
             <div className="space-y-3">
                 {challenge.tasks?.map((task, index) => {
-                    const progress = user.challengeProgress?.[task.action];
+                    const progress = currentUser.challengeProgress?.[task.action];
                     const currentProgress = progress?.current || 0;
                     const isCompleted = currentProgress >= task.target;
                     const progressPercent = Math.min((currentProgress / task.target) * 100, 100);
@@ -146,6 +147,14 @@ export default function DailyInterviewChallengePage() {
     );
   };
 
+  if (isLoading || !user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-7xl py-8 px-4">
        <div className="text-center mb-8">
@@ -154,7 +163,7 @@ export default function DailyInterviewChallengePage() {
         </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {standardChallenge && renderStandardChallenge(standardChallenge)}
-        {flipChallenge && renderFlipChallenge(flipChallenge)}
+        {flipChallenge && renderFlipChallenge(flipChallenge, user)}
       </div>
     </div>
   );
