@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateResumeVariant, type GenerateResumeVariantInput, type GenerateResumeVariantOutput } from '@/ai/flows/generate-resume-variant';
-import { sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
+import { sampleResumeProfiles } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types';
 import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AiResumeWriterPage() {
   const [baseResumeText, setBaseResumeText] = useState('');
@@ -27,6 +28,7 @@ export default function AiResumeWriterPage() {
   const [generatedResumeText, setGeneratedResumeText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
 
   const [userResumes, setUserResumes] = useState<ResumeProfile[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string>('');
@@ -34,18 +36,18 @@ export default function AiResumeWriterPage() {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [newResumeName, setNewResumeName] = useState('');
 
-  const currentUser = sampleUserProfile;
-
 
   useEffect(() => {
-    // Filter resumes for the current user
-    const currentUserResumes = sampleResumeProfiles.filter(r => r.userId === sampleUserProfile.id);
-    setUserResumes(currentUserResumes);
-    if (currentUserResumes.length > 0) {
-      // setSelectedResumeId(currentUserResumes[0].id);
-      // setBaseResumeText(currentUserResumes[0].resumeText);
+    if (currentUser) {
+        // Filter resumes for the current user
+        const currentUserResumes = sampleResumeProfiles.filter(r => r.userId === currentUser.id);
+        setUserResumes(currentUserResumes);
+        if (currentUserResumes.length > 0) {
+        // setSelectedResumeId(currentUserResumes[0].id);
+        // setBaseResumeText(currentUserResumes[0].resumeText);
+        }
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     if (selectedResumeId) {
@@ -59,6 +61,10 @@ export default function AiResumeWriterPage() {
 
   const handleGenerateVariant = async (event: FormEvent) => {
     event.preventDefault();
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in to use this feature.", variant: "destructive" });
+        return;
+    }
     if (!baseResumeText.trim()) {
       toast({ title: "Error", description: "Please provide base resume text.", variant: "destructive" });
       return;
@@ -113,14 +119,15 @@ export default function AiResumeWriterPage() {
 
 
   const handleSaveGeneratedResume = () => {
+    if (!currentUser) return;
     if (!newResumeName.trim()) {
       toast({ title: "Name Required", description: "Please provide a name for the resume profile.", variant: "destructive" });
       return;
     }
     const newResume: ResumeProfile = {
       id: `resume-${Date.now()}`,
-      tenantId: sampleUserProfile.tenantId,
-      userId: sampleUserProfile.id,
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
       name: newResumeName,
       resumeText: generatedResumeText,
       lastAnalyzed: new Date().toISOString().split('T')[0],
@@ -145,6 +152,13 @@ export default function AiResumeWriterPage() {
     });
   };
 
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
