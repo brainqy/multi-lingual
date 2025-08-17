@@ -1,14 +1,14 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye } from "lucide-react";
+import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
 import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
+import { sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
 import StepHeaderForm from "@/components/features/resume-builder/StepHeaderForm";
 import StepExperienceForm from "@/components/features/resume-builder/StepExperienceForm";
 import StepEducationForm from "@/components/features/resume-builder/StepEducationForm";
@@ -21,34 +21,55 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
 import type { ResumeProfile } from "@/types"; // Added ResumeProfile import
+import { useAuth } from "@/hooks/use-auth";
 
-const initialResumeData: ResumeBuilderData = {
-  header: {
-    fullName: sampleUserProfile.name || "",
-    phone: sampleUserProfile.mobileNumber || "",
-    email: sampleUserProfile.email || "",
-    linkedin: sampleUserProfile.linkedInProfile || "",
-    portfolio: "",
-    address: sampleUserProfile.currentAddress || "",
-  },
-  experience: [],
-  education: [],
-  skills: sampleUserProfile.skills || [],
-  summary: sampleUserProfile.bio || "",
-  additionalDetails: {
-    awards: "",
-    certifications: "",
-    languages: "",
-    interests: (sampleUserProfile.interests || []).join(", "),
-  },
-  templateId: sampleResumeTemplates[0].id, // Default template
+const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
+  if (!user) {
+    return {
+      header: { fullName: "", phone: "", email: "", linkedin: "", portfolio: "", address: "" },
+      experience: [],
+      education: [],
+      skills: [],
+      summary: "",
+      additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
+      templateId: sampleResumeTemplates[0].id,
+    };
+  }
+  return {
+    header: {
+      fullName: user.name || "",
+      phone: user.mobileNumber || "",
+      email: user.email || "",
+      linkedin: user.linkedInProfile || "",
+      portfolio: "",
+      address: user.currentAddress || "",
+    },
+    experience: [],
+    education: [],
+    skills: user.skills || [],
+    summary: user.bio || "",
+    additionalDetails: {
+      awards: "",
+      certifications: "",
+      languages: "",
+      interests: (user.interests || []).join(", "),
+    },
+    templateId: sampleResumeTemplates[0].id,
+  };
 };
 
 
 export default function ResumeBuilderPage() {
+  const { user, isLoading } = useAuth();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [resumeData, setResumeData] = useState<ResumeBuilderData>(initialResumeData);
+  const [resumeData, setResumeData] = useState<ResumeBuilderData>(() => getInitialResumeData(user));
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (user) {
+      setResumeData(getInitialResumeData(user));
+    }
+  }, [user]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -99,7 +120,6 @@ export default function ResumeBuilderPage() {
     setResumeData(prev => ({ ...prev, additionalDetails: { ...prev.additionalDetails, ...details } }));
   }
 
-
   const renderStepContent = () => {
     switch (currentStep) {
       case 'header':
@@ -120,6 +140,14 @@ export default function ResumeBuilderPage() {
         return <p>Unknown step.</p>;
     }
   };
+  
+  if (isLoading || !user) {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
