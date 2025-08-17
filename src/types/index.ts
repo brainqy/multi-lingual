@@ -204,7 +204,7 @@ export interface CommunityComment {
   userId: string;
   userName: string;
   userAvatar?: string;
-  timestamp: string;
+  timestamp: Date;
   comment: string;
   parentId?: string; // For threaded replies
   replies?: CommunityComment[]; // For nesting, though client-side filtering is often used
@@ -216,7 +216,7 @@ export interface CommunityPost {
   userId: string;
   userName: string;
   userAvatar?: string;
-  timestamp: string;
+  timestamp: Date;
   content?: string;
   type: 'text' | 'poll' | 'event' | 'request';
   tags?: string[];
@@ -270,7 +270,7 @@ export interface JobOpening {
   company: string;
   location: string;
   description: string;
-  datePosted: string;
+  datePosted: Date;
   type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract' | 'Mentorship';
   postedByAlumniId: string;
   alumniName: string;
@@ -296,7 +296,7 @@ export interface BlogPost {
   title: string;
   slug: string;
   author: string;
-  date: string;
+  date: Date;
   imageUrl: string;
   dataAiHint?: string;
   content: string;
@@ -1243,4 +1243,3 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
-

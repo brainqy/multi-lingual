@@ -12,7 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getBlogPosts } from "@/lib/actions/blog";
 import type { BlogPost } from "@/types";
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 export default function BlogPage() {
   const { t } = useI18n();
@@ -135,7 +135,7 @@ export default function BlogPage() {
                   </CardTitle>
                   <div className="flex items-center space-x-4 text-xs text-muted-foreground pt-1">
                      <span className="flex items-center gap-1"><User className="h-3 w-3"/> {post.author}</span>
-                     <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3"/> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
+                     <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3"/> {format(new Date(post.date), 'MMM d, yyyy')}</span>
                   </div>
                 </CardHeader>
                 <CardContent className="flex-grow">
