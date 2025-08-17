@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { format, parseISO, formatDistanceToNow } from 'date-fns';
