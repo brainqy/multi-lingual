@@ -3,7 +3,6 @@
 
 import { db } from '@/lib/db';
 import type { BlogPost, BlogGenerationSettings } from '@/types';
-import { Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 /**
