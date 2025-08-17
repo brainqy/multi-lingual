@@ -4,7 +4,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Award, Flame, Star, CheckCircle, Trophy, UserCircle, Loader2 } from "lucide-react"; 
-import { sampleBadges, samplePlatformUsers } from "@/lib/sample-data"; 
+import { sampleBadges } from "@/lib/sample-data"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -14,6 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect, useMemo } from "react"; 
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
+import { getBadges } from "@/lib/actions/gamification";
+import { getUsers } from "@/lib/data-services/users";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -31,14 +33,27 @@ function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.Lucide
 export default function GamificationPage() {
   const { t } = useI18n();
   const { user, isLoading: isUserLoading } = useAuth();
-  const badges = sampleBadges;
+  const [badges, setBadges] = useState(sampleBadges);
   const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const sortedUsers = [...samplePlatformUsers]
-      .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
-      .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
-    setLeaderboardUsers(sortedUsers.slice(0, 10)); // Show top 10
+    async function loadData() {
+      setIsLoading(true);
+      const [allUsers, allBadges] = await Promise.all([
+        getUsers(),
+        getBadges()
+      ]);
+
+      const sortedUsers = allUsers
+        .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
+        .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
+      setLeaderboardUsers(sortedUsers.slice(0, 10));
+      
+      setBadges(allBadges);
+      setIsLoading(false);
+    }
+    loadData();
   }, []);
 
   const earnedBadges = useMemo(() => {
@@ -51,7 +66,7 @@ export default function GamificationPage() {
     return badges.filter(badge => !user.earnedBadges?.includes(badge.id));
   }, [user, badges]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || isLoading) {
     return <div className="flex items-center justify-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
   }
   
