@@ -5,17 +5,19 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
 import type { AnalyzeResumeAndJobDescriptionOutput, ResumeScanHistoryItem, ResumeProfile } from '@/types';
-import { sampleUserProfile } from '@/lib/sample-data';
 import { Loader2 } from "lucide-react";
 import ResumeInputForm from '@/components/features/resume-analyzer/ResumeInputForm';
 import AnalysisReport from '@/components/features/resume-analyzer/AnalysisReport';
 import ScanHistory from '@/components/features/resume-analyzer/ScanHistory';
 import { getResumeProfiles } from '@/lib/actions/resumes';
-import { getScanHistory, createScanHistory, updateScanHistory } from '@/lib/actions/resumes';
+import { getScanHistory, createScanHistory } from '@/lib/actions/resumes';
+import { useAuth } from '@/hooks/use-auth';
 
 
 export default function ResumeAnalyzerPage() {
+  const { user: currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
   const [analysisReport, setAnalysisReport] = useState<AnalyzeResumeAndJobDescriptionOutput | null>(null);
   const [currentJobDescription, setCurrentJobDescription] = useState('');
   const [currentResumeText, setCurrentResumeText] = useState('');
@@ -27,17 +29,18 @@ export default function ResumeAnalyzerPage() {
 
   useEffect(() => {
     async function loadInitialData() {
-      setIsLoading(true);
+      if (!currentUser) return;
+      setIsDataLoading(true);
       const [userResumes, userScanHistory] = await Promise.all([
-        getResumeProfiles(sampleUserProfile.id),
-        getScanHistory(sampleUserProfile.id)
+        getResumeProfiles(currentUser.id),
+        getScanHistory(currentUser.id)
       ]);
       setResumes(userResumes);
       setScanHistory(userScanHistory);
-      setIsLoading(false);
+      setIsDataLoading(false);
     }
     loadInitialData();
-  }, []);
+  }, [currentUser]);
 
   const handleAnalysisSubmit = useCallback(async (formData: {
     resumeText: string;
@@ -47,6 +50,11 @@ export default function ResumeAnalyzerPage() {
     selectedResumeId: string | null;
     resumeFile: File | null;
   }) => {
+    if (!currentUser) {
+      toast({ title: "Error", description: "User not found. Please log in again.", variant: "destructive" });
+      return;
+    }
+    
     const { resumeText, jobDescription, jobTitle, companyName, selectedResumeId, resumeFile } = formData;
     
     if (!resumeText.trim()) {
@@ -75,8 +83,8 @@ export default function ResumeAnalyzerPage() {
       setAnalysisReport(detailedReportRes);
 
       const newScanEntryData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'> = {
-        tenantId: sampleUserProfile.tenantId,
-        userId: sampleUserProfile.id,
+        tenantId: currentUser.tenantId,
+        userId: currentUser.id,
         resumeId: currentResumeProfile?.id || (resumeFile ? `file-${resumeFile.name}` : 'pasted-text'),
         resumeName: currentResumeProfile?.name || resumeFile?.name || 'Pasted Resume',
         jobTitle: jobTitle || "N/A",
@@ -120,7 +128,7 @@ export default function ResumeAnalyzerPage() {
       const reportSection = document.getElementById('analysis-report-section');
       if (reportSection) reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [resumes, toast]);
+  }, [resumes, toast, currentUser]);
 
   const handleRewriteComplete = useCallback((newResumeText: string) => {
     setCurrentResumeText(newResumeText);
@@ -136,6 +144,15 @@ export default function ResumeAnalyzerPage() {
       resumeFile: null,
     });
   }, [scanHistory, currentJobDescription, handleAnalysisSubmit]);
+
+  if (isDataLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-8">
