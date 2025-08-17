@@ -113,7 +113,7 @@ export async function getBlogGenerationSettings(): Promise<BlogGenerationSetting
     console.error('[BlogAction] Error fetching blog settings:', error);
     // Return a safe default in case of error
     return {
-      // id: 'default', // 'id' does not exist in type 'BlogGenerationSettings'
+      id: 'default', // 'id' does not exist in type 'BlogGenerationSettings'
       generationIntervalHours: 24,
       topics: ['Career Advice'],
       style: 'informative',

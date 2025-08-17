@@ -696,6 +696,7 @@ export type BankQuestionFilterView = 'all' | 'myBookmarks' | 'needsApproval';
 
 
 export interface BlogGenerationSettings {
+  id:string;
   generationIntervalHours: number;
   topics: string[];
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
@@ -828,6 +829,8 @@ export interface PracticeSessionConfig {
 
 
 export interface PracticeSession {
+  topic: any;
+  createdAt: string;
   id: string;
   userId: string;
   date: string;
