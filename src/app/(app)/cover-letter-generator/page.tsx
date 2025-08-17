@@ -23,6 +23,7 @@ export default function CoverLetterGeneratorPage() {
   const { toast } = useToast();
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
 
+  // This is the crucial fix: Do not proceed if the user data is still loading or unavailable.
   if (isUserLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -31,7 +32,7 @@ export default function CoverLetterGeneratorPage() {
     );
   }
 
-  // Construct user profile text for the AI
+  // Construct user profile text for the AI only after confirming currentUser exists.
   const userProfileText = `
 Name: ${currentUser.name}
 Email: ${currentUser.email}
