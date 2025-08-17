@@ -6,23 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { GalleryVerticalEnd, CalendarDays, Users, UserCircle, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { sampleEvents, sampleUserProfile } from "@/lib/sample-data";
-import { samplePlatformUsers } from "@/lib/data/users";
+import { GalleryVerticalEnd, CalendarDays, Users, UserCircle, Eye, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { sampleUserProfile, samplePlatformUsers } from "@/lib/sample-data";
 import Image from "next/image";
 import type { UserProfile, GalleryEvent } from "@/types"; 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"; 
+import { getGalleryEvents } from "@/lib/actions/gallery";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function GalleryPage() {
   const { t } = useI18n();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
+  const [events, setEvents] = useState<GalleryEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedEventParticipants, setSelectedEventParticipants] = useState<UserProfile[]>([]);
   const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false);
   const [viewingEventTitle, setViewingEventTitle] = useState("");
 
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [selectedEventForImageView, setSelectedEventForImageView] = useState<GalleryEvent | null>(null);
+
+  useEffect(() => {
+    async function loadEvents() {
+      if (!currentUser) return;
+      setIsLoading(true);
+      const fetchedEvents = await getGalleryEvents(currentUser);
+      setEvents(fetchedEvents);
+      setIsLoading(false);
+    }
+    loadEvents();
+  }, [currentUser]);
 
 
   const handleViewParticipants = (event: GalleryEvent) => {
@@ -43,6 +57,14 @@ export default function GalleryPage() {
     setIsImageViewerOpen(true);
   };
 
+  if (isLoading || !currentUser) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -50,7 +72,7 @@ export default function GalleryPage() {
       </h1>
       <CardDescription>{t("gallery.pageDescription")}</CardDescription>
 
-      {sampleEvents.length === 0 ? (
+      {events.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <GalleryVerticalEnd className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -62,7 +84,7 @@ export default function GalleryPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sampleEvents.map((event) => {
+          {events.map((event) => {
             const canViewAttendees =
               event.createdByUserId === currentUser.id ||
               currentUser.role === 'admin' ||
