@@ -3,8 +3,8 @@
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Award, Flame, Star, CheckCircle, Trophy, UserCircle } from "lucide-react"; 
-import { sampleUserProfile, sampleBadges, samplePlatformUsers } from "@/lib/sample-data"; 
+import { Award, Flame, Star, CheckCircle, Trophy, UserCircle, Loader2 } from "lucide-react"; 
+import { sampleBadges, samplePlatformUsers } from "@/lib/sample-data"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -12,7 +12,8 @@ import * as LucideIcons from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect, useMemo } from "react"; 
-import { UserProfile } from "@/types";
+import type { UserProfile } from "@/types";
+import { useAuth } from "@/hooks/use-auth";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -29,19 +30,8 @@ function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.Lucide
 
 export default function GamificationPage() {
   const { t } = useI18n();
-  const user = sampleUserProfile;
+  const { user, isLoading: isUserLoading } = useAuth();
   const badges = sampleBadges;
-
-  const earnedBadges = badges.filter(badge => user.earnedBadges?.includes(badge.id));
-  const notEarnedBadges = badges.filter(badge => !user.earnedBadges?.includes(badge.id));
-
-  const xpPerLevel = 1000;
-  const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
-  const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
-  const xpForNextLevel = xpLevel * xpPerLevel;
-  const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
-  const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
-
   const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
 
   useEffect(() => {
@@ -50,6 +40,28 @@ export default function GamificationPage() {
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
     setLeaderboardUsers(sortedUsers.slice(0, 10)); // Show top 10
   }, []);
+
+  const earnedBadges = useMemo(() => {
+    if (!user) return [];
+    return badges.filter(badge => user.earnedBadges?.includes(badge.id));
+  }, [user, badges]);
+
+  const notEarnedBadges = useMemo(() => {
+    if (!user) return [];
+    return badges.filter(badge => !user.earnedBadges?.includes(badge.id));
+  }, [user, badges]);
+
+  if (isUserLoading || !user) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+  }
+  
+  const xpPerLevel = 1000;
+  const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
+  const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
+  const xpForNextLevel = xpLevel * xpPerLevel;
+  const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
+  const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
+
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
