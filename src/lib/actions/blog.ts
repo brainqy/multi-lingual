@@ -82,7 +82,7 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
     return newPost as unknown as BlogPost;
   } catch (error) {
     console.error('[BlogAction] Error creating blog post:', error);
-    if (error instanceof PrismaClientKnownRequestError) { // Corrected: Prisma.PrismaClientKnownRequestError is the correct type
+    if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           console.error('This is a unique constraint violation, likely on the slug.');
         }
@@ -113,7 +113,7 @@ export async function getBlogGenerationSettings(): Promise<BlogGenerationSetting
     console.error('[BlogAction] Error fetching blog settings:', error);
     // Return a safe default in case of error
     return {
-      id: 'default', // 'id' does not exist in type 'BlogGenerationSettings'
+      id: 'default',
       generationIntervalHours: 24,
       topics: ['Career Advice'],
       style: 'informative',
