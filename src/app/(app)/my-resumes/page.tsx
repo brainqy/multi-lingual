@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, FileText, Edit3, Trash2, Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ResumeProfile } from "@/types";
 import {
   AlertDialog,
@@ -19,23 +19,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile } from "@/lib/sample-data";
 import { getResumeProfiles, createResumeProfile, deleteResumeProfile } from "@/lib/actions/resumes";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function MyResumesPage() {
   const [resumes, setResumes] = useState<ResumeProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+
+  const loadResumes = useCallback(async () => {
+    if (!currentUser) return;
+    setIsLoading(true);
+    const userResumes = await getResumeProfiles(currentUser.id);
+    setResumes(userResumes);
+    setIsLoading(false);
+  }, [currentUser]);
 
   useEffect(() => {
-    async function loadResumes() {
-      setIsLoading(true);
-      const userResumes = await getResumeProfiles(sampleUserProfile.id);
-      setResumes(userResumes);
-      setIsLoading(false);
-    }
     loadResumes();
-  }, []);
+  }, [loadResumes]);
 
   const handleDeleteResume = async (resumeId: string) => {
     const success = await deleteResumeProfile(resumeId);
@@ -48,9 +51,10 @@ export default function MyResumesPage() {
   };
 
   const handleAddNewResume = async () => {
+    if (!currentUser) return;
     const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
-      tenantId: sampleUserProfile.tenantId,
-      userId: sampleUserProfile.id,
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
       name: `New Resume ${resumes.length + 1}`,
       resumeText: "Paste your new resume text here...",
     };
@@ -67,7 +71,7 @@ export default function MyResumesPage() {
     toast({ title: "Edit Action (Mock)", description: `This would navigate to an edit page for resume ${resumeId}.` });
   };
 
-  if (isLoading) {
+  if (isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
