@@ -17,7 +17,7 @@ import QuestionFormDialog from '@/components/features/interview-prep/QuestionFor
 import PracticeSessionList from '@/components/features/interview-prep/PracticeSessionList';
 import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuizzesList';
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
-import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '@/lib/actions/interview';
+import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '../../../../usr/src/app/src/lib/actions/questions';
 import { useAuth } from '@/hooks/use-auth';
 import { getAppointments } from '@/lib/actions/appointments';
 
