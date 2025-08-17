@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ListFilter, ChevronLeft, ChevronRight, PlusCircle, Edit3, XCircle as XCircleIcon, Star, Bookmark as BookmarkIcon, CheckCircle as CheckCircleIcon, Code as CodeIcon, Lightbulb, MessageSquare, Puzzle, Settings2, Brain as BrainIcon, Users as UsersGroupIcon, Send } from 'lucide-react';
+import { ListFilter, ChevronLeft, ChevronRight, PlusCircle, Edit3, XCircle as XCircleIcon, Star, Bookmark as BookmarkIcon, CheckCircle as CheckCircleIcon, Code as CodeIcon, Lightbulb, MessageSquare, Puzzle, Settings2, Brain as BrainIcon, Users as UsersGroupIcon, Send, Loader2 } from 'lucide-react';
 import type { InterviewQuestion, InterviewQuestionCategory, BankQuestionSortOrder, BankQuestionFilterView, UserProfile } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { cn } from "@/lib/utils";
@@ -23,8 +23,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { sampleInterviewQuestions } from '@/lib/sample-data';
-
 
 interface QuestionBankProps {
   allBankQuestions: InterviewQuestion[];
@@ -33,11 +31,12 @@ interface QuestionBankProps {
   onOpenEditQuestionDialog: (question: InterviewQuestion) => void;
   onDeleteQuestion: (questionId: string) => void;
   onToggleBookmark: (questionId: string) => void;
+  isLoading: boolean;
 }
 
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQuestionDialog, onOpenEditQuestionDialog, onDeleteQuestion, onToggleBookmark }: QuestionBankProps) {
+export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQuestionDialog, onOpenEditQuestionDialog, onDeleteQuestion, onToggleBookmark, isLoading }: QuestionBankProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [selectedBankCategories, setSelectedBankCategories] = useState<InterviewQuestionCategory[]>([]);
@@ -130,50 +129,9 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
         return;
     }
     
-    // Find the question in the original sample data to mutate it
-    const questionIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
-    if (questionIndex === -1) return;
-
-    const questionToUpdate = sampleInterviewQuestions[questionIndex];
-
-    // Update ratings
-    // Update ratings
-        // Use optional chaining and nullish coalescing for safer access
-        const existingRatingIndex = questionToUpdate.userRatings?.findIndex(r => r.userId === currentUser.id) ?? -1;
-        if (existingRatingIndex !== -1) {
-            // Ensure userRatings is not undefined before accessing by index
-            if (questionToUpdate.userRatings) {
-                questionToUpdate.userRatings[existingRatingIndex] = { userId: currentUser.id, rating };
-            }
-        } else {
-            // This block already handles the case where userRatings is undefined
-            if (!questionToUpdate.userRatings) questionToUpdate.userRatings = [];
-            questionToUpdate.userRatings.push({ userId: currentUser.id, rating });
-        }
-
-        // Recalculate average rating
-        // Use optional chaining and nullish coalescing for safer access
-        const totalRating = questionToUpdate.userRatings?.reduce((sum, r) => sum + r.rating, 0) ?? 0;
-        questionToUpdate.ratingsCount = questionToUpdate.userRatings?.length ?? 0;
-        // Avoid division by zero if ratingsCount is 0
-        questionToUpdate.rating = questionToUpdate.ratingsCount > 0 ? totalRating / questionToUpdate.ratingsCount : 0;
-
-    // Add comment if provided
-    if (comment && comment.trim() !== "") {
-        if (!questionToUpdate.userComments) questionToUpdate.userComments = [];
-        questionToUpdate.userComments.push({
-            id: `uc-${Date.now()}`,
-            userId: currentUser.id,
-            userName: currentUser.name,
-            useravatar: currentUser.profilePictureUrl || "",
-            comment: comment.trim(),
-            timestamp: new Date().toISOString(),
-        });
-    }
-
-    // This is a mock update. In a real app, this would be an API call.
-    // The parent component's state (`allBankQuestions`) will re-render with this mutated data.
-    toast({ title: "Feedback Submitted", description: "Thank you for helping improve the question bank!" });
+    // In a real app, this would be an API call.
+    console.log("Submitting feedback for question:", questionId, { rating, comment });
+    toast({ title: "Feedback Submitted (Mock)", description: "Thank you for helping improve the question bank!" });
 
     // Clear local input state
     setUserRatings(prev => ({ ...prev, [questionId]: 0 }));
@@ -240,7 +198,9 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
             </div>
 
             <ScrollArea className="h-[500px] pr-2 -mr-2">
-                {paginatedBankQuestions.length > 0 ? (
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+                ) : paginatedBankQuestions.length > 0 ? (
                     <Accordion type="multiple" className="w-full space-y-2">
                     {paginatedBankQuestions.map(q => (
                       <AccordionItem key={q.id} value={`item-${q.id}`} className="border rounded-md bg-card shadow-sm hover:shadow-md transition-shadow">
@@ -368,4 +328,3 @@ export default function QuestionBank({ allBankQuestions, currentUser, onOpenNewQ
     </Card>
   );
 }
-
