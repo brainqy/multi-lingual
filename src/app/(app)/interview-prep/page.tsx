@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Mic, ListChecks } from "lucide-react";
+import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { sampleUserProfile, samplePracticeSessions, sampleInterviewQuestions, sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
+import { samplePracticeSessions, sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
@@ -17,19 +17,36 @@ import QuestionFormDialog from '@/components/features/interview-prep/QuestionFor
 import PracticeSessionList from '@/components/features/interview-prep/PracticeSessionList';
 import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuizzesList';
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
+import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '@/lib/actions/questions';
+import { useAuth } from '@/hooks/use-auth';
 
 
 export default function InterviewPracticeHubPage() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
-  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>(samplePracticeSessions.filter(s => s.userId === sampleUserProfile.id));
-  const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>(sampleInterviewQuestions);
+  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
+  const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>(sampleCreatedQuizzes);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
 
   const router = useRouter();
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
+  
+  const fetchQuestions = useCallback(async () => {
+    setIsLoadingQuestions(true);
+    const questions = await getInterviewQuestions();
+    setAllBankQuestions(questions);
+    setIsLoadingQuestions(false);
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      setPracticeSessions(samplePracticeSessions.filter(s => s.userId === currentUser.id));
+      fetchQuestions();
+    }
+  }, [currentUser, fetchQuestions]);
 
   const handleStartPracticeSetup = useCallback(() => {
     setIsSetupDialogOpen(true);
@@ -68,6 +85,7 @@ export default function InterviewPracticeHubPage() {
   };
 
   const handleOpenEditQuestionDialog = (question: InterviewQuestion) => {
+    if (!currentUser) return;
     if (currentUser.role !== 'admin' && question.createdBy !== currentUser.id) {
         toast({title: "Permission Denied", description: "You can only edit questions you created.", variant: "destructive"});
         return;
@@ -76,47 +94,57 @@ export default function InterviewPracticeHubPage() {
     setIsQuestionFormOpen(true);
   };
   
-  const handleDeleteQuestion = (questionId: string) => {
+  const handleDeleteQuestion = async (questionId: string) => {
+     if (!currentUser) return;
      const questionToDelete = allBankQuestions.find(q => q.id === questionId);
      if (currentUser.role !== 'admin' && questionToDelete?.createdBy !== currentUser.id) {
         toast({title: "Permission Denied", description: "You can only delete questions you created.", variant: "destructive"});
         return;
     }
-    setAllBankQuestions(prev => prev.filter(q => q.id !== questionId));
-    const globalQIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
-    if (globalQIndex !== -1) sampleInterviewQuestions.splice(globalQIndex, 1);
-    toast({ title: "Question Deleted", description: "Question removed from the bank.", variant: "destructive" });
+    const success = await deleteInterviewQuestion(questionId);
+    if (success) {
+      setAllBankQuestions(prev => prev.filter(q => q.id !== questionId));
+      toast({ title: "Question Deleted", description: "Question removed from the bank.", variant: "destructive" });
+    } else {
+      toast({ title: "Error", description: "Failed to delete question.", variant: "destructive" });
+    }
   };
   
-  const handleQuestionFormSubmit = (questionData: InterviewQuestion) => {
+  const handleQuestionFormSubmit = async (questionData: InterviewQuestion) => {
     if (editingQuestion) {
-        const updatedQuestion = { ...editingQuestion, ...questionData };
-        setAllBankQuestions(prev => prev.map(q => q.id === editingQuestion.id ? updatedQuestion : q));
-        const globalQIndex = sampleInterviewQuestions.findIndex(q => q.id === editingQuestion.id);
-        if (globalQIndex !== -1) sampleInterviewQuestions[globalQIndex] = updatedQuestion;
-        toast({ title: "Question Updated" });
+        const updated = await updateInterviewQuestion(editingQuestion.id, questionData);
+        if (updated) {
+            setAllBankQuestions(prev => prev.map(q => q.id === editingQuestion.id ? updated : q));
+            toast({ title: "Question Updated" });
+        } else {
+            toast({ title: "Error", description: "Failed to update question.", variant: "destructive" });
+        }
     } else {
-        setAllBankQuestions(prev => [questionData, ...prev]);
-        sampleInterviewQuestions.unshift(questionData);
-        toast({ title: "Question Added" });
+        const created = await createInterviewQuestion(questionData);
+        if (created) {
+            setAllBankQuestions(prev => [created, ...prev]);
+            toast({ title: "Question Added" });
+        } else {
+            toast({ title: "Error", description: "Failed to create question.", variant: "destructive" });
+        }
     }
     setIsQuestionFormOpen(false);
     setEditingQuestion(null);
   };
   
-  const handleToggleBookmarkQuestion = (questionId: string) => {
-    setAllBankQuestions(prevQs => prevQs.map(q => {
-        if (q.id === questionId) {
-            const currentBookmarks = q.bookmarkedBy || [];
-            const userHasBookmarked = currentBookmarks.includes(currentUser.id);
-            const newBookmarks = userHasBookmarked
-                ? currentBookmarks.filter(id => id !== currentUser.id)
-                : [...currentBookmarks, currentUser.id];
-            return { ...q, bookmarkedBy: newBookmarks };
-        }
-        return q;
-    }));
+  const handleToggleBookmarkQuestion = async (questionId: string) => {
+    if (!currentUser) return;
+    const updatedQuestion = await toggleBookmarkQuestion(questionId, currentUser.id);
+    if (updatedQuestion) {
+      setAllBankQuestions(prevQs => prevQs.map(q => q.id === questionId ? updatedQuestion : q));
+    } else {
+      toast({ title: "Error", description: "Could not update bookmark.", variant: "destructive" });
+    }
   };
+
+  if (!currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -157,6 +185,7 @@ export default function InterviewPracticeHubPage() {
         onOpenEditQuestionDialog={handleOpenEditQuestionDialog}
         onDeleteQuestion={handleDeleteQuestion}
         onToggleBookmark={handleToggleBookmarkQuestion}
+        isLoading={isLoadingQuestions}
       />
 
       {isSetupDialogOpen && (
