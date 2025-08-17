@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { samplePracticeSessions, sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
+import { sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
@@ -19,6 +19,7 @@ import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuiz
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
 import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '@/lib/actions/questions';
 import { useAuth } from '@/hooks/use-auth';
+import { getAppointments } from '@/lib/actions/appointments';
 
 
 export default function InterviewPracticeHubPage() {
@@ -43,7 +44,22 @@ export default function InterviewPracticeHubPage() {
 
   useEffect(() => {
     if (currentUser) {
-      setPracticeSessions(samplePracticeSessions.filter(s => s.userId === currentUser.id));
+      const loadData = async () => {
+        const appointments = await getAppointments(currentUser.id);
+        const userPracticeSessions = appointments
+          .filter(a => a.title.includes("Practice Session")) // Simple filter for demo
+          .map(a => ({
+            id: a.id,
+            userId: currentUser.id,
+            date: a.dateTime,
+            category: "Practice with Experts",
+            type: a.title,
+            language: "English",
+            status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
+          })) as PracticeSession[];
+        setPracticeSessions(userPracticeSessions);
+      };
+      loadData();
       fetchQuestions();
     }
   }, [currentUser, fetchQuestions]);
@@ -54,7 +70,6 @@ export default function InterviewPracticeHubPage() {
 
   const handleSessionBooked = (newSession: PracticeSession, queryParams?: URLSearchParams) => {
     setPracticeSessions(prev => [newSession, ...prev]);
-    samplePracticeSessions.unshift(newSession);
 
     if (newSession.category === "Practice with AI" && queryParams) {
       toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSession.aiTopicOrRole}".`, duration: 4000 });
@@ -67,8 +82,6 @@ export default function InterviewPracticeHubPage() {
 
   const handleCancelPracticeSession = (sessionId: string) => {
     setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));
-    const globalIndex = samplePracticeSessions.findIndex(s => s.id === sessionId);
-    if (globalIndex !== -1) { (samplePracticeSessions[globalIndex] as any).status = 'CANCELLED'; }
     const liveSessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionId);
     if (liveSessionIndex !== -1) { sampleLiveInterviewSessions[liveSessionIndex].status = 'Cancelled'; }
     toast({ title: "Session Cancelled", description: "The practice session has been cancelled.", variant: "destructive" });
