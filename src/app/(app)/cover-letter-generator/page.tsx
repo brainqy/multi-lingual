@@ -23,31 +23,12 @@ export default function CoverLetterGeneratorPage() {
   const { toast } = useToast();
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
 
-  // This is the crucial fix: Do not proceed if the user data is still loading or unavailable.
-  if (isUserLoading || !currentUser) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Construct user profile text for the AI only after confirming currentUser exists.
-  const userProfileText = `
-Name: ${currentUser.name}
-Email: ${currentUser.email}
-Current Role: ${currentUser.currentJobTitle || 'N/A'} at ${currentUser.currentOrganization || 'N/A'}
-Years of Experience: ${currentUser.yearsOfExperience || 'N/A'}
-Skills: ${(currentUser.skills || []).join(', ') || 'N/A'}
-Bio: ${currentUser.bio || 'N/A'}
-Career Interests: ${currentUser.careerInterests || 'N/A'}
-Key highlights from resume: 
-${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : 'N/A'}
-`.trim();
-
-
   const handleGenerateCoverLetter = async (event: FormEvent) => {
     event.preventDefault();
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in to use this feature.", variant: "destructive" });
+        return;
+    }
     if (!jobDescriptionText.trim()) {
       toast({ title: "Error", description: "Please provide the job description.", variant: "destructive" });
       return;
@@ -63,6 +44,19 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
 
     setIsLoading(true);
     setGeneratedCoverLetterText('');
+
+    // Construct user profile text for the AI only after confirming currentUser exists.
+    const userProfileText = `
+Name: ${currentUser.name}
+Email: ${currentUser.email}
+Current Role: ${currentUser.currentJobTitle || 'N/A'} at ${currentUser.currentOrganization || 'N/A'}
+Years of Experience: ${currentUser.yearsOfExperience || 'N/A'}
+Skills: ${(currentUser.skills || []).join(', ') || 'N/A'}
+Bio: ${currentUser.bio || 'N/A'}
+Career Interests: ${currentUser.careerInterests || 'N/A'}
+Key highlights from resume: 
+${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : 'N/A'}
+`.trim();
 
     try {
       const input: GenerateCoverLetterInput = {
@@ -102,6 +96,14 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
       toast({ title: "Copy Failed", description: "Could not copy text.", variant: "destructive" });
     });
   };
+
+  if (isUserLoading || !currentUser) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
