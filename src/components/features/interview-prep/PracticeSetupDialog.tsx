@@ -15,10 +15,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { PracticeSession, PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
-import { sampleUserProfile, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import PracticeTopicSelection from './PracticeTopicSelection';
 import PracticeDateTimeSelector from './PracticeDateTimeSelector';
+import { useAuth } from '@/hooks/use-auth';
 
 const friendEmailSchema = z.string().email("Please enter a valid email address.");
 
@@ -31,6 +31,7 @@ interface PracticeSetupDialogProps {
 export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }: PracticeSetupDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [dialogStep, setDialogStep] = useState<DialogStep>('selectType');
   const [practiceSessionConfig, setPracticeSessionConfig] = useState<PracticeSessionConfig>({
     type: null,
@@ -107,7 +108,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
   };
 
   const handleFinalBookSession = () => {
-    if (!practiceSessionConfig.type) return;
+    if (!practiceSessionConfig.type || !currentUser) return;
 
     if (practiceSessionConfig.type === 'experts') {
         if (!practiceSessionConfig.dateTime) {
@@ -116,7 +117,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
         }
         const newSession: PracticeSession = {
             id: `ps-expert-${Date.now()}`,
-            userId: sampleUserProfile.id,
+            userId: currentUser.id,
             date: practiceSessionConfig.dateTime.toISOString(),
             category: "Practice with Experts",
             type: `${practiceSessionConfig.interviewCategory}: ${practiceSessionConfig.topics.join(', ')}`,
@@ -130,7 +131,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
         
         const newPracticeSession: PracticeSession = {
           id: `ps-ai-${Date.now()}`,
-          userId: sampleUserProfile.id,
+          userId: currentUser.id,
           date: new Date().toISOString(),
           category: "Practice with AI",
           type: practiceSessionConfig.aiTopicOrRole,
