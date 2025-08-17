@@ -7,10 +7,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react"; // Added Copy
+import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateCoverLetter, type GenerateCoverLetterInput, type GenerateCoverLetterOutput } from '@/ai/flows/generate-cover-letter';
-import { sampleUserProfile } from '@/lib/sample-data';
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CoverLetterGeneratorPage() {
   const [jobDescriptionText, setJobDescriptionText] = useState('');
@@ -21,8 +21,15 @@ export default function CoverLetterGeneratorPage() {
   const [generatedCoverLetterText, setGeneratedCoverLetterText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
 
-  const currentUser = sampleUserProfile;
+  if (isUserLoading || !currentUser) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Construct user profile text for the AI
   const userProfileText = `
