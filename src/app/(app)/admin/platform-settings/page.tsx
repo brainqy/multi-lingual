@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2 } from "lucide-react";
+import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PlatformSettings, ProfileVisibility } from "@/types";
-import { samplePlatformSettings, sampleUserProfile } from "@/lib/sample-data";
+import { samplePlatformSettings } from "@/lib/sample-data";
 import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,7 @@ import * as z from "zod";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea"; 
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 const settingsSchema = z.object({
   platformName: z.string().min(3, "platformSettings.validation.platformNameMin"),
@@ -59,7 +60,7 @@ type SettingsFormData = z.infer<typeof settingsSchema>;
 export default function PlatformSettingsPage() {
   const [currentSettings, setCurrentSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading } = useAuth();
   const { t } = useI18n();
 
   const translatedSchema = z.object({
@@ -104,6 +105,10 @@ export default function PlatformSettingsPage() {
   useEffect(() => {
     reset(currentSettings);
   }, [currentSettings, reset]);
+
+  if (isLoading || !currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;

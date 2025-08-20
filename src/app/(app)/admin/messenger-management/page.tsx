@@ -10,16 +10,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BotMessageSquare, Eye, PlusCircle, Edit3, AlertTriangle, UserCheck, ListFilter, BarChart3, CheckSquare, Users, Info, FileText, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { BotMessageSquare, Eye, PlusCircle, Edit3, AlertTriangle, UserCheck, ListFilter, BarChart3, CheckSquare, Users, Info, FileText, ChevronLeft, ChevronRight, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { SurveyResponse, SurveyStep, SurveyOption as SurveyOptionType } from "@/types";
-import { sampleSurveyResponses, sampleUserProfile, profileCompletionSurveyDefinition } from "@/lib/sample-data";
+import { sampleSurveyResponses, profileCompletionSurveyDefinition } from "@/lib/sample-data";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 interface SurveyDefinitionListItem {
   id: string;
@@ -44,22 +45,17 @@ interface NewSurveyStep extends Omit<SurveyStep, 'options' | 'dropdownOptions'> 
 
 
 export default function MessengerManagementPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const [surveyDefinitionsState, setSurveyDefinitionsState] = useState<SurveyDefinitionListItem[]>(
-      currentUser.role === 'admin' ? initialSurveyDefinitions : initialSurveyDefinitions.filter(s => s.tenantId === 'platform' || s.tenantId === currentUser.tenantId)
-  );
-  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>(
-      currentUser.role === 'admin' ? sampleSurveyResponses : sampleSurveyResponses.filter(sr => surveyDefinitionsState.find(sds => sds.id === sr.surveyId && (sds.tenantId === 'platform' || sds.tenantId === currentUser.tenantId)))
-  );
+  const [surveyDefinitionsState, setSurveyDefinitionsState] = useState<SurveyDefinitionListItem[]>([]);
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
 
   const [selectedResponse, setSelectedResponse] = useState<SurveyResponse | null>(null);
   const [isResponseDetailOpen, setIsResponseDetailOpen] = useState(false);
   const [isCreateSurveyOpen, setIsCreateSurveyOpen] = useState(false);
   
-  const defaultActiveSurveyId = surveyDefinitionsState.length > 0 ? surveyDefinitionsState[0].id : '';
-  const [activeSurveyId, setActiveSurveyId] = useState<string>(defaultActiveSurveyId);
+  const [activeSurveyId, setActiveSurveyId] = useState<string>('');
   
   const [surveyCreationDialogStep, setSurveyCreationDialogStep] = useState(0); 
   const [newSurveyName, setNewSurveyName] = useState('');
@@ -70,6 +66,27 @@ export default function MessengerManagementPage() {
   const [currentStepConfig, setCurrentStepConfig] = useState<Partial<NewSurveyStep>>({});
   const [currentStepOptions, setCurrentStepOptions] = useState<NewSurveyOption[]>([]);
   const [currentStepDropdownOptions, setCurrentStepDropdownOptions] = useState<{tempId: string, label: string, value: string}[]>([]);
+  
+  useEffect(() => {
+    if (currentUser) {
+      const filteredDefs = currentUser.role === 'admin' 
+        ? initialSurveyDefinitions 
+        : initialSurveyDefinitions.filter(s => s.tenantId === 'platform' || s.tenantId === currentUser.tenantId);
+      setSurveyDefinitionsState(filteredDefs);
+      if (filteredDefs.length > 0) {
+        setActiveSurveyId(filteredDefs[0].id);
+      }
+      
+      const filteredResponses = currentUser.role === 'admin'
+        ? sampleSurveyResponses
+        : sampleSurveyResponses.filter(sr => filteredDefs.some(sds => sds.id === sr.surveyId));
+      setSurveyResponses(filteredResponses);
+    }
+  }, [currentUser]);
+
+  if (isLoading || !currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
 
   if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
     return <AccessDeniedMessage />;
