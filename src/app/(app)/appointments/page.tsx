@@ -5,7 +5,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, Video, CheckCircle, Clock, XCircle, ThumbsUp, Filter, Edit3, CalendarPlus, MessageSquare as FeedbackIcon, Star as StarIcon, Users as UsersIcon, Loader2 } from "lucide-react";
-import { sampleAlumni, sampleUserProfile, sampleCommunityPosts } from "@/lib/sample-data";
 import type { Appointment, AlumniProfile, AppointmentStatus, PreferredTimeSlot, CommunityPost } from "@/types";
 import { AppointmentStatuses, PreferredTimeSlots } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +27,9 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Badge } from '@/components/ui/badge';
 import { getAppointments, updateAppointment } from "@/lib/actions/appointments";
+import { useAuth } from "@/hooks/use-auth";
+import { getUsers } from "@/lib/data-services/users";
+import { getCommunityPosts } from "@/lib/actions/community";
 
 const rescheduleSchema = z.object({
   preferredDate: z.date({ required_error: "New date is required." }),
@@ -45,7 +47,10 @@ type FeedbackFormData = z.infer<typeof feedbackSchema>;
 export default function AppointmentsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [allUsers, setAllUsers] = useState<AlumniProfile[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
   const [filterStartDate, setFilterStartDate] = useState<Date | undefined>();
@@ -65,23 +70,31 @@ export default function AppointmentsPage() {
     defaultValues: { rating: 0, comments: ''}
   });
   
-  const fetchAppointments = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
-    const userAppointments = await getAppointments(sampleUserProfile.id);
+    const [userAppointments, users, posts] = await Promise.all([
+      getAppointments(currentUser.id),
+      getUsers(),
+      getCommunityPosts(currentUser.tenantId, currentUser.id),
+    ]);
     setAppointments(userAppointments);
+    setAllUsers(users as AlumniProfile[]);
+    setCommunityPosts(posts);
     setIsLoading(false);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
-
+    fetchData();
+  }, [fetchData]);
 
   const assignedPosts = useMemo(() => {
-    return sampleCommunityPosts.filter(
-      post => post.type === 'request' && post.assignedTo === sampleUserProfile.name && post.status === 'assigned'
+    if (!currentUser || !communityPosts) return [];
+    return communityPosts.filter(
+      post => post.type === 'request' && post.assignedTo === currentUser.name && post.status === 'in progress'
     );
-  }, []);
+  }, [communityPosts, currentUser]);
+
 
   const getStatusClass = (status: AppointmentStatus) => {
     if (status === 'Confirmed') return 'text-green-600 bg-green-100';
@@ -91,8 +104,10 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getAlumniDetails = (name: string): AlumniProfile | undefined => {
-    return sampleAlumni.find(a => a.name === name);
+  const getPartnerDetails = (appointment: Appointment): AlumniProfile | undefined => {
+    if (!currentUser) return undefined;
+    const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
+    return allUsers.find(u => u.id === partnerId);
   };
 
   const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, successToast: { title: string, description: string }, variant?: "destructive") => {
@@ -138,11 +153,12 @@ export default function AppointmentsPage() {
       newDateTime.setHours(hour, 0, 0, 0);
     }
 
+    const partner = getPartnerDetails(appointmentToReschedule);
     const updated = await updateAppointment(appointmentToReschedule.id, { dateTime: newDateTime.toISOString(), status: 'Pending' });
 
     if (updated) {
         setAppointments(prev => prev.map(appt => appt.id === appointmentToReschedule.id ? updated : appt));
-        toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: appointmentToReschedule.withUser }) });
+        toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: partner?.name || "the other party" }) });
         setIsRescheduleDialogOpen(false);
     } else {
         toast({ title: "Reschedule Failed", description: "Could not send reschedule request.", variant: "destructive" });
@@ -157,9 +173,9 @@ export default function AppointmentsPage() {
 
   const onFeedbackSubmit = (data: FeedbackFormData) => {
     if (!appointmentForFeedback) return;
-    // In a real app, this would be an API call to save the feedback
+    const partner = getPartnerDetails(appointmentForFeedback);
     console.log("Feedback submitted (mock):", { appointmentId: appointmentForFeedback.id, ...data });
-    toast({ title: t("appointments.toastFeedback", { default: "Feedback Submitted" }), description: t("appointments.toastFeedbackDesc", { default: "Thank you for your feedback on your session with {user}.", user: appointmentForFeedback.withUser }) });
+    toast({ title: t("appointments.toastFeedback", { default: "Feedback Submitted" }), description: t("appointments.toastFeedbackDesc", { default: "Thank you for your feedback on your session with {user}.", user: partner?.name || 'the alumni' }) });
     setIsFeedbackDialogOpen(false);
   };
 
@@ -176,15 +192,16 @@ export default function AppointmentsPage() {
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
       const apptDate = parseISO(appt.dateTime);
+      const partner = getPartnerDetails(appt);
       const matchesStatus = filterStatuses.size === 0 || filterStatuses.has(appt.status);
       const matchesStartDate = !filterStartDate || apptDate >= filterStartDate;
       const matchesEndDate = !filterEndDate || apptDate <= filterEndDate;
-      const matchesName = filterAlumniName === '' || appt.withUser.toLowerCase().includes(filterAlumniName.toLowerCase());
+      const matchesName = filterAlumniName === '' || (partner && partner.name.toLowerCase().includes(filterAlumniName.toLowerCase()));
       return matchesStatus && matchesStartDate && matchesEndDate && matchesName;
     });
-  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName]);
+  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName, allUsers]);
   
-  if (isLoading) {
+  if (isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -198,8 +215,10 @@ export default function AppointmentsPage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-8 w-8" /> {t("appointments.title", { default: "My Appointments" })}
         </h1>
-        <Button onClick={() => toast({ title: t("appointments.toastScheduleNew", { default: "Schedule New (Mock)" }), description: t("appointments.toastScheduleNewDesc", { default: "Please use the Alumni Directory to book appointments." })})} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" /> {t("appointments.scheduleNew", { default: "Schedule New" })}
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Link href="/alumni-connect">
+            <PlusCircle className="mr-2 h-5 w-5" /> {t("appointments.scheduleNew", { default: "Schedule New" })}
+          </Link>
         </Button>
       </div>
       <CardDescription>{t("appointments.pageDescription", { default: "View and manage your scheduled appointments, mock interviews, and assigned community requests." })}</CardDescription>
@@ -257,8 +276,8 @@ export default function AppointmentsPage() {
           {filteredAppointments.length > 0 && (
             <div className="grid gap-6 md:grid-cols-2">
               {filteredAppointments.map((appt) => {
-                const alumni = getAlumniDetails(appt.withUser);
-                const isCurrentUserRequester = appt.requesterUserId === sampleUserProfile.id;
+                const partner = getPartnerDetails(appt);
+                const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
                 const apptDate = parseISO(appt.dateTime);
                 const reminderDate = appt.reminderDate ? parseISO(appt.reminderDate) : null;
                 const daysToReminder = reminderDate && isFuture(reminderDate) ? differenceInDays(reminderDate, new Date()) : null;
@@ -276,13 +295,13 @@ export default function AppointmentsPage() {
                         {t(`appointments.statuses.${appt.status}`, { default: appt.status })}
                       </span>
                     </div>
-                    {alumni && (
+                    {partner && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
-                            <Avatar className="h-6 w-6"><AvatarImage src={alumni.profilePictureUrl} alt={alumni.name} data-ai-hint="person face"/><AvatarFallback>{alumni.name.substring(0,1)}</AvatarFallback></Avatar>
-                            <span>With {alumni.name} {isCurrentUserRequester ? '' : '(Incoming Request)'}</span>
+                            <Avatar className="h-6 w-6"><AvatarImage src={partner.profilePictureUrl} alt={partner.name} data-ai-hint="person face"/><AvatarFallback>{partner.name.substring(0,1)}</AvatarFallback></Avatar>
+                            <span>With {partner.name} {isCurrentUserRequester ? '' : '(Incoming Request)'}</span>
                         </div>
                     )}
-                    {!alumni && appt.withUser && ( 
+                    {!partner && appt.withUser && ( 
                         <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
                             <UsersIcon className="h-4 w-4"/>
                             <span>{t("appointments.withUser", { default: "With {name} {incoming}", name: appt.withUser, incoming: isCurrentUserRequester ? '' : t("appointments.incomingRequest", { default: "(Incoming Request)" }) })}</span>
@@ -362,7 +381,7 @@ export default function AppointmentsPage() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="text-2xl">{t("appointments.rescheduleTitle", { default: "Reschedule Appointment" })}</DialogTitle>
-            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: appointmentToReschedule?.withUser || "" })}</CardDescription>
+            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: getPartnerDetails(appointmentToReschedule!)?.name || "" })}</CardDescription>
           </DialogHeader>
           {appointmentToReschedule && (
             <form onSubmit={handleRescheduleSubmit(onRescheduleSubmit)} className="space-y-4 py-4">
@@ -400,7 +419,7 @@ export default function AppointmentsPage() {
 
       <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
         <DialogContent className="sm:max-w-[480px]">
- <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle", { default: "Provide Feedback" })}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", { default: "Share your thoughts on the session with {user}", user: appointmentForFeedback?.withUser || "" })}</CardDescription></DialogHeader>
+ <DialogHeader><DialogTitle className="text-2xl">{t("appointments.provideFeedbackTitle", { default: "Provide Feedback" })}</DialogTitle><CardDescription>{t("appointments.provideFeedbackDesc", { default: "Share your thoughts on the session with {user}", user: getPartnerDetails(appointmentForFeedback!)?.name || "" })}</CardDescription></DialogHeader>
             {appointmentForFeedback && (
                 <form onSubmit={handleFeedbackSubmit(onFeedbackSubmit)} className="space-y-4 py-4">
                     <div>
@@ -427,7 +446,6 @@ export default function AppointmentsPage() {
             )}
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
