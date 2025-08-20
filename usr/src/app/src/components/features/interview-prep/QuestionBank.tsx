@@ -24,7 +24,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
-
 interface QuestionBankProps {
   allBankQuestions: InterviewQuestion[];
   currentUser: UserProfile;

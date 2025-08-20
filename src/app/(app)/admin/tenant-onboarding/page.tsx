@@ -14,10 +14,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Building2, Palette, Settings, UserPlus, Eye, Layers3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { Tenant, TenantSettings } from "@/types";
-import { sampleUserProfile } from "@/lib/sample-data"; 
 import { useRouter } from "next/navigation";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { createTenantWithAdmin } from "@/lib/actions/tenants";
+import { useAuth } from "@/hooks/use-auth";
 
 const tenantOnboardingSchema = z.object({
   tenantName: z.string().min(3),
@@ -47,6 +47,7 @@ const STEPS_CONFIG = [
 
 export default function TenantOnboardingPage() {
   const { t } = useI18n();
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -82,8 +83,11 @@ export default function TenantOnboardingPage() {
       accentColor: 'hsl(180 100% 30%)',
     }
   });
-
-  const currentUser = sampleUserProfile; 
+  
+  if (isUserLoading || !currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
+  
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
