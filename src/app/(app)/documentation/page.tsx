@@ -3,15 +3,19 @@
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BookText, Code2, Share2 } from "lucide-react";
-import { sampleUserProfile } from "@/lib/sample-data";
+import { BookText, Code2, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DocumentationPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading } = useAuth();
 
-  if (currentUser.role !== 'admin') {
+  if (isLoading) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
+
+  if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
 

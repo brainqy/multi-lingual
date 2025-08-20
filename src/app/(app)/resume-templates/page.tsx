@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Layers, Search, Eye, Download, Edit, PlusCircle } from "lucide-react";
+import { Layers, Search, Eye, Download, Edit, PlusCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { sampleResumeTemplates, sampleUserProfile, sampleResumeProfiles } from "@/lib/sample-data";
+import { sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
 import type { ResumeTemplate, ResumeProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ResumeTemplatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +26,7 @@ export default function ResumeTemplatesPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | null>(null);
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading } = useAuth();
 
   const allCategories = Array.from(new Set(sampleResumeTemplates.map(template => template.category)));
 
@@ -45,6 +46,8 @@ export default function ResumeTemplatesPage() {
   };
 
   const handleUseTemplate = (template: ResumeTemplate) => {
+    if (!currentUser) return;
+    
     const newResumeName = `Resume from ${template.name} (${new Date().toLocaleDateString()})`;
     const newResume: ResumeProfile = {
       id: `resume-${Date.now()}`,
@@ -78,6 +81,10 @@ export default function ResumeTemplatesPage() {
       title: "Download Template (Mock)",
       description: `Download functionality for "${templateName}" is not yet implemented.`,
     });
+  }
+  
+  if (isLoading || !currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
 
   return (

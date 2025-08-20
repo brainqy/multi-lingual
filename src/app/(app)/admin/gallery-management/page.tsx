@@ -9,10 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { GalleryVerticalEnd, PlusCircle, Edit3, Trash2, CalendarDays } from "lucide-react";
+import { GalleryVerticalEnd, PlusCircle, Edit3, Trash2, CalendarDays, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { GalleryEvent } from "@/types";
-import { sampleEvents, sampleUserProfile, SAMPLE_TENANT_ID } from "@/lib/sample-data";
+import { sampleEvents, SAMPLE_TENANT_ID } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { useAuth } from "@/hooks/use-auth";
 
 
 const galleryEventSchema = z.object({
@@ -37,30 +38,32 @@ const galleryEventSchema = z.object({
 type GalleryEventFormData = z.infer<typeof galleryEventSchema>;
 
 export default function GalleryManagementPage() {
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
 
-  const [events, setEvents] = useState<GalleryEvent[]>(
-    currentUser.role === 'admin'
-      ? sampleEvents
-      : sampleEvents.filter(e => e.tenantId === currentUser.tenantId)
-  );
+  const [events, setEvents] = useState<GalleryEvent[]>([]);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<GalleryEvent | null>(null);
   
   useEffect(() => {
-    setEvents(
-      currentUser.role === 'admin'
-        ? sampleEvents
-        : sampleEvents.filter(e => e.tenantId === currentUser.tenantId)
-    );
-  }, [currentUser.role, currentUser.tenantId]);
+    if (currentUser) {
+        setEvents(
+          currentUser.role === 'admin'
+            ? sampleEvents
+            : sampleEvents.filter(e => e.tenantId === currentUser.tenantId)
+        );
+    }
+  }, [currentUser]);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<GalleryEventFormData>({
     resolver: zodResolver(galleryEventSchema),
     defaultValues: { isPlatformGlobal: false }
   });
+  
+  if (isUserLoading || !currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+  }
   
   if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
     return <AccessDeniedMessage />;
