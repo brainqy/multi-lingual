@@ -88,14 +88,6 @@ export default function AppointmentsPage() {
     fetchData();
   }, [fetchData]);
 
-  const assignedPosts = useMemo(() => {
-    if (!currentUser || !communityPosts) return [];
-    return communityPosts.filter(
-      post => post.type === 'request' && post.assignedTo === currentUser.name && post.status === 'in progress'
-    );
-  }, [communityPosts, currentUser]);
-
-
   const getStatusClass = (status: AppointmentStatus) => {
     if (status === 'Confirmed') return 'text-green-600 bg-green-100';
     if (status === 'Pending') return 'text-yellow-600 bg-yellow-100';
@@ -104,11 +96,18 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getPartnerDetails = (appointment: Appointment): AlumniProfile | undefined => {
-    if (!currentUser) return undefined;
+  const getPartnerDetails = useCallback((appointment: Appointment | null): AlumniProfile | undefined => {
+    if (!currentUser || !appointment) return undefined;
     const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
-  };
+  }, [currentUser, allUsers]);
+
+  const assignedPosts = useMemo(() => {
+    if (!currentUser || !communityPosts) return [];
+    return communityPosts.filter(
+      post => post.type === 'request' && post.assignedTo === currentUser.name && post.status === 'in progress'
+    );
+  }, [communityPosts, currentUser]);
 
   const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, successToast: { title: string, description: string }, variant?: "destructive") => {
     const updated = await updateAppointment(appointmentId, { status });
@@ -191,15 +190,19 @@ export default function AppointmentsPage() {
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
+      if (!appt) return false;
       const apptDate = parseISO(appt.dateTime);
-      const partner = getPartnerDetails(appt);
+      
+      const partnerDetails = getPartnerDetails(appt);
+
       const matchesStatus = filterStatuses.size === 0 || filterStatuses.has(appt.status);
       const matchesStartDate = !filterStartDate || apptDate >= filterStartDate;
       const matchesEndDate = !filterEndDate || apptDate <= filterEndDate;
-      const matchesName = filterAlumniName === '' || (partner && partner.name.toLowerCase().includes(filterAlumniName.toLowerCase()));
+      const matchesName = filterAlumniName === '' || (partnerDetails && partnerDetails.name.toLowerCase().includes(filterAlumniName.toLowerCase()));
+      
       return matchesStatus && matchesStartDate && matchesEndDate && matchesName;
     });
-  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName, allUsers]);
+  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName, getPartnerDetails]);
   
   if (isLoading || !currentUser) {
     return (
@@ -381,7 +384,7 @@ export default function AppointmentsPage() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="text-2xl">{t("appointments.rescheduleTitle", { default: "Reschedule Appointment" })}</DialogTitle>
-            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: getPartnerDetails(appointmentToReschedule!)?.name || "" })}</CardDescription>
+            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: getPartnerDetails(appointmentToReschedule)?.name || "" })}</CardDescription>
           </DialogHeader>
           {appointmentToReschedule && (
             <form onSubmit={handleRescheduleSubmit(onRescheduleSubmit)} className="space-y-4 py-4">
