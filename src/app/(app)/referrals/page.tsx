@@ -6,17 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, Copy, Share2, Users, CheckCircle, LinkIcon, Clock, AlertCircle, Star, UserPlus, Award, DollarSign } from "lucide-react"; 
+import { Gift, Copy, Share2, Users, CheckCircle, LinkIcon, Clock, AlertCircle, Star, UserPlus, Award, DollarSign, Loader2 } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleReferralHistory } from "@/lib/sample-data"; 
+import { sampleReferralHistory } from "@/lib/sample-data"; 
 import type { ReferralHistoryItem, ReferralStatus } from "@/types"; 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; 
 import { format } from "date-fns"; 
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ReferralsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const user = sampleUserProfile;
+  const { user, isLoading } = useAuth();
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const referralLink = `https://JobMatch.ai/signup?ref=${user.referralCode || 'DEFAULT123'}`;
   const referralHistory = sampleReferralHistory.filter(r => r.referrerUserId === user.id); // Filter for current user
 
