@@ -7,34 +7,49 @@ import { sampleChallenges } from "@/lib/sample-data";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2 } from 'lucide-react';
+import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2, Trophy, Send } from 'lucide-react';
 import type { DailyChallenge, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
+import { updateUser } from "@/lib/data-services/users";
+import { createActivity } from "@/lib/actions/activities";
+import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
+import ScoreCircle from "@/components/ui/score-circle";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const { user, isLoading } = useAuth();
+  const { user, login } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [standardChallenge, setStandardChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'standard'));
-  const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(() => sampleChallenges.find(c => c.type === 'flip'));
+  const [standardChallenge, setStandardChallenge] = useState<DailyChallenge | undefined>(undefined);
+  const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(undefined);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<EvaluateDailyChallengeAnswerOutput | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setStandardChallenge(sampleChallenges.find(c => c.type === 'standard'));
+      setFlipChallenge(sampleChallenges.find(c => c.type === 'flip'));
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const handleRefreshChallenge = () => {
-    // Refresh standard challenge
     const allStandardChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
     if (allStandardChallenges.length > 0) {
-      const newStandardChallenge = allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)];
-      setStandardChallenge(newStandardChallenge);
+      setStandardChallenge(allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)]);
     }
     
-    // Refresh flip challenge
     const allFlipChallenges = sampleChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
      if (allFlipChallenges.length > 0) {
-      const newFlipChallenge = allFlipChallenges[Math.floor(Math.random() * allFlipChallenges.length)];
-      setFlipChallenge(newFlipChallenge);
+      setFlipChallenge(allFlipChallenges[Math.floor(Math.random() * allFlipChallenges.length)]);
     }
+    
+    setUserAnswer('');
+    setFeedback(null);
 
     toast({
       title: t("dailyChallenge.toast.newChallenge.title"),
@@ -57,11 +72,46 @@ export default function DailyInterviewChallengePage() {
     }
   };
 
-  const handleSubmitAnswer = () => {
-    toast({
-      title: t("dailyChallenge.toast.submitMock.title"),
-      description: t("dailyChallenge.toast.submitMock.description"),
-    });
+  const handleSubmitAnswer = async () => {
+    if (!user || !standardChallenge || !userAnswer.trim()) {
+      toast({ title: "No Answer", description: "Please enter your answer before submitting.", variant: "destructive"});
+      return;
+    }
+    setIsSubmitting(true);
+    setFeedback(null);
+    try {
+      const result = await evaluateDailyChallengeAnswer({
+        question: standardChallenge.title,
+        answer: userAnswer,
+        solution: standardChallenge.solution
+      });
+      setFeedback(result);
+
+      if (result.isCorrect) {
+        const xpGained = standardChallenge.xpReward || 50;
+        const updatedUser = await updateUser(user.id, { xpPoints: (user.xpPoints || 0) + xpGained });
+        if (updatedUser) {
+          await login(updatedUser.email); // Re-login to update auth context
+          await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
+          toast({
+            title: `+${xpGained} XP! Correct Answer!`,
+            description: `You've successfully completed the challenge.`,
+          });
+        }
+      } else {
+        toast({
+          title: "Incorrect Answer",
+          description: "Good try! Check the feedback to see how you can improve.",
+          variant: "default",
+        });
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Evaluation Error", description: "Could not evaluate your answer at this time.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const renderStandardChallenge = (challenge: DailyChallenge) => (
@@ -84,26 +134,35 @@ export default function DailyInterviewChallengePage() {
            </div>
           <p className="text-lg font-medium text-foreground py-4">{challenge.title}</p>
           <textarea
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
             className="w-full p-2 border rounded-md bg-background min-h-[100px]"
             placeholder={t("dailyChallenge.yourAnswer")}
+            disabled={isSubmitting || !!feedback}
           />
+           {feedback && (
+            <Card className="bg-secondary/50 p-4">
+              <CardTitle className="text-md mb-2 flex items-center justify-between">
+                AI Feedback
+                <ScoreCircle score={feedback.score} size="sm"/>
+              </CardTitle>
+              <CardContent className="p-0">
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{feedback.feedback}</p>
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="ghost" onClick={showHint}><Lightbulb className="mr-2 h-4 w-4"/> {t("dailyChallenge.showHint")}</Button>
-          <Button onClick={handleSubmitAnswer}>{t("dailyChallenge.submit")}</Button>
+          <Button variant="ghost" onClick={showHint} disabled={!!feedback}><Lightbulb className="mr-2 h-4 w-4"/> {t("dailyChallenge.showHint")}</Button>
+          <Button onClick={handleSubmitAnswer} disabled={isSubmitting || !!feedback}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}
+            {isSubmitting ? 'Evaluating...' : t("dailyChallenge.submit")}
+          </Button>
         </CardFooter>
     </Card>
   );
   
   const renderFlipChallenge = (challenge: DailyChallenge, currentUser: UserProfile) => {
-    const totalXP = challenge.tasks?.reduce((acc, task) => {
-        const progress = currentUser.challengeProgress?.[task.action];
-        if (progress && progress.current >= task.target) {
-            return acc + (challenge.xpReward || 0) / (challenge.tasks?.length || 1);
-        }
-        return acc;
-    }, 0);
-
     return (
     <Card className="shadow-lg bg-primary/5 border-primary/20 h-full flex flex-col">
        <CardHeader>
