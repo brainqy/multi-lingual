@@ -23,7 +23,6 @@ import { MOCK_INTERVIEW_STEPS } from '@/types';
 import AiMockInterviewStepper from '@/components/features/ai-mock-interview/AiMockInterviewStepper';
 import StepSetup from '@/components/features/ai-mock-interview/StepSetup';
 import StepFeedback from '@/components/features/ai-mock-interview/StepFeedback';
-import { sampleUserProfile, sampleCommunityPosts } from '@/lib/sample-data';
 import { generateMockInterviewQuestions } from '@/ai/flows/generate-mock-interview-questions';
 import { evaluateInterviewAnswer } from '@/ai/flows/evaluate-interview-answer';
 import { generateOverallInterviewFeedback } from '@/ai/flows/generate-overall-interview-feedback';
@@ -35,6 +34,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useI18n } from '@/hooks/use-i18n';
+import { useAuth } from '@/hooks/use-auth';
 
 
 declare global {
@@ -69,7 +69,7 @@ export default function AiMockInterviewPage() {
   const [currentAnswerFeedback, setCurrentAnswerFeedback] = useState<MockInterviewAnswer | null>(null);
 
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -172,7 +172,7 @@ export default function AiMockInterviewPage() {
     const topicFromUrl = searchParams.get('topic');
     logger.info("AI Mock Interview Page loaded. Topic from URL:", topicFromUrl, "Source Session ID:", sourceSessionId);
 
-    if (topicFromUrl && !session) {
+    if (topicFromUrl && !session && currentUser) {
       const initialConfig: GenerateMockInterviewQuestionsInput = {
         topic: topicFromUrl,
         jobDescriptionText: searchParams.get('jobDescriptionText') || undefined,
@@ -195,7 +195,7 @@ export default function AiMockInterviewPage() {
       stopAllMediaStreams();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     }
-  }, [searchParams]); // Removed session and handleSetupComplete, stopAllMediaStreams from deps
+  }, [searchParams, session, currentUser]); // Removed handleSetupComplete, stopAllMediaStreams from deps
 
   // Fullscreen logic
   useEffect(() => {
@@ -282,6 +282,7 @@ export default function AiMockInterviewPage() {
   }, [isMicMuted, toast, cameraStream, t]);
 
   const handleSetupComplete = async (config: GenerateMockInterviewQuestionsInput) => {
+    if (!currentUser) return;
     setIsLoading(true);
     setCurrentAnswerFeedback(null);
     try {
@@ -593,6 +594,14 @@ export default function AiMockInterviewPage() {
         }
     }
   };
+
+  if (isUserLoading || !currentUser) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div ref={interviewContainerRef} className={cn("max-w-7xl mx-auto space-y-2 md:space-y-4", isInterviewFullScreen && currentUiStepId === 'interview' && "fixed inset-0 z-50 bg-background p-1 md:p-2")}>

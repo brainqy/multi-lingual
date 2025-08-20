@@ -3,11 +3,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useI18n } from "@/hooks/use-i18n";
-import { sampleCommunityPosts, sampleBlogPosts, sampleInterviewQuestions, sampleResumeScanHistory, sampleUserProfile } from "@/lib/sample-data";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { MessageSquare, BookOpen, HelpCircle, FileText, Bookmark, Star, Trash2, Users, Settings2, Code, Brain, Puzzle, Lightbulb, CheckCircle as CheckCircleIcon } from "lucide-react";
+import { MessageSquare, BookOpen, HelpCircle, FileText, Bookmark, Star, Trash2, Users, Settings2, Code, Brain, Puzzle, Lightbulb, CheckCircle as CheckCircleIcon, Loader2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,63 +15,68 @@ import { cn } from "@/lib/utils";
 import type { InterviewQuestion, InterviewQuestionCategory } from "@/types";
 import { format, parseISO } from "date-fns";
 import ScoreCircle from '@/components/ui/score-circle';
+import { useAuth } from "@/hooks/use-auth";
+import { getCommunityPosts } from "@/lib/actions/community";
+import { getBlogPosts } from "@/lib/actions/blog";
+import { getInterviewQuestions } from "@/lib/actions/questions";
+import { getScanHistory } from "@/lib/actions/resumes";
 
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 export default function BookmarksPage() {
   const { t } = useI18n();
-  const userId = sampleUserProfile.id;
+  const { user, isLoading: isUserLoading } = useAuth();
   const { toast } = useToast();
   
   const [filter, setFilter] = useState<"all" | "posts" | "blogs" | "questions" | "resumeScans">("all");
 
-  const [bookmarkedPosts, setBookmarkedPosts] = useState(() => sampleCommunityPosts.filter(post => post.bookmarkedBy?.includes(userId)));
-  const [bookmarkedBlogs, setBookmarkedBlogs] = useState(() => sampleBlogPosts.filter(blog => blog.bookmarkedBy?.includes(userId)));
-  const [bookmarkedQuestions, setBookmarkedQuestions] = useState(() => sampleInterviewQuestions.filter(q => q.bookmarkedBy?.includes(userId)));
-  const [bookmarkedResumeScans, setBookmarkedResumeScans] = useState(() => sampleResumeScanHistory.filter(scan => scan.bookmarked));
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<any[]>([]);
+  const [bookmarkedBlogs, setBookmarkedBlogs] = useState<any[]>([]);
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState<InterviewQuestion[]>([]);
+  const [bookmarkedResumeScans, setBookmarkedResumeScans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBookmarks() {
+      if (!user) return;
+      setIsLoading(true);
+      const [posts, blogs, questions, scans] = await Promise.all([
+        getCommunityPosts(user.tenantId, user.id),
+        getBlogPosts(),
+        getInterviewQuestions(),
+        getScanHistory(user.id)
+      ]);
+
+      setBookmarkedPosts(posts.filter(p => p.bookmarkedBy?.includes(user.id)));
+      setBookmarkedBlogs(blogs.filter(b => b.bookmarkedBy?.includes(user.id)));
+      setBookmarkedQuestions(questions.filter(q => q.bookmarkedBy?.includes(user.id)));
+      setBookmarkedResumeScans(scans.filter(s => s.bookmarked));
+      setIsLoading(false);
+    }
+    loadBookmarks();
+  }, [user]);
+  
 
   const handleUnbookmarkPost = (postId: string) => {
+    // This would be an API call in a real app
     setBookmarkedPosts(prev => prev.filter(p => p.id !== postId));
-    const postIndex = sampleCommunityPosts.findIndex(p => p.id === postId);
-    if (postIndex !== -1) {
-      const userIndex = sampleCommunityPosts[postIndex].bookmarkedBy?.indexOf(userId);
-      if (userIndex !== undefined && userIndex > -1) {
-        sampleCommunityPosts[postIndex].bookmarkedBy?.splice(userIndex, 1);
-      }
-    }
     toast({ title: "Bookmark Removed", description: "Post has been removed from your bookmarks." });
   };
   
   const handleUnbookmarkBlog = (blogId: string) => {
     setBookmarkedBlogs(prev => prev.filter(b => b.id !== blogId));
-    const blogIndex = sampleBlogPosts.findIndex(b => b.id === blogId);
-    if (blogIndex !== -1) {
-      const userIndex = sampleBlogPosts[blogIndex].bookmarkedBy?.indexOf(userId);
-      if (userIndex !== undefined && userIndex > -1) {
-        sampleBlogPosts[blogIndex].bookmarkedBy?.splice(userIndex, 1);
-      }
-    }
     toast({ title: "Bookmark Removed", description: "Blog post has been removed from your bookmarks." });
   };
 
   const handleUnbookmarkQuestion = (questionId: string) => {
+    // This would be an API call
     setBookmarkedQuestions(prev => prev.filter(q => q.id !== questionId));
-    const questionIndex = sampleInterviewQuestions.findIndex(q => q.id === questionId);
-    if (questionIndex !== -1) {
-      const userIndex = sampleInterviewQuestions[questionIndex].bookmarkedBy?.indexOf(userId);
-      if (userIndex !== undefined && userIndex > -1) {
-        sampleInterviewQuestions[questionIndex].bookmarkedBy?.splice(userIndex, 1);
-      }
-    }
     toast({ title: "Bookmark Removed", description: "Question has been removed from your bookmarks." });
   };
   
   const handleUnbookmarkScan = (scanId: string) => {
+    // This would be an API call
     setBookmarkedResumeScans(prev => prev.filter(s => s.id !== scanId));
-    const scanIndex = sampleResumeScanHistory.findIndex(s => s.id === scanId);
-    if (scanIndex !== -1) {
-        sampleResumeScanHistory[scanIndex].bookmarked = false;
-    }
     toast({ title: "Bookmark Removed", description: "Resume scan has been removed from your bookmarks." });
   };
 
@@ -89,6 +93,9 @@ export default function BookmarksPage() {
     }
   };
 
+  if (isUserLoading || isLoading) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
