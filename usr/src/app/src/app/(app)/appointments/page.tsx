@@ -5,7 +5,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, Video, CheckCircle, Clock, XCircle, ThumbsUp, Filter, Edit3, CalendarPlus, MessageSquare as FeedbackIcon, Star as StarIcon, Users as UsersIcon, Loader2 } from "lucide-react";
-import { getAppointments, updateAppointment } from "@/lib/actions/appointments";
 import type { Appointment, AlumniProfile, AppointmentStatus, PreferredTimeSlot, CommunityPost } from "@/types";
 import { AppointmentStatuses, PreferredTimeSlots } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +26,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Badge } from '@/components/ui/badge';
+import { getAppointments, updateAppointment } from "@/lib/actions/appointments";
 import { useAuth } from "@/hooks/use-auth";
 import { getUsers } from "@/lib/data-services/users";
 import { getCommunityPosts } from "@/lib/actions/community";
@@ -99,7 +99,8 @@ export default function AppointmentsPage() {
   };
 
   const getPartnerDetails = (appointment: Appointment): AlumniProfile | undefined => {
-    const partnerId = appointment.requesterUserId === currentUser?.id ? appointment.alumniUserId : appointment.requesterUserId;
+    if (!currentUser) return undefined;
+    const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
   };
 
@@ -166,7 +167,6 @@ export default function AppointmentsPage() {
 
   const onFeedbackSubmit = (data: FeedbackFormData) => {
     if (!appointmentForFeedback) return;
-    // In a real app, this would be an API call to save the feedback
     const partner = getPartnerDetails(appointmentForFeedback);
     console.log("Feedback submitted (mock):", { appointmentId: appointmentForFeedback.id, ...data });
     toast({ title: t("appointments.toastFeedback", { default: "Feedback Submitted" }), description: t("appointments.toastFeedbackDesc", { default: "Thank you for your feedback on your session with {user}.", user: partner?.name || 'the alumni' }) });
@@ -443,5 +443,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-
-    
