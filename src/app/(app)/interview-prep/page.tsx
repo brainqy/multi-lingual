@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
@@ -17,9 +16,10 @@ import QuestionFormDialog from '@/components/features/interview-prep/QuestionFor
 import PracticeSessionList from '@/components/features/interview-prep/PracticeSessionList';
 import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuizzesList';
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
-import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '../../../../usr/src/app/src/lib/actions/questions';
+import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from "@/lib/actions/questions";
 import { useAuth } from '@/hooks/use-auth';
 import { getAppointments } from '@/lib/actions/appointments';
+import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 
 
 export default function InterviewPracticeHubPage() {
@@ -27,7 +27,7 @@ export default function InterviewPracticeHubPage() {
   const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
   const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
-  const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>(sampleCreatedQuizzes);
+  const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
 
@@ -45,7 +45,11 @@ export default function InterviewPracticeHubPage() {
   useEffect(() => {
     if (currentUser) {
       const loadData = async () => {
-        const appointments = await getAppointments(currentUser.id);
+        const [appointments, quizzes] = await Promise.all([
+          getAppointments(currentUser.id),
+          getCreatedQuizzes(currentUser.id)
+        ]);
+
         const userPracticeSessions = appointments
           .filter(a => a.title.includes("Practice Session")) // Simple filter for demo
           .map(a => ({
@@ -58,6 +62,7 @@ export default function InterviewPracticeHubPage() {
             status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
           })) as PracticeSession[];
         setPracticeSessions(userPracticeSessions);
+        setCreatedQuizzes(quizzes);
       };
       loadData();
       fetchQuestions();
@@ -82,8 +87,6 @@ export default function InterviewPracticeHubPage() {
 
   const handleCancelPracticeSession = (sessionId: string) => {
     setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));
-    const liveSessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionId);
-    if (liveSessionIndex !== -1) { sampleLiveInterviewSessions[liveSessionIndex].status = 'Cancelled'; }
     toast({ title: "Session Cancelled", description: "The practice session has been cancelled.", variant: "destructive" });
   };
 
