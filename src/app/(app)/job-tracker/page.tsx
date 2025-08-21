@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit3, Trash2, GripVertical, Search, FileText, Clock, Bookmark, CalendarDays, Loader2 } from "lucide-react";
-import { sampleJobOpenings } from "@/lib/sample-data"; 
+import { getJobOpenings } from "@/lib/actions/jobs"; 
 import type { JobApplication, JobApplicationStatus, ResumeScanHistoryItem, KanbanColumnId, JobOpening, ResumeProfile, Interview } from "@/types"; 
 import { JOB_APPLICATION_STATUSES } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -202,9 +202,10 @@ export default function JobTrackerPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleJobSearch = () => {
+  const handleJobSearch = async () => {
     setHasSearched(true);
-    const filtered = sampleJobOpenings.filter(job => {
+    const allOpenings = await getJobOpenings();
+    const filtered = allOpenings.filter(job => {
       const matchesKeywords = searchKeywords.trim() === '' ||
         job.title.toLowerCase().includes(searchKeywords.trim().toLowerCase()) ||
         job.company.toLowerCase().includes(searchKeywords.trim().toLowerCase()) ||
@@ -238,7 +239,7 @@ export default function JobTrackerPage() {
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
-      applicationUrl: job.applicationLink,
+      applicationUrl: job.applicationUrl,
     };
     
     const newApp = await createJobApplication(newApplicationData as Omit<JobApplication, 'id' | 'interviews'>);
@@ -285,11 +286,12 @@ export default function JobTrackerPage() {
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
+    const dateToFormat = typeof app.dateApplied === 'string' ? parseISO(app.dateApplied) : app.dateApplied;
     reset({
         companyName: app.companyName,
         jobTitle: app.jobTitle,
         status: app.status,
-        dateApplied: format(parseISO(app.dateApplied), 'yyyy-MM-dd'),
+        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
         jobDescription: app.jobDescription || '',
         location: app.location || '',
         applicationUrl: app.applicationUrl || '',
@@ -522,5 +524,3 @@ export default function JobTrackerPage() {
     </div>
   );
 }
-
-    
