@@ -75,6 +75,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         isDistinguished: false,
         shortBio: '',
         university: '',
+        streakFreezes: 1, // Start with one free pass
     };
     
     log(`[DataService] Creating user in real DB: ${data.email}`);

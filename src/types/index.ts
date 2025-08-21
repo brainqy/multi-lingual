@@ -378,6 +378,7 @@ export interface UserProfile extends AlumniProfile {
     target: number;
   }>;
   sessionId?: string;
+  streakFreezes?: number;
 }
 
 export interface ResumeProfile {
@@ -1243,3 +1244,4 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+

@@ -5,7 +5,7 @@ import type React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types";
-import { Flame, Trophy } from "lucide-react";
+import { Flame, Trophy, ShieldCheck } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/hooks/use-i18n';
 
@@ -73,10 +73,14 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
               </div>
             ))}
           </div>
-
-          <p className="text-center text-lg font-semibold">
-            {t("dailyStreakPopup.totalActiveDaysLabel", { default: "Total Active Days:" })} {userProfile.totalActiveDays || 0}
-          </p>
+          
+           <div className="text-center bg-gray-900/50 p-3 rounded-lg">
+             <p className="text-lg font-semibold flex items-center justify-center">
+              <ShieldCheck className="mr-2 h-5 w-5 text-cyan-400" />
+              {userProfile.streakFreezes || 0} Free Passes Left
+            </p>
+            <p className="text-xs text-gray-400 mt-1">Freezes protect your streak if you miss a day.</p>
+           </div>
         </div>
         
         <DialogFooter className="p-6 bg-card border-t border-border">
@@ -88,7 +92,3 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
     </Dialog>
   );
 }
-
-    
-
-    
