@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
-import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry } from "@/types";
+import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
@@ -197,7 +197,7 @@ export default function ResumeBuilderPage() {
                 </div>
             )}
 
-            <Card className="shadow-xl mb-8 bg-white"> {/* Explicitly white background for form area */}
+            <Card className="shadow-xl mb-8 bg-white">
               <CardContent className="p-6">
                 {renderStepContent()}
               </CardContent>
