@@ -286,14 +286,9 @@ export default function JobTrackerPage() {
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
-<<<<<<< HEAD
-=======
-    // Ensure dateApplied is handled correctly whether it's a Date object or string
-    const dateToFormat = app.dateApplied ? app.dateApplied : new Date();
->>>>>>> efcc86112f6c440e013fcbd05d1fcc5509f7acec
     reset({
         ...app,
-        dateApplied: format(parseISO(app.dateApplied), 'yyyy-MM-dd'),
+        dateApplied: format((app.dateApplied), 'yyyy-MM-dd'),
     });
     setCurrentInterviews(app.interviews || []);
     const initialNotes = (app.notes || [])
