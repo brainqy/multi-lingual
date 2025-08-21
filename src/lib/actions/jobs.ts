@@ -117,23 +117,13 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
  * @returns The updated JobApplication object or null if failed.
  */
 export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
-   console.log(  'calling updateJobApplication ');
-  try {
+    try {
         const { interviews, ...restOfUpdateData } = updateData;
-        console.log(`[JobAction] Updating job application ${applicationId} with data:`, restOfUpdateData);
-
+        
         // Using a transaction to ensure data integrity
-        await db.$transaction(async (prisma: {
-            jobApplication: { update: (arg0: { where: { id: string; }; data: { notes: string[] | undefined; tenantId?: string | undefined; status?: JobApplicationStatus | undefined; userId?: string | undefined; companyName?: string | undefined; jobTitle?: string | undefined; dateApplied?: string | undefined; jobDescription?: string | undefined; location?: string | undefined; salary?: string | undefined; reminderDate?: string | undefined; sourceJobOpeningId?: string | undefined; applicationUrl?: string | undefined; resumeIdUsed?: string | undefined; coverLetterText?: string | undefined; }; }) => any; }; interview: {
-              deleteMany: (arg0: { where: { jobApplicationId: string; }; }) => any; createMany: (arg0: {
-                data: { // Destructure to remove ID
-                  date: string; type: "Behavioral" | "Technical" | "Phone Screen" | "On-site" | "Final Round"; interviewer: string; interviewerEmail: string | undefined; interviewerMobile: string | undefined; notes: string[]; jobApplicationId: string;
-                }[];
-              }) => any;
-            };
-          }) => {
+        const updatedApplication = await db.$transaction(async (prisma) => {
             // 1. Update the main application data
-            await prisma.jobApplication.update({
+            const app = await prisma.jobApplication.update({
                 where: { id: applicationId },
                 data: {
                     ...restOfUpdateData,
@@ -162,6 +152,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                     });
                 }
             }
+            return app;
         });
         
         // Refetch the application with its relations to return the final state
