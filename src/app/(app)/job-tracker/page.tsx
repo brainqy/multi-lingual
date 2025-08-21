@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit3, Trash2, GripVertical, Search, FileText, Clock, Bookmark, CalendarDays, Loader2 } from "lucide-react";
-import { getJobOpenings } from "@/lib/actions/jobs"; 
 import type { JobApplication, JobApplicationStatus, ResumeScanHistoryItem, KanbanColumnId, JobOpening, ResumeProfile, Interview } from "@/types"; 
 import { JOB_APPLICATION_STATUSES } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +21,7 @@ import { format, parseISO } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserJobApplications, createJobApplication, updateJobApplication, deleteJobApplication } from "@/lib/actions/jobs";
+import { getUserJobApplications, createJobApplication, updateJobApplication, deleteJobApplication, getJobOpenings } from "@/lib/actions/jobs";
 import { getResumeProfiles } from "@/lib/actions/resumes";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -255,7 +254,7 @@ export default function JobTrackerPage() {
     if (!currentUser) return;
     const applicationData = {
       ...data,
-      interviews: currentInterviews.length > 0 ? currentInterviews.map(({id, ...rest}) => rest) : [],
+      interviews: currentInterviews.length > 0 ? currentInterviews : [],
       notes: currentNotes.map(n => n.content),
       dateApplied: data.dateApplied ? new Date(data.dateApplied).toISOString() : new Date().toISOString()
     };
@@ -288,7 +287,7 @@ export default function JobTrackerPage() {
     setEditingApplication(app);
     reset({
         ...app,
-        dateApplied: format((app.dateApplied), 'yyyy-MM-dd'),
+        dateApplied: format(parseISO(app.dateApplied), 'yyyy-MM-dd'),
     });
     setCurrentInterviews(app.interviews || []);
     const initialNotes = (app.notes || [])
@@ -578,7 +577,7 @@ export default function JobTrackerPage() {
                                      <p className="font-medium">{interview.type} with {interview.interviewer}</p>
                                      <p className="text-xs text-muted-foreground">{format(parseISO(interview.date), 'PPpp')}</p>
                                    </div>
-                                   <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                   <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id!)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                                </li>
                              ))}
                            </ul>
@@ -648,3 +647,4 @@ export default function JobTrackerPage() {
     </div>
   );
 }
+
