@@ -260,7 +260,9 @@ export default function JobTrackerPage() {
     };
 
     if (editingApplication) {
+      console.log(`[JobAction] Updating job application ${editingApplication.id} with data:`, applicationData);
       const updatedApp = await updateJobApplication(editingApplication.id, applicationData);
+      console.log(`[JobAction] Updated job application ${editingApplication.id}:`, updatedApp);
       if (updatedApp) {
         setApplications(apps => apps.map(app => app.id === editingApplication.id ? updatedApp : app));
         toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
