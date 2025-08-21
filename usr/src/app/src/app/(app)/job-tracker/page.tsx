@@ -238,7 +238,7 @@ export default function JobTrackerPage() {
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
-      applicationUrl: job.applicationUrl,
+      applicationUrl: job.applicationLink,
     };
     
     const newApp = await createJobApplication(newApplicationData as Omit<JobApplication, 'id' | 'interviews'>);
