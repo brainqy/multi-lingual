@@ -126,7 +126,7 @@ export type JobApplicationStatus = 'Saved' | 'Applied' | 'Interviewing' | 'Offer
 export const JOB_APPLICATION_STATUSES: JobApplicationStatus[] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 
 export interface Interview {
-  id: string;
+  id?: string;
   date: string; 
   type: 'Phone Screen' | 'Technical' | 'Behavioral' | 'On-site' | 'Final Round';
   interviewer: string;
