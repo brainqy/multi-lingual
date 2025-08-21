@@ -287,7 +287,7 @@ export default function JobTrackerPage() {
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
     // Ensure dateApplied is handled correctly whether it's a Date object or string
-    const dateToFormat = app.dateApplied ? parseISO(app.dateApplied) : new Date();
+    const dateToFormat = app.dateApplied ? app.dateApplied : new Date();
     reset({
         companyName: app.companyName,
         jobTitle: app.jobTitle,
