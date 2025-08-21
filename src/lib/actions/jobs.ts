@@ -121,9 +121,9 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
         const { interviews, ...restOfUpdateData } = updateData;
 
         // Using a transaction to ensure data integrity
-        const updatedApplication = await db.$transaction(async (prisma) => {
+        await db.$transaction(async (prisma) => {
             // 1. Update the main application data
-            const app = await prisma.jobApplication.update({
+            await prisma.jobApplication.update({
                 where: { id: applicationId },
                 data: {
                     ...restOfUpdateData,
@@ -140,7 +140,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                 // Create new interviews if any are provided
                 if (interviews.length > 0) {
                     await prisma.interview.createMany({
-                        data: interviews.map(i => ({
+                        data: interviews.map(({ id, ...i }) => ({ // Destructure to remove ID
                             date: i.date,
                             type: i.type,
                             interviewer: i.interviewer,
@@ -152,7 +152,6 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                     });
                 }
             }
-            return app;
         });
         
         // Refetch the application with its relations to return the final state
