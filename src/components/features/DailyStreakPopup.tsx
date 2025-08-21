@@ -2,12 +2,13 @@
 "use client";
 
 import type React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types";
-import { Flame, Trophy, ShieldCheck } from "lucide-react";
+import { Flame, Trophy, ShieldCheck, Info } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/hooks/use-i18n';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface DailyStreakPopupProps {
   isOpen: boolean;
@@ -83,6 +84,26 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
            </div>
         </div>
         
+        <Accordion type="single" collapsible className="w-full bg-card px-6">
+          <AccordionItem value="how-it-works" className="border-b-0">
+            <AccordionTrigger className="text-sm text-muted-foreground hover:no-underline py-3 justify-center">
+              <Info className="mr-2 h-4 w-4" />
+              How do streaks work?
+            </AccordionTrigger>
+            <AccordionContent className="text-xs text-muted-foreground space-y-2 pb-4">
+              <p>
+                <strong>Daily Streak:</strong> Your streak increases by one for every consecutive day you log in.
+              </p>
+              <p>
+                <strong>Weekly Activity:</strong> The flames show your login activity for the last 7 days, with today on the right.
+              </p>
+              <p>
+                <strong>Free Pass (Streak Freeze):</strong> If you miss a day, a Free Pass will be used automatically to protect your streak. You can earn more through special achievements!
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
         <DialogFooter className="p-6 bg-card border-t border-border">
           <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
             {t("dailyStreakPopup.keepItUpButton", { default: "Keep it Up!" })}
