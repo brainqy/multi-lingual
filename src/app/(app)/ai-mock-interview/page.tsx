@@ -22,6 +22,7 @@ import type {
 import { MOCK_INTERVIEW_STEPS } from '@/types';
 import AiMockInterviewStepper from '@/components/features/ai-mock-interview/AiMockInterviewStepper';
 import StepSetup from '@/components/features/ai-mock-interview/StepSetup';
+import StepInterview from '@/components/features/ai-mock-interview/StepInterview';
 import StepFeedback from '@/components/features/ai-mock-interview/StepFeedback';
 import { generateMockInterviewQuestions } from '@/ai/flows/generate-mock-interview-questions';
 import { evaluateInterviewAnswer } from '@/ai/flows/evaluate-interview-answer';
@@ -633,108 +634,22 @@ export default function AiMockInterviewPage() {
       <div className={cn("transition-all duration-300", currentUiStepId === 'interview' && isInterviewFullScreen ? "flex-grow flex flex-col overflow-hidden" : "relative")}>
           {currentUiStepId === 'setup' && <Card className="shadow-lg"><CardContent className="p-3 md:p-4 lg:p-6"><StepSetup onSetupComplete={handleSetupComplete} isLoading={isLoading} /></CardContent></Card>}
           {currentUiStepId === 'feedback' && session && <StepFeedback session={session} onRestart={handleRestartInterview} />}
+          {currentUiStepId === 'interview' && session && (
+            <StepInterview
+              questions={session.questions}
+              currentQuestionIndex={currentQuestionIndex}
+              onAnswerSubmit={handleAnswerSubmit}
+              onCompleteInterview={handleCompleteInterview}
+              isEvaluating={isEvaluatingAnswer}
+              timerPerQuestion={session.timerPerQuestion}
+            />
+          )}
 
           {isLoading && currentUiStepId !== 'interview' && (
               <div className="flex flex-col items-center justify-center h-64">
               <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-primary" />
               <p className="mt-2 md:mt-3 text-muted-foreground">{t("aiMockInterview.loadingMessage")}</p>
               </div>
-          )}
-
-          {currentUiStepId === 'interview' && session && currentQuestion && (
-            <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4", isInterviewFullScreen ? "h-full flex-grow" : "min-h-[500px] md:min-h-[600px]")}>
-                {/* Main Video/Interaction Area */}
-                <div className={cn("lg:col-span-2 bg-slate-800 rounded-lg flex flex-col p-1 md:p-2 relative shadow-xl justify-between", isInterviewFullScreen && "flex-grow")}>
-                    <div className="w-full aspect-video bg-slate-700 rounded-md flex items-center justify-center text-slate-300 relative overflow-hidden mb-1 md:mb-2 flex-grow">
-                        {/* Main AI display area */}
-                        <div className="text-center p-4">
-                            <Bot className="h-12 w-12 md:h-16 md:w-16 text-slate-400 mx-auto mb-2" />
-                            <p className="text-sm md:text-base text-slate-300">
-                              {isEvaluatingAnswer ? t("aiMockInterview.aiThinking") : 
-                               currentAnswerFeedback ? t("aiMockInterview.feedbackReady") : 
-                               t("aiMockInterview.interviewerTitle", { topic: session.topic ? `: ${session.topic}` : '' })}
-                            </p>
-                            {isLoading && <p className="text-xs text-slate-400 mt-1">{t("aiMockInterview.loadingQuestion")}</p>}
-                        </div>
-                        {currentAnswerFeedback && <div className="absolute top-1 md:top-2 left-1 md:left-2 text-xs p-1 bg-black/30 rounded text-white">{t("aiMockInterview.feedbackFor", { qNum: currentQuestionIndex })}</div>}
-                    </div>
-                    {/* Self-View */}
-                    <div className="absolute top-1 right-1 md:top-2 md:right-2 w-28 h-auto md:w-32 lg:w-40 aspect-video bg-slate-900 rounded shadow-md overflow-hidden border border-slate-600">
-                    <video ref={selfVideoRef} className={cn("w-full h-full object-cover", !isVideoActive && "hidden")} autoPlay playsInline muted />
-                    {!isVideoActive && (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500">
-                            <VideoOff className="h-5 w-5 md:h-6 md:w-6"/>
-                        </div>
-                    )}
-                    {hasCameraPermission === false && isVideoActive && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-0.5 md:p-1">
-                            <Alert variant="destructive" className="text-[8px] md:text-[9px] p-1"><AlertTriangle className="h-3 w-3" /><AlertTitle className="text-[9px] md:text-[10px]">{t("aiMockInterview.camDeniedTitle")}</AlertTitle><AlertDescription className="text-[7px] md:text-[8px]">{t("aiMockInterview.camDeniedDesc")}</AlertDescription></Alert>
-                        </div>
-                    )}
-                    <p className="absolute bottom-0.5 left-0.5 text-[8px] md:text-[10px] bg-black/50 px-0.5 py-px md:px-1 md:py-0.5 rounded text-white">{currentUser.name} ({t("aiMockInterview.youLabel")})</p>
-                    </div>
-                    {/* Controls */}
-                    <div className="flex justify-center items-center gap-1 md:gap-2 p-1 md:p-2 bg-slate-900/70 backdrop-blur-sm rounded-md">
-                      <Button variant={isMicMuted ? "destructive" : "outline"} size="icon" onClick={handleToggleMic} title={isMicMuted ? t("aiMockInterview.unmute") : t("aiMockInterview.mute")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><Mic className="h-4 w-4 md:h-5 md:w-5" /></Button>
-                      <Button variant={!isVideoActive ? "destructive" : "outline"} size="icon" onClick={handleToggleVideo} title={isVideoActive ? t("aiMockInterview.stopVideo") : t("aiMockInterview.startVideo")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9"><VideoIcon className="h-4 w-4 md:h-5 md:w-5" /></Button>
-                      {browserSupportsMediaRecording && (
-                          <Button variant={isSessionAudioRecording ? "destructive" : "outline"} size="icon" onClick={toggleSessionAudioRecording} title={isSessionAudioRecording ? t("aiMockInterview.stopRecording") : t("aiMockInterview.startRecording")} className="bg-white/10 hover:bg-white/20 border-white/20 text-white h-8 w-8 md:h-9 md:w-9">
-                          {isSessionAudioRecording ? <Square className="h-4 w-4 md:h-5 md:w-5 animate-pulse fill-current"/> : <Radio className="h-4 w-4 md:h-5 md:w-5 text-red-400"/>}
-                          </Button>
-                      )}
-                      <Button variant="destructive" size="sm" onClick={handleCompleteInterview} className="px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm h-8 md:h-9"><VideoOff className="mr-0.5 md:mr-1 h-4 w-4 md:h-5 md:w-5" /> <span className="hidden md:inline">{t("aiMockInterview.endAndReport")}</span><span className="md:hidden">{t("aiMockInterview.end")}</span></Button>
-                    </div>
-                </div>
-
-                {/* Right Sidebar: Question, Answer, Feedback */}
-                <Card className={cn("lg:col-span-1 flex flex-col shadow-xl", isInterviewFullScreen && "h-full")}>
-                    <CardHeader className="pb-1 md:pb-2 pt-2 px-2 md:pt-3 md:px-3">
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-sm md:text-md font-medium">{t("aiMockInterview.questionHeader", { current: currentQuestionIndex + 1, total: session.questions.length })}</CardTitle>
-                            {session.timerPerQuestion && session.timerPerQuestion > 0 && <Label className="text-sm font-medium text-primary">{formatTime(timeLeft)}</Label>}
-                        </div>
-                        <Progress value={((currentQuestionIndex + 1) / session.questions.length) * 100} className="w-full h-1 md:h-1.5 mt-1 [&>div]:bg-primary" />
-                    </CardHeader>
-                    <ScrollArea className={cn("flex-grow", isInterviewFullScreen ? "max-h-[calc(100%-150px)]" : "max-h-[400px] md:max-h-[500px]")}>
-                    <CardContent className="space-y-2 md:space-y-3 pt-1 md:pt-2 px-2 md:px-3">
-                        <div className="p-2 md:p-3 border rounded-md bg-secondary/40">
- <p className="text-sm md:text-md font-semibold text-foreground whitespace-pre-line">{currentQuestion.questionText}</p>
- <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">{t("aiMockInterview.questionCategory", { category: currentQuestion.category ?? '', difficulty: currentQuestion.difficulty ?? '' })}</p>
-                        </div>
-                        {!currentAnswerFeedback ? (
-                        <>
-                            <div>
-                              <Label htmlFor="userAnswerAIM" className="text-xs md:text-sm">{t("aiMockInterview.yourAnswerLabel")}</Label>
-                              <Textarea id="userAnswerAIM" value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} placeholder={isSpeechRecording ? t("aiMockInterview.listeningPlaceholder") : t("aiMockInterview.answerPlaceholder")} rows={4} disabled={isEvaluatingAnswer || isSpeechRecording} className="mt-1 text-sm"/>
-                            </div>
-                            <div className="flex gap-1 md:gap-2">
-                              <Button onClick={toggleSpeechRecording} disabled={!speechApiSupported || isEvaluatingAnswer || (timeLeft === 0 && !!session.timerPerQuestion)} variant={isSpeechRecording ? "secondary" : "outline"} className="flex-1 text-xs h-8 md:h-9">
-                                  {isSpeechRecording ? <Square className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-ping"/> : <Mic className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} {isSpeechRecording ? t("aiMockInterview.stopRecord") : t("aiMockInterview.record")}
-                              </Button>
-                              <Button onClick={handleAnswerSubmit} disabled={!userAnswer.trim() || isEvaluatingAnswer} className="flex-1 bg-primary hover:bg-primary/90 text-xs h-8 md:h-9">
-                                  {isEvaluatingAnswer ? <Loader2 className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4 animate-spin"/> : <Send className="mr-1 h-3.5 w-3.5 md:h-4 md:w-4"/>} {t("aiMockInterview.submit")}
-                              </Button>
-                            </div>
-                        </>
-                        ) : (
-                        <Card className="bg-primary/5 border-primary/20 p-2 md:p-3 space-y-1 md:space-y-2">
-                            <h4 className="font-semibold text-primary text-xs md:text-sm">{t("aiMockInterview.feedbackTitle")}</h4>
-                            <p className="text-xs text-muted-foreground">{t("aiMockInterview.scoreLabel")}: <span className="font-bold text-primary">{currentAnswerFeedback.aiScore}/100</span></p>
-                            <ScrollArea className="h-[80px] md:h-[100px]"><p className="text-xs text-muted-foreground whitespace-pre-line">{currentAnswerFeedback.aiFeedback}</p></ScrollArea>
-                            {currentAnswerFeedback.strengths && currentAnswerFeedback.strengths.length > 0 && <p className="text-xs"><strong className="text-green-600">{t("aiMockInterview.strengthsLabel")}:</strong> {currentAnswerFeedback.strengths.join(', ')}</p>}
-                            {currentAnswerFeedback.areasForImprovement && currentAnswerFeedback.areasForImprovement.length > 0 && <p className="text-xs"><strong className="text-yellow-600">{t("aiMockInterview.improvementsLabel")}:</strong> {currentAnswerFeedback.areasForImprovement.join(', ')}</p>}
-                            <Button onClick={handleNextQuestion} className="w-full mt-1 md:mt-2 text-xs h-8 md:h-9" size="sm">
-                                {currentQuestionIndex < session.questions.length - 1 ? t("aiMockInterview.nextQuestion") : t("aiMockInterview.viewOverallReport")}
-                            </Button>
-                        </Card>
-                        )}
-                        {timeLeft === 0 && session.timerPerQuestion && session.timerPerQuestion > 0 && !isEvaluatingAnswer && !currentAnswerFeedback && (
-                            <Alert variant="destructive" className="text-xs p-2"><AlertTriangle className="h-3 w-3 md:h-4 md:w-4" /> <AlertDescription>{t("aiMockInterview.timesUpAlert")}</AlertDescription></Alert>
-                        )}
-                    </CardContent>
-                    </ScrollArea>
-                </Card>
-            </div>
           )}
       </div>
     </div>
