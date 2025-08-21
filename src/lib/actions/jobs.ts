@@ -120,27 +120,23 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
     try {
         const { interviews, ...restOfUpdateData } = updateData;
         
-        // Using a transaction to ensure data integrity
-        const updatedApplication = await db.$transaction(async (prisma) => {
-            // 1. Update the main application data
-            const app = await prisma.jobApplication.update({
+        await db.$transaction(async (prisma) => {
+            await prisma.jobApplication.update({
                 where: { id: applicationId },
                 data: {
                     ...restOfUpdateData,
-                    notes: restOfUpdateData.notes || undefined,
+                    notes: restOfUpdateData.notes ? { set: restOfUpdateData.notes } : undefined,
                 },
             });
 
-            // 2. Handle interview updates
             if (interviews !== undefined) {
-                // Delete existing interviews
                 await prisma.interview.deleteMany({
                     where: { jobApplicationId: applicationId },
                 });
-                // Create new interviews if any are provided
+
                 if (interviews.length > 0) {
                     await prisma.interview.createMany({
-                        data: interviews.map(({ id, ...i }) => ({ // Destructure to remove ID
+                        data: interviews.map(i => ({
                             date: i.date,
                             type: i.type,
                             interviewer: i.interviewer,
@@ -152,10 +148,8 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                     });
                 }
             }
-            return app;
         });
         
-        // Refetch the application with its relations to return the final state
         const finalApplication = await db.jobApplication.findUnique({
             where: { id: applicationId },
             include: { interviews: true },
@@ -176,11 +170,9 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   try {
-    // Prisma will cascade delete related interviews if the schema is set up for it.
-    // Explicitly deleting interviews first ensures it works even without onDelete: Cascade
-    await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
-    await db.jobApplication.delete({
-      where: { id: applicationId },
+    await db.$transaction(async (prisma) => {
+        await prisma.interview.deleteMany({ where: { jobApplicationId: applicationId }});
+        await prisma.jobApplication.delete({ where: { id: applicationId } });
     });
     return true;
   } catch (error) {

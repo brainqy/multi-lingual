@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import type { JobApplication, JobApplicationStatus, ResumeProfile, Interview } from "@/types"; 
 import { useToast } from "@/hooks/use-toast";
-import { format, parseISO } from "date-fns";
 import { getUserJobApplications, createJobApplication, updateJobApplication, deleteJobApplication } from "@/lib/actions/jobs";
 import { getResumeProfiles } from "@/lib/actions/resumes";
 import { useAuth } from "@/hooks/use-auth";
@@ -82,17 +81,45 @@ export default function JobTrackerPage() {
     setEditingApplication(null);
   }
 
-  const onDialogSave = async (savedApplication: JobApplication) => {
+  const onDialogSave = async (savedData: Omit<JobApplication, 'id' | 'tenantId' | 'userId'>, interviews: Interview[], notes: string[]) => {
+    if (!currentUser) return;
+
+    const applicationData = {
+      ...savedData,
+      interviews,
+      notes,
+    };
+    
+    let result: JobApplication | null = null;
     if (editingApplication) {
-      // Update existing application
-      setApplications(prev => prev.map(app => app.id === savedApplication.id ? savedApplication : app));
+      result = await updateJobApplication(editingApplication.id, applicationData);
+      if (result) {
+        setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
+        toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
+      }
     } else {
-      // Add new application
-      setApplications(prev => [savedApplication, ...prev]);
+      const dataToCreate = {
+        ...applicationData,
+        userId: currentUser.id,
+        tenantId: currentUser.tenantId,
+      };
+      result = await createJobApplication(dataToCreate);
+      if (result) {
+        setApplications(prev => [result!, ...prev]);
+        toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
+      }
     }
+
+    if (!result) {
+      toast({ title: "Error", description: "Failed to save application.", variant: "destructive" });
+      // Optionally refetch data to ensure UI consistency
+      await fetchData();
+    }
+    
     setIsDialogOpen(false);
     setEditingApplication(null);
   }
+
 
   if (isLoading) {
     return (

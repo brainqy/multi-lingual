@@ -17,7 +17,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createJobApplication, updateJobApplication } from "@/lib/actions/jobs";
 import type { JobApplication, JobApplicationStatus, ResumeProfile, Interview } from "@/types";
 import { JOB_APPLICATION_STATUSES } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -48,20 +47,14 @@ const jobApplicationSchema = z.object({
   salary: z.string().optional(),
   resumeIdUsed: z.string().optional(),
   coverLetterText: z.string().optional(),
-  interviews: z.array(interviewSchema).optional(),
 });
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
-interface Note {
-  date: string;
-  content: string;
-}
-
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (application: JobApplication) => void;
+  onSave: (applicationData: Omit<JobApplication, 'id' | 'tenantId' | 'userId'>, interviews: Interview[], notes: string[]) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
 }
@@ -72,7 +65,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
   const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '' });
-  const [currentNotes, setCurrentNotes] = useState<Note[]>([]);
+  const [currentNotes, setCurrentNotes] = useState<string[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
 
   const { control, handleSubmit, reset } = useForm<JobApplicationFormData>({
@@ -85,10 +78,9 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
       reset({
         ...editingApplication,
         dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
-        interviews: editingApplication.interviews || [],
       });
       setCurrentInterviews(editingApplication.interviews || []);
-      setCurrentNotes((editingApplication.notes || []).map(note => ({ date: format(new Date(), 'yyyy-MM-dd'), content: note })));
+      setCurrentNotes(editingApplication.notes || []);
     } else {
       reset({
         companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
@@ -99,36 +91,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
     }
   }, [editingApplication, reset]);
 
-  const onSubmit = async (data: JobApplicationFormData) => {
+  const onSubmit = (data: JobApplicationFormData) => {
     if (!currentUser) return;
-    const applicationData = {
-      ...data,
-      interviews: currentInterviews.map(({ id, ...rest }) => rest),
-      notes: currentNotes.map(n => n.content),
-      dateApplied: data.dateApplied ? new Date(data.dateApplied).toISOString() : new Date().toISOString()
-    };
-
-    if (editingApplication) {
-      const updatedApp = await updateJobApplication(editingApplication.id, applicationData);
-      if (updatedApp) {
-        onSave(updatedApp);
-        toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
-      } else {
-        toast({ title: "Error", description: "Failed to update application.", variant: "destructive" });
-      }
-    } else {
-      const newApp = await createJobApplication({
-        ...applicationData,
-        userId: currentUser.id,
-        tenantId: currentUser.tenantId
-      });
-      if (newApp) {
-        onSave(newApp);
-        toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
-      } else {
-        toast({ title: "Error", description: "Failed to add application.", variant: "destructive" });
-      }
-    }
+    const { interviews, notes, ...restOfData } = data;
+    onSave(restOfData, currentInterviews, currentNotes);
     onClose();
   };
 
@@ -147,7 +113,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
   
   const handleAddNote = () => {
     if (newNoteContent.trim()) {
-      setCurrentNotes(prev => [{ date: format(new Date(), 'yyyy-MM-dd'), content: newNoteContent.trim() }, ...prev]);
+      setCurrentNotes(prev => [newNoteContent.trim(), ...prev]);
       setNewNoteContent('');
     }
   };
@@ -297,10 +263,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
                             {currentNotes.map((note, index) => (
                               <Card key={index} className="p-3">
                                 <div className="flex justify-between items-start">
-                                  <p className="text-xs text-muted-foreground">{note.date}</p>
+                                  <p className="text-xs text-muted-foreground">{format(new Date(), 'yyyy-MM-dd')}</p>
                                   <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveNote(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                                 </div>
-                                <p className="text-sm">{note.content}</p>
+                                <p className="text-sm">{note}</p>
                               </Card>
                             ))}
                           </div>
