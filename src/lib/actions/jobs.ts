@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
+import { Prisma } from '@prisma/client';
 
 /**
  * Fetches all job openings from the database.
@@ -79,12 +80,26 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @param applicationData The data for the new job application.
  * @returns The newly created JobApplication object or null if failed.
  */
-export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'interviews'>): Promise<JobApplication | null> {
+export async function createJobApplication(applicationData: Omit<JobApplication, 'id'>): Promise<JobApplication | null> {
   try {
+    const { interviews, ...restOfData } = applicationData;
     const newApplication = await db.jobApplication.create({
       data: {
-        ...applicationData,
+        ...restOfData,
         notes: applicationData.notes || [],
+        interviews: interviews && interviews.length > 0 ? {
+          create: interviews.map(i => ({
+            date: i.date,
+            type: i.type,
+            interviewer: i.interviewer,
+            interviewerEmail: i.interviewerEmail,
+            interviewerMobile: i.interviewerMobile,
+            notes: i.notes || [],
+          }))
+        } : undefined,
+      },
+      include: {
+        interviews: true,
       },
     });
     return newApplication as unknown as JobApplication;
@@ -94,43 +109,53 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
   }
 }
 
+
 /**
  * Updates an existing job application.
  * @param applicationId The ID of the application to update.
  * @param updateData The data to update.
  * @returns The updated JobApplication object or null if failed.
  */
-export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id' | 'interviews'>> & { interviews?: Interview[] }): Promise<JobApplication | null> {
+export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
     try {
         const { interviews, ...restOfUpdateData } = updateData;
 
-        // Prisma requires a specific structure for updating related records.
-        // This example handles updating the main record. A more complex transaction
-        // would be needed to create/update/delete interviews simultaneously.
-        // For simplicity here, we'll just update the main application data.
-        const updatedApplication = await db.jobApplication.update({
-            where: { id: applicationId },
-            data: {
-                ...restOfUpdateData,
-                notes: restOfUpdateData.notes || undefined,
-            },
-            include: {
-                interviews: true,
-            }
-        });
+        // Using a transaction to ensure data integrity
+        const updatedApplication = await db.$transaction(async (prisma) => {
+            // 1. Update the main application data
+            const app = await prisma.jobApplication.update({
+                where: { id: applicationId },
+                data: {
+                    ...restOfUpdateData,
+                    notes: restOfUpdateData.notes || undefined,
+                },
+            });
 
-        // Handle interview updates separately if provided
-        if (interviews) {
-            // This is a simplified approach. A real app might need to handle
-            // creation, deletion, and updates of interviews within a transaction.
-            await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
-            if (interviews.length > 0) {
-                await db.interview.createMany({
-                    data: interviews.map(i => ({...i, jobApplicationId: applicationId}))
+            // 2. Handle interview updates
+            if (interviews !== undefined) {
+                // Delete existing interviews
+                await prisma.interview.deleteMany({
+                    where: { jobApplicationId: applicationId },
                 });
+                // Create new interviews if any are provided
+                if (interviews.length > 0) {
+                    await prisma.interview.createMany({
+                        data: interviews.map(i => ({
+                            date: i.date,
+                            type: i.type,
+                            interviewer: i.interviewer,
+                            interviewerEmail: i.interviewerEmail,
+                            interviewerMobile: i.interviewerMobile,
+                            notes: i.notes || [],
+                            jobApplicationId: applicationId,
+                        })),
+                    });
+                }
             }
-        }
+            return app;
+        });
         
+        // Refetch the application with its relations to return the final state
         const finalApplication = await db.jobApplication.findUnique({
             where: { id: applicationId },
             include: { interviews: true },
@@ -143,6 +168,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
     }
 }
 
+
 /**
  * Deletes a job application.
  * @param applicationId The ID of the application to delete.
@@ -151,6 +177,8 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   try {
     // Prisma will cascade delete related interviews if the schema is set up for it.
+    // Explicitly deleting interviews first ensures it works even without onDelete: Cascade
+    await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
     await db.jobApplication.delete({
       where: { id: applicationId },
     });

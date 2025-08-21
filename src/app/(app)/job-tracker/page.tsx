@@ -234,12 +234,12 @@ export default function JobTrackerPage() {
       companyName: job.company,
       jobTitle: job.title,
       status: 'Saved' as JobApplicationStatus,
-      dateApplied: new Date().toISOString().split('T')[0],
+      dateApplied: new Date().toISOString(),
       notes: ['Added from job board search.'],
       jobDescription: job.description,
       location: job.location,
       sourceJobOpeningId: job.id,
-      applicationUrl: job.applicationUrl,
+      applicationUrl: job.applicationLink,
     };
     
     const newApp = await createJobApplication(newApplicationData as Omit<JobApplication, 'id' | 'interviews'>);
@@ -255,7 +255,7 @@ export default function JobTrackerPage() {
     if (!currentUser) return;
     const applicationData = {
       ...data,
-      interviews: currentInterviews && currentInterviews.length > 0 ? currentInterviews.map(({id, ...rest}) => rest) as Interview[] : [],
+      interviews: currentInterviews.length > 0 ? currentInterviews.map(({id, ...rest}) => rest) : [],
       notes: currentNotes.map(n => n.content),
       dateApplied: data.dateApplied ? new Date(data.dateApplied).toISOString() : new Date().toISOString()
     };
@@ -286,23 +286,13 @@ export default function JobTrackerPage() {
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
-    // Ensure dateApplied is handled correctly whether it's a Date object or string
-    const dateToFormat = app.dateApplied ? parseISO(app.dateApplied) : new Date();
     reset({
-        companyName: app.companyName,
-        jobTitle: app.jobTitle,
-        status: app.status,
-        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
-        jobDescription: app.jobDescription || '',
-        location: app.location || '',
-        applicationUrl: app.applicationUrl || '',
-        salary: app.salary || '',
-        resumeIdUsed: app.resumeIdUsed || '',
-        coverLetterText: app.coverLetterText || '',
+        ...app,
+        dateApplied: format(parseISO(app.dateApplied), 'yyyy-MM-dd'),
     });
     setCurrentInterviews(app.interviews || []);
     const initialNotes = (app.notes || [])
-      .map((noteContent, index) => ({
+      .map((noteContent) => ({
         date: format(new Date(), 'yyyy-MM-dd'), 
         content: noteContent,
         editable: false
