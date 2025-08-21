@@ -286,7 +286,7 @@ export default function JobTrackerPage() {
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
-    // Ensure dateApplied is a valid date object before formatting
+    // Ensure dateApplied is handled correctly whether it's a Date object or string
     const dateToFormat = app.dateApplied ? parseISO(app.dateApplied) : new Date();
     reset({
         companyName: app.companyName,
@@ -512,7 +512,6 @@ export default function JobTrackerPage() {
               <ScrollArea className="flex-grow mt-4">
                 <div className="px-1 pr-4">
                   <TabsContent value="jobDetails" className="space-y-4">
-                    {/* Job Details Form */}
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                               <Label htmlFor="companyName">Company Name</Label>
@@ -659,4 +658,3 @@ export default function JobTrackerPage() {
     </div>
   );
 }
-
