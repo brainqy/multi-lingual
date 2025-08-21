@@ -254,7 +254,7 @@ export default function JobTrackerPage() {
     if (!currentUser) return;
     const applicationData = {
       ...data,
-      interviews: currentInterviews.length > 0 ? currentInterviews : [],
+      interviews: currentInterviews,
       notes: currentNotes.map(n => n.content),
       dateApplied: data.dateApplied ? new Date(data.dateApplied).toISOString() : new Date().toISOString()
     };
@@ -272,7 +272,7 @@ export default function JobTrackerPage() {
         ...applicationData,
         userId: currentUser.id,
         tenantId: currentUser.tenantId
-      } as Omit<JobApplication, 'id' | 'interviews'>);
+      });
       if(newApp) {
         setApplications(apps => [newApp, ...apps]);
         toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: data.jobTitle, companyName: data.companyName }) });
@@ -285,9 +285,19 @@ export default function JobTrackerPage() {
 
   const handleEdit = (app: JobApplication) => {
     setEditingApplication(app);
+    const dateToFormat = app.dateApplied instanceof Date ? app.dateApplied : parseISO(app.dateApplied);
     reset({
-        ...app,
-        dateApplied: format(parseISO(app.dateApplied), 'yyyy-MM-dd'),
+        companyName: app.companyName,
+        jobTitle: app.jobTitle,
+        status: app.status,
+        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
+        jobDescription: app.jobDescription || '',
+        location: app.location || '',
+        applicationUrl: app.applicationUrl || '',
+        salary: app.salary || '',
+        resumeIdUsed: app.resumeIdUsed || '',
+        coverLetterText: app.coverLetterText || '',
+        interviews: app.interviews,
     });
     setCurrentInterviews(app.interviews || []);
     const initialNotes = (app.notes || [])
@@ -647,4 +657,3 @@ export default function JobTrackerPage() {
     </div>
   );
 }
-
