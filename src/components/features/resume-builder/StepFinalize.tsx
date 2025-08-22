@@ -1,3 +1,4 @@
+
 "use client";
 
 import type React from 'react';
@@ -6,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { ResumeBuilderData } from "@/types";
 import { DownloadCloud, Save, Eye } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { sampleResumeProfiles, sampleUserProfile } from '@/lib/sample-data';
+import { sampleResumeProfiles } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types'; // Added import
+import { useAuth } from '@/hooks/use-auth';
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -15,6 +17,7 @@ interface StepFinalizeProps {
 
 export default function StepFinalize({ resumeData }: StepFinalizeProps) {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const handleDownload = () => {
     toast({
@@ -25,10 +28,15 @@ export default function StepFinalize({ resumeData }: StepFinalizeProps) {
   };
 
   const handleSaveResume = () => {
+    if (!currentUser) {
+      toast({ title: "Error", description: "You must be logged in to save a resume.", variant: "destructive"});
+      return;
+    }
+
     const newResume: ResumeProfile = {
       id: `resume-${Date.now()}`,
-      tenantId: sampleUserProfile.tenantId,
-      userId: sampleUserProfile.id,
+      tenantId: currentUser.tenantId,
+      userId: currentUser.id,
       name: `${resumeData.header.fullName}'s Resume (${new Date().toLocaleDateString()})`,
       resumeText: JSON.stringify(resumeData), // Store structured data or a formatted text version
       lastAnalyzed: undefined,
