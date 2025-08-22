@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, ShieldQuestion, Lightbulb, Send, Edit3, CheckCircle, Zap, Clock, RefreshCw, ThumbsUp, XCircle, Loader2 } from "lucide-react";
 import type { FeatureRequest } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,12 +19,15 @@ import { cn } from "@/lib/utils";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
 import { getFeatureRequests, createFeatureRequest, updateFeatureRequest, upvoteFeatureRequest } from "@/lib/actions/feature-requests";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function FeatureRequestsPage() {
   const { user: currentUser } = useAuth();
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuggestDialogOpen, setIsSuggestDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<FeatureRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<FeatureRequest | null>(null);
   const { toast } = useToast();
   const { t } = useI18n();
@@ -52,7 +55,7 @@ export default function FeatureRequestsPage() {
   }, [fetchRequests]);
 
   if (!currentUser) {
-    return <AccessDeniedMessage />;
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
 
   const onSubmitSuggestion = async (data: FeatureRequestFormData) => {
@@ -110,6 +113,11 @@ export default function FeatureRequestsPage() {
     setValue('title', request.title);
     setValue('description', request.description);
     setIsSuggestDialogOpen(true);
+  };
+  
+  const openDetailDialog = (request: FeatureRequest) => {
+    setSelectedRequest(request);
+    setIsDetailDialogOpen(true);
   };
   
   const handleUpvote = async (requestId: string) => {
@@ -181,6 +189,28 @@ export default function FeatureRequestsPage() {
         </DialogContent>
       </Dialog>
       
+       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          {selectedRequest && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedRequest.title}</DialogTitle>
+                <DialogUIDescription className="pt-2 flex items-center gap-2">
+                   <Avatar className="h-6 w-6"><AvatarImage src={selectedRequest.userAvatar} /><AvatarFallback>{selectedRequest.userName.substring(0,1)}</AvatarFallback></Avatar>
+                    <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(parseISO(selectedRequest.timestamp), { addSuffix: true })}</span>
+                </DialogUIDescription>
+              </DialogHeader>
+              <div className="py-4 max-h-[50vh] overflow-y-auto">
+                <p className="text-sm text-foreground whitespace-pre-line">{selectedRequest.description}</p>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      
       {isLoading ? (
         <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
       ) : requests.length === 0 ? (
@@ -224,7 +254,7 @@ export default function FeatureRequestsPage() {
                  <Button variant="outline" size="sm" onClick={() => handleUpvote(request.id)}>
                     <ThumbsUp className="mr-2 h-4 w-4"/> {t("featureRequests.voteButton", { count: request.upvotes || 0 })}
                  </Button>
-                 <Button variant="link" size="sm" className="p-0 h-auto text-primary hover:underline" onClick={() => toast({title: t("featureRequests.toastViewDetailsMock.title"), description: t("featureRequests.toastViewDetailsMock.description", { title: request.title })})}>
+                 <Button variant="link" size="sm" className="p-0 h-auto text-primary hover:underline" onClick={() => openDetailDialog(request)}>
                     {t("featureRequests.viewDetailsButton")}
                  </Button>
               </CardFooter>
