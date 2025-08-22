@@ -96,9 +96,7 @@ export default function ResumeBuilderPage() {
   const loadTemplateForEditing = useCallback((templateId: string) => {
     toast({ title: "Loading Template...", description: "Preparing the builder with your selected template." });
     const template = sampleResumeTemplates.find(t => t.id === templateId);
-    if (template && template.content) {
-      // This is a simplified parser. A real app would need a more robust solution
-      // to convert template string to structured JSON.
+    if (template) {
       const newHeader: ResumeHeaderData = {
         fullName: user?.name || "Your Name",
         phone: user?.mobileNumber || "Your Phone",
@@ -146,7 +144,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev + 1);
+      setCurrentStepIndex(prev => prev - 1);
     }
   };
   
@@ -188,9 +186,7 @@ export default function ResumeBuilderPage() {
   };
 
   const handleSaveComplete = (newResumeId: string) => {
-    // After saving, we get the new/updated ID and can update our state
     setEditingResumeId(newResumeId);
-    // Optionally redirect or show a success message
   };
 
   const renderStepContent = () => {
