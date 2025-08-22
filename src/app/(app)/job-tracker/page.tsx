@@ -102,19 +102,24 @@ export default function JobTrackerPage() {
     setEditingApplication(null);
   }
 
-  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => {
+  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => {
     console.log("[JobTrackerPage DEBUG] 1. onDialogSave called with data:", { applicationData, interviews });
     if (!currentUser) {
       console.error("[JobTrackerPage DEBUG] 2. No current user found. Aborting save.");
       return;
     }
 
-    const fullData = { ...applicationData, interviews };
+    // FIX: Ensure date is in ISO format
+    const dataForServer = {
+      ...applicationData,
+      dateApplied: applicationData.dateApplied ? new Date(applicationData.dateApplied).toISOString() : new Date().toISOString(),
+      interviews: interviews,
+    };
     
     let result: JobApplication | null = null;
     if (editingApplication) {
       console.log("[JobTrackerPage DEBUG] 4a. Editing mode. Calling updateJobApplication for ID:", editingApplication.id);
-      result = await updateJobApplication(editingApplication.id, fullData);
+      result = await updateJobApplication(editingApplication.id, dataForServer);
       if (result) {
         console.log("[JobTrackerPage DEBUG] 5a. Update successful. New data:", result);
         setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
@@ -123,7 +128,7 @@ export default function JobTrackerPage() {
     } else {
       console.log("[JobTrackerPage DEBUG] 4b. Create mode. Calling createJobApplication.");
       const dataToCreate = {
-        ...fullData,
+        ...dataForServer,
         userId: currentUser.id,
         tenantId: currentUser.tenantId,
       };
