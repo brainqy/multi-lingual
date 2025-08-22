@@ -62,7 +62,6 @@ export async function createTenantWithAdmin(
             name: adminUserData.name,
             email: adminUserData.email,
             role: 'manager', // Initial tenant creator is a manager
-            tenantId: newTenant.id,
             status: 'active',
         });
 
