@@ -93,15 +93,47 @@ export default function ResumeBuilderPage() {
     }
   }, [user, toast]);
 
+  const loadTemplateForEditing = useCallback((templateId: string) => {
+    toast({ title: "Loading Template...", description: "Preparing the builder with your selected template." });
+    const template = sampleResumeTemplates.find(t => t.id === templateId);
+    if (template && template.content) {
+      // This is a simplified parser. A real app would need a more robust solution
+      // to convert template string to structured JSON.
+      const newHeader: ResumeHeaderData = {
+        fullName: user?.name || "Your Name",
+        phone: user?.mobileNumber || "Your Phone",
+        email: user?.email || "your.email@example.com",
+        linkedin: user?.linkedInProfile || "",
+        portfolio: "",
+        address: user?.currentAddress || "",
+      };
+      setResumeData({
+        header: newHeader,
+        summary: user?.bio || "Professional summary here...",
+        experience: [],
+        education: [],
+        skills: user?.skills || [],
+        additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
+        templateId: template.id,
+      });
+      setEditingResumeId(null); // It's a new resume based on a template
+    } else {
+      toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
+    }
+  }, [user, toast]);
+
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
+    const templateId = searchParams.get('templateId');
     if (resumeId) {
-        loadResumeForEditing(resumeId);
+      loadResumeForEditing(resumeId);
+    } else if (templateId) {
+      loadTemplateForEditing(templateId);
     } else if (user) {
-        setResumeData(getInitialResumeData(user));
-        setEditingResumeId(null);
+      setResumeData(getInitialResumeData(user));
+      setEditingResumeId(null);
     }
-  }, [user, searchParams, loadResumeForEditing]);
+  }, [user, searchParams, loadResumeForEditing, loadTemplateForEditing]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -114,7 +146,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
   

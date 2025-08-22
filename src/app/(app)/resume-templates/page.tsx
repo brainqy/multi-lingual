@@ -19,6 +19,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 
 export default function ResumeTemplatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +28,7 @@ export default function ResumeTemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate | null>(null);
   const { toast } = useToast();
   const { user: currentUser, isLoading } = useAuth();
+  const router = useRouter();
 
   const allCategories = Array.from(new Set(sampleResumeTemplates.map(template => template.category)));
 
@@ -69,11 +71,8 @@ export default function ResumeTemplatesPage() {
     setIsPreviewOpen(false); // Close the preview dialog
   };
   
-  const handleEditTemplate = (templateName: string) => {
-    toast({
-      title: "Edit Template (Mock)",
-      description: `Editing features for "${templateName}" are not yet implemented. This would be an admin feature.`,
-    });
+  const handleEditTemplate = (templateId: string) => {
+    router.push(`/resume-builder?templateId=${templateId}`);
   };
   
   const handleDownloadTemplate = (templateName: string) => {
@@ -154,8 +153,8 @@ export default function ResumeTemplatesPage() {
                 <Button variant="outline" size="sm" onClick={() => openPreviewDialog(template)}>
                   <Eye className="mr-1 h-4 w-4" /> Preview
                 </Button>
-                <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => handleUseTemplate(template)}>
-                   <PlusCircle className="mr-2 h-4 w-4" /> Use Template
+                <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => handleEditTemplate(template.id)}>
+                   <Edit className="mr-2 h-4 w-4" /> Customize
                 </Button>
               </CardFooter>
             </Card>
@@ -185,14 +184,11 @@ export default function ResumeTemplatesPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 p-6 border-t bg-background">
-                <Button variant="outline" onClick={() => handleEditTemplate(selectedTemplate.name)}>
-                  <Edit className="mr-2 h-4 w-4" /> Customize (Mock)
-                </Button>
                 <Button variant="outline" onClick={() => handleDownloadTemplate(selectedTemplate.name)}>
                   <Download className="mr-2 h-4 w-4" /> Download (Mock)
                 </Button>
-                <Button onClick={() => handleUseTemplate(selectedTemplate)} className="bg-primary hover:bg-primary/90">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Use This Template
+                <Button onClick={() => handleEditTemplate(selectedTemplate.id)} className="bg-primary hover:bg-primary/90">
+                  <Edit className="mr-2 h-4 w-4" /> Customize this Template
                 </Button>
                 <DialogClose asChild>
                   <Button variant="ghost">Close</Button>
