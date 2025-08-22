@@ -23,9 +23,10 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow, parseISO } from "date-fns"; 
 import { useI18n } from "@/hooks/use-i18n";
 import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AdminDashboardProps {
-  user: UserProfile;
+  user?: UserProfile; // Make user prop optional as it might not be passed anymore
 }
 
 interface TenantActivityStats extends Tenant {
@@ -116,8 +117,11 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
-export default function AdminDashboard({ user }: AdminDashboardProps) {
+export default function AdminDashboard({ user: userProp }: AdminDashboardProps) {
   const { t } = useI18n();
+  const { user: authUser } = useAuth();
+  const user = userProp || authUser;
+  
   const [showAdminTour, setShowAdminTour] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [dashboardData, setDashboardData] = useState<any>(null);
