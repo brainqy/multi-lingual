@@ -47,7 +47,7 @@ const databaseItems = [
 const utilityItems = [
   { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
   { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: WalletCards },
-  { href: "/feature-requests", labelKey: "sideMenu.featureRequests" },
+  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", icon: ShieldQuestion },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
 ];
