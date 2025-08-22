@@ -86,10 +86,11 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
     const newApplication = await db.jobApplication.create({
       data: {
         ...restOfData,
+        dateApplied: new Date(restOfData.dateApplied), // Ensure date is in correct format
         notes: applicationData.notes || [],
         interviews: interviews && interviews.length > 0 ? {
           create: interviews.map(i => ({
-            date: i.date,
+            date: new Date(i.date), // Ensure date is in correct format
             type: i.type,
             interviewer: i.interviewer,
             interviewerEmail: i.interviewerEmail,
@@ -149,8 +150,9 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
 
                 if (interviews.length > 0) {
                     console.log(`[JobAction DEBUG] 10. Found ${interviews.length} new interviews to create.`);
-                    const interviewsToCreate = interviews.map(({ id, ...i }) => ({
+                    const interviewsToCreate = interviews.map(({ id, ...i }) => ({ // Destructure to exclude id
                         ...i,
+                        date: new Date(i.date), // FIX: Convert date string to Date object for Prisma
                         jobApplicationId: applicationId,
                     }));
                     console.log(`[JobAction DEBUG] 11. Data prepared for interview creation:`, interviewsToCreate);
@@ -191,7 +193,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   try {
-    await db.$transaction(async (prisma) => {
+    await db.$transaction(async (prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => {
         await prisma.interview.deleteMany({ where: { jobApplicationId: applicationId }});
         await prisma.jobApplication.delete({ where: { id: applicationId } });
     });
