@@ -61,9 +61,13 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
 
   useEffect(() => {
     if (editingApplication) {
+      const dateToFormat = typeof editingApplication.dateApplied === 'string'
+        ? parseISO(editingApplication.dateApplied)
+        : editingApplication.dateApplied;
+
       reset({
         ...editingApplication,
-        dateApplied: format(parseISO(editingApplication.dateApplied), 'yyyy-MM-dd'),
+        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
         notes: editingApplication.notes || [],
       });
       setCurrentInterviews(editingApplication.interviews || []);
@@ -273,5 +277,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
     </Dialog>
   );
 }
+
+    
 
     
