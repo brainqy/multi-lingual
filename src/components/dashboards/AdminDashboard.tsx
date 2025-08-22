@@ -26,7 +26,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 
 interface AdminDashboardProps {
-  user?: UserProfile; // Make user prop optional as it might not be passed anymore
+  user: UserProfile; 
 }
 
 interface TenantActivityStats extends Tenant {
@@ -117,11 +117,8 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
-export default function AdminDashboard({ user: userProp }: AdminDashboardProps) {
+export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { t } = useI18n();
-  const { user: authUser } = useAuth();
-  const user = userProp || authUser;
-  
   const [showAdminTour, setShowAdminTour] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<'weekly' | 'monthly'>('weekly');
   const [dashboardData, setDashboardData] = useState<any>(null);

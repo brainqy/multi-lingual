@@ -11,8 +11,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/components/ui/sidebar";
 
 const navItems = [
-  { href: "/community-feed", labelKey: "sideMenu.communityFeed", icon: MessageSquare },
   { href: "/dashboard", labelKey: "sideMenu.dashboard", icon: Home },
+  { href: "/community-feed", labelKey: "sideMenu.communityFeed", icon: MessageSquare },
   { href: "/alumni-connect", labelKey: "sideMenu.alumniNetwork", icon: Handshake },
   { href: "/job-board", labelKey: "sideMenu.jobBoard", icon: Aperture },
   { href: "/job-tracker", labelKey: "sideMenu.jobTracker", icon: Briefcase },
@@ -47,7 +47,7 @@ const databaseItems = [
 const utilityItems = [
   { href: "/appointments", labelKey: "sideMenu.appointments", icon: CalendarDays },
   { href: "/wallet", labelKey: "sideMenu.digitalWallet", icon: WalletCards },
-  { href: "/feature-requests", labelKey: "sideMenu.featureRequests", adminOnly: true },
+  { href: "/feature-requests", labelKey: "sideMenu.featureRequests" },
   { href: "/settings", labelKey: "sideMenu.settings", icon: Settings },
   { href: "/documentation", labelKey: "sideMenu.documentation", icon: BookTextIcon, adminOnly: true },
 ];
@@ -98,24 +98,27 @@ export function AppSidebar() {
 
   const renderMenuItem = (item: any, isSubItem = false) => {
     if (!currentUser) return null;
-    let isActive;
-    if (item.href === "/dashboard" && currentUser.role !== 'admin' && currentUser.role !== 'manager') {
-        isActive = pathname === item.href;
-    } else if (item.href === "/admin/dashboard" && (currentUser.role === 'admin' || currentUser.role === 'manager')) {
-        isActive = pathname === item.href;
-    } else {
-        isActive = item.href ? pathname.startsWith(item.href) : false;
+    let isActive = item.href ? pathname.startsWith(item.href) : false;
+
+    if (item.href === "/dashboard") { // Exact match for dashboard
+      isActive = pathname === item.href;
     }
+    
     if (item.adminOnly && currentUser.role !== 'admin') {
       return null;
     }
     if (item.managerOnly && currentUser.role !== 'manager' && currentUser.role !== 'admin') {
         return null;
     }
+
+    const effectiveHref = item.href === "/dashboard" && currentUser.role === 'admin'
+      ? "/admin/dashboard"
+      : item.href;
+
     return (
       <SidebarMenuItem key={item.href || item.labelKey}>
-         {item.href ? (
-           <Link href={item.href} passHref legacyBehavior>
+         {effectiveHref ? (
+           <Link href={effectiveHref} passHref legacyBehavior>
             <SidebarMenuButton 
               as="a"
               isActive={isActive} 

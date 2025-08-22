@@ -45,6 +45,8 @@ export default function DashboardPage() {
       let currentTourTitle = '';
 
       if (role === 'admin') {
+        // Admins are redirected, so this tour might not be seen here.
+        // Kept for robustness in case of direct navigation.
         currentTourKey = 'adminDashboardTourSeen';
         currentTourSteps = adminDashboardTourSteps;
         currentTourTitle = "Welcome Admin!";
@@ -101,6 +103,7 @@ export default function DashboardPage() {
   const renderDashboard = () => {
     switch (user.role) {
       case 'admin':
+        // Admin users should be on /admin/dashboard. This is a fallback.
         return <AdminDashboard user={user} />;
       case 'manager':
         return <ManagerDashboard user={user} />;
