@@ -102,24 +102,19 @@ export default function JobTrackerPage() {
     setEditingApplication(null);
   }
 
-  const onDialogSave = async (savedData: Omit<JobApplication, 'id' | 'tenantId' | 'userId'>, interviews: Interview[], notes: string[]) => {
-    console.log("[JobTrackerPage DEBUG] 1. onDialogSave called with data:", { savedData, interviews, notes });
+  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => {
+    console.log("[JobTrackerPage DEBUG] 1. onDialogSave called with data:", { applicationData, interviews });
     if (!currentUser) {
       console.error("[JobTrackerPage DEBUG] 2. No current user found. Aborting save.");
       return;
     }
 
-    const applicationData = {
-      ...savedData,
-      interviews,
-      notes,
-    };
-    console.log("[JobTrackerPage DEBUG] 3. Compiled application data:", applicationData);
+    const fullData = { ...applicationData, interviews };
     
     let result: JobApplication | null = null;
     if (editingApplication) {
       console.log("[JobTrackerPage DEBUG] 4a. Editing mode. Calling updateJobApplication for ID:", editingApplication.id);
-      result = await updateJobApplication(editingApplication.id, applicationData);
+      result = await updateJobApplication(editingApplication.id, fullData);
       if (result) {
         console.log("[JobTrackerPage DEBUG] 5a. Update successful. New data:", result);
         setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
@@ -128,11 +123,11 @@ export default function JobTrackerPage() {
     } else {
       console.log("[JobTrackerPage DEBUG] 4b. Create mode. Calling createJobApplication.");
       const dataToCreate = {
-        ...applicationData,
+        ...fullData,
         userId: currentUser.id,
         tenantId: currentUser.tenantId,
       };
-      result = await createJobApplication(dataToCreate);
+      result = await createJobApplication(dataToCreate as Omit<JobApplication, 'id'>);
       if (result) {
         console.log("[JobTrackerPage DEBUG] 5b. Create successful. New data:", result);
         setApplications(prev => [result!, ...prev]);
@@ -143,7 +138,7 @@ export default function JobTrackerPage() {
     if (!result) {
       console.error("[JobTrackerPage DEBUG] 6. Save/update operation failed. Result is null.");
       toast({ title: "Error", description: "Failed to save application.", variant: "destructive" });
-      await fetchData();
+      await fetchData(); // Refetch to ensure UI consistency on failure
     }
     
     console.log("[JobTrackerPage DEBUG] 7. Closing dialog and resetting state.");

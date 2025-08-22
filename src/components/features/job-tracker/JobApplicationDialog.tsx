@@ -19,23 +19,11 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { JobApplication, JobApplicationStatus, ResumeProfile, Interview } from "@/types";
 import { JOB_APPLICATION_STATUSES } from "@/types";
-import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-const interviewSchema = z.object({
-  id: z.string().optional(),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
-  type: z.enum(['Phone Screen', 'Technical', 'Behavioral', 'On-site', 'Final Round']),
-  interviewer: z.string().min(1, "Interviewer name is required."),
-  interviewerEmail: z.string().email().optional().or(z.literal('')),
-  interviewerMobile: z.string().optional(),
-  notes: z.array(z.string()).optional(),
-});
-
 const jobApplicationSchema = z.object({
-  id: z.string().optional(),
   companyName: z.string().min(1, "Company name is required"),
   jobTitle: z.string().min(1, "Job title is required"),
   status: z.enum(JOB_APPLICATION_STATUSES as [JobApplicationStatus, ...JobApplicationStatus[]]),
@@ -49,42 +37,41 @@ const jobApplicationSchema = z.object({
   coverLetterText: z.string().optional(),
 });
 
-type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
+type JobApplicationFormData = z.infer<typeof typeof jobApplicationSchema>;
 
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: Omit<JobApplication, 'id' | 'tenantId' | 'userId'>, interviews: Interview[], notes: string[]) => void;
+  onSave: (applicationData: JobApplicationFormData, interviews: Interview[]) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
 }
 
 export default function JobApplicationDialog({ isOpen, onClose, onSave, editingApplication, resumes }: JobApplicationDialogProps) {
   const { t } = useI18n();
-  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
   const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '' });
   const [currentNotes, setCurrentNotes] = useState<string[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
 
-  const { control, handleSubmit, reset } = useForm<JobApplicationFormData>({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
   });
 
   useEffect(() => {
     if (editingApplication) {
-      const dateToFormat = editingApplication.dateApplied instanceof Date ? editingApplication.dateApplied : parseISO(editingApplication.dateApplied);
       reset({
         ...editingApplication,
-        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
+        dateApplied: format(parseISO(editingApplication.dateApplied), 'yyyy-MM-dd'),
+        notes: editingApplication.notes || [],
       });
       setCurrentInterviews(editingApplication.interviews || []);
       setCurrentNotes(editingApplication.notes || []);
     } else {
       reset({
         companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
-        notes: [], interviews: [], jobDescription: '', location: '', applicationUrl: '', salary: ''
+        notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
       });
       setCurrentInterviews([]);
       setCurrentNotes([]);
@@ -92,10 +79,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
   }, [editingApplication, reset]);
 
   const onSubmit = (data: JobApplicationFormData) => {
-    if (!currentUser) return;
-    const { interviews, notes, ...restOfData } = data;
-    onSave(restOfData, currentInterviews, currentNotes);
-    onClose();
+    onSave({ ...data, notes: currentNotes }, currentInterviews);
   };
 
   const handleAddInterview = () => {
@@ -142,17 +126,19 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
                 <TabsContent value="jobDetails" className="space-y-4">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Label htmlFor="companyName">Company Name</Label>
+                            <Label htmlFor="companyName">Company Name *</Label>
                             <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
+                            {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
                         </div>
                          <div>
-                            <Label htmlFor="jobTitle">Job Title</Label>
+                            <Label htmlFor="jobTitle">Job Title *</Label>
                             <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
+                             {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
                         </div>
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Label htmlFor="status">Status</Label>
+                            <Label htmlFor="status">Status *</Label>
                             <Controller name="status" control={control} render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
@@ -161,8 +147,9 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
                             )} />
                         </div>
                          <div>
-                            <Label htmlFor="dateApplied">Date Applied</Label>
+                            <Label htmlFor="dateApplied">Date Applied *</Label>
                             <Controller name="dateApplied" control={control} render={({ field }) => <Input id="dateApplied" type="date" {...field} />} />
+                            {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
                         </div>
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,6 +165,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
                     <div>
                         <Label htmlFor="applicationUrl">Application URL (Optional)</Label>
                         <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" {...field} />} />
+                         {errors.applicationUrl && <p className="text-sm text-destructive mt-1">{errors.applicationUrl.message}</p>}
                     </div>
                      <div>
                         <Label htmlFor="jobDescription">Job Description (Optional)</Label>
