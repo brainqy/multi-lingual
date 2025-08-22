@@ -77,6 +77,7 @@ const adminItems = [
    { href: "/admin/messenger-management", labelKey: "sideMenu.messengerMgt", icon: BotMessageSquare },
    { href: "/admin/affiliate-management", labelKey: "sideMenu.affiliateMgt", icon: Users2 },
    { href: "/admin/gallery-management", labelKey: "sideMenu.galleryMgt", icon: GalleryVerticalEnd },
+   { href: "/admin/template-designer", labelKey: "sideMenu.templateDesigner", icon: Layers3 },
    { href: "/admin/blog-settings", labelKey: "sideMenu.blogSettings", icon: Settings2Icon },
    { href: "/admin/promotional-content", labelKey: "sideMenu.promotionalContentMgt", icon: Megaphone },
    { href: "/admin/platform-settings", labelKey: "sideMenu.platformSettings", icon: ServerIcon },

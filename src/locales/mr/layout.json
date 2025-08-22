@@ -49,7 +49,8 @@
     "utilities": "उपयुक्तता",
     "adminPanel": "प्रशासक पॅनेल",
     "managerPanel": "व्यवस्थापक पॅनेल",
-    "tenant": "भाडेकरू"
+    "tenant": "भाडेकरू",
+    "templateDesigner": "टेम्पलेट डिझाइनर"
   },
   "appHeader": {
     "notifications": "Notifications",

@@ -50,7 +50,8 @@
     "utilities": "Utilities",
     "adminPanel": "Admin Panel",
     "managerPanel": "Manager Panel",
-    "tenant": "Tenant"
+    "tenant": "Tenant",
+    "templateDesigner": "Template Designer"
   },
   "appHeader": {
     "notifications": "Notifications",

@@ -49,7 +49,8 @@
     "utilities": "उपयोगिताएँ",
     "adminPanel": "एडमिन पैनल",
     "managerPanel": "मैनेजर पैनल",
-    "tenant": "किरायेदार"
+    "tenant": "किरायेदार",
+    "templateDesigner": "टेम्पलेट डिज़ाइनर"
   },
   "appHeader": {
     "notifications": "सूचनाएँ",
