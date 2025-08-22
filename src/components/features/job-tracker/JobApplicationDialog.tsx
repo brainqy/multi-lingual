@@ -42,7 +42,7 @@ type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => void;
+  onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
 }
@@ -61,9 +61,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
 
   useEffect(() => {
     if (editingApplication) {
-      const dateToFormat = typeof editingApplication.dateApplied === 'string'
-        ? parseISO(editingApplication.dateApplied)
-        : editingApplication.dateApplied;
+      const dateApplied = editingApplication.dateApplied;
+      const dateToFormat = typeof dateApplied === 'string'
+        ? parseISO(dateApplied)
+        : dateApplied;
 
       reset({
         ...editingApplication,
@@ -202,15 +203,18 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
                       <h4 className="font-semibold">Scheduled Interviews</h4>
                       {currentInterviews.length > 0 ? (
                          <ul className="space-y-2">
-                           {currentInterviews.map(interview => (
-                             <li key={interview.id} className="p-2 border rounded-md flex justify-between items-center text-sm">
-                                 <div>
-                                   <p className="font-medium">{interview.type} with {interview.interviewer}</p>
-                                   <p className="text-xs text-muted-foreground">{format(parseISO(interview.date), 'PPpp')}</p>
-                                 </div>
-                                 <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id!)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                             </li>
-                           ))}
+                           {currentInterviews.map(interview => {
+                             const interviewDate = typeof interview.date === 'string' ? parseISO(interview.date) : interview.date;
+                             return (
+                               <li key={interview.id} className="p-2 border rounded-md flex justify-between items-center text-sm">
+                                   <div>
+                                     <p className="font-medium">{interview.type} with {interview.interviewer}</p>
+                                     <p className="text-xs text-muted-foreground">{format(interviewDate, 'PPpp')}</p>
+                                   </div>
+                                   <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id!)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                               </li>
+                             )
+                           })}
                          </ul>
                       ) : <p className="text-sm text-muted-foreground">No interviews scheduled yet.</p>}
 
@@ -277,7 +281,3 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
     </Dialog>
   );
 }
-
-    
-
-    
