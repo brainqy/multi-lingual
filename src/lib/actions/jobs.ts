@@ -117,10 +117,20 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
  * @returns The updated JobApplication object or null if failed.
  */
 export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
+    console.log(`[JobAction DEBUG] 1. Starting updateJobApplication for id: ${applicationId}`);
     try {
+        console.log(`[JobAction DEBUG] 2. Destructuring updateData.`);
         const { interviews, ...restOfUpdateData } = updateData;
+        console.log(`[JobAction DEBUG] 3. Data to update (excluding interviews):`, restOfUpdateData);
+        if (interviews !== undefined) {
+          console.log(`[JobAction DEBUG] 4. Interviews data received with length: ${interviews.length}`);
+        } else {
+          console.log(`[JobAction DEBUG] 4. No interviews data received.`);
+        }
         
+        console.log(`[JobAction DEBUG] 5. Starting database transaction.`);
         const updatedApp = await db.$transaction(async (prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => {
+            console.log(`[JobAction DEBUG] 6. Inside transaction: Updating main jobApplication record.`);
             await prisma.jobApplication.update({
                 where: { id: applicationId },
                 data: {
@@ -128,31 +138,47 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                     notes: restOfUpdateData.notes ? { set: restOfUpdateData.notes } : undefined,
                 },
             });
+            console.log(`[JobAction DEBUG] 7. Main jobApplication record updated.`);
 
             if (interviews !== undefined) {
+                console.log(`[JobAction DEBUG] 8. Handling interviews. Deleting existing interviews for application.`);
                 await prisma.interview.deleteMany({
                     where: { jobApplicationId: applicationId },
                 });
+                console.log(`[JobAction DEBUG] 9. Existing interviews deleted.`);
 
                 if (interviews.length > 0) {
+                    console.log(`[JobAction DEBUG] 10. Found ${interviews.length} new interviews to create.`);
+                    const interviewsToCreate = interviews.map(({ id, ...i }) => ({
+                        ...i,
+                        jobApplicationId: applicationId,
+                    }));
+                    console.log(`[JobAction DEBUG] 11. Data prepared for interview creation:`, interviewsToCreate);
                     await prisma.interview.createMany({
-                        data: interviews.map(({ id, ...i }) => ({ // Destructure to exclude id
-                            ...i,
-                            jobApplicationId: applicationId,
-                        })),
+                        data: interviewsToCreate,
                     });
+                    console.log(`[JobAction DEBUG] 12. New interviews created.`);
+                } else {
+                    console.log(`[JobAction DEBUG] 10. No new interviews to create.`);
                 }
+            } else {
+              console.log(`[JobAction DEBUG] 8. No interviews to handle.`);
             }
 
-            return prisma.jobApplication.findUnique({
+            console.log(`[JobAction DEBUG] 13. Refetching the updated job application with interviews.`);
+            const result = prisma.jobApplication.findUnique({
               where: { id: applicationId },
               include: { interviews: true },
             });
+            console.log(`[JobAction DEBUG] 14. Returning from transaction.`);
+            return result;
         });
         
+        console.log(`[JobAction DEBUG] 15. Database transaction completed successfully. Result:`, updatedApp);
         return updatedApp as unknown as JobApplication;
     } catch (error) {
         console.error(`[JobAction] Error updating job application ${applicationId}:`, error);
+        console.log(`[JobAction DEBUG] 16. An error occurred in the try block. Returning null.`);
         return null;
     }
 }
