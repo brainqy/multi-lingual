@@ -1,14 +1,14 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
 import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
+import { sampleResumeTemplates } from "@/lib/sample-data";
 import StepHeaderForm from "@/components/features/resume-builder/StepHeaderForm";
 import StepExperienceForm from "@/components/features/resume-builder/StepExperienceForm";
 import StepEducationForm from "@/components/features/resume-builder/StepEducationForm";
@@ -20,8 +20,10 @@ import ResumePreview from "@/components/features/resume-builder/ResumePreview";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
-import type { ResumeProfile } from "@/types"; // Added ResumeProfile import
+import type { ResumeProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getResumeProfiles } from "@/lib/actions/resumes";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 
 const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
@@ -62,17 +64,44 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
 
 export default function ResumeBuilderPage() {
   const { user, isLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeBuilderData>(() => getInitialResumeData(user));
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
   const { toast } = useToast();
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   
-  useEffect(() => {
-    if (user) {
-      setResumeData(getInitialResumeData(user));
+  const loadResumeForEditing = useCallback(async (resumeId: string) => {
+    if (!user) return;
+    toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
+    const userResumes = await getResumeProfiles(user.id);
+    const resumeToEdit = userResumes.find(r => r.id === resumeId);
+    if (resumeToEdit && resumeToEdit.resumeText) {
+        try {
+            const parsedData = JSON.parse(resumeToEdit.resumeText);
+            setResumeData(parsedData);
+            setEditingResumeId(resumeToEdit.id);
+        } catch (e) {
+            console.error("Failed to parse resume data:", e);
+            toast({ title: "Error Loading Resume", description: "The selected resume data is not in the correct format.", variant: "destructive"});
+            setResumeData(getInitialResumeData(user)); // Reset to default
+        }
+    } else {
+        toast({ title: "Resume Not Found", description: "Could not find the selected resume.", variant: "destructive"});
     }
-  }, [user]);
+  }, [user, toast]);
+
+  useEffect(() => {
+    const resumeId = searchParams.get('resumeId');
+    if (resumeId) {
+        loadResumeForEditing(resumeId);
+    } else if (user) {
+        setResumeData(getInitialResumeData(user));
+        setEditingResumeId(null);
+    }
+  }, [user, searchParams, loadResumeForEditing]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -80,9 +109,6 @@ export default function ResumeBuilderPage() {
   const handleNextStep = () => {
     if (currentStepIndex < RESUME_BUILDER_STEPS.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
-    } else {
-      // Handle finalize/submission
-      toast({ title: "Resume Finalized (Mock)", description: "Your resume is ready for review." });
     }
   };
 
@@ -94,7 +120,7 @@ export default function ResumeBuilderPage() {
   
   const handleStepClick = (stepId: ResumeBuilderStep) => {
     const stepIndex = RESUME_BUILDER_STEPS.findIndex(s => s.id === stepId);
-    if (stepIndex !== -1 && stepIndex <= currentStepIndex) { // Allow navigation to completed or current steps
+    if (stepIndex !== -1) {
       setCurrentStepIndex(stepIndex);
     }
   };
@@ -129,6 +155,12 @@ export default function ResumeBuilderPage() {
     toast({ title: "Template Changed", description: "The resume preview has been updated." });
   };
 
+  const handleSaveComplete = (newResumeId: string) => {
+    // After saving, we get the new/updated ID and can update our state
+    setEditingResumeId(newResumeId);
+    // Optionally redirect or show a success message
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 'header':
@@ -144,7 +176,7 @@ export default function ResumeBuilderPage() {
       case 'additional-details':
         return <StepAdditionalDetailsForm data={resumeData.additionalDetails || {}} onUpdate={updateAdditionalDetailsData}/>;
       case 'finalize':
-        return <StepFinalize resumeData={resumeData} previewRef={resumePreviewRef} />;
+        return <StepFinalize resumeData={resumeData} previewRef={resumePreviewRef} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} />;
       default:
         return <p>Unknown step.</p>;
     }

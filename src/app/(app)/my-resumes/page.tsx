@@ -21,12 +21,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { getResumeProfiles, createResumeProfile, deleteResumeProfile } from "@/lib/actions/resumes";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from 'next/navigation';
 
 export default function MyResumesPage() {
   const [resumes, setResumes] = useState<ResumeProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
+  const router = useRouter();
 
   const loadResumes = useCallback(async () => {
     if (!currentUser) return;
@@ -50,25 +52,12 @@ export default function MyResumesPage() {
     }
   };
 
-  const handleAddNewResume = async () => {
-    if (!currentUser) return;
-    const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
-      tenantId: currentUser.tenantId,
-      userId: currentUser.id,
-      name: `New Resume ${resumes.length + 1}`,
-      resumeText: "Paste your new resume text here...",
-    };
-    const newResume = await createResumeProfile(newResumeData);
-    if (newResume) {
-      setResumes(currentResumes => [newResume, ...currentResumes]);
-      toast({ title: "New Resume Added", description: "A new resume profile has been created. Click Edit to add content."});
-    } else {
-      toast({ title: "Error", description: "Could not create a new resume profile.", variant: "destructive" });
-    }
+  const handleAddNewResume = () => {
+    router.push('/resume-builder');
   };
 
   const handleEditResume = (resumeId: string) => {
-    toast({ title: "Edit Action (Mock)", description: `This would navigate to an edit page for resume ${resumeId}.` });
+    router.push(`/resume-builder?resumeId=${resumeId}`);
   };
 
   if (isLoading || !currentUser) {
@@ -94,7 +83,7 @@ export default function MyResumesPage() {
             <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <CardTitle className="text-2xl">No Resume Profiles Yet</CardTitle>
             <CardDescription>
-              Click "Add New Resume" to upload and manage your first resume.
+              Click "Add New Resume" to build and manage your first resume.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -113,15 +102,15 @@ export default function MyResumesPage() {
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-3">
-                  {resume.resumeText?.substring(0, 150) || "No content yet."}...
+                  {typeof resume.resumeText === 'string' && resume.resumeText.startsWith('{') ? 'Structured resume data...' : resume.resumeText?.substring(0,150) || 'No content yet.'}...
                 </p>
               </CardContent>
               <CardFooter className="flex justify-end space-x-2 border-t pt-4 mt-auto">
-                <Link href={`/resume-analyzer?resumeId=${resume.id}`} passHref>
-                  <Button variant="outline" size="sm" title="Analyze">
+                <Button variant="outline" size="sm" title="Analyze" asChild>
+                  <Link href={`/resume-analyzer?resumeId=${resume.id}`}>
                     <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button variant="outline" size="sm" title="Edit" onClick={() => handleEditResume(resume.id)}>
                   <Edit3 className="h-4 w-4" />
                 </Button>

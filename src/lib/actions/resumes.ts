@@ -42,6 +42,26 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
 }
 
 /**
+ * Updates an existing resume profile.
+ * @param resumeId The ID of the resume to update.
+ * @param resumeData The data to update.
+ * @returns The updated ResumeProfile object or null if failed.
+ */
+export async function updateResumeProfile(resumeId: string, resumeData: Partial<Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt'>>): Promise<ResumeProfile | null> {
+    try {
+        const updatedResume = await db.resumeProfile.update({
+            where: { id: resumeId },
+            data: resumeData,
+        });
+        return updatedResume as unknown as ResumeProfile;
+    } catch (error) {
+        console.error(`[ResumeAction] Error updating resume profile ${resumeId}:`, error);
+        return null;
+    }
+}
+
+
+/**
  * Deletes a resume profile.
  * @param resumeId The ID of the resume to delete.
  * @returns A boolean indicating success.
