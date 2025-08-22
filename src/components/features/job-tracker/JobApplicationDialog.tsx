@@ -37,12 +37,12 @@ const jobApplicationSchema = z.object({
   coverLetterText: z.string().optional(),
 });
 
-type JobApplicationFormData = z.infer<typeof typeof jobApplicationSchema>;
+type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: JobApplicationFormData, interviews: Interview[]) => void;
+  onSave: (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
 }
@@ -273,3 +273,5 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
     </Dialog>
   );
 }
+
+    
