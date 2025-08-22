@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
 import type { ResumeProfile } from "@/types"; // Added ResumeProfile import
 import { useAuth } from "@/hooks/use-auth";
+import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 
 const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
   if (!user) {
@@ -65,6 +66,7 @@ export default function ResumeBuilderPage() {
   const [resumeData, setResumeData] = useState<ResumeBuilderData>(() => getInitialResumeData(user));
   const { toast } = useToast();
   const resumePreviewRef = useRef<HTMLDivElement>(null);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   
   useEffect(() => {
     if (user) {
@@ -121,6 +123,12 @@ export default function ResumeBuilderPage() {
     setResumeData(prev => ({ ...prev, additionalDetails: { ...prev.additionalDetails, ...details } }));
   }
 
+  const handleTemplateSelect = (templateId: string) => {
+    setResumeData(prev => ({ ...prev, templateId }));
+    setIsTemplateDialogOpen(false);
+    toast({ title: "Template Changed", description: "The resume preview has been updated." });
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 'header':
@@ -151,6 +159,7 @@ export default function ResumeBuilderPage() {
   }
 
   return (
+    <>
     <div className="flex flex-col min-h-screen">
       <div className="bg-slate-800 text-white py-3 px-4 md:px-8">
         <div className="container mx-auto flex items-center justify-between">
@@ -230,12 +239,21 @@ export default function ResumeBuilderPage() {
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
-            onClick={() => toast({title: "Change Template (Mock)", description: "Template selection would open."})}
+            onClick={() => setIsTemplateDialogOpen(true)}
           >
             Change template
           </Button>
         </aside>
       </div>
     </div>
+
+    <TemplateSelectionDialog
+        isOpen={isTemplateDialogOpen}
+        onClose={() => setIsTemplateDialogOpen(false)}
+        onSelect={handleTemplateSelect}
+        templates={sampleResumeTemplates}
+        currentTemplateId={resumeData.templateId}
+    />
+    </>
   );
 }
