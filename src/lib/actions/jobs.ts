@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { JobApplication, Interview, JobOpening, UserProfile, JobApplicationStatus } from '@/types';
-import { Prisma } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 
 /**
  * Fetches all job openings from the database.
@@ -120,7 +120,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
     try {
         const { interviews, ...restOfUpdateData } = updateData;
         
-        await db.$transaction(async (prisma) => {
+        const updatedApp = await db.$transaction(async (prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => {
             await prisma.jobApplication.update({
                 where: { id: applicationId },
                 data: {
@@ -136,26 +136,21 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
 
                 if (interviews.length > 0) {
                     await prisma.interview.createMany({
-                        data: interviews.map(i => ({
-                            date: i.date,
-                            type: i.type,
-                            interviewer: i.interviewer,
-                            interviewerEmail: i.interviewerEmail,
-                            interviewerMobile: i.interviewerMobile,
-                            notes: i.notes || [],
+                        data: interviews.map(({ id, ...i }) => ({ // Destructure to exclude id
+                            ...i,
                             jobApplicationId: applicationId,
                         })),
                     });
                 }
             }
+
+            return prisma.jobApplication.findUnique({
+              where: { id: applicationId },
+              include: { interviews: true },
+            });
         });
         
-        const finalApplication = await db.jobApplication.findUnique({
-            where: { id: applicationId },
-            include: { interviews: true },
-        });
-
-        return finalApplication as unknown as JobApplication;
+        return updatedApp as unknown as JobApplication;
     } catch (error) {
         console.error(`[JobAction] Error updating job application ${applicationId}:`, error);
         return null;
