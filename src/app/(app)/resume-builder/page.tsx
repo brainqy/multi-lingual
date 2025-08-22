@@ -1,7 +1,7 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
@@ -64,6 +64,7 @@ export default function ResumeBuilderPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [resumeData, setResumeData] = useState<ResumeBuilderData>(() => getInitialResumeData(user));
   const { toast } = useToast();
+  const resumePreviewRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (user) {
@@ -135,7 +136,7 @@ export default function ResumeBuilderPage() {
       case 'additional-details':
         return <StepAdditionalDetailsForm data={resumeData.additionalDetails || {}} onUpdate={updateAdditionalDetailsData}/>;
       case 'finalize':
-        return <StepFinalize resumeData={resumeData} />;
+        return <StepFinalize resumeData={resumeData} previewRef={resumePreviewRef} />;
       default:
         return <p>Unknown step.</p>;
     }
@@ -225,7 +226,7 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview data={resumeData} templateId={resumeData.templateId} />
+          <ResumePreview ref={resumePreviewRef} data={resumeData} templateId={resumeData.templateId} />
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
