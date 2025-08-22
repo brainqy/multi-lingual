@@ -87,6 +87,102 @@ async function main() {
     skipDuplicates: true,
   });
   console.log('Seeded promotional content.')
+  
+    // Seed Community Posts
+  const post1 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'Welcome to the new community feed! Share your thoughts, ask questions, and connect with fellow alumni.',
+      type: 'text',
+      tags: ['welcome', 'community'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
+    }
+  });
+
+  const post2 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'What type of content would you like to see more of?',
+      type: 'poll',
+      pollOptions: [
+        { option: 'Career Advice Articles', votes: 15 },
+        { option: 'Alumni Success Stories', votes: 25 },
+        { option: 'Industry Trend Reports', votes: 8 },
+        { option: 'Live Q&A Sessions', votes: 12 },
+      ],
+      tags: ['feedback', 'content'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
+    }
+  });
+  
+  const post3 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      type: 'event',
+      eventTitle: 'Alumni Virtual Networking Night',
+      eventDate: new Date(Date.now() + 86400000 * 7).toISOString(), // A week from now
+      eventLocation: 'Zoom (Link will be shared with attendees)',
+      content: 'Join us for a fun and informal virtual networking event. A great chance to reconnect with old friends and make new connections in your field. All alumni are welcome!',
+      capacity: 100,
+      attendees: 23,
+      tags: ['event', 'networking'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(),
+    },
+  });
+
+  console.log('Seeded community posts.');
+
+  // Seed Comments
+  const comment1 = await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Alice Wonderland',
+      userAvatar: 'https://avatar.vercel.sh/alice.png',
+      comment: 'This is great! Looking forward to connecting with everyone.',
+      timestamp: new Date(Date.now() - 86400000 * 1.9),
+    }
+  });
+
+  await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Bob The Builder',
+      userAvatar: 'https://avatar.vercel.sh/bob.png',
+      comment: 'Replying to Alice: Me too! Great initiative.',
+      parentId: comment1.id,
+      timestamp: new Date(Date.now() - 86400000 * 1.8),
+    }
+  });
+  
+  await prisma.communityComment.create({
+    data: {
+      postId: post2.id,
+      userId: adminUser.id,
+      userName: 'Charlie Brown',
+      userAvatar: 'https://avatar.vercel.sh/charlie.png',
+      comment: 'Voted for success stories! So inspiring.',
+      timestamp: new Date(Date.now() - 86400000 * 0.9),
+    }
+  });
+
+  console.log('Seeded community comments.');
 
 
   console.log(`Seeding finished.`)
