@@ -61,6 +61,8 @@ export default function InterviewPracticeHubPage() {
             type: a.title,
             language: "English",
             status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
+            topic: a.title, // Add topic
+            createdAt: a.dateTime, // Use dateTime as createdAt for consistency
           })) as PracticeSession[];
         setPracticeSessions(userPracticeSessions);
         setCreatedQuizzes(quizzes);
@@ -133,7 +135,9 @@ export default function InterviewPracticeHubPage() {
           category: newSessionConfig.type === 'experts' ? "Practice with Experts" : "Practice with Friends",
           type: newAppointment.title,
           language: "English",
-          status: 'SCHEDULED'
+          status: 'SCHEDULED',
+          topic: newAppointment.title,
+          createdAt: new Date().toISOString(), // Use current time for createdAt
         }]);
         toast({ title: "Session Booked!", description: "Your new practice session is scheduled and visible in 'My Appointments'." });
       } else {
