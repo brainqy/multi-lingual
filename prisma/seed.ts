@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -217,6 +218,21 @@ async function main() {
     skipDuplicates: true,
   });
   console.log('Seeded badges.');
+
+  // Seed Gamification Rules
+  await prisma.gamificationRule.createMany({
+    data: [
+      { actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 },
+      { actionId: 'community_post', description: 'Create a new post in the community', xpPoints: 15 },
+      { actionId: 'community_comment', description: 'Comment on a community post', xpPoints: 5 },
+      { actionId: 'analyze_resume', description: 'Analyze a resume with the AI tool', xpPoints: 20 },
+      { actionId: 'add_job_application', description: 'Add a new application to the job tracker', xpPoints: 10 },
+      { actionId: 'successful_referral', description: 'Successfully refer a new user', xpPoints: 50 },
+      { actionId: 'daily_challenge_complete', description: 'Complete the daily interview challenge', xpPoints: 25 },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded gamification rules.');
 
 
   console.log(`Seeding finished.`)
