@@ -68,7 +68,7 @@ export default function JobBoardPage() {
     setIsLoadingOpenings(true);
     try {
       const [openingsData, applicationsData] = await Promise.all([
-        getJobOpenings(),
+        getJobOpenings(currentUser.tenantId),
         getUserJobApplications(currentUser.id),
       ]);
       setOpenings(openingsData);
@@ -596,5 +596,3 @@ export default function JobBoardPage() {
     </div>
   );
 }
-
-    
