@@ -7,24 +7,25 @@ import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 
 /**
- * Fetches community posts visible to the current user (tenant-specific and platform-wide).
- * @param tenantId The current user's tenant ID. If null, it implies an admin viewing all posts.
+ * Fetches community posts visible to the current user.
+ * - Admins (tenantId is null or 'platform') see all posts.
+ * - Regular users/managers see posts from their tenant and platform-wide posts.
+ * @param tenantId The current user's tenant ID.
  * @param currentUserId The current user's ID.
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
 export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
   try {
-    // Construct the where clause to properly scope posts.
-    // A user should only see posts from their tenant OR platform-wide posts.
-    // An admin (tenantId: null) can see posts from all tenants.
-    const whereClause: Prisma.CommunityPostWhereInput = tenantId
+    // If tenantId is null or 'platform', it's an admin-like view that should see everything.
+    // Otherwise, it's a tenant-scoped view.
+    const whereClause: Prisma.CommunityPostWhereInput = (tenantId && tenantId !== 'platform')
       ? {
           OR: [
             { tenantId: tenantId },
             { tenantId: 'platform' },
           ],
         }
-      : {}; // Admin sees all
+      : {}; // Empty where clause for admins fetches all posts.
 
     const posts = await db.communityPost.findMany({
       where: whereClause,
@@ -38,7 +39,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
       orderBy: {
         timestamp: 'desc',
       },
-      take: 50, // Limit to the latest 50 posts for performance
+      take: 50,
     });
     return posts as unknown as CommunityPost[];
   } catch (error) {
@@ -103,20 +104,30 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
 
 
 /**
- * Adds a comment to a specific post.
- * @param commentData The data for the new comment.
+ * Adds a comment to a specific post (either community or blog).
+ * @param commentData The data for the new comment. Must include either postId or blogPostId.
  * @returns The newly created CommunityComment object or null if failed.
  */
 export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' | 'timestamp' | 'replies'>): Promise<CommunityComment | null> {
   try {
+    if (!commentData.postId && !commentData.blogPostId) {
+      throw new Error("Comment must be associated with either a postId or a blogPostId.");
+    }
+
     const newComment = await db.communityComment.create({
       data: {
-        ...commentData,
+        userId: commentData.userId,
+        userName: commentData.userName,
+        userAvatar: commentData.userAvatar,
+        comment: commentData.comment,
+        parentId: commentData.parentId,
         timestamp: new Date(),
+        // Conditionally connect to either post or blogPost
+        ...(commentData.postId && { post: { connect: { id: commentData.postId } } }),
+        ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
       },
     });
 
-    // Award badges after action
     await checkAndAwardBadges(commentData.userId);
 
     return newComment as unknown as CommunityComment;
