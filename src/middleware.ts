@@ -1,38 +1,40 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// This middleware identifies the tenant based on the subdomain
-// and passes that information via a request header.
-// It does NOT rewrite the URL path, avoiding "Page not found" errors.
-
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
+  const pathname = url.pathname;
 
-  // For local development, this extracts the subdomain from e.g., `brainqy.localhost:9002`.
-  // In production, you would adjust this for your actual domain, e.g., 'jobmatch.ai'.
-  const subdomain = hostname.split('.')[0];
+  const isApiOrInternal = pathname.startsWith('/api/') || pathname.startsWith('/_next/') || /\.(png|ico|svg|jpg|jpeg|css|js)$/.test(pathname);
+  if (isApiOrInternal) {
+    return NextResponse.next();
+  }
+
+  // Handle localhost and production domains
+  const domainParts = hostname.replace('localhost', 'app.localhost').split('.'); // Treat localhost like myapp.localhost
+  const subdomain = domainParts.length > 2 ? domainParts[0] : null;
   
-  // Define your known tenants. In a real app, this would come from a database.
-  const knownTenants = ['brainqy', 'cpp']; 
-
   // Create a new response object so we can modify its headers.
   const response = NextResponse.next();
 
-  if (knownTenants.includes(subdomain)) {
-    // Pass the tenant ID via a request header.
-    // Your application logic can now read this header to scope data.
-    console.log(`Request for tenant: ${subdomain}. Setting X-Tenant-Id header.`);
-    response.headers.set('X-Tenant-Id', subdomain);
+  // The tenantId 'platform' is used for the main domain without a subdomain.
+  const tenantId = subdomain || 'platform';
+  response.headers.set('X-Tenant-Id', tenantId);
+  console.log(`[Middleware] Host: ${hostname}, Subdomain: ${subdomain}, Tenant ID: ${tenantId}`);
+  
+  // If the user is on a tenant subdomain but tries to access the root public page,
+  // redirect them to the tenant-specific login page.
+  if (subdomain && pathname === '/') {
+    url.pathname = '/auth/login';
+    console.log(`[Middleware] Redirecting from root of subdomain '${subdomain}' to ${url.pathname}`);
+    return NextResponse.redirect(url);
   }
 
   return response;
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-  // This matcher ensures the middleware runs on all request paths
-  // except for internal Next.js paths and static assets.
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|images|.*\\.png$).*)',
   ],

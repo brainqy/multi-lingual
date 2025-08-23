@@ -113,7 +113,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setWallet(null);
     localStorage.removeItem('bhashaSetuUser');
-    if (!pathname.startsWith('/auth')) {
+    // Don't redirect if already on a public or auth page
+    if (!pathname.startsWith('/auth') && pathname !== '/') {
       router.push('/auth/login');
     }
   }, [router, pathname]);

@@ -12,6 +12,7 @@ import { addRecentPage, getLabelForPath } from '@/lib/recent-pages';
 import AnnouncementBanner from '@/components/features/AnnouncementBanner';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
+import { headers } from 'next/headers';
 
 export default function AppLayout({
   children,
@@ -19,7 +20,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,8 +33,28 @@ export default function AppLayout({
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace('/auth/login');
+      return;
     }
-  }, [isLoading, isAuthenticated, router]);
+
+    if (user && typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        const parts = hostname.split('.');
+        let currentTenantId: string | null = 'platform'; 
+        if (parts.length > 2 && parts[0] !== 'www') {
+            currentTenantId = parts[0];
+        } else if (hostname.includes('localhost') && parts.length > 1 && parts[0] !== 'localhost') {
+            currentTenantId = parts[0];
+        } else {
+            currentTenantId = 'platform';
+        }
+        
+        if (user.tenantId !== currentTenantId && user.role !== 'admin') {
+            console.warn(`Tenant mismatch: User tenant is '${user.tenantId}', but subdomain is '${currentTenantId}'. Logging out.`);
+            logout();
+        }
+    }
+
+  }, [isLoading, isAuthenticated, router, user, logout]);
 
   if (isLoading || !isAuthenticated) {
     return (
