@@ -29,34 +29,39 @@ import { getUsers } from "@/lib/data-services/users";
 
 
 const postSchema = z.object({
-  content: z.string().min(1, "Post content cannot be empty"),
+  content: z.string().min(1, "Post content cannot be empty for most post types."),
   tags: z.string().optional(),
   type: z.enum(['text', 'poll', 'event', 'request']),
   imageUrl: z.string().url("Invalid URL format").optional().or(z.literal('')),
-  pollOptions: z.array(z.object({ option: z.string().min(1, "Option cannot be empty"), votes: z.number().default(0) })).optional(),
+  pollOptions: z.array(z.object({ option: z.string(), votes: z.number().default(0) })).optional(),
   eventDate: z.string().optional(),
   eventLocation: z.string().optional(),
   eventTitle: z.string().optional(),
   attendees: z.coerce.number().min(0).optional().default(0),
   capacity: z.coerce.number().min(0).optional().default(0),
   assignedTo: z.string().optional(),
-  status: z.enum(['open', 'assigned', 'completed']).optional(),
-}).refine(data => {
-  if (data.type === 'poll') {
-    return data.pollOptions && data.pollOptions.filter(opt => opt.option.trim() !== '').length >= 2;
-  }
-  return true;
-}, {
-  message: "Polls must have at least two valid options.",
-  path: ["pollOptions"], 
-}).refine(data => {
-  if (data.type === 'event') {
-    return !!data.eventTitle && !!data.eventDate && !!data.eventLocation;
-  }
-  return true;
-}, {
-  message: "Event title, date, and location are required for event posts.",
-  path: ["eventTitle"],
+  status: z.enum(['open', 'in progress', 'completed']).optional(),
+}).superRefine((data, ctx) => {
+    if (data.type === 'poll') {
+        if (!data.pollOptions || data.pollOptions.filter(opt => opt.option.trim()).length < 2) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Polls must have at least two valid options.",
+                path: ["pollOptions"],
+            });
+        }
+    }
+    if (data.type === 'event') {
+        if (!data.eventTitle?.trim()) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event title is required.", path: ["eventTitle"] });
+        }
+        if (!data.eventDate) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event date is required.", path: ["eventDate"] });
+        }
+        if (!data.eventLocation?.trim()) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event location is required.", path: ["eventLocation"] });
+        }
+    }
 });
 
 
@@ -232,7 +237,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
@@ -521,7 +526,7 @@ export default function CommunityFeedPage() {
             )}
              {postType === 'poll' && (
                 <div className="space-y-2">
-                  <Label>Poll Options (at least 2 required)</Label>
+                  <Label>Poll Options</Label>
                   {(watch("pollOptions") || []).map((_, index) => (
                     <div key={index} className="flex items-center gap-2">
                        <Controller

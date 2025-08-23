@@ -46,7 +46,6 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'>): Promise<CommunityPost | null> {
-    console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
         const dataForDb: Prisma.CommunityPostCreateInput = {
             tenantId: postData.tenantId,
@@ -60,19 +59,17 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             flagCount: postData.flagCount,
             timestamp: new Date(),
             
-            // Type-specific fields handled correctly
+            // Type-specific fields are only added if they are relevant to the post type
             imageUrl: postData.type === 'text' && postData.imageUrl ? postData.imageUrl : undefined,
-            pollOptions: postData.type === 'poll' ? (postData.pollOptions || Prisma.JsonNull) : Prisma.JsonNull,
+            pollOptions: postData.type === 'poll' && postData.pollOptions ? postData.pollOptions : Prisma.JsonNull,
             eventTitle: postData.type === 'event' ? postData.eventTitle : undefined,
-            eventDate: postData.type === 'event' ? (postData.eventDate ? new Date(postData.eventDate) : undefined) : undefined,
+            eventDate: postData.type === 'event' && postData.eventDate ? new Date(postData.eventDate) : undefined,
             eventLocation: postData.type === 'event' ? postData.eventLocation : undefined,
             attendees: postData.type === 'event' ? postData.attendees : undefined,
             capacity: postData.type === 'event' ? postData.capacity : undefined,
             assignedTo: postData.type === 'request' ? postData.assignedTo : undefined,
             status: postData.type === 'request' ? postData.status : undefined,
         };
-
-        console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
         
         const newPost = await db.communityPost.create({
             data: dataForDb,
@@ -81,10 +78,9 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
         // Award badges after action
         await checkAndAwardBadges(postData.userId);
 
-        console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
         return newPost as unknown as CommunityPost;
     } catch (error) {
-        console.error('[CommunityAction LOG] 4. Error during post creation:', error);
+        console.error('[CommunityAction LOG] Error during post creation:', error);
         return null;
     }
 }
