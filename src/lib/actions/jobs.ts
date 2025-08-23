@@ -7,12 +7,23 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { checkAndAwardBadges } from './gamification';
 
 /**
- * Fetches all job openings from the database.
+ * Fetches job openings from the database, scoped to the user's tenant and platform-wide posts.
+ * @param tenantId The ID of the user's tenant.
  * @returns A promise that resolves to an array of JobOpening objects.
  */
-export async function getJobOpenings(): Promise<JobOpening[]> {
+export async function getJobOpenings(tenantId?: string): Promise<JobOpening[]> {
   try {
+    const whereClause: Prisma.JobOpeningWhereInput = tenantId 
+      ? {
+          OR: [
+            { tenantId: tenantId },
+            { tenantId: 'platform' }
+          ]
+        }
+      : {}; // Admin sees all
+
     const openings = await db.jobOpening.findMany({
+      where: whereClause,
       orderBy: {
         datePosted: 'desc',
       },
@@ -39,7 +50,7 @@ export async function addJobOpening(
     datePosted: new Date(),
     postedByAlumniId: currentUser.id,
     alumniName: currentUser.name,
-    tenantId: currentUser.tenantId,
+    tenantId: currentUser.tenantId, // Job is always associated with the user's tenant
   };
 
   try {

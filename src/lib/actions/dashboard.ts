@@ -17,21 +17,35 @@ import type {
   Badge,
   DailyChallenge,
 } from '@/types';
+import { Prisma } from '@prisma/client';
 
-export async function getDashboardData(tenantId?: string | null, userId?: string | null) {
-  console.log(`[DashboardAction] Fetching data from database...`);
+export async function getDashboardData(tenantId?: string | null, userId?: string | null, userRole?: 'admin' | 'manager' | 'user') {
+  console.log(`[DashboardAction] Fetching data from database for tenant: ${tenantId}, user: ${userId}`);
   
+  const isTenantScoped = userRole === 'manager' || userRole === 'user';
+  
+  // Define a base where clause for tenant-specific data
+  const tenantWhereClause = isTenantScoped && tenantId ? { tenantId } : {};
+
+  // Define a where clause for content that can be platform-wide (like community posts)
+  const platformContentWhereClause = isTenantScoped && tenantId 
+    ? { OR: [{ tenantId }, { tenantId: 'platform' }] }
+    : {};
+
   try {
-    const users = (await db.user.findMany()) as unknown as UserProfile[];
-    const tenants = (await db.tenant.findMany({ include: { settings: true } })) as unknown as Tenant[];
-    const resumeScans = (await db.resumeScanHistory.findMany()) as unknown as ResumeScanHistoryItem[];
-    const communityPosts = (await db.communityPost.findMany({ include: { comments: true } })) as unknown as CommunityPost[];
-    const jobApplications = (await db.jobApplication.findMany({ include: { interviews: true } })) as unknown as JobApplication[];
-    const appointments = (await db.appointment.findMany()) as unknown as Appointment[];
-    const activities = (await db.activity.findMany({ orderBy: { timestamp: 'desc' }, take: 50 })) as unknown as Activity[];
+    const users = (await db.user.findMany({ where: tenantWhereClause })) as unknown as UserProfile[];
+    // Admins see all tenants, managers see their own.
+    const tenants = (await db.tenant.findMany({ where: tenantId && userRole === 'manager' ? { id: tenantId } : {}, include: { settings: true } })) as unknown as Tenant[];
+    const resumeScans = (await db.resumeScanHistory.findMany({ where: tenantWhereClause })) as unknown as ResumeScanHistoryItem[];
+    const communityPosts = (await db.communityPost.findMany({ where: platformContentWhereClause, include: { comments: true } })) as unknown as CommunityPost[];
+    const jobApplications = (await db.jobApplication.findMany({ where: tenantWhereClause, include: { interviews: true } })) as unknown as JobApplication[];
+    const appointments = (await db.appointment.findMany({ where: tenantWhereClause })) as unknown as Appointment[];
+    const activities = (await db.activity.findMany({ where: tenantWhereClause, orderBy: { timestamp: 'desc' }, take: 50 })) as unknown as Activity[];
+    
+    // Global data (not tenant-specific)
     const badges = (await db.badge.findMany()) as unknown as Badge[];
     const promotions = (await db.promotionalContent.findMany()) as unknown as PromotionalContent[];
-    const mockInterviews = (await db.mockInterviewSession.findMany({ include: { answers: true } })) as unknown as MockInterviewSession[];
+    const mockInterviews = (await db.mockInterviewSession.findMany({ where: isTenantScoped && userId ? { userId } : {}, include: { answers: true } })) as unknown as MockInterviewSession[];
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
 

@@ -141,7 +141,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     async function loadData() {
         setIsLoading(true);
         const [data, promotions] = await Promise.all([
-            getDashboardData(user.tenantId, user.id),
+            getDashboardData(user.tenantId, user.id, user.role),
             getActivePromotionalContent()
         ]);
         setDashboardData(data);
@@ -634,5 +634,3 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     </>
   );
 }
-
-    

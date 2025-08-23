@@ -66,7 +66,7 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      const data = await getDashboardData(tenantId);
+      const data = await getDashboardData(tenantId, user.id, user.role);
       setDashboardData(data);
       setIsLoading(false);
     }
@@ -78,7 +78,7 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
         setShowManagerTour(true);
       }
     }
-  }, [tenantId]);
+  }, [tenantId, user]);
 
   const tenantStats = useMemo(() => {
     if (!dashboardData) return { activeUsers: 0, totalUsers: 0, resumesAnalyzed: 0, communityPosts: 0, activeAppointments: 0, pendingEventApprovals: 0 };
@@ -237,38 +237,6 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
             <CardHeader>
               <CardTitle>{t("managerDashboard.quickActions.title")}</CardTitle>
               <CardDescription>{t("managerDashboard.quickActions.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <Button asChild variant="outline">
-                  <Link href="/admin/user-management">
-                      <Users className="mr-2 h-4 w-4"/> {t("managerDashboard.quickActions.manageTenantUsers")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                  <Link href="/admin/content-moderation">
-                      <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.moderateTenantFeed")}
-                  </Link>
-              </Button>
-               <Button asChild variant="outline">
-                  <Link href="/admin/gallery-management">
-                      <Activity className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageEventGallery")}
-                  </Link>
-              </Button>
-               <Button asChild variant="outline">
-                  <Link href="/events">
-                      <CalendarCheck2 className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.reviewEventSubmissions")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                  <Link href="/admin/announcements">
-                      <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageAnnouncements")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/admin/promo-codes">
-                    <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", { defaultValue: "Promo Codes" })}
-                </Link>
-              </Button>
             </CardContent>
           </Card>
         )}
