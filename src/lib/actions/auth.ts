@@ -17,11 +17,25 @@ export async function loginUser(email: string, password?: string, tenantId?: str
   const user = await db.user.findFirst({
     where: {
       email: email,
-      tenantId: tenantId || 'platform', // Fallback to 'platform' if no tenantId is provided
     },
   });
 
   if (user) {
+    // Enforce tenant login rules
+    const isPlatformLogin = !tenantId || tenantId === 'platform';
+    
+    // Rule 1: Admins can ONLY log in via the main domain (platform)
+    if (user.role === 'admin' && !isPlatformLogin) {
+      console.warn(`[Auth] Admin login attempt failed for ${email} on tenant subdomain '${tenantId}'.`);
+      return null;
+    }
+    
+    // Rule 2: Non-admins MUST log in via their assigned tenant subdomain
+    if (user.role !== 'admin' && user.tenantId !== tenantId) {
+       console.warn(`[Auth] User login attempt failed for ${email}. User tenant '${user.tenantId}' does not match login subdomain '${tenantId}'.`);
+      return null;
+    }
+
     // In a real app, you would verify the hashed password here.
     const isPasswordMatch = user.password ? (password === user.password) : true;
     
