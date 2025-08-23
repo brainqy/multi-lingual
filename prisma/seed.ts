@@ -197,15 +197,6 @@ async function main() {
   console.log('Seeded system alerts.');
 
   // Seed Daily Challenges
-  await prisma.dailyChallenge.createMany({
-    data: [
-      { id: "flip-challenge-1", type: 'flip', title: "Platform Power User", description: "Complete tasks to prove your mastery.", xpReward: 1000, tasks: { create: [ { description: "Refer 5 colleagues.", action: "refer", target: 5 }, { description: "Analyze 3 resumes.", action: "analyze_resume", target: 3 } ] } },
-      { id: "challenge-1", type: 'standard', date: "2023-10-27", title: "Reverse a String", description: "Write a function that reverses a given string.", difficulty: "Easy", category: "Coding", solution: "Use `str.split('').reverse().join('')` or a two-pointer technique." },
-      { id: "challenge-2", type: 'standard', date: "2023-10-28", title: "Find the Missing Number", description: "Given an array of n distinct numbers from 0 to n, find the missing one.", difficulty: "Medium", category: "Coding", solution: "Use the sum formula n*(n+1)/2 and subtract the array's sum." },
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded daily challenges.');
 
   // Seed Badges
   await prisma.badge.createMany({

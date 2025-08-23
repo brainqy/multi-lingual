@@ -502,7 +502,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                         <div className="flex-1">
                           <p className={cn("font-medium text-sm", alert.type === 'error' ? "text-destructive" : alert.type === 'warning' ? "text-yellow-600" : "text-foreground")}>{alert.title}</p>
                           <p className="text-xs text-muted-foreground">{alert.message}</p>
-                          <p className="text-xs text-muted-foreground/70 mt-1">{formatDistanceToNow(parseISO(alert.timestamp), { addSuffix: true })}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}</p>
                            {alert.linkTo && <Button variant="link" size="xs" asChild className="p-0 h-auto mt-1"><Link href={alert.linkTo}>{alert.linkText || 'View Details'}</Link></Button>}
                         </div>
                         {!alert.isRead && (
@@ -516,7 +516,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                         <div className="flex-1">
                           <p className={cn("font-medium text-sm", alert.type === 'error' ? "text-destructive" : alert.type === 'warning' ? "text-yellow-600" : "text-foreground")}>{alert.title}</p>
                           <p className="text-xs text-muted-foreground">{alert.message}</p>
-                          <p className="text-xs text-muted-foreground/70 mt-1">{formatDistanceToNow(parseISO(alert.timestamp), { addSuffix: true })}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}</p>
                            {alert.linkTo && <Button variant="link" size="xs" asChild className="p-0 h-auto mt-1"><Link href={alert.linkTo}>{alert.linkText || 'View Details'}</Link></Button>}
                         </div>
                       </li>
