@@ -13,6 +13,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const posts = await db.blogPost.findMany({
       orderBy: { date: 'desc' },
+      include: { comments: true },
     });
     return posts as unknown as BlogPost[];
   } catch (error) {
@@ -30,6 +31,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const post = await db.blogPost.findUnique({
       where: { slug },
+      include: { comments: true },
     });
     return post as unknown as BlogPost | null;
   } catch (error) {
@@ -59,6 +61,7 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
     const newPost = await db.blogPost.create({
       data: {
         ...postData,
+        date: new Date(postData.date),
         slug, // Use the potentially modified, unique slug
         tags: postData.tags || [],
         bookmarkedBy: [],
@@ -116,7 +119,10 @@ export async function updateBlogGenerationSettings(settingsData: Partial<Omit<Bl
     const currentSettings = await getBlogGenerationSettings();
     const updatedSettings = await db.blogGenerationSettings.update({
       where: { id: currentSettings.id },
-      data: settingsData,
+      data: {
+        ...settingsData,
+        lastGenerated: settingsData.lastGenerated ? new Date(settingsData.lastGenerated) : undefined,
+      },
     });
     return updatedSettings as unknown as BlogGenerationSettings;
   } catch (error) {

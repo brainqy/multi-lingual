@@ -2,7 +2,7 @@
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Settings2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,15 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Settings, Loader2, Sparkles, Send, CalendarClock, Tag, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BlogGenerationSettings, BlogPost } from "@/types";
-import { sampleBlogGenerationSettings, sampleBlogPosts } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { generateAiBlogPost, type GenerateAiBlogPostInput, type GenerateAiBlogPostOutput } from "@/ai/flows/generate-ai-blog-post";
-import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
+import { generateAiBlogPost, type GenerateAiBlogPostInput } from "@/ai/flows/generate-ai-blog-post";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
+import { getBlogGenerationSettings, updateBlogGenerationSettings, createBlogPost } from "@/lib/actions/blog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const settingsSchemaBase = z.object({
   generationIntervalHours: z.coerce.number().min(1).max(720),
@@ -35,9 +35,10 @@ const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-')
 export default function AdminBlogSettingsPage() {
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
-  const [settings, setSettings] = useState<BlogGenerationSettings>(sampleBlogGenerationSettings);
+  const [settings, setSettings] = useState<BlogGenerationSettings | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [manualTopic, setManualTopic] = useState(settings.topics[0] || "");
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [manualTopic, setManualTopic] = useState("");
   const { toast } = useToast();
   
   const translatedSettingsSchema = settingsSchemaBase.extend({
@@ -47,35 +48,54 @@ export default function AdminBlogSettingsPage() {
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm<SettingsFormData>({
     resolver: zodResolver(translatedSettingsSchema),
-    defaultValues: {
-      generationIntervalHours: settings.generationIntervalHours,
-      topics: settings.topics.join(", "),
-      style: settings.style,
-    }
   });
   
-  useEffect(() => {
+  const fetchSettings = useCallback(async () => {
+    setIsPageLoading(true);
+    const fetchedSettings = await getBlogGenerationSettings();
+    setSettings(fetchedSettings);
+    setManualTopic(fetchedSettings.topics[0] || "");
     reset({
-      generationIntervalHours: settings.generationIntervalHours,
-      topics: settings.topics.join(", "),
-      style: settings.style,
+      generationIntervalHours: fetchedSettings.generationIntervalHours,
+      topics: fetchedSettings.topics.join(", "),
+      style: fetchedSettings.style,
     });
-  }, [settings, reset]);
+    setIsPageLoading(false);
+  }, [reset]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   if (!currentUser || currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
+  
+  if (isPageLoading || !settings) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-1/3" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
 
-  const onSettingsSubmit = (data: SettingsFormData) => {
-    const updatedSettings: BlogGenerationSettings = {
-      ...settings,
+  const onSettingsSubmit = async (data: SettingsFormData) => {
+    const updatedSettingsData: Partial<Omit<BlogGenerationSettings, 'id'>> = {
       generationIntervalHours: data.generationIntervalHours,
       topics: data.topics.split(',').map(t => t.trim()).filter(t => t),
       style: data.style,
     };
-    setSettings(updatedSettings);
-    Object.assign(sampleBlogGenerationSettings, updatedSettings); 
-    toast({ title: t("blogSettingsAdmin.toast.settingsSaved.title", { default: "Settings Saved" }), description: t("blogSettingsAdmin.toast.settingsSaved.description", { default: "Blog automation settings have been updated." }) });
+    
+    const updatedSettings = await updateBlogGenerationSettings(updatedSettingsData);
+    if (updatedSettings) {
+      setSettings(updatedSettings);
+      toast({ title: t("blogSettingsAdmin.toast.settingsSaved.title", { default: "Settings Saved" }), description: t("blogSettingsAdmin.toast.settingsSaved.description", { default: "Blog automation settings have been updated." }) });
+    } else {
+      toast({ title: "Error", description: "Failed to save settings.", variant: "destructive" });
+    }
   };
 
   const handleManualGenerate = async () => {
@@ -91,12 +111,11 @@ export default function AdminBlogSettingsPage() {
       };
       const blogOutput = await generateAiBlogPost(input);
       
-      const newPost: BlogPost = {
-        id: `blog-ai-${Date.now()}`,
+      const newPostData: Omit<BlogPost, 'id' | 'comments' | 'bookmarkedBy'> = {
         tenantId: 'platform',
-        userId: 'system-ai',
+        userId: currentUser.id,
         userName: 'JobMatch AI Writer',
-        userAvatar: 'https://picsum.photos/seed/aiwriter/50/50',
+        userAvatar: currentUser.profilePictureUrl,
         title: blogOutput.title,
         slug: generateSlug(blogOutput.title),
         author: 'JobMatch AI Writer',
@@ -104,22 +123,23 @@ export default function AdminBlogSettingsPage() {
         content: blogOutput.content,
         excerpt: blogOutput.excerpt,
         tags: blogOutput.suggestedTags,
-        comments: [],
-        imageUrl: "",
-        bookmarkedBy: []
+        imageUrl: "https://placehold.co/800x400.png",
       };
       
-      sampleBlogPosts.unshift(newPost); 
-      
-      const updatedSettings = { ...settings, lastGenerated: new Date().toISOString() };
-      setSettings(updatedSettings);
-      Object.assign(sampleBlogGenerationSettings, updatedSettings);
+      const createdPost = await createBlogPost(newPostData);
 
-      toast({ 
-        title: t("blogSettingsAdmin.toast.postGenerated.title", { default: "Post Generated!" }), 
-        description: t("blogSettingsAdmin.toast.postGenerated.description", { default: "New blog post '{title}' created successfully.", title: blogOutput.title }),
-        duration: 7000,
-      });
+      if (createdPost) {
+        const updatedSettings = await updateBlogGenerationSettings({ lastGenerated: new Date().toISOString() });
+        if(updatedSettings) setSettings(updatedSettings);
+
+        toast({ 
+          title: t("blogSettingsAdmin.toast.postGenerated.title", { default: "Post Generated!" }), 
+          description: t("blogSettingsAdmin.toast.postGenerated.description", { default: "New blog post '{title}' created successfully.", title: blogOutput.title }),
+          duration: 7000,
+        });
+      } else {
+        throw new Error("Failed to save the generated post to the database.");
+      }
 
     } catch (error) {
       console.error("AI Blog generation error:", error);
@@ -204,7 +224,7 @@ export default function AdminBlogSettingsPage() {
         <CardHeader>
           <CardTitle>{t("blogSettingsAdmin.manualGenerationTitle", { default: "Manual Generation" })}</CardTitle>
           <CardDescription>
-            {t("blogSettingsAdmin.lastGeneratedPrefix", { default: "Last generated:" })} {settings.lastGenerated ? formatDistanceToNow(new Date(settings.lastGenerated), { addSuffix: true }) : t("blogSettingsAdmin.lastGeneratedNever", { default: "Never" })}
+            {t("blogSettingsAdmin.lastGeneratedPrefix", { default: "Last generated:" })} {settings.lastGenerated ? formatDistanceToNow(parseISO(settings.lastGenerated), { addSuffix: true }) : t("blogSettingsAdmin.lastGeneratedNever", { default: "Never" })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
