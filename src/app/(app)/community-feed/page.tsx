@@ -217,6 +217,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
+      console.log("[CommunityFeedPage DEBUG] Creating new post with data:", data);
       const newPostData = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
@@ -236,6 +237,7 @@ export default function CommunityFeedPage() {
         flagCount: 0,
         status: data.type === 'request' ? 'open' as const : undefined,
       };
+      console.log("[CommunityFeedPage DEBUG] New post data:", newPostData);
       const newPost = await createCommunityPost(newPostData);
       if (newPost) {
         setPosts(prev => [newPost, ...prev]);
