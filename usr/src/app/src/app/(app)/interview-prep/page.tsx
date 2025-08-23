@@ -7,9 +7,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Mic, ListChecks } from "lucide-react";
+import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { sampleUserProfile, samplePracticeSessions, sampleCreatedQuizzes, sampleLiveInterviewSessions } from '@/lib/sample-data';
 import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
@@ -17,21 +16,25 @@ import QuestionFormDialog from '@/components/features/interview-prep/QuestionFor
 import PracticeSessionList from '@/components/features/interview-prep/PracticeSessionList';
 import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuizzesList';
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
-import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from '@/lib/actions/questions';
+import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from "@/lib/actions/questions";
+import { useAuth } from '@/hooks/use-auth';
+import { getAppointments } from '@/lib/actions/appointments';
+import { getCreatedQuizzes } from '@/lib/actions/quizzes';
+import { createMockInterviewSession } from '@/lib/actions/interviews';
 
 
 export default function InterviewPracticeHubPage() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
-  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>(samplePracticeSessions.filter(s => s.userId === sampleUserProfile.id));
+  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
   const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
-  const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>(sampleCreatedQuizzes);
+  const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
 
   const router = useRouter();
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
   
   const fetchQuestions = useCallback(async () => {
     setIsLoadingQuestions(true);
@@ -41,21 +44,74 @@ export default function InterviewPracticeHubPage() {
   }, []);
 
   useEffect(() => {
-    fetchQuestions();
-  }, [fetchQuestions]);
+    if (currentUser) {
+      const loadData = async () => {
+        const [appointments, quizzes] = await Promise.all([
+          getAppointments(currentUser.id),
+          getCreatedQuizzes(currentUser.id)
+        ]);
+
+        const userPracticeSessions = appointments
+          .filter(a => a.title.includes("Practice Session")) // Simple filter for demo
+          .map(a => ({
+            id: a.id,
+            userId: currentUser.id,
+            date: a.dateTime,
+            category: "Practice with Experts",
+            type: a.title,
+            language: "English",
+            status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
+          })) as PracticeSession[];
+        setPracticeSessions(userPracticeSessions);
+        setCreatedQuizzes(quizzes);
+      };
+      loadData();
+      fetchQuestions();
+    }
+  }, [currentUser, fetchQuestions]);
 
   const handleStartPracticeSetup = useCallback(() => {
     setIsSetupDialogOpen(true);
   }, []);
 
-  const handleSessionBooked = (newSession: PracticeSession, queryParams?: URLSearchParams) => {
-    setPracticeSessions(prev => [newSession, ...prev]);
-    samplePracticeSessions.unshift(newSession);
+  const handleSessionBooked = async (newSessionConfig: PracticeSessionConfig) => {
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+        return;
+    }
 
-    if (newSession.category === "Practice with AI" && queryParams) {
-      toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSession.aiTopicOrRole}".`, duration: 4000 });
-      router.push(`/ai-mock-interview?${queryParams.toString()}`);
+    if (newSessionConfig.type === "Practice with AI") {
+        const newSessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'> = {
+            userId: currentUser.id,
+            topic: newSessionConfig.aiTopicOrRole || 'AI Practice',
+            description: newSessionConfig.aiJobDescription,
+            status: 'in-progress',
+            createdAt: new Date().toISOString(),
+            timerPerQuestion: newSessionConfig.aiTimerPerQuestion,
+            difficulty: newSessionConfig.aiDifficulty ? (newSessionConfig.aiDifficulty.charAt(0).toUpperCase() + newSessionConfig.aiDifficulty.slice(1)) as 'Easy' | 'Medium' | 'Hard' : undefined,
+            questionCategories: newSessionConfig.aiQuestionCategories as InterviewQuestionCategory[],
+        };
+
+        const createdSession = await createMockInterviewSession(newSessionData);
+        
+        if (createdSession) {
+            const queryParams = new URLSearchParams();
+            queryParams.set('topic', newSessionConfig.aiTopicOrRole || '');
+            queryParams.set('numQuestions', String(newSessionConfig.aiNumQuestions));
+            queryParams.set('difficulty', String(newSessionConfig.aiDifficulty));
+            queryParams.set('autoFullScreen', 'true');
+            queryParams.set('sourceSessionId', createdSession.id);
+            if (newSessionConfig.aiJobDescription) queryParams.set('jobDescription', newSessionConfig.aiJobDescription);
+            if (newSessionConfig.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newSessionConfig.aiTimerPerQuestion));
+            if (newSessionConfig.aiQuestionCategories?.length) queryParams.set('categories', newSessionConfig.aiQuestionCategories.join(','));
+            
+            toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSessionConfig.aiTopicOrRole}".`, duration: 4000 });
+            router.push(`/ai-mock-interview?${queryParams.toString()}`);
+        } else {
+            toast({ title: "Error", description: "Could not create AI practice session.", variant: "destructive" });
+        }
     } else {
+      // Logic for booking with experts or friends
       toast({ title: "Session Booked!", description: "Your new practice session is scheduled." });
     }
     setIsSetupDialogOpen(false);
@@ -63,10 +119,6 @@ export default function InterviewPracticeHubPage() {
 
   const handleCancelPracticeSession = (sessionId: string) => {
     setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));
-    const globalIndex = samplePracticeSessions.findIndex(s => s.id === sessionId);
-    if (globalIndex !== -1) { (samplePracticeSessions[globalIndex] as any).status = 'CANCELLED'; }
-    const liveSessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionId);
-    if (liveSessionIndex !== -1) { sampleLiveInterviewSessions[liveSessionIndex].status = 'Cancelled'; }
     toast({ title: "Session Cancelled", description: "The practice session has been cancelled.", variant: "destructive" });
   };
 
@@ -81,6 +133,7 @@ export default function InterviewPracticeHubPage() {
   };
 
   const handleOpenEditQuestionDialog = (question: InterviewQuestion) => {
+    if (!currentUser) return;
     if (currentUser.role !== 'admin' && question.createdBy !== currentUser.id) {
         toast({title: "Permission Denied", description: "You can only edit questions you created.", variant: "destructive"});
         return;
@@ -90,6 +143,7 @@ export default function InterviewPracticeHubPage() {
   };
   
   const handleDeleteQuestion = async (questionId: string) => {
+     if (!currentUser) return;
      const questionToDelete = allBankQuestions.find(q => q.id === questionId);
      if (currentUser.role !== 'admin' && questionToDelete?.createdBy !== currentUser.id) {
         toast({title: "Permission Denied", description: "You can only delete questions you created.", variant: "destructive"});
@@ -127,6 +181,7 @@ export default function InterviewPracticeHubPage() {
   };
   
   const handleToggleBookmarkQuestion = async (questionId: string) => {
+    if (!currentUser) return;
     const updatedQuestion = await toggleBookmarkQuestion(questionId, currentUser.id);
     if (updatedQuestion) {
       setAllBankQuestions(prevQs => prevQs.map(q => q.id === questionId ? updatedQuestion : q));
@@ -134,6 +189,10 @@ export default function InterviewPracticeHubPage() {
       toast({ title: "Error", description: "Could not update bookmark.", variant: "destructive" });
     }
   };
+
+  if (!currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="space-y-8">
