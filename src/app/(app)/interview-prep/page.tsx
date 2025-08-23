@@ -22,6 +22,10 @@ import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
 
+const logger = {
+  log: (message: string, ...args: any[]) => console.log(`[InterviewPrepPage] ${message}`, ...args),
+};
+
 
 export default function InterviewPracticeHubPage() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
@@ -77,12 +81,16 @@ export default function InterviewPracticeHubPage() {
   }, []);
 
   const handleSessionBooked = async (newSessionConfig: PracticeSessionConfig) => {
+    logger.log('1. handleSessionBooked triggered with config:', newSessionConfig);
     if (!currentUser) {
+        logger.log('2. No current user. Aborting and showing toast.');
         toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
         return;
     }
+    logger.log('3. Current user found:', currentUser.id);
 
     if (newSessionConfig.type === "ai") {
+        logger.log('4. Session type is "ai". Preparing to create a mock interview session.');
         const newSessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'> = {
             userId: currentUser.id,
             topic: newSessionConfig.aiTopicOrRole || 'AI Practice',
@@ -93,10 +101,11 @@ export default function InterviewPracticeHubPage() {
             difficulty: newSessionConfig.aiDifficulty ? (newSessionConfig.aiDifficulty.charAt(0).toUpperCase() + newSessionConfig.aiDifficulty.slice(1)) as 'Easy' | 'Medium' | 'Hard' : undefined,
             questionCategories: newSessionConfig.aiQuestionCategories as InterviewQuestionCategory[],
         };
-
+        logger.log('5. Calling createMockInterviewSession with data:', newSessionData);
         const createdSession = await createMockInterviewSession(newSessionData);
         
         if (createdSession) {
+            logger.log('6. Session created successfully in DB. ID:', createdSession.id);
             const queryParams = new URLSearchParams();
             queryParams.set('topic', newSessionConfig.aiTopicOrRole || '');
             queryParams.set('numQuestions', String(newSessionConfig.aiNumQuestions));
@@ -107,13 +116,16 @@ export default function InterviewPracticeHubPage() {
             if (newSessionConfig.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newSessionConfig.aiTimerPerQuestion));
             if (newSessionConfig.aiQuestionCategories?.length) queryParams.set('categories', newSessionConfig.aiQuestionCategories.join(','));
             
+            logger.log('7. Prepared query params:', queryParams.toString());
             toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSessionConfig.aiTopicOrRole}".`, duration: 4000 });
+            logger.log('8. Redirecting to /ai-mock-interview...');
             router.push(`/ai-mock-interview?${queryParams.toString()}`);
         } else {
+            logger.log('9. Failed to create AI practice session in DB.');
             toast({ title: "Error", description: "Could not create AI practice session.", variant: "destructive" });
         }
     } else {
-      // Logic for booking with experts or friends
+      logger.log('4. Session type is "experts" or "friends". Preparing to create an appointment.');
       const newAppointmentData: Omit<Appointment, 'id'> = {
         tenantId: currentUser.tenantId,
         requesterUserId: currentUser.id,
@@ -125,10 +137,12 @@ export default function InterviewPracticeHubPage() {
         notes: newSessionConfig.type === 'friends' ? `Invitation sent to ${newSessionConfig.friendEmail}` : `Category: ${newSessionConfig.interviewCategory}`
       };
       
+      logger.log('5. Calling createAppointment with data:', newAppointmentData);
       const newAppointment = await createAppointment(newAppointmentData);
 
       if (newAppointment) {
-        setPracticeSessions(prev => [...prev, {
+        logger.log('6. Appointment created successfully in DB. ID:', newAppointment.id);
+        const newPracticeSession: PracticeSession = {
           id: newAppointment.id,
           userId: newAppointment.requesterUserId,
           date: newAppointment.dateTime,
@@ -138,12 +152,16 @@ export default function InterviewPracticeHubPage() {
           status: 'SCHEDULED',
           topic: newAppointment.title,
           createdAt: new Date().toISOString(), // Use current time for createdAt
-        }]);
+        };
+        logger.log('7. Adding new practice session to local state:', newPracticeSession);
+        setPracticeSessions(prev => [...prev, newPracticeSession]);
         toast({ title: "Session Booked!", description: "Your new practice session is scheduled and visible in 'My Appointments'." });
       } else {
+        logger.log('8. Failed to create appointment in DB.');
         toast({ title: "Booking Failed", description: "Could not schedule the practice session.", variant: "destructive" });
       }
     }
+    logger.log('10. Closing setup dialog.');
     setIsSetupDialogOpen(false);
   };
 
@@ -287,3 +305,4 @@ export default function InterviewPracticeHubPage() {
     </div>
   );
 }
+
