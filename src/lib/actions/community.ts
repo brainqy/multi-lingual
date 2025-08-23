@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -44,21 +45,29 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments'>): Promise<CommunityPost | null> {
+  console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
   try {
+    // Destructure to explicitly exclude 'comments' which shouldn't be in the create payload.
+    const { comments, ...restOfPostData } = postData;
+
+    const dataForDb = {
+      ...restOfPostData,
+      timestamp: new Date(),
+      pollOptions: postData.pollOptions || Prisma.JsonNull, // Prisma expects JsonNull for empty JSON
+      tags: postData.tags || [],
+    };
+    console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
     const newPost = await db.communityPost.create({
-      data: {
-        ...postData,
-        timestamp: new Date(),
-        pollOptions: postData.pollOptions || null, // Prisma expects JsonNull for empty JSON
-        tags: postData.tags || [],
-      },
+      data: dataForDb,
     });
+    console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
     return newPost as unknown as CommunityPost;
   } catch (error) {
-    console.error('[CommunityAction] Error creating post:', error);
+    console.error('[CommunityAction LOG] 4. Error during post creation:', error);
     return null;
   }
 }
+
 
 /**
  * Adds a comment to a specific post.
@@ -97,7 +106,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Co
             where: { id: postId },
             data: {
                 ...cleanUpdateData,
-                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? null : undefined),
+                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? Prisma.JsonNull : undefined),
                 tags: updateData.tags ? updateData.tags : undefined,
             },
             include: {
