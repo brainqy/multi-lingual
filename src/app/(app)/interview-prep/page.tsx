@@ -20,6 +20,7 @@ import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion
 import { useAuth } from '@/hooks/use-auth';
 import { getAppointments } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
+import { createMockInterviewSession } from '@/lib/actions/interviews';
 
 
 export default function InterviewPracticeHubPage() {
@@ -73,17 +74,49 @@ export default function InterviewPracticeHubPage() {
     setIsSetupDialogOpen(true);
   }, []);
 
-  const handleSessionBooked = (newSession: PracticeSession, queryParams?: URLSearchParams) => {
-    setPracticeSessions(prev => [newSession, ...prev]);
+  const handleSessionBooked = async (newSessionConfig: PracticeSessionConfig) => {
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+        return;
+    }
 
-    if (newSession.category === "Practice with AI" && queryParams) {
-      toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSession.aiTopicOrRole}".`, duration: 4000 });
-      router.push(`/ai-mock-interview?${queryParams.toString()}`);
+    if (newSessionConfig.type === "ai") {
+        const newSessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'> = {
+            userId: currentUser.id,
+            topic: newSessionConfig.aiTopicOrRole || 'AI Practice',
+            description: newSessionConfig.aiJobDescription,
+            status: 'in-progress',
+            createdAt: new Date().toISOString(),
+            timerPerQuestion: newSessionConfig.aiTimerPerQuestion,
+            difficulty: newSessionConfig.aiDifficulty ? (newSessionConfig.aiDifficulty.charAt(0).toUpperCase() + newSessionConfig.aiDifficulty.slice(1)) as 'Easy' | 'Medium' | 'Hard' : undefined,
+            questionCategories: newSessionConfig.aiQuestionCategories as InterviewQuestionCategory[],
+        };
+
+        const createdSession = await createMockInterviewSession(newSessionData);
+        
+        if (createdSession) {
+            const queryParams = new URLSearchParams();
+            queryParams.set('topic', newSessionConfig.aiTopicOrRole || '');
+            queryParams.set('numQuestions', String(newSessionConfig.aiNumQuestions));
+            queryParams.set('difficulty', String(newSessionConfig.aiDifficulty));
+            queryParams.set('autoFullScreen', 'true');
+            queryParams.set('sourceSessionId', createdSession.id);
+            if (newSessionConfig.aiJobDescription) queryParams.set('jobDescription', newSessionConfig.aiJobDescription);
+            if (newSessionConfig.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newSessionConfig.aiTimerPerQuestion));
+            if (newSessionConfig.aiQuestionCategories?.length) queryParams.set('categories', newSessionConfig.aiQuestionCategories.join(','));
+            
+            toast({ title: "AI Interview Setup Complete!", description: `Redirecting to start your AI mock interview for "${newSessionConfig.aiTopicOrRole}".`, duration: 4000 });
+            router.push(`/ai-mock-interview?${queryParams.toString()}`);
+        } else {
+            toast({ title: "Error", description: "Could not create AI practice session.", variant: "destructive" });
+        }
     } else {
+      // Logic for booking with experts or friends
       toast({ title: "Session Booked!", description: "Your new practice session is scheduled." });
     }
     setIsSetupDialogOpen(false);
   };
+
 
   const handleCancelPracticeSession = (sessionId: string) => {
     setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));

@@ -25,7 +25,7 @@ const friendEmailSchema = z.string().email("Please enter a valid email address."
 interface PracticeSetupDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSessionBooked: (session: PracticeSession, queryParams?: URLSearchParams) => void;
+  onSessionBooked: (sessionConfig: PracticeSessionConfig) => void;
 }
 
 export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }: PracticeSetupDialogProps) {
@@ -108,55 +108,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
   };
 
   const handleFinalBookSession = () => {
-    if (!practiceSessionConfig.type || !currentUser) return;
-
-    if (practiceSessionConfig.type === 'experts') {
-        if (!practiceSessionConfig.dateTime) {
-            toast({ title: "Booking Error", description: "Please select a date and time.", variant: "destructive"});
-            return;
-        }
-        const newSession: PracticeSession = {
-            id: `ps-expert-${Date.now()}`,
-            userId: currentUser.id,
-            date: practiceSessionConfig.dateTime.toISOString(),
-            category: "Practice with Experts",
-            type: `${practiceSessionConfig.interviewCategory}: ${practiceSessionConfig.topics.join(', ')}`,
-            language: "English", 
-            status: "SCHEDULED",
-            notes: `Scheduled expert session for category "${practiceSessionConfig.interviewCategory}" on topics: ${practiceSessionConfig.topics.join(', ')}.`,
-        };
-        onSessionBooked(newSession);
-    } else if (practiceSessionConfig.type === 'ai') {
-        if (!practiceSessionConfig.aiTopicOrRole?.trim()) return;
-        
-        const newPracticeSession: PracticeSession = {
-          id: `ps-ai-${Date.now()}`,
-          userId: currentUser.id,
-          date: new Date().toISOString(),
-          category: "Practice with AI",
-          type: practiceSessionConfig.aiTopicOrRole,
-          language: "English", 
-          status: "SCHEDULED", 
-          notes: `AI Mock interview configured for: ${practiceSessionConfig.aiTopicOrRole}`,
-          aiTopicOrRole: practiceSessionConfig.aiTopicOrRole,
-          aiJobDescription: practiceSessionConfig.aiJobDescription,
-          aiNumQuestions: practiceSessionConfig.aiNumQuestions,
-          aiDifficulty: practiceSessionConfig.aiDifficulty,
-          aiTimerPerQuestion: practiceSessionConfig.aiTimerPerQuestion,
-          aiQuestionCategories: practiceSessionConfig.aiQuestionCategories as InterviewQuestionCategory[],
-        };
-        const queryParams = new URLSearchParams();
-        queryParams.set('topic', newPracticeSession.aiTopicOrRole || '');
-        queryParams.set('numQuestions', String(newPracticeSession.aiNumQuestions));
-        queryParams.set('difficulty', String(newPracticeSession.aiDifficulty));
-        queryParams.set('autoFullScreen', 'true');
-        queryParams.set('sourceSessionId', newPracticeSession.id);
-        if (newPracticeSession.aiJobDescription) queryParams.set('jobDescription', newPracticeSession.aiJobDescription);
-        if (newPracticeSession.aiTimerPerQuestion) queryParams.set('timerPerQuestion', String(newPracticeSession.aiTimerPerQuestion));
-        if (newPracticeSession.aiQuestionCategories?.length) queryParams.set('categories', newPracticeSession.aiQuestionCategories.join(','));
-        
-        onSessionBooked(newPracticeSession, queryParams);
-    }
+    onSessionBooked(practiceSessionConfig);
     onClose();
   };
 
