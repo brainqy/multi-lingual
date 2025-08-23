@@ -221,5 +221,95 @@
     "title": "मेरी नियुक्तियाँ",
     "untitledRequest": "अशीर्षक अनुरोध",
     "whatWentWell": "क्या अच्छा हुआ? सुधार के लिए कोई क्षेत्र हैं?"
+  },
+  "gamificationRules": {
+    "title": "गेमिफिकेशन नियम प्रबंधन",
+    "description": "पूरे प्लेटफॉर्म के लिए बैज और XP पॉइंट नियम कॉन्फ़िगर करें।",
+    "badgeConfig": {
+      "title": "बैज कॉन्फ़िगरेशन",
+      "description": "उपयोगकर्ताओं द्वारा उनकी उपलब्धियों के लिए अर्जित किए जा सकने वाले बैज प्रबंधित करें।",
+      "createButton": "नया बैज बनाएं",
+      "editButton": "संपादित करें",
+      "deleteButton": "हटाएं",
+      "noBadges": "अभी तक कोई बैज नहीं बनाया गया है।"
+    },
+    "xpRules": {
+      "title": "XP पॉइंट नियम",
+      "description": "उपयोगकर्ता विशिष्ट कार्यों के लिए अनुभव अंक कैसे अर्जित करते हैं, इसके लिए नियम परिभाषित करें।",
+      "createButton": "नया XP नियम बनाएं",
+      "noRules": "अभी तक कोई XP नियम परिभाषित नहीं किया गया है।"
+    },
+    "table": {
+      "icon": "आइकन",
+      "name": "नाम",
+      "description": "विवरण",
+      "xpReward": "XP पुरस्कार",
+      "trigger": "ट्रिगर",
+      "actions": "कार्रवाइयाँ",
+      "actionId": "एक्शन आईडी",
+      "xpPoints": "XP अंक"
+    },
+    "dialog": {
+      "editBadgeTitle": "बैज संपादित करें",
+      "createBadgeTitle": "नया बैज बनाएं",
+      "badgeNameLabel": "बैज का नाम",
+      "badgeNameTooltip": "यह उपयोगकर्ता को प्रदर्शित किया जाएगा।",
+      "descriptionLabel": "विवरण",
+      "descriptionTooltip": "यह बैज किस लिए है, इसका वर्णन करें।",
+      "iconNameLabel": "आइकन का नाम",
+      "iconNameTooltip": "से एक वैध आइकन नाम दर्ज करें",
+      "iconNamePlaceholder": "जैसे, Award, UserCheck, Zap",
+      "iconNameHelpText": "पर उपलब्ध आइकन ब्राउज़ करें",
+      "xpRewardLabel": "XP पुरस्कार",
+      "xpRewardTooltip": "इस बैज के साथ कितना XP दिया जाता है?",
+      "triggerConditionLabel": "ट्रिगर शर्त",
+      "triggerConditionTooltip": "यह बैज कैसे अर्जित किया जाता है इसका वर्णन करें।",
+      "triggerConditionPlaceholder": "जैसे, प्रोफाइल 100% पूर्ण करें",
+      "saveChangesButton": "बदलाव सहेजें",
+      "createButton": "बनाएं",
+      "editXpRuleTitle": "XP नियम संपादित करें",
+      "createXpRuleTitle": "नया XP नियम बनाएं",
+      "actionIdLabel": "एक्शन आईडी",
+      "actionIdTooltip": "कार्रवाई के लिए एक अद्वितीय पहचानकर्ता (जैसे, 'complete_profile')।",
+      "actionIdPlaceholder": "जैसे, 'login', 'post_comment'",
+      "actionIdHelpText": "बनाने के बाद बदला नहीं जा सकता।",
+      "ruleDescriptionLabel": "नियम विवरण",
+      "ruleDescriptionTooltip": "कार्रवाई का एक उपयोगकर्ता-अनुकूल विवरण।",
+      "ruleDescriptionPlaceholder": "जैसे, 'अपना प्रोफाइल पूर्ण करें'",
+      "xpPointsLabel": "XP अंक",
+      "xpPointsTooltip": "यह कार्रवाई कितने अंकों के लायक है।"
+    },
+    "toast": {
+      "badgeUpdated": {
+        "title": "बैज अपडेट किया गया",
+        "description": "'{name}' बैज अपडेट कर दिया गया है।"
+      },
+      "badgeCreated": {
+        "title": "बैज बनाया गया",
+        "description": "'{name}' बैज बना दिया गया है।"
+      },
+      "xpRuleUpdated": {
+        "title": "XP नियम अपडेट किया गया",
+        "description": "'{description}' के लिए नियम अपडेट कर दिया गया है।"
+      },
+      "error": {
+        "title": "त्रुटि",
+        "description": "एक्शन आईडी '{actionId}' पहले से मौजूद है।"
+      },
+      "xpRuleCreated": {
+        "title": "XP नियम बनाया गया",
+        "description": "'{description}' के लिए नियम बना दिया गया है।"
+      },
+      "badgeDeleted": {
+        "title": "बैज हटा दिया गया",
+        "description": "बैज सफलतापूर्वक हटा दिया गया है।"
+      },
+      "xpRuleDeleted": {
+        "title": "XP नियम हटा दिया गया",
+        "description": "XP नियम सफलतापूर्वक हटा दिया गया है।"
+      }
+    }
   }
 }
+
+    

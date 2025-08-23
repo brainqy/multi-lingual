@@ -193,13 +193,13 @@ export default function GamificationRulesPage() {
             <p className="text-sm font-semibold text-yellow-500">+{badge.xpReward || 0} XP</p>
         </div>
         <p className="text-sm text-muted-foreground">{badge.description}</p>
-        <p className="text-xs text-muted-foreground italic"><strong>Trigger:</strong> {badge.triggerCondition || 'N/A'}</p>
+        <p className="text-xs text-muted-foreground italic"><strong>{t("gamificationRules.table.trigger")}:</strong> {badge.triggerCondition || 'N/A'}</p>
         <div className="flex justify-end gap-2 border-t pt-3">
             <Button variant="outline" size="sm" onClick={() => openEditBadgeDialog(badge)}>
-                <Edit3 className="h-4 w-4 mr-1" /> Edit
+                <Edit3 className="h-4 w-4 mr-1" /> {t("gamificationRules.badgeConfig.editButton")}
             </Button>
             <Button variant="destructive" size="sm" onClick={() => handleDeleteBadge(badge.id)}>
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
+                <Trash2 className="h-4 w-4 mr-1" /> {t("gamificationRules.badgeConfig.deleteButton")}
             </Button>
         </div>
       </CardContent>
@@ -218,10 +218,10 @@ export default function GamificationRulesPage() {
         </div>
         <div className="flex justify-end gap-2 border-t pt-3">
             <Button variant="outline" size="sm" onClick={() => openEditXpRuleDialog(rule)}>
-                <Edit3 className="h-4 w-4 mr-1" /> Edit
+                <Edit3 className="h-4 w-4 mr-1" /> {t("gamificationRules.badgeConfig.editButton")}
             </Button>
             <Button variant="destructive" size="sm" onClick={() => handleDeleteXpRule(rule.actionId)}>
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
+                <Trash2 className="h-4 w-4 mr-1" /> {t("gamificationRules.badgeConfig.deleteButton")}
             </Button>
         </div>
       </CardContent>
@@ -472,3 +472,5 @@ export default function GamificationRulesPage() {
     </TooltipProvider>
   );
 }
+
+    
