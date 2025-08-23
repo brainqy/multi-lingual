@@ -60,7 +60,10 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
   try {
     const updatedAppointment = await db.appointment.update({
       where: { id: appointmentId },
-      data: updateData,
+      data: {
+        ...updateData,
+        dateTime: updateData.dateTime ? new Date(updateData.dateTime) : undefined,
+      },
     });
     return updatedAppointment as unknown as Appointment;
   } catch (error) {
