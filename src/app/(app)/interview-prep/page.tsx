@@ -154,7 +154,7 @@ export default function InterviewPracticeHubPage() {
         const newPracticeSession: PracticeSession = {
           id: newAppointment.id,
           userId: newAppointment.requesterUserId,
-          date: newAppointment.dateTime,
+          date: new Date(newAppointment.dateTime).toISOString(),
           category: newSessionConfig.type === 'experts' ? "Practice with Experts" : "Practice with Friends",
           type: newAppointment.title,
           language: "English",
