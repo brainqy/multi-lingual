@@ -92,7 +92,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
         <div className="bg-secondary/40 p-2 rounded-md">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
-            <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</p>
+            <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</p>
           </div>
           <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
         </div>
@@ -622,7 +622,7 @@ export default function CommunityFeedPage() {
                     <div className="flex-1">
                       <p className="font-semibold text-foreground">{post.userName}</p>
                       <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
-                        <span>{formatDistanceToNow(parseISO(post.timestamp), { addSuffix: true })}</span>
+                        <span>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</span>
                         {post.type === 'poll' && (
                           <Badge variant="outline" className="border-blue-500 text-blue-500">Poll</Badge>
                         )}

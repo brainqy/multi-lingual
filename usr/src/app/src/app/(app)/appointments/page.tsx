@@ -50,7 +50,7 @@ export default function AppointmentsPage() {
   const { user: currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [allUsers, setAllUsers] = useState<AlumniProfile[]>([]);
-  const [assignedPosts, setAssignedPosts] = useState<CommunityPost[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
   const [filterStartDate, setFilterStartDate] = useState<Date | undefined>();
@@ -73,16 +73,14 @@ export default function AppointmentsPage() {
   const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const [userAppointments, users, communityPosts] = await Promise.all([
+    const [userAppointments, users, posts] = await Promise.all([
       getAppointments(currentUser.id),
       getUsers(),
       getCommunityPosts(currentUser.tenantId, currentUser.id),
     ]);
     setAppointments(userAppointments);
     setAllUsers(users as AlumniProfile[]);
-    setAssignedPosts(communityPosts.filter(
-      post => post.type === 'request' && post.assignedTo === currentUser.name && post.status === 'in progress'
-    ));
+    setCommunityPosts(posts);
     setIsLoading(false);
   }, [currentUser]);
 
@@ -98,11 +96,18 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getPartnerDetails = (appointment: Appointment): AlumniProfile | undefined => {
-    if (!currentUser) return undefined;
+  const getPartnerDetails = useCallback((appointment: Appointment | null): AlumniProfile | undefined => {
+    if (!currentUser || !appointment) return undefined;
     const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
-  };
+  }, [currentUser, allUsers]);
+
+  const assignedPosts = useMemo(() => {
+    if (!currentUser || !communityPosts) return [];
+    return communityPosts.filter(
+      post => post.type === 'request' && post.assignedTo === currentUser.name && post.status === 'in progress'
+    );
+  }, [communityPosts, currentUser]);
 
   const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, successToast: { title: string, description: string }, variant?: "destructive") => {
     const updated = await updateAppointment(appointmentId, { status });
@@ -185,15 +190,19 @@ export default function AppointmentsPage() {
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
-      const apptDate = parseISO(appt.dateTime);
-      const partner = getPartnerDetails(appt);
+      if (!appt) return false;
+      const apptDate = new Date(appt.dateTime);
+      
+      const partnerDetails = getPartnerDetails(appt);
+
       const matchesStatus = filterStatuses.size === 0 || filterStatuses.has(appt.status);
       const matchesStartDate = !filterStartDate || apptDate >= filterStartDate;
       const matchesEndDate = !filterEndDate || apptDate <= filterEndDate;
-      const matchesName = filterAlumniName === '' || (partner && partner.name.toLowerCase().includes(filterAlumniName.toLowerCase()));
+      const matchesName = filterAlumniName === '' || (partnerDetails && partnerDetails.name.toLowerCase().includes(filterAlumniName.toLowerCase()));
+      
       return matchesStatus && matchesStartDate && matchesEndDate && matchesName;
     });
-  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName, allUsers]);
+  }, [appointments, filterStatuses, filterStartDate, filterEndDate, filterAlumniName, getPartnerDetails]);
   
   if (isLoading || !currentUser) {
     return (
@@ -272,7 +281,7 @@ export default function AppointmentsPage() {
               {filteredAppointments.map((appt) => {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
-                const apptDate = parseISO(appt.dateTime);
+                const apptDate = new Date(appt.dateTime);
                 const reminderDate = appt.reminderDate ? parseISO(appt.reminderDate) : null;
                 const daysToReminder = reminderDate && isFuture(reminderDate) ? differenceInDays(reminderDate, new Date()) : null;
 
