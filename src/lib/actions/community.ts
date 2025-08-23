@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { CommunityPost, CommunityComment } from '@/types';
+import { checkAndAwardBadges } from './gamification';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -77,6 +78,9 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             data: dataForDb,
         });
 
+        // Award badges after action
+        await checkAndAwardBadges(postData.userId);
+
         console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
         return newPost as unknown as CommunityPost;
     } catch (error) {
@@ -100,6 +104,10 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         timestamp: new Date(),
       },
     });
+
+    // Award badges after action
+    await checkAndAwardBadges(commentData.userId);
+
     return newComment as unknown as CommunityComment;
   } catch (error) {
     console.error('[CommunityAction] Error adding comment:', error);

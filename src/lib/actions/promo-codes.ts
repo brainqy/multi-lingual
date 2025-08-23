@@ -4,6 +4,10 @@
 import { db } from '@/lib/db';
 import type { PromoCode } from '@/types';
 import { isPast, parseISO } from 'date-fns';
+import { updateUser } from '@/lib/data-services/users';
+import { getWallet, updateWallet } from './wallet';
+import { createActivity } from './activities';
+import { checkAndAwardBadges } from './gamification';
 
 /**
  * Fetches all promo codes.
@@ -97,19 +101,43 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
         if (promoCode.expiresAt && isPast(promoCode.expiresAt)) return { success: false, message: 'This promo code has expired.' };
         if (promoCode.usageLimit > 0 && promoCode.timesUsed >= promoCode.usageLimit) return { success: false, message: 'This promo code has reached its usage limit.' };
 
-        // In a real app, you would also check if this specific user has already used a one-time code.
-        
-        await db.promoCode.update({
-            where: { id: promoCode.id },
-            data: { timesUsed: { increment: 1 } },
+        const user = await db.user.findUnique({ where: { id: userId } });
+        if (!user) return { success: false, message: 'User not found.' };
+
+        await db.$transaction(async (prisma) => {
+            await prisma.promoCode.update({
+                where: { id: promoCode.id },
+                data: { timesUsed: { increment: 1 } },
+            });
+
+            const rewardDescription = `Redeemed promo code: ${promoCode.code}`;
+
+            switch (promoCode.rewardType) {
+                case 'coins':
+                case 'flash_coins':
+                    const wallet = await getWallet(userId);
+                    if (wallet) {
+                        await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
+                    }
+                    break;
+                case 'xp':
+                    await updateUser(userId, { xpPoints: (user.xpPoints || 0) + promoCode.rewardValue });
+                    break;
+                case 'premium_days':
+                    console.log(`Adding ${promoCode.rewardValue} premium days to user ${userId}`);
+                    break;
+            }
+
+            await createActivity({
+                userId: user.id,
+                tenantId: user.tenantId,
+                description: `${rewardDescription} for ${promoCode.rewardValue} ${promoCode.rewardType}.`
+            });
         });
+        
+        await checkAndAwardBadges(userId);
 
-        // Here you would apply the reward to the user's account (e.g., update user's coins or XP).
-        // This is a simplified example.
-        console.log(`User ${userId} redeemed code ${code} for ${promoCode.rewardValue} ${promoCode.rewardType}.`);
-
-
-        return { success: true, message: `Successfully redeemed code!`, rewardType: promoCode.rewardType, rewardValue: promoCode.rewardValue };
+        return { success: true, message: `Successfully redeemed code for ${promoCode.rewardValue} ${promoCode.rewardType}!`, rewardType: promoCode.rewardType, rewardValue: promoCode.rewardValue };
 
     } catch (error) {
         console.error(`[PromoCodeAction] Error redeeming code ${code}:`, error);

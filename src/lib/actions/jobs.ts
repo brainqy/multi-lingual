@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { JobApplication, Interview, JobOpening, UserProfile, JobApplicationStatus } from '@/types';
 import { Prisma, type PrismaClient } from '@prisma/client';
+import { checkAndAwardBadges } from './gamification';
 
 /**
  * Fetches all job openings from the database.
@@ -45,6 +46,8 @@ export async function addJobOpening(
     const newOpening = await db.jobOpening.create({
       data: newOpeningData,
     });
+    // Award badges after action
+    await checkAndAwardBadges(currentUser.id);
     return newOpening as unknown as JobOpening;
   } catch (error) {
     console.error('[JobAction] Error creating job opening:', error);
@@ -103,6 +106,8 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
         interviews: true,
       },
     });
+    // Award badges after action
+    await checkAndAwardBadges(applicationData.userId);
     return newApplication as unknown as JobApplication;
   } catch (error) {
     console.error('[JobAction] Error creating job application:', error);
