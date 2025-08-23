@@ -31,21 +31,21 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
           userId,
           coins: 100, // Starting bonus
         },
-        include: {
-          transactions: true,
-        },
       });
+
       // Add initial transaction
-       await db.walletTransaction.create({
+      await db.walletTransaction.create({
         data: {
             walletId: newWallet.id,
             description: "Initial account bonus",
             amount: 100,
             type: 'credit',
+            date: new Date(),
         }
-       });
-       // Refetch the wallet to include the new transaction correctly
-       wallet = await db.wallet.findUnique({
+      });
+
+      // Refetch the wallet to include the new transaction correctly
+      wallet = await db.wallet.findUnique({
         where: { userId },
         include: {
           transactions: {
@@ -55,12 +55,11 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
             take: 50,
           }
         }
-       });
+      });
     }
 
     // Manually sort flashCoins if they exist on the returned wallet object
     if (wallet && (wallet as any).flashCoins && Array.isArray((wallet as any).flashCoins)) {
-      // The Prisma type might not know about flashCoins if it's a JSON field, so we cast to any
       (wallet as any).flashCoins.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
     }
     
@@ -80,9 +79,10 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
  */
 export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'coins'>>, transactionDescription: string): Promise<Wallet | null> {
     try {
-        const currentWallet = await getWallet(userId);
+        const currentWallet = await db.wallet.findUnique({ where: { userId } });
         if (!currentWallet) {
-            throw new Error("Wallet not found for user.");
+            // If for some reason the wallet doesn't exist, create it
+            return await getWallet(userId);
         }
 
         const oldCoins = currentWallet.coins;
@@ -94,9 +94,6 @@ export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'c
             data: {
                 coins: data.coins
             },
-            include: {
-                transactions: { orderBy: { date: 'desc' }, take: 50 },
-            }
         });
 
         if (amountChange !== 0) {
@@ -105,7 +102,8 @@ export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'c
                     walletId: updatedWallet.id,
                     description: transactionDescription,
                     amount: amountChange,
-                    type: amountChange > 0 ? 'credit' : 'debit'
+                    type: amountChange > 0 ? 'credit' : 'debit',
+                    date: new Date(),
                 }
             });
         }
