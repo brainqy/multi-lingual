@@ -47,6 +47,9 @@ model User {
   yearsOfExperience           String?
   skills                      String[]
   areasOfSupport              String[]
+  offersHelpWith              String[]
+  shortBio                    String?
+  university                  String?
   timeCommitment              String?
   preferredEngagementMode     String?
   otherComments               String?
