@@ -61,13 +61,13 @@ export default function InterviewPracticeHubPage() {
           .map(a => ({
             id: a.id,
             userId: currentUser.id,
-            date: a.dateTime,
+            date: new Date(a.dateTime).toISOString(),
             category: "Practice with Experts",
             type: a.title,
             language: "English",
             status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
-            topic: a.title, // Add topic
-            createdAt: a.dateTime, // Use dateTime as createdAt for consistency
+            topic: a.title, 
+            createdAt: new Date(a.dateTime).toISOString(), 
           })) as PracticeSession[];
         setPracticeSessions(userPracticeSessions);
         setCreatedQuizzes(quizzes);
