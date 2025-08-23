@@ -32,17 +32,28 @@ export async function getPromoCodes(): Promise<PromoCode[]> {
  * @returns The newly created PromoCode object or null.
  */
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
+  console.log('[PromoCodeAction] 1. Starting createPromoCode function.');
   try {
+    console.log('[PromoCodeAction] 2. Received promo code data:', codeData);
+    const dataForDb = {
+      ...codeData,
+      code: codeData.code.toUpperCase(),
+      expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
+    };
+    console.log('[PromoCodeAction] 3. Prepared data for database:', dataForDb);
+    console.log('[PromoCodeAction] 4. Calling db.promoCode.create to insert into the database...');
+    
     const newCode = await db.promoCode.create({
-      data: {
-        ...codeData,
-        code: codeData.code.toUpperCase(),
-        expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
-      },
+      data: dataForDb,
     });
+
+    console.log('[PromoCodeAction] 5. Database operation successful. New code created:', newCode);
+    console.log('[PromoCodeAction] 6. Returning the new promo code.');
     return newCode as unknown as PromoCode;
   } catch (error) {
+    console.error('[PromoCodeAction] 7. An error occurred in the try block.');
     console.error('[PromoCodeAction] Error creating promo code:', error);
+    console.log('[PromoCodeAction] 8. Returning null due to error.');
     return null;
   }
 }
@@ -150,5 +161,3 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
         return { success: false, message: 'An unexpected error occurred.' };
     }
 }
-
-  
