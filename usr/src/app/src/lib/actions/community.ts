@@ -1,7 +1,9 @@
+
 'use server';
 
 import { db } from '@/lib/db';
-import type { CommunityPost, CommunityComment, UserProfile } from '@/types';
+import { Prisma } from '@prisma/client';
+import type { CommunityPost, CommunityComment } from '@/types';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -14,24 +16,21 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
     const posts = await db.communityPost.findMany({
       where: {
         OR: [
-          { tenantId: tenantId },
+          { tenantId: tenantId ?? undefined },
           { tenantId: 'platform' }
         ],
       },
       include: {
-        comments: true // Only use 'true' if 'comments' is a relation field in your Prisma schema
+        comments: {
+          orderBy: {
+            timestamp: 'asc',
+          },
+        },
       },
       orderBy: {
         timestamp: 'desc',
       },
       take: 50, // Limit to the latest 50 posts for performance
-    });
-    // If you want to order comments by timestamp, sort them in JS after fetching
-    posts.forEach((post: any) => {
-      if (post.comments) {
-        (post.comments as Array<{ timestamp: string }>).
-          sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-      }
     });
     return posts as unknown as CommunityPost[];
   } catch (error) {
@@ -46,18 +45,22 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments'>): Promise<CommunityPost | null> {
+  console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
   try {
+    const dataForDb = {
+      ...postData,
+      timestamp: new Date(),
+      pollOptions: postData.pollOptions || Prisma.JsonNull,
+      tags: postData.tags || [],
+    };
+    console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
     const newPost = await db.communityPost.create({
-      data: {
-        ...postData,
-        timestamp: new Date(),
-        pollOptions: postData.pollOptions || undefined, // Prisma expects JsonNull for empty JSON
-        tags: postData.tags || [],
-      },
+      data: dataForDb,
     });
+    console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
     return newPost as unknown as CommunityPost;
   } catch (error) {
-    console.error('[CommunityAction] Error creating post:', error);
+    console.error('[CommunityAction LOG] 4. Error during post creation:', error);
     return null;
   }
 }
@@ -91,7 +94,6 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
  */
 export async function updateCommunityPost(postId: string, updateData: Partial<CommunityPost>): Promise<CommunityPost | null> {
     try {
-        // Prisma doesn't like undefined values for optional fields, so we clean them up.
         const cleanUpdateData = Object.fromEntries(
             Object.entries(updateData).filter(([_, v]) => v !== undefined)
         );
@@ -100,10 +102,12 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Co
             where: { id: postId },
             data: {
                 ...cleanUpdateData,
-                // Ensure JSON fields are handled correctly if they are part of the update
-                pollOptions: updateData.pollOptions ? updateData.pollOptions : undefined,
+                pollOptions: updateData.pollOptions ? updateData.pollOptions : (updateData.type !== 'poll' ? Prisma.JsonNull : undefined),
                 tags: updateData.tags ? updateData.tags : undefined,
             },
+            include: {
+                comments: true,
+            }
         });
         return updatedPost as unknown as CommunityPost;
     } catch (error) {

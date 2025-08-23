@@ -191,17 +191,28 @@ export default function CommunityFeedPage() {
   }, [allUsers, currentUser]);
 
   const handleFormSubmit = async (data: PostFormData) => {
-    if (!currentUser) return;
+    console.log("[CommunityFeedPage LOG] 1. handleFormSubmit triggered with form data:", data);
+
+    if (!currentUser) {
+      console.log("[CommunityFeedPage LOG] 2. No current user found. Aborting.");
+      return;
+    }
+    console.log("[CommunityFeedPage LOG] 3. Current user is present:", currentUser.id);
+
     let pollOptionsFinal = undefined;
     if (data.type === 'poll' && data.pollOptions) {
+        console.log("[CommunityFeedPage LOG] 4a. Post type is 'poll'. Processing options.");
         pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
+        console.log("[CommunityFeedPage LOG] 4b. Filtered poll options:", pollOptionsFinal);
         if (pollOptionsFinal.length < 2) {
+            console.log("[CommunityFeedPage LOG] 4c. Poll has less than 2 options. Aborting.");
             toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
             return;
         }
     }
 
     if (editingPost) {
+      console.log("[CommunityFeedPage LOG] 5a. Mode: Editing post with ID:", editingPost.id);
       const updatedPostData: Partial<CommunityPost> = {
         content: data.content,
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
@@ -214,7 +225,9 @@ export default function CommunityFeedPage() {
         attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
         capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
       };
+      console.log("[CommunityFeedPage LOG] 6a. Prepared update data:", updatedPostData);
       const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
+      console.log("[CommunityFeedPage LOG] 7a. Received response from updateCommunityPost:", updatedPost);
       if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
@@ -222,6 +235,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
+      console.log("[CommunityFeedPage LOG] 5b. Mode: Creating new post.");
       const newPostData = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
@@ -241,7 +255,9 @@ export default function CommunityFeedPage() {
         flagCount: 0,
         status: data.type === 'request' ? 'open' as const : undefined,
       };
+      console.log("[CommunityFeedPage LOG] 6b. Prepared create data:", newPostData);
       const newPost = await createCommunityPost(newPostData);
+      console.log("[CommunityFeedPage LOG] 7b. Received response from createCommunityPost:", newPost);
       if (newPost) {
         setPosts(prev => [newPost, ...prev]);
         toast({ title: "Post Created", description: "Your post has been added to the feed." });
@@ -249,6 +265,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
       }
     }
+    console.log("[CommunityFeedPage LOG] 8. Closing dialog and resetting form.");
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
@@ -836,3 +853,4 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+
