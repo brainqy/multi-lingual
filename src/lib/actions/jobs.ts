@@ -130,7 +130,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
         }
         
         console.log(`[JobAction DEBUG] 5. Starting database transaction.`);
-        const updatedApp = await db.$transaction(async (prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => {
+        const updatedApp = await db.$transaction(async (prisma) => {
             console.log(`[JobAction DEBUG] 6. Inside transaction: Updating main jobApplication record.`);
             await prisma.jobApplication.update({
                 where: { id: applicationId },
@@ -193,7 +193,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   try {
-    await db.$transaction(async (prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">) => {
+    await db.$transaction(async (prisma) => {
         await prisma.interview.deleteMany({ where: { jobApplicationId: applicationId }});
         await prisma.jobApplication.delete({ where: { id: applicationId } });
     });
