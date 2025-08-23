@@ -16,10 +16,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
-import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
-import { getFeatureRequests, createFeatureRequest, updateFeatureRequest, upvoteFeatureRequest } from "@/lib/actions/feature-requests";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { createFeatureRequest, getFeatureRequests, updateFeatureRequest, upvoteFeatureRequest } from "@/lib/actions/feature-requests";
 
 export default function FeatureRequestsPage() {
   const { user: currentUser } = useAuth();
@@ -46,8 +45,7 @@ export default function FeatureRequestsPage() {
   const fetchRequests = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
-    const fetchedRequests = await getFeatureRequests(tenantIdToFetch);
+    const fetchedRequests = await getFeatureRequests(currentUser.tenantId);
     setRequests(fetchedRequests);
     setIsLoading(false);
   }, [currentUser]);
@@ -56,9 +54,8 @@ export default function FeatureRequestsPage() {
     fetchRequests();
   }, [fetchRequests]);
 
-
-  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
-    return <AccessDeniedMessage />;
+  if (!currentUser) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
 
   const onSubmitSuggestion = async (data: FeatureRequestFormData) => {
@@ -117,7 +114,7 @@ export default function FeatureRequestsPage() {
     setValue('description', request.description);
     setIsSuggestDialogOpen(true);
   };
-
+  
   const openDetailDialog = (request: FeatureRequest) => {
     setSelectedRequest(request);
     setIsDetailDialogOpen(true);
@@ -192,7 +189,7 @@ export default function FeatureRequestsPage() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           {selectedRequest && (
             <>
@@ -200,7 +197,7 @@ export default function FeatureRequestsPage() {
                 <DialogTitle className="text-2xl">{selectedRequest.title}</DialogTitle>
                 <DialogUIDescription className="pt-2 flex items-center gap-2">
                    <Avatar className="h-6 w-6"><AvatarImage src={selectedRequest.userAvatar} /><AvatarFallback>{selectedRequest.userName.substring(0,1)}</AvatarFallback></Avatar>
-                    <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(parseISO(selectedRequest.timestamp), { addSuffix: true })}</span>
+                    <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(new Date(selectedRequest.timestamp), { addSuffix: true })}</span>
                 </DialogUIDescription>
               </DialogHeader>
               <div className="py-4 max-h-[50vh] overflow-y-auto">

@@ -6,14 +6,17 @@ import type { FeatureRequest } from '@/types';
 
 /**
  * Fetches all feature requests. Scoped by tenant for managers.
- * @param tenantId Optional tenant ID. If provided, fetches requests for that tenant.
+ * @param tenantId Optional tenant ID. If provided, fetches requests for that tenant and platform-wide requests. If undefined, fetches all.
  * @returns A promise that resolves to an array of FeatureRequest objects.
  */
 export async function getFeatureRequests(tenantId?: string): Promise<FeatureRequest[]> {
   try {
     const whereClause: any = {};
     if (tenantId) {
-      whereClause.tenantId = tenantId;
+      whereClause.OR = [
+        { tenantId: tenantId },
+        { tenantId: 'platform' }, // Users/managers also see platform-wide requests
+      ];
     }
     const requests = await db.featureRequest.findMany({
       where: whereClause,
