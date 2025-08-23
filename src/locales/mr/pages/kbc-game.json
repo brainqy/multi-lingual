@@ -1,0 +1,67 @@
+
+{
+  "kbcGame": {
+    "initialMessage": "एक उत्तर निवडा आणि ते लॉक करा!",
+    "winMessage": "अभिनंदन! तुम्ही {xp} XP सह गेम जिंकला आहे!",
+    "correctMessage": "बरोबर! पुढे जाण्यासाठी 'पुढील प्रश्न' वर क्लिक करा.",
+    "wrongMessage": "चुकीचे उत्तर! तुम्ही {xp} XP घेऊन बाहेर पडता.",
+    "nextReward": "पुढील बक्षीस",
+    "audiencePollResults": "प्रेक्षक पोल परिणाम",
+    "backToQuestion": "प्रश्नावर परत जा",
+    "questionForXP": "{xp} XP साठी प्रश्न {number}",
+    "lockAnswer": "उत्तर लॉक करा",
+    "nextQuestion": "पुढील प्रश्न",
+    "playAgain": "पुन्हा खेळा",
+    "xpLadder": "XP शिडी",
+    "otherGames": "इतर खेळ",
+    "playNumberMatch": "नंबर मॅच गेम खेळा",
+    "setup": {
+      "title": "तुमचा विषय निवडा",
+      "description": "KBC क्विझ गेम सुरू करण्यासाठी एक श्रेणी निवडा. खेळण्यासाठी {cost} कॉइन्स लागतील.",
+      "allTopics": "सर्व विषय",
+      "startButton": "खेळ सुरू करा"
+    },
+    "gameOver": {
+      "title": "चुकीचे उत्तर",
+      "correctAnswerWas": "योग्य उत्तर होते:",
+      "explanation": "स्पष्टीकरण:"
+    },
+    "toast": {
+      "walletNotLoaded": {
+        "title": "वॉलेट लोड झाले नाही",
+        "description": "कृपया तुमचे वॉलेट लोड होण्याची थोडी प्रतीक्षा करा."
+      },
+      "insufficientCoins": {
+        "title": "अपुरे कॉइन्स",
+        "description": "खेळण्यासाठी तुम्हाला {cost} कॉइन्सची आवश्यकता आहे. रेफरल्स किंवा इतर उपक्रमांमधून अधिक कमवा!"
+      },
+      "notEnoughQuestions": {
+        "title": "पुरेसे प्रश्न नाहीत",
+        "description": "\"{topic}\" ने टॅग केलेले पुरेसे प्रश्न नाहीत. कृपया दुसरा विषय किंवा 'सर्व' निवडा."
+      },
+      "gameStart": {
+        "title": "-{cost} कॉइन्स",
+        "description": "खेळात शुभेच्छा!"
+      },
+      "fullscreenError": {
+        "title": "फुलस्क्रीन मोड",
+        "description": "स्वयंचलितपणे फुलस्क्रीनमध्ये प्रवेश करू शकलो नाही. तुम्ही ते मॅन्युअली प्रयत्न करू शकता."
+      },
+      "noAnswer": {
+        "title": "कोणतेही उत्तर निवडले नाही",
+        "description": "कृपया लॉक करण्यापूर्वी एक उत्तर निवडा."
+      },
+      "gameWon": {
+        "title": "तुम्ही जिंकलात!",
+        "description": "तुम्ही सर्व प्रश्नांची अचूक उत्तरे दिली आहेत!"
+      },
+      "correctAnswer": {
+        "title": "बरोबर उत्तर!",
+        "description": "तुम्ही {xp} XP मिळवले आहेत!"
+      },
+      "expertAdvice": {
+        "title": "तज्ञांचा सल्ला"
+      }
+    }
+  }
+}

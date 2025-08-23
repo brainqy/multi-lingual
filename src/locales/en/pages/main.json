@@ -1,0 +1,15 @@
+
+{
+  "dashboard": {
+    "navigation": {
+      "overview": "Overview",
+      "translate": "Translate",
+      "settings": "Settings",
+      "admin": "Admin Panel"
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "logout": "Logout"
+    }
+  }
+}

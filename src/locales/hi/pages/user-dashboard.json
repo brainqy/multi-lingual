@@ -1,0 +1,80 @@
+
+{
+  "userDashboard": {
+    "title": "डैशबोर्ड",
+    "welcomeTour": {
+      "title": "आपके डैशबोर्ड में आपका स्वागत है!"
+    },
+    "customizeButton": "डैशबोर्ड अनुकूलित करें",
+    "progress": {
+      "title": "आपकी प्रगति",
+      "level": "स्तर {level}",
+      "totalXp": "कुल {xp} XP",
+      "dayStreak": "दिन की स्ट्रीक",
+      "badgesEarned": "बैज अर्जित"
+    },
+    "dailyChallenge": {
+      "title": "आज की दैनिक चुनौती",
+      "viewButton": "चुनौती देखें"
+    },
+    "toast": {
+      "appointmentReminder": {
+        "title": "नियुक्ति अनुस्मारक",
+        "description": "{user} के साथ आपकी '{title}' नियुक्ति आज {time} पर है।"
+      },
+      "dashboardUpdated": {
+        "title": "डैशबोर्ड अपडेट किया गया!",
+        "description": "आपकी विजेट प्राथमिकताएं सहेजी गई हैं।"
+      }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "नौकरी आवेदन स्थिति",
+        "description": "आपकी नौकरी खोज का एक दृश्य अवलोकन।"
+      },
+      "matchScoreOverTime": {
+        "title": "समय के साथ मैच स्कोर",
+        "description": "आपके रिज्यूमे विश्लेषण स्कोर में रुझान।"
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "नौकरी आवेदन अनुस्मारक",
+        "description": "आपकी आगामी समय-सीमा और अनुवर्ती कार्रवाइयाँ।",
+        "noReminders": "कोई आगामी अनुस्मारक नहीं।",
+        "viewButton": "विवरण देखें"
+      }
+    },
+    "upcomingSessions": {
+      "title": "आगामी सत्र",
+      "description": "आपकी पुष्टि की गई नियुक्तियाँ और अभ्यास साक्षात्कार।",
+      "noSessions": "कोई आगामी सत्र निर्धारित नहीं है।",
+      "typeLabel": "प्रकार",
+      "withLabel": "साथ",
+      "dateLabel": "तिथि",
+      "todayLabel": "(आज!)"
+    },
+    "recentActivities": {
+      "title": "हाल की गतिविधियाँ",
+      "description": "आपके हाल के कार्यों का एक स्नैपशॉट।",
+      "noActivities": "अभी तक कोई गतिविधि नहीं।",
+      "viewAllButton": "सभी गतिविधियाँ देखें"
+    },
+    "widgets": {
+      "promotionCard": "प्रचार स्पॉटलाइट",
+      "jobApplicationStatusChart": "नौकरी आवेदन स्थिति चार्ट",
+      "matchScoreOverTimeChart": "समय के साथ मैच स्कोर चार्ट",
+      "jobAppReminders": "नौकरी ऐप अनुस्मारक",
+      "upcomingAppointments": "आगामी नियुक्तियाँ और साक्षात्कार",
+      "recentActivities": "हाल की गतिविधियाँ",
+      "userBadges": "मेरे बैज",
+      "leaderboard": "लीडरबोर्ड सारांश"
+    },
+    "customizeDialog": {
+      "title": "डैशबोर्ड विजेट्स को अनुकूलित करें",
+      "description": "अपने डैशबोर्ड पर प्रदर्शित करने के लिए विजेट्स चुनें।",
+      "cancelButton": "रद्द करें",
+      "saveButton": "सहेजें"
+    }
+  }
+}

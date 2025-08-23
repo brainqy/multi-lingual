@@ -1,0 +1,159 @@
+
+{
+  "platformSettings": {
+    "title": "Platform Settings",
+    "description": "Manage global settings for the JobMatch AI platform.",
+    "saveButton": "Save All Settings",
+    "validation": {
+      "platformNameMin": "Platform name must be at least 3 characters.",
+      "maxJobPostingDaysMin": "Max job posting days must be at least 1.",
+      "maxJobPostingDaysMax": "Max job posting days cannot exceed 365.",
+      "xpMin": "XP points must be non-negative.",
+      "appointmentCostMin": "Appointment cost must be non-negative.",
+      "maxResumesMin": "Max resume uploads must be at least 1.",
+      "maxResumesMax": "Max resume uploads cannot exceed 50.",
+      "sessionTimeoutMin": "Session timeout must be at least 5 minutes.",
+      "sessionTimeoutMax": "Session timeout cannot exceed 1440 minutes (24 hours).",
+      "maxEventRegistrationsMin": "Max event registrations must be at least 1.",
+      "maxEventRegistrationsMax": "Max event registrations cannot exceed 100.",
+      "globalAnnouncementMax": "Global announcement cannot exceed 500 characters.",
+      "pointsForAffiliateMin": "Points for affiliate signup must be non-negative."
+    },
+    "toast": {
+      "settingsSaved": {
+        "title": "Settings Saved",
+        "description": "Platform settings have been successfully updated."
+      }
+    },
+    "general": {
+      "sectionTitle": "General Settings",
+      "platformName": {
+        "label": "Platform Name",
+        "description": "The name displayed across the platform."
+      },
+      "maintenanceMode": {
+        "label": "Maintenance Mode",
+        "description": "Enable to take the platform offline for users."
+      },
+      "defaultProfileVisibility": {
+        "label": "Default Profile Visibility",
+        "description": "Set the default visibility for new user profiles.",
+        "options": {
+          "public": "Public",
+          "alumni_only": "Alumni Only",
+          "private": "Private"
+        }
+      },
+      "maxResumesPerUser": {
+        "label": "Max Resume Uploads per User",
+        "description": "Limit for resume profiles a user can create/upload."
+      },
+      "defaultTheme": {
+        "label": "Default Theme",
+        "description": "Set the default theme for new users.",
+        "options": {
+          "light": "Light",
+          "dark": "Dark"
+        }
+      },
+      "enablePublicProfilePages": {
+        "label": "Enable Public Profile Pages",
+        "description": "Allow users to have publicly accessible profile URLs."
+      },
+      "sessionTimeoutMinutes": {
+        "label": "Session Timeout (Minutes)",
+        "description": "Inactive user sessions will expire after this duration."
+      },
+      "globalAnnouncement": {
+        "label": "Global Announcement Bar Text",
+        "description": "Text displayed in a banner across the platform (leave empty to hide).",
+        "placeholder": "e.g., New features launched! Check out..."
+      }
+    },
+    "community": {
+      "sectionTitle": "Community & Feed",
+      "communityFeedEnabled": {
+        "label": "Enable Community Feed"
+      },
+      "autoModeratePosts": {
+        "label": "Enable AI Auto-Moderation for Posts",
+        "description": "If enabled, AI will attempt to flag potentially inappropriate content."
+      }
+    },
+    "career": {
+      "sectionTitle": "Career Tools",
+      "jobBoardEnabled": {
+        "label": "Enable Job Board"
+      },
+      "maxJobPostingDays": {
+        "label": "Max Job Posting Duration (Days)",
+        "description": "How long job posts remain active by default."
+      },
+      "resumeAnalyzerEnabled": {
+        "label": "Enable Resume Analyzer"
+      },
+      "aiResumeWriterEnabled": {
+        "label": "Enable AI Resume Writer"
+      },
+      "coverLetterGeneratorEnabled": {
+        "label": "Enable Cover Letter Generator"
+      },
+      "mockInterviewEnabled": {
+        "label": "Enable Mock Interview Features"
+      }
+    },
+    "engagement": {
+      "sectionTitle": "Engagement & Rewards",
+      "gamificationEnabled": {
+        "label": "Enable Gamification (XP, Badges)"
+      },
+      "xpForLogin": {
+        "label": "XP for Daily Login",
+        "description": "Points awarded for daily active use."
+      },
+      "xpForNewPost": {
+        "label": "XP for New Community Post",
+        "description": "Points awarded for creating a post."
+      },
+      "referralsEnabled": {
+        "label": "Enable User Referrals"
+      },
+      "affiliateProgramEnabled": {
+        "label": "Enable Affiliate Program"
+      },
+      "pointsForAffiliateSignup": {
+        "label": "Points for Successful Affiliate Signup",
+        "description": "Points awarded to referrer when an affiliate signup is completed."
+      },
+      "featureRequestsEnabled": {
+        "label": "Enable Feature Request System"
+      }
+    },
+    "alumniConnect": {
+      "sectionTitle": "Alumni Connect & Events",
+      "alumniConnectEnabled": {
+        "label": "Enable Alumni Connect (Directory, Appointments)"
+      },
+      "defaultAppointmentCost": {
+        "label": "Default Cost for Booking Alumni Appointment (Coins)",
+        "description": "Coins deducted from requester's wallet."
+      },
+      "maxEventRegistrationsPerUser": {
+        "label": "Max Event Registrations per User",
+        "description": "Limit for active event registrations per user."
+      }
+    },
+    "tenantCustomization": {
+      "sectionTitle": "Tenant Customization Options",
+      "description": "Control what aspects tenants can customize for their instance.",
+      "allowTenantCustomBranding": {
+        "label": "Allow Tenants to Customize Branding",
+        "description": "If enabled, tenant managers can upload logos and set theme colors."
+      },
+      "allowTenantEmailCustomization": {
+        "label": "Allow Tenants to Customize Email Templates",
+        "description": "If enabled, tenant managers can modify certain outgoing email templates."
+      }
+    }
+  }
+}

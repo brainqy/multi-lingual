@@ -1,0 +1,29 @@
+
+{
+  "dailyChallenge": {
+    "title": "Daily Interview Challenge",
+    "refresh": "Get New Challenge",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "yourAnswer": "Type your answer here...",
+    "showHint": "Show Hint",
+    "submit": "Submit",
+    "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!",
+    "completeTasksButton": "Complete Tasks to Earn XP",
+    "flipChallengeTitle": "Flip Challenge",
+    "toast": {
+      "newChallenge": {
+        "title": "New Challenges Loaded",
+        "description": "A new standard and flip challenge have been fetched for you."
+      },
+      "showHint": {
+        "title": "Hint",
+        "noHint": "No specific hint available for this question."
+      },
+      "submitMock": {
+        "title": "Submission Received (Mock)",
+        "description": "In a real app, your answer would be evaluated. This feature is coming soon!"
+      }
+    }
+  }
+}

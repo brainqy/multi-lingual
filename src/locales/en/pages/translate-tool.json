@@ -1,0 +1,16 @@
+
+{
+  "translateTool": {
+    "title": "Translation Tool",
+    "enterTextLabel": "Enter Text to Translate",
+    "enterTextPlaceholder": "Type any word or sentence here...",
+    "submitButton": "Translate",
+    "originalText": "Original Text",
+    "suggestedTranslations": "Suggested Translations",
+    "qualityScore": "Quality Score",
+    "errorTranslating": "An error occurred while translating. Please try again.",
+    "english": "English",
+    "marathi": "Marathi",
+    "hindi": "Hindi"
+  }
+}

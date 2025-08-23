@@ -1,0 +1,16 @@
+
+{
+  "translateTool": {
+    "title": "अनुवाद उपकरण",
+    "enterTextLabel": "अनुवाद करने के लिए पाठ दर्ज करें",
+    "enterTextPlaceholder": "यहां कोई भी शब्द या वाक्य टाइप करें...",
+    "submitButton": "अनुवाद करें",
+    "originalText": "मूल पाठ",
+    "suggestedTranslations": "सुझाए गए अनुवाद",
+    "qualityScore": "गुणवत्ता स्कोर",
+    "errorTranslating": "अनुवाद करते समय एक त्रुटि हुई। कृपया पुन: प्रयास करें।",
+    "english": "अंग्रेज़ी",
+    "marathi": "मराठी",
+    "hindi": "हिन्दी"
+  }
+}

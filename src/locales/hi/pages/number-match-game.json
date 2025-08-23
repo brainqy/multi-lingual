@@ -1,0 +1,42 @@
+
+{
+  "numberMatchGame": {
+    "title": "नंबर मैच गेम",
+    "description": "एक बड़ा पुरस्कार जीतने के लिए 777 नंबर का मिलान करें!",
+    "initialMessage": "खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
+    "rollingMessage": "रोलिंग...",
+    "winMessage": "यह 777 है! आपने {reward} सिक्के जीते!",
+    "gameOverMessage": "खेल समाप्त! आपने कुल {total} सिक्के जीते।",
+    "notAMatchMessage": "मिलान नहीं हुआ। अगली बार बेहतर भाग्य!",
+    "resetMessage": "एक नया खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
+    "gameOverTitle": "खेल समाप्त!",
+    "consolationPrizeMessage": "आपने कुल सांत्वना पुरस्कार जीता:",
+    "coins": "सिक्के",
+    "cost": "लागत",
+    "attemptsLeft": "शेष प्रयास",
+    "playButton": "अभी खेलें",
+    "rollingButton": "रोलिंग...",
+    "resetButton": "खेल रीसेट करें",
+    "otherGames": "अन्य खेल",
+    "playKBC": "केबीसी क्विज़ गेम खेलें",
+    "prizeTitle": "पुरस्कार",
+    "toast": {
+      "gameOver": {
+        "title": "खेल समाप्त",
+        "description": "फिर से खेलने के लिए कृपया रीसेट करें।"
+      },
+      "insufficientCoins": {
+        "title": "अपर्याप्त सिक्के",
+        "description": "खेलने के लिए आपको {cost} सिक्कों की आवश्यकता है।"
+      },
+      "gameStart": {
+        "title": "-{cost} सिक्के",
+        "description": "शुभकामनाएं!"
+      },
+      "win": {
+        "title": "बधाई हो!",
+        "description": "आपने {reward} सिक्के जीते! वे आपके वॉलेट में जोड़ दिए गए हैं।"
+      }
+    }
+  }
+}

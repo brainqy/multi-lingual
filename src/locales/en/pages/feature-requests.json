@@ -1,0 +1,55 @@
+
+{
+  "featureRequests": {
+    "pageTitle": "Feature Requests & Suggestions",
+    "pageDescription": "Have an idea to improve the platform? Share it with us! Vote on suggestions you like.",
+    "suggestButton": "Suggest a Feature",
+    "dialogCreateTitle": "Suggest a New Feature",
+    "dialogEditTitle": "Edit Your Suggestion",
+    "dialogDescriptionCreate": "What new idea do you have? Describe it below.",
+    "dialogDescriptionEdit": "You can update the title and description of your suggestion.",
+    "formTitleLabel": "Title",
+    "formTitlePlaceholder": "e.g., Add a dark mode",
+    "formDescriptionLabel": "Description",
+    "formDescriptionPlaceholder": "Explain your idea in more detail. Why would it be useful?",
+    "cancelButtonDialog": "Cancel",
+    "submitButtonDialog": "Submit Suggestion",
+    "saveChangesButtonDialog": "Save Changes",
+    "noRequestsTitle": "No Suggestions Yet",
+    "noRequestsDescription": "Be the first to suggest a new feature!",
+    "statusPending": "Pending",
+    "statusInProgress": "In Progress",
+    "statusCompleted": "Completed",
+    "statusRejected": "Rejected",
+    "statusUnknown": "Unknown",
+    "suggestedBy": "Suggested by {name}",
+    "voteButton": "Vote ({count})",
+    "viewDetailsButton": "View Details",
+    "validation": {
+      "titleMin": "Title must be at least 5 characters.",
+      "titleMax": "Title cannot exceed 100 characters.",
+      "descriptionMin": "Description must be at least 10 characters.",
+      "descriptionMax": "Description cannot exceed 1000 characters."
+    },
+    "toastSuggestionSubmitted": {
+      "title": "Suggestion Submitted!",
+      "description": "Thank you for your feedback."
+    },
+    "toastSuggestionUpdated": {
+      "title": "Suggestion Updated!",
+      "description": "Your feature request has been updated."
+    },
+    "toastCannotEdit": {
+      "title": "Cannot Edit",
+      "description": "You can only edit your own suggestions while they are pending."
+    },
+    "toastUpvoted": {
+      "title": "Voted!",
+      "description": "Your vote has been recorded."
+    },
+    "toastViewDetailsMock": {
+      "title": "View Details (Mock)",
+      "description": "Viewing details for '{title}'. This feature is for demonstration."
+    }
+  }
+}

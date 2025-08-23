@@ -1,0 +1,33 @@
+
+{
+  "gamification": {
+    "title": "बक्षिसे आणि बॅजेस",
+    "pageDescription": "तुमचे XP, दैनिक स्ट्रीक, आणि मिळवलेले बॅजेस ट्रॅक करा.",
+    "xpLevel": {
+      "title": "XP आणि स्तर",
+      "level": "स्तर",
+      "xpToNextLevel": "पुढील स्तर {level} साठी {count} XP",
+      "totalXp": "एकूण {count} XP"
+    },
+    "dailyStreak": {
+      "title": "दैनिक स्ट्रीक",
+      "dayStreak": "दिवसांची स्ट्रीक"
+    },
+    "badgesEarned": {
+      "title": "मिळालेले बॅज",
+      "totalBadges": "एकूण बॅज"
+    },
+    "yourBadges": "तुमचा बॅज संग्रह",
+    "badgesDescription": "प्लॅटफॉर्मवरील कार्ये आणि टप्पे पूर्ण केल्याबद्दल बॅज दिले जातात. बॅज कशासाठी आहे हे पाहण्यासाठी त्यावर होव्हर करा.",
+    "notYetEarned": "(अद्याप मिळवले नाही)",
+    "leaderboard": "समुदाय लीडरबोर्ड",
+    "leaderboardDescription": "XP गुणांवर आधारित इतर वापरकर्त्यांविरुद्ध तुम्ही कुठे रँक करता ते पहा.",
+    "noLeaderboardData": "लीडरबोर्ड डेटा सध्या मोजला जात आहे. लवकरच परत तपासा!",
+    "table": {
+      "rank": "रँक",
+      "user": "वापरकर्ता",
+      "xpPoints": "XP गुण"
+    },
+    "you": "(तुम्ही)"
+  }
+}

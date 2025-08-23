@@ -1,0 +1,126 @@
+
+{
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "description": "Platform-wide overview and management tools.",
+    "customizeButton": "Customize",
+    "promotionalSpotlight": {
+      "title": "Promotional Spotlight",
+      "description": "Manage and create promotional content for the user dashboard.",
+      "content": "This is a placeholder for a promotional card. Use the management page to configure what users see here.",
+      "learnMoreButton": "Learn More"
+    },
+    "stats": {
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "+{count} signups this {period}"
+      },
+      "totalTenants": {
+        "title": "Total Tenants",
+        "description": "Active organizational accounts"
+      },
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "In the last {period}"
+      },
+      "communityPosts": {
+        "title": "Community Posts",
+        "description": "In the last {period}"
+      },
+      "platformActivity": {
+        "title": "Platform Activity",
+        "description": "Active users this {period}"
+      },
+      "jobApplications": {
+        "title": "Job Applications",
+        "description": "Created this {period}"
+      },
+      "alumniConnections": {
+        "title": "Alumni Connections",
+        "description": "Total potential connections"
+      },
+      "mockInterviews": {
+        "title": "Mock Interviews",
+        "description": "Total sessions completed"
+      }
+    },
+    "charts": {
+      "registrationTrends": {
+        "title": "Registration Trends (Last 30 Days)",
+        "description": "Monitor daily new user signups across the platform."
+      },
+      "aiUsage": {
+        "title": "AI Feature Usage Breakdown",
+        "description": "Distribution of popular AI-powered features."
+      },
+      "contentModeration": {
+        "title": "Content Moderation Queue",
+        "description": "Posts flagged by users for review.",
+        "flaggedPosts": "Flagged Posts",
+        "reviewButton": "Review Posts"
+      },
+      "systemAlerts": {
+        "title": "System Alerts",
+        "description": "Recent system-level notifications and errors.",
+        "noAlerts": "No system alerts to display.",
+        "unreadAlertsCount": "{count} new",
+        "markReadButton": "Mark as Read",
+        "viewAllButton": "View All Alerts",
+        "alertReadToastTitle": "Alert Marked as Read",
+        "alertReadToastDescription": "The alert '{title}' has been marked as read."
+      },
+      "timeSpent": {
+        "title": "Time Spent Analysis",
+        "description": "Overview of user engagement and time spent on features.",
+        "weekly": "Week",
+        "monthly": "Month",
+        "avgSessionDuration": "Avg. Session Duration",
+        "totalPlatformUsage": "Total Usage ({period})",
+        "topUsers": "Top Users ({period})",
+        "mostUsedFeatures": "Most Used Features"
+      },
+      "tenantActivity": {
+        "title": "Tenant Activity Overview ({period})",
+        "description": "Comparative activity across different tenants.",
+        "legendNewUsers": "New Users",
+        "legendResumesAnalyzed": "Resumes Analyzed",
+        "legendCommunityPosts": "Community Posts"
+      }
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "manageUsers": "Manage Users",
+      "platformSettings": "Platform Settings",
+      "manageTenants": "Manage Tenants",
+      "contentModeration": "Content Moderation",
+      "announcements": "Announcements",
+      "gamificationRules": "Gamification Rules",
+      "blogSettings": "Blog Settings",
+      "userActivityAnalytics": "User Analytics"
+    },
+    "customizeDialog": {
+      "title": "Customize Admin Dashboard",
+      "description": "Select the widgets you want to see on your dashboard.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Preferences"
+    },
+    "widgets": {
+      "promotionalSpotlight": "Promotional Spotlight",
+      "totalUsersStat": "Total Users Stat",
+      "totalTenantsStat": "Total Tenants Stat",
+      "resumesAnalyzedStat": "Resumes Analyzed Stat",
+      "communityPostsStat": "Community Posts Stat",
+      "platformActivityStat": "Platform Activity Stat",
+      "jobApplicationsStat": "Job Applications Stat",
+      "alumniConnectionsStat": "Alumni Connections Stat",
+      "mockInterviewsStat": "Mock Interviews Stat",
+      "timeSpentStats": "Time Spent Stats",
+      "tenantActivityOverview": "Tenant Activity Overview",
+      "registrationTrendsChart": "Registration Trends Chart",
+      "aiUsageBreakdownChart": "AI Usage Breakdown Chart",
+      "contentModerationQueueSummary": "Content Moderation Summary",
+      "systemAlerts": "System Alerts",
+      "adminQuickActions": "Admin Quick Actions"
+    }
+  }
+}

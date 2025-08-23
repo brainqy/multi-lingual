@@ -1,0 +1,42 @@
+
+{
+  "numberMatchGame": {
+    "title": "Number Match Game",
+    "description": "Match the number 777 to win a big prize!",
+    "initialMessage": "Click 'Play' to start the game!",
+    "rollingMessage": "Rolling...",
+    "winMessage": "It's 777! You won {reward} coins!",
+    "gameOverMessage": "Game Over! You won a total of {total} coins.",
+    "notAMatchMessage": "Not a match. Better luck next time!",
+    "resetMessage": "Click 'Play' to start a new game!",
+    "gameOverTitle": "Game Over!",
+    "consolationPrizeMessage": "You won a total consolation prize of:",
+    "coins": "Coins",
+    "cost": "Cost",
+    "attemptsLeft": "Attempts Left",
+    "playButton": "Play Now",
+    "rollingButton": "Rolling...",
+    "resetButton": "Reset Game",
+    "otherGames": "Other Games",
+    "playKBC": "Play KBC Quiz Game",
+    "prizeTitle": "Prize",
+    "toast": {
+      "gameOver": {
+        "title": "Game Over",
+        "description": "Please reset to play again."
+      },
+      "insufficientCoins": {
+        "title": "Insufficient Coins",
+        "description": "You need {cost} coins to play."
+      },
+      "gameStart": {
+        "title": "-{cost} Coins",
+        "description": "Good luck!"
+      },
+      "win": {
+        "title": "Congratulations!",
+        "description": "You won {reward} coins! They have been added to your wallet."
+      }
+    }
+  }
+}

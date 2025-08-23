@@ -1,0 +1,33 @@
+
+{
+  "gamification": {
+    "title": "Rewards & Badges",
+    "pageDescription": "Track your XP, daily streak, and earned badges.",
+    "xpLevel": {
+      "title": "XP & Level",
+      "level": "Level",
+      "xpToNextLevel": "{count} XP to Level {level}",
+      "totalXp": "{count} Total XP"
+    },
+    "dailyStreak": {
+      "title": "Daily Streak",
+      "dayStreak": "Day Streak"
+    },
+    "badgesEarned": {
+      "title": "Badges Earned",
+      "totalBadges": "Total Badges"
+    },
+    "yourBadges": "Your Badge Collection",
+    "badgesDescription": "Badges are awarded for completing tasks and milestones on the platform. Hover over a badge to see what it's for.",
+    "notYetEarned": "(Not Yet Earned)",
+    "leaderboard": "Community Leaderboard",
+    "leaderboardDescription": "See how you rank against other users based on XP points.",
+    "noLeaderboardData": "Leaderboard data is currently being calculated. Check back soon!",
+    "table": {
+      "rank": "Rank",
+      "user": "User",
+      "xpPoints": "XP Points"
+    },
+    "you": "(You)"
+  }
+}

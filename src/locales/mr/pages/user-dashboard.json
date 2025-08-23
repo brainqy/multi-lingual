@@ -1,0 +1,80 @@
+
+{
+  "userDashboard": {
+    "title": "डॅशबोर्ड",
+    "welcomeTour": {
+      "title": "तुमच्या डॅशबोर्डवर स्वागत आहे!"
+    },
+    "customizeButton": "डॅशबोर्ड सानुकूलित करा",
+    "progress": {
+      "title": "तुमची प्रगती",
+      "level": "स्तर {level}",
+      "totalXp": "एकूण {xp} XP",
+      "dayStreak": "दिवसांची स्ट्रीक",
+      "badgesEarned": "मिळालेले बॅज"
+    },
+    "dailyChallenge": {
+      "title": "आजचे दैनिक आव्हान",
+      "viewButton": "आव्हान पहा"
+    },
+    "toast": {
+      "appointmentReminder": {
+        "title": "अपॉइंटमेंट स्मरणपत्र",
+        "description": "{user} सोबत तुमची '{title}' अपॉइंटमेंट आज {time} वाजता आहे."
+      },
+      "dashboardUpdated": {
+        "title": "डॅशबोर्ड अद्यतनित!",
+        "description": "तुमची विजेट प्राधान्ये जतन केली आहेत."
+      }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "नोकरी अर्ज स्थिती",
+        "description": "तुमच्या नोकरी शोधाचा एक दृश्य आढावा."
+      },
+      "matchScoreOverTime": {
+        "title": "वेळेनुसार जुळणारे गुण",
+        "description": "तुमच्या रेझ्युमे विश्लेषण स्कोअरमधील ट्रेंड."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "नोकरी अर्ज स्मरणपत्रे",
+        "description": "तुमच्या आगामी मुदती आणि पाठपुरावा क्रिया.",
+        "noReminders": "कोणतेही आगामी स्मरणपत्र नाही.",
+        "viewButton": "तपशील पहा"
+      }
+    },
+    "upcomingSessions": {
+      "title": "आगामी सत्रे",
+      "description": "तुमच्या निश्चित केलेल्या भेटी आणि सराव मुलाखती.",
+      "noSessions": "कोणतेही आगामी सत्र नियोजित नाही.",
+      "typeLabel": "प्रकार",
+      "withLabel": "सोबत",
+      "dateLabel": "तारीख",
+      "todayLabel": "(आज!)"
+    },
+    "recentActivities": {
+      "title": "अलीकडील क्रियाकलाप",
+      "description": "तुमच्या अलीकडील क्रियांचा एक स्नॅपशॉट.",
+      "noActivities": "अद्याप कोणतेही क्रियाकलाप नाहीत.",
+      "viewAllButton": "सर्व क्रियाकलाप पहा"
+    },
+    "widgets": {
+      "promotionCard": "प्रमोशनल स्पॉटलाइट",
+      "jobApplicationStatusChart": "नोकरी अर्ज स्थिती चार्ट",
+      "matchScoreOverTimeChart": "वेळेनुसार जुळणारे गुण चार्ट",
+      "jobAppReminders": "नोकरी अर्ज स्मरणपत्रे",
+      "upcomingAppointments": "आगामी भेटी आणि मुलाखती",
+      "recentActivities": "अलीकडील क्रियाकलाप",
+      "userBadges": "माझे बॅज",
+      "leaderboard": "लीडरबोर्ड सारांश"
+    },
+    "customizeDialog": {
+      "title": "डॅशबोर्ड विजेट सानुकूलित करा",
+      "description": "तुमच्या डॅशबोर्डवर प्रदर्शित करण्यासाठी विजेट निवडा.",
+      "cancelButton": "रद्द करा",
+      "saveButton": "जतन करा"
+    }
+  }
+}

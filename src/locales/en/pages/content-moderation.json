@@ -1,0 +1,29 @@
+
+{
+  "contentModeration": {
+    "title": "Content Moderation",
+    "descriptionTenant": "Review and manage flagged content within your tenant: {tenantId}.",
+    "descriptionPlatform": "Review and manage flagged content from across the platform.",
+    "flaggedPostsTitle": "Flagged Posts for Review",
+    "noFlaggedPostsTenant": "No posts have been flagged for review in your tenant.",
+    "noFlaggedPostsPlatform": "No posts have been flagged for review on the platform.",
+    "viewOnFeedTitle": "View Post on Feed",
+    "toast": {
+      "postApproved": {
+        "title": "Post Approved",
+        "description": "The post is now visible on the community feed."
+      },
+      "postRemoved": {
+        "title": "Post Removed",
+        "description": "The flagged post has been removed from the feed."
+      }
+    },
+    "table": {
+      "author": "Author",
+      "contentSnippet": "Content Snippet",
+      "flagCount": "Flag Count",
+      "dateFlagged": "Date Flagged",
+      "actions": "Actions"
+    }
+  }
+}

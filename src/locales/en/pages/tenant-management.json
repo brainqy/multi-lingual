@@ -1,0 +1,75 @@
+
+{
+  "tenantManagement": {
+    "title": "Tenant Management",
+    "description": "Oversee and manage all organizational tenants on the platform.",
+    "createNewButton": "Create New Tenant",
+    "tenantListTitle": "Current Tenants",
+    "noTenantsFound": "No tenants have been onboarded yet. Click 'Create New Tenant' to get started.",
+    "editActionMock": "Edit action for tenant {tenantId} is a mock.",
+    "deleteActionToast": "Tenant '{tenantName}' and all its data have been removed.",
+    "table": {
+      "name": "Tenant Name",
+      "id": "Tenant ID",
+      "createdAt": "Created On",
+      "publicSignup": "Public Signup",
+      "actions": "Actions"
+    }
+  },
+  "tenantOnboarding": {
+    "title": "Tenant Onboarding Wizard",
+    "toast": {
+      "tenantCreated": {
+        "title": "Tenant Created!",
+        "description": "{tenantName} has been successfully onboarded."
+      }
+    },
+    "steps": {
+      "basicInfo": "Basic Info",
+      "branding": "Branding",
+      "features": "Features",
+      "adminUser": "Admin User",
+      "review": "Review & Create"
+    },
+    "currentStep": "Step {current} of {total}",
+    "formLabels": {
+      "tenantName": "Tenant Name (e.g., University Name, Company)",
+      "tenantDomain": "Tenant Domain (Optional)",
+      "tenantDomainPlaceholder": "e.g., myuni.JobMatch.ai",
+      "customLogoUrl": "Custom Logo URL (Optional)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "Primary Color (HSL or Hex)",
+      "primaryColorPlaceholder": "e.g., hsl(180 100% 25%) or #008080",
+      "accentColor": "Accent Color (HSL or Hex)",
+      "accentColorPlaceholder": "e.g., hsl(180 100% 30%) or #009999",
+      "coreFeaturesTitle": "Core Features",
+      "featureCommunityFeed": "Community Feed",
+      "featureJobBoard": "Job Board",
+      "featureGamification": "Gamification (XP & Badges)",
+      "featureWallet": "Digital Wallet (Coins)",
+      "featureEventRegistration": "Event Registration",
+      "signupTitle": "Signup Settings",
+      "allowPublicSignup": "Allow Public Signup",
+      "adminFullName": "Initial Admin Full Name",
+      "adminEmail": "Admin Email",
+      "adminPassword": "Admin Password"
+    },
+    "reviewSection": {
+      "title": "Review Details",
+      "nameLabel": "Name:",
+      "domainLabel": "Domain:",
+      "logoUrlLabel": "Logo URL:",
+      "primaryColorLabel": "Primary Color:",
+      "accentColorLabel": "Accent Color:",
+      "publicSignupLabel": "Public Signup:",
+      "featuresLabel": "Enabled Features:",
+      "initialAdminUserTitle": "Initial Admin User",
+      "emailLabel": "Email:"
+    },
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "createTenant": "Create Tenant"
+    }
+  }
+}

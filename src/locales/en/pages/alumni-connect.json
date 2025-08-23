@@ -1,0 +1,30 @@
+
+{
+  "alumniConnect": {
+    "title": "Alumni Directory",
+    "pageDescription": "Connect with fellow alumni. Discover skills, interests, and potential collaborators.",
+    "distinguishedTitle": "Most Distinguished Alumni",
+    "distinguishedDesc": "Spotlight on our accomplished alumni making an impact.",
+    "filters": "Filters",
+    "nameOrJobTitle": "Name or Job Title",
+    "namePlaceholder": "e.g., Alice Wonderland",
+    "company": "Company",
+    "skills": "Skills",
+    "university": "University",
+    "noAlumniFound": "No Alumni Found",
+    "tryAdjusting": "Try adjusting your search or filter criteria.",
+    "bookTitle": "Book Appointment with {name}",
+    "bookDesc": "Complete the form below to request a meeting.",
+    "purposeLabel": "Purpose of Meeting",
+    "purposePlaceholder": "e.g., Career advice, Mock interview...",
+    "preferredDate": "Preferred Date",
+    "preferredTimeSlot": "Preferred Time Slot",
+    "selectTimeSlot": "Select a time slot",
+    "messageOptional": "Brief Message (Optional)",
+    "messagePlaceholder": "Any additional details for your request.",
+    "feeNotice_part1": "A fee of ",
+    "feeNotice_part2": " coins will be deducted upon confirmation.",
+    "cancel": "Cancel",
+    "requestAppointment": "Request Appointment"
+  }
+}

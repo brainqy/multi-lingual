@@ -1,0 +1,66 @@
+
+{
+  "managerDashboard": {
+    "title": "Manager Dashboard ({tenantName})",
+    "description": "Oversee engagement and manage features for your tenant.",
+    "customizeButton": "Customize",
+    "stats": {
+      "activeUsers": {
+        "title": "Active Users (Last 7 Days)",
+        "description": "{count} total users in tenant"
+      },
+      "resumesAnalyzed": {
+        "title": "Resumes Analyzed",
+        "description": "Total scans within your tenant"
+      },
+      "communityPosts": {
+        "title": "Community Posts",
+        "description": "Total posts by your members"
+      },
+      "pendingApprovals": {
+        "title": "Pending Approvals",
+        "description": "Event submissions needing review"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "Tenant Engagement Overview",
+        "description": "A snapshot of key activities within your tenant.",
+        "legendPosts": "Community Posts",
+        "legendResumesAnalyzed": "Resumes Analyzed",
+        "legendAppointments": "Active Appointments",
+        "activityCount": "Activity Count"
+      }
+    },
+    "quickActions": {
+      "title": "Tenant Management Actions",
+      "description": "Quick links to manage your tenant's community and settings.",
+      "manageTenantUsers": "Manage Tenant Users",
+      "moderateTenantFeed": "Moderate Tenant Feed",
+      "manageEventGallery": "Manage Event Gallery",
+      "reviewEventSubmissions": "Review Event Submissions",
+      "manageAnnouncements": "Manage Announcements",
+      "promoCodeMgt": "Promo Codes"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "Dashboard Updated",
+        "description": "Your widget preferences have been saved."
+      }
+    },
+    "customizeDialog": {
+      "title": "Customize Manager Dashboard",
+      "description": "Select the widgets you want to see.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save"
+    },
+    "widgets": {
+      "activeUsersStat": "Active Users Stat",
+      "resumesAnalyzedStat": "Resumes Analyzed Stat",
+      "communityPostsStat": "Community Posts Stat",
+      "pendingApprovalsStat": "Pending Approvals Stat",
+      "tenantEngagementOverview": "Tenant Engagement Overview",
+      "tenantManagementActions": "Tenant Management Actions"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+
+{
+  "userDashboard": {
+    "title": "Dashboard",
+    "welcomeTour": {
+      "title": "Welcome to Your Dashboard!"
+    },
+    "customizeButton": "Customize Dashboard",
+    "progress": {
+      "title": "Your Progress",
+      "level": "Level {level}",
+      "totalXp": "Total {xp} XP",
+      "dayStreak": "Day Streak",
+      "badgesEarned": "Badges Earned"
+    },
+    "dailyChallenge": {
+      "title": "Today's Daily Challenge",
+      "viewButton": "View Challenge"
+    },
+    "toast": {
+      "appointmentReminder": {
+        "title": "Appointment Reminder",
+        "description": "Your '{title}' appointment with {user} is today at {time}."
+      },
+      "dashboardUpdated": {
+        "title": "Dashboard Updated!",
+        "description": "Your widget preferences have been saved."
+      }
+    },
+    "charts": {
+      "jobApplicationStatus": {
+        "title": "Job Application Status",
+        "description": "A visual overview of your job search."
+      },
+      "matchScoreOverTime": {
+        "title": "Match Score Over Time",
+        "description": "Trends in your resume analysis scores."
+      }
+    },
+    "reminders": {
+      "jobApp": {
+        "title": "Job App Reminders",
+        "description": "Your upcoming deadlines and follow-ups.",
+        "noReminders": "No upcoming reminders.",
+        "viewButton": "View Details"
+      }
+    },
+    "upcomingSessions": {
+      "title": "Upcoming Sessions",
+      "description": "Your confirmed appointments and practice interviews.",
+      "noSessions": "No upcoming sessions scheduled.",
+      "typeLabel": "Type",
+      "withLabel": "With",
+      "dateLabel": "Date",
+      "todayLabel": "(Today!)"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "description": "A snapshot of your recent actions.",
+      "noActivities": "No activities yet.",
+      "viewAllButton": "View All Activities"
+    },
+    "widgets": {
+      "promotionCard": "Promotional Spotlight",
+      "jobApplicationStatusChart": "Job Application Status Chart",
+      "matchScoreOverTimeChart": "Match Score Over Time Chart",
+      "jobAppReminders": "Job App Reminders",
+      "upcomingAppointments": "Upcoming Appointments & Interviews",
+      "recentActivities": "Recent Activities",
+      "userBadges": "My Badges",
+      "leaderboard": "Leaderboard Summary"
+    },
+    "customizeDialog": {
+      "title": "Customize Dashboard Widgets",
+      "description": "Choose which widgets to display on your dashboard.",
+      "cancelButton": "Cancel",
+      "saveButton": "Save"
+    }
+  }
+}

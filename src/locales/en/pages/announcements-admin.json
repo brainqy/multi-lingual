@@ -1,0 +1,72 @@
+
+{
+  "announcementsAdmin": {
+    "title": "Announcements Management",
+    "manageTenant": "Manage announcements for {tenantId}",
+    "createNewButton": "Create New Announcement",
+    "managePlatform": "Manage announcements for the entire platform.",
+    "currentAnnouncementsTitle": "Current Announcements",
+    "noAnnouncementsTenant": "No announcements found for your tenant.",
+    "noAnnouncementsPlatform": "No announcements have been created yet.",
+    "audienceTargetDisplay": "(Target: {target})",
+    "audiencePlatformWide": "(Platform-wide)",
+    "endDateOngoing": "Ongoing",
+    "dialog": {
+      "editTitle": "Edit Announcement",
+      "createTitle": "Create New Announcement",
+      "titleLabel": "Title",
+      "contentLabel": "Content",
+      "contentPlaceholder": "Enter the announcement content here (Markdown supported).",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "End Date (Optional)",
+      "audienceLabel": "Audience",
+      "audienceAllUsers": "All Users (Platform-wide)",
+      "audienceSpecificTenant": "Specific Tenant",
+      "audienceSpecificRole": "Specific Role",
+      "targetTenantLabel": "Target Tenant",
+      "selectTenantPlaceholder": "Select a tenant",
+      "targetRoleLabel": "Target Role",
+      "selectRolePlaceholder": "Select a role",
+      "roleUser": "User",
+      "roleManager": "Manager",
+      "roleAdmin": "Admin",
+      "statusLabel": "Status",
+      "statusDraft": "Draft",
+      "statusPublished": "Published",
+      "statusArchived": "Archived",
+      "cancelButton": "Cancel",
+      "saveChangesButton": "Save Changes",
+      "createButton": "Create Announcement"
+    },
+    "table": {
+      "title": "Title",
+      "status": "Status",
+      "audience": "Audience",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "actions": "Actions"
+    },
+    "toast": {
+      "permissionDeniedEdit": {
+        "title": "Permission Denied",
+        "description": "You do not have permission to edit this announcement."
+      },
+      "announcementUpdated": {
+        "title": "Announcement Updated",
+        "description": "The announcement '{title}' has been updated."
+      },
+      "announcementCreated": {
+        "title": "Announcement Created",
+        "description": "The announcement '{title}' has been created."
+      },
+      "permissionDeniedDelete": {
+        "title": "Permission Denied",
+        "description": "You do not have permission to delete this announcement."
+      },
+      "announcementDeleted": {
+        "title": "Announcement Deleted",
+        "description": "The announcement has been deleted."
+      }
+    }
+  }
+}

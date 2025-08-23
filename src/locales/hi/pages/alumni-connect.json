@@ -1,0 +1,30 @@
+
+{
+  "alumniConnect": {
+    "title": "पूर्व छात्र निर्देशिका",
+    "pageDescription": "अन्य पूर्व छात्रों से जुड़ें। कौशल, रुचियों और संभावित सहयोगियों की खोज करें।",
+    "distinguishedTitle": "सबसे प्रतिष्ठित पूर्व छात्र",
+    "distinguishedDesc": "हमारे सफल पूर्व छात्रों पर एक नज़र जो प्रभाव डाल रहे हैं।",
+    "filters": "फ़िल्टर",
+    "nameOrJobTitle": "नाम या नौकरी का शीर्षक",
+    "namePlaceholder": "उदा., ऐलिस वंडरलैंड",
+    "company": "कंपनी",
+    "skills": "कौशल",
+    "university": "विश्वविद्यालय",
+    "noAlumniFound": "कोई पूर्व छात्र नहीं मिला",
+    "tryAdjusting": "अपनी खोज या फ़िल्टर मानदंड समायोजित करने का प्रयास करें।",
+    "bookTitle": "{name} के साथ अपॉइंटमेंट बुक करें",
+    "bookDesc": "मीटिंग का अनुरोध करने के लिए नीचे दिया गया फॉर्म भरें।",
+    "purposeLabel": "मीटिंग का उद्देश्य",
+    "purposePlaceholder": "उदा., करियर सलाह, मॉक इंटरव्यू...",
+    "preferredDate": "पसंदीदा तारीख",
+    "preferredTimeSlot": "पसंदीदा समय स्लॉट",
+    "selectTimeSlot": "एक समय स्लॉट चुनें",
+    "messageOptional": "संक्षिप्त संदेश (वैकल्पिक)",
+    "messagePlaceholder": "आपके अनुरोध के लिए कोई अतिरिक्त विवरण।",
+    "feeNotice_part1": "पुष्टि होने पर ",
+    "feeNotice_part2": " सिक्कों का शुल्क काटा जाएगा।",
+    "cancel": "रद्द करें",
+    "requestAppointment": "अपॉइंटमेंट का अनुरोध करें"
+  }
+}

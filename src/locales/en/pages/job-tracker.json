@@ -1,0 +1,92 @@
+
+{
+  "jobTracker": {
+    "title": "Job Application Tracker",
+    "addJob": "Add Job",
+    "jobs": "Jobs",
+    "searchJob": "Search Jobs",
+    "keywordsPlaceholder": "Keywords (e.g., 'React')",
+    "location": "Location",
+    "locationPlaceholder": "e.g., 'Remote'",
+    "search": "Search",
+    "noJobsFound": "No jobs found.",
+    "searchHint": "Search for jobs on external platforms and add them to your tracker.",
+    "addToSaved": "Add to Saved",
+    "findMoreJobs": "Find More Jobs on Board",
+    "editJob": "Edit Job Application",
+    "addNewJob": "Add New Job Application",
+    "statuses": {
+      "Saved": "Saved",
+      "Applied": "Applied",
+      "Interviewing": "Interviewing",
+      "Offer": "Offer",
+      "Rejected": "Rejected"
+    },
+    "kanban": {
+      "Saved": {
+        "title": "Saved",
+        "description": "Jobs you're interested in."
+      },
+      "Applied": {
+        "title": "Applied",
+        "description": "Applications submitted."
+      },
+      "Interviewing": {
+        "title": "Interview",
+        "description": "Interviews scheduled."
+      },
+      "Offer": {
+        "title": "Offer",
+        "description": "Offers received."
+      }
+    },
+    "dialog": {
+      "jobDetails": "Job Details",
+      "resume": "Resume",
+      "coverLetter": "Cover Letter",
+      "interviews": "Interviews",
+      "notes": "Notes",
+      "close": "Close",
+      "save": "Save",
+      "edit": "Edit",
+      "moveTo": "Move to",
+      "delete": "Delete",
+      "reminder": "Reminder",
+      "dragJobsHere": "Drag jobs here"
+    },
+    "toast": {
+      "appDeleted": {
+        "title": "Application Deleted",
+        "description": "The job application has been removed from your tracker."
+      },
+      "appMoved": {
+        "title": "Application Moved",
+        "description": "{jobTitle} moved to '{newStatus}'."
+      },
+      "appUpdated": {
+        "title": "Application Updated",
+        "description": "{jobTitle} at {companyName} has been updated."
+      },
+      "appAdded": {
+        "title": "Application Added",
+        "description": "{jobTitle} at {companyName} has been added to your tracker."
+      },
+      "noJobsFound": {
+        "title": "No Jobs Found",
+        "description": "No job openings matched your search criteria."
+      },
+      "alreadyInTracker": {
+        "title": "Already in Tracker",
+        "description": "This job is already in your application tracker."
+      },
+      "jobAdded": {
+        "title": "Job Added to Tracker",
+        "description": "{jobTitle} at {companyName} has been added."
+      },
+      "missingInterviewInfo": {
+        "title": "Missing Information",
+        "description": "Please provide a date and interviewer name."
+      }
+    }
+  }
+}

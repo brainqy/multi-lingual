@@ -1,0 +1,92 @@
+
+{
+  "jobTracker": {
+    "title": "नौकरी आवेदन ट्रैकर",
+    "addJob": "नौकरी जोड़ें",
+    "jobs": "नौकरियाँ",
+    "searchJob": "नौकरियाँ खोजें",
+    "keywordsPlaceholder": "कीवर्ड (उदा., 'रिएक्ट')",
+    "location": "स्थान",
+    "locationPlaceholder": "उदा., 'रिमोट'",
+    "search": "खोजें",
+    "noJobsFound": "कोई नौकरी नहीं मिली।",
+    "searchHint": "बाहरी प्लेटफॉर्म पर नौकरियों की खोज करें और उन्हें अपने ट्रैकर में जोड़ें।",
+    "addToSaved": "सहेजे गए में जोड़ें",
+    "findMoreJobs": "बोर्ड पर और नौकरियाँ खोजें",
+    "editJob": "नौकरी आवेदन संपादित करें",
+    "addNewJob": "नया नौकरी आवेदन जोड़ें",
+    "statuses": {
+      "Saved": "सहेजा गया",
+      "Applied": "आवेदन किया गया",
+      "Interviewing": "साक्षात्कार",
+      "Offer": "प्रस्ताव",
+      "Rejected": "अस्वीकृत"
+    },
+    "kanban": {
+      "Saved": {
+        "title": "सहेजा गया",
+        "description": "जिन नौकरियों में आपकी रुचि है।"
+      },
+      "Applied": {
+        "title": "आवेदन किया गया",
+        "description": "आवेदन जमा किए गए।"
+      },
+      "Interviewing": {
+        "title": "साक्षात्कार",
+        "description": "साक्षात्कार निर्धारित।"
+      },
+      "Offer": {
+        "title": "प्रस्ताव",
+        "description": "प्रस्ताव प्राप्त हुए।"
+      }
+    },
+    "dialog": {
+      "jobDetails": "नौकरी विवरण",
+      "resume": "रिज्यूमे",
+      "coverLetter": "कवर लेटर",
+      "interviews": "साक्षात्कार",
+      "notes": "नोट्स",
+      "close": "बंद करें",
+      "save": "सहेजें",
+      "edit": "संपादित करें",
+      "moveTo": "यहां ले जाएं",
+      "delete": "हटाएं",
+      "reminder": "अनुस्मारक",
+      "dragJobsHere": "नौकरियों को यहां खींचें"
+    },
+    "toast": {
+      "appDeleted": {
+        "title": "आवेदन हटा दिया गया",
+        "description": "नौकरी आवेदन आपके ट्रैकर से हटा दिया गया है।"
+      },
+      "appMoved": {
+        "title": "आवेदन स्थानांतरित",
+        "description": "{jobTitle} को '{newStatus}' में स्थानांतरित कर दिया गया है।"
+      },
+      "appUpdated": {
+        "title": "आवेदन अपडेट किया गया",
+        "description": "{companyName} में {jobTitle} को अपडेट किया गया है।"
+      },
+      "appAdded": {
+        "title": "आवेदन जोड़ा गया",
+        "description": "{companyName} में {jobTitle} को आपके ट्रैकर में जोड़ा गया है।"
+      },
+      "noJobsFound": {
+        "title": "कोई नौकरी नहीं मिली",
+        "description": "आपके खोज मानदंडों से कोई नौकरी रिक्ति मेल नहीं खाती।"
+      },
+      "alreadyInTracker": {
+        "title": "पहले से ही ट्रैकर में",
+        "description": "यह नौकरी आपके आवेदन ट्रैकर में पहले से ही है।"
+      },
+      "jobAdded": {
+        "title": "नौकरी ट्रैकर में जोड़ी गई",
+        "description": "{companyName} में {jobTitle} को जोड़ा गया है।"
+      },
+      "missingInterviewInfo": {
+        "title": "जानकारी अधूरी",
+        "description": "कृपया एक तारीख और साक्षात्कारकर्ता का नाम प्रदान करें।"
+      }
+    }
+  }
+}

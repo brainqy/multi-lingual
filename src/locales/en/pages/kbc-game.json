@@ -1,0 +1,67 @@
+
+{
+  "kbcGame": {
+    "initialMessage": "Select an answer and lock it!",
+    "winMessage": "Congratulations! You've won the game with {xp} XP!",
+    "correctMessage": "Correct! Click 'Next Question' to continue.",
+    "wrongMessage": "Wrong Answer! You walk away with {xp} XP.",
+    "nextReward": "Next Reward",
+    "audiencePollResults": "Audience Poll Results",
+    "backToQuestion": "Back to Question",
+    "questionForXP": "Question {number} for {xp} XP",
+    "lockAnswer": "Lock Answer",
+    "nextQuestion": "Next Question",
+    "playAgain": "Play Again",
+    "xpLadder": "XP Ladder",
+    "otherGames": "Other Games",
+    "playNumberMatch": "Play Number Match Game",
+    "setup": {
+      "title": "Choose Your Topic",
+      "description": "Select a category to start the KBC quiz game. It costs {cost} coins to play.",
+      "allTopics": "All Topics",
+      "startButton": "Start Game"
+    },
+    "gameOver": {
+      "title": "Incorrect Answer",
+      "correctAnswerWas": "The correct answer was:",
+      "explanation": "Explanation:"
+    },
+    "toast": {
+      "walletNotLoaded": {
+        "title": "Wallet not loaded",
+        "description": "Please wait a moment for your wallet to load."
+      },
+      "insufficientCoins": {
+        "title": "Insufficient Coins",
+        "description": "You need {cost} coins to play. Earn more through referrals or other activities!"
+      },
+      "notEnoughQuestions": {
+        "title": "Not Enough Questions",
+        "description": "There aren't enough questions tagged with \"{topic}\" to start a game. Please select another topic or 'All'."
+      },
+      "gameStart": {
+        "title": "-{cost} Coins",
+        "description": "Good luck in the game!"
+      },
+      "fullscreenError": {
+        "title": "Fullscreen Mode",
+        "description": "Could not enter fullscreen automatically. You can try it manually."
+      },
+      "noAnswer": {
+        "title": "No Answer Selected",
+        "description": "Please select an answer before locking."
+      },
+      "gameWon": {
+        "title": "You've Won!",
+        "description": "You've answered all questions correctly!"
+      },
+      "correctAnswer": {
+        "title": "Correct Answer!",
+        "description": "You've secured {xp} XP!"
+      },
+      "expertAdvice": {
+        "title": "Expert Advice"
+      }
+    }
+  }
+}

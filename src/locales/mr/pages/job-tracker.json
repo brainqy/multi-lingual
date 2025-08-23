@@ -1,0 +1,92 @@
+
+{
+  "jobTracker": {
+    "title": "नोकरी अर्ज ट्रॅकर",
+    "addJob": "नोकरी जोडा",
+    "jobs": "नोकऱ्या",
+    "searchJob": "नोकऱ्या शोधा",
+    "keywordsPlaceholder": "कीवर्ड (उदा., 'रिॲक्ट')",
+    "location": "स्थान",
+    "locationPlaceholder": "उदा., 'रिमोट'",
+    "search": "शोधा",
+    "noJobsFound": "कोणतीही नोकरी सापडली नाही.",
+    "searchHint": "बाह्य प्लॅटफॉर्मवर नोकऱ्या शोधा आणि त्यांना तुमच्या ट्रॅकरमध्ये जोडा.",
+    "addToSaved": "सेव्ह केलेल्यांमध्ये जोडा",
+    "findMoreJobs": "बोर्डवर अधिक नोकऱ्या शोधा",
+    "editJob": "नोकरी अर्ज संपादित करा",
+    "addNewJob": "नवीन नोकरी अर्ज जोडा",
+    "statuses": {
+      "Saved": "सेव्ह केले",
+      "Applied": "अर्ज केला",
+      "Interviewing": "मुलाखत",
+      "Offer": "ऑफर",
+      "Rejected": "नाकारले"
+    },
+    "kanban": {
+      "Saved": {
+        "title": "सेव्ह केले",
+        "description": "तुम्हाला आवडलेल्या नोकऱ्या."
+      },
+      "Applied": {
+        "title": "अर्ज केला",
+        "description": "अर्ज सादर केले."
+      },
+      "Interviewing": {
+        "title": "मुलाखत",
+        "description": "मुलाखतींचे वेळापत्रक."
+      },
+      "Offer": {
+        "title": "ऑफर",
+        "description": "ऑफर प्राप्त झाल्या."
+      }
+    },
+    "dialog": {
+      "jobDetails": "नोकरी तपशील",
+      "resume": "रिझ्युमे",
+      "coverLetter": "कव्हर लेटर",
+      "interviews": "मुलाखती",
+      "notes": "नोट्स",
+      "close": "बंद करा",
+      "save": "सेव्ह करा",
+      "edit": "संपादित करा",
+      "moveTo": "येथे हलवा",
+      "delete": "हटवा",
+      "reminder": "स्मरणपत्र",
+      "dragJobsHere": "नोकऱ्या येथे ड्रॅग करा"
+    },
+    "toast": {
+      "appDeleted": {
+        "title": "अर्ज हटवला",
+        "description": "नोकरी अर्ज तुमच्या ट्रॅकरमधून काढून टाकला आहे."
+      },
+      "appMoved": {
+        "title": "अर्ज हलवला",
+        "description": "{jobTitle} ला '{newStatus}' मध्ये हलवले आहे."
+      },
+      "appUpdated": {
+        "title": "अर्ज अपडेट केला",
+        "description": "{companyName} येथे {jobTitle} अपडेट केला आहे."
+      },
+      "appAdded": {
+        "title": "अर्ज जोडला",
+        "description": "{companyName} येथे {jobTitle} तुमच्या ट्रॅकरमध्ये जोडला आहे."
+      },
+      "noJobsFound": {
+        "title": "कोणतीही नोकरी सापडली नाही",
+        "description": "तुमच्या शोध निकषांशी जुळणारी कोणतीही नोकरी उघडलेली नाही."
+      },
+      "alreadyInTracker": {
+        "title": "आधीच ट्रॅकरमध्ये",
+        "description": "ही नोकरी तुमच्या अर्ज ट्रॅकरमध्ये आधीच आहे."
+      },
+      "jobAdded": {
+        "title": "नोकरी ट्रॅकरमध्ये जोडली",
+        "description": "{companyName} येथे {jobTitle} जोडली आहे."
+      },
+      "missingInterviewInfo": {
+        "title": "माहिती गहाळ",
+        "description": "कृपया एक तारीख आणि मुलाखतकाराचे नाव द्या."
+      }
+    }
+  }
+}

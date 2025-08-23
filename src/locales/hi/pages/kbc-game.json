@@ -1,0 +1,67 @@
+
+{
+  "kbcGame": {
+    "initialMessage": "एक उत्तर चुनें और उसे लॉक करें!",
+    "winMessage": "बधाई हो! आपने {xp} XP के साथ खेल जीत लिया है!",
+    "correctMessage": "सही! जारी रखने के लिए 'Next Question' पर क्लिक करें।",
+    "wrongMessage": "गलत जवाब! आप {xp} XP के साथ बाहर जाते हैं।",
+    "nextReward": "अगला पुरस्कार",
+    "audiencePollResults": "दर्शक सर्वेक्षण परिणाम",
+    "backToQuestion": "प्रश्न पर वापस जाएं",
+    "questionForXP": "{xp} XP के लिए प्रश्न {number}",
+    "lockAnswer": "उत्तर लॉक करें",
+    "nextQuestion": "अगला प्रश्न",
+    "playAgain": "फिर से खेलें",
+    "xpLadder": "XP सीढ़ी",
+    "otherGames": "अन्य खेल",
+    "playNumberMatch": "नंबर मैच गेम खेलें",
+    "setup": {
+      "title": "अपना विषय चुनें",
+      "description": "केबीसी क्विज़ गेम शुरू करने के लिए एक श्रेणी चुनें। खेलने के लिए {cost} सिक्के लगते हैं।",
+      "allTopics": "सभी विषय",
+      "startButton": "खेल शुरू करें"
+    },
+    "gameOver": {
+      "title": "गलत जवाब",
+      "correctAnswerWas": "सही जवाब था:",
+      "explanation": "स्पष्टीकरण:"
+    },
+    "toast": {
+      "walletNotLoaded": {
+        "title": "वॉलेट लोड नहीं हुआ",
+        "description": "कृपया अपने वॉलेट को लोड होने के लिए कुछ क्षण प्रतीक्षा करें।"
+      },
+      "insufficientCoins": {
+        "title": "अपर्याप्त सिक्के",
+        "description": "खेलने के लिए आपको {cost} सिक्कों की आवश्यकता है। रेफरल या अन्य गतिविधियों के माध्यम से अधिक कमाएँ!"
+      },
+      "notEnoughQuestions": {
+        "title": "पर्याप्त प्रश्न नहीं",
+        "description": "\"{topic}\" के साथ टैग किए गए पर्याप्त प्रश्न नहीं हैं। कृपया कोई अन्य विषय या 'सभी' चुनें।"
+      },
+      "gameStart": {
+        "title": "-{cost} सिक्के",
+        "description": "खेल में शुभकामनाएँ!"
+      },
+      "fullscreenError": {
+        "title": "फुलस्क्रीन मोड",
+        "description": "स्वचालित रूप से फुलस्क्रीन में प्रवेश नहीं कर सका। आप इसे मैन्युअल रूप से आज़मा सकते हैं।"
+      },
+      "noAnswer": {
+        "title": "कोई उत्तर नहीं चुना गया",
+        "description": "लॉक करने से पहले कृपया एक उत्तर चुनें।"
+      },
+      "gameWon": {
+        "title": "आप जीत गए!",
+        "description": "आपने सभी प्रश्नों का सही उत्तर दिया है!"
+      },
+      "correctAnswer": {
+        "title": "सही जवाब!",
+        "description": "आपने {xp} XP हासिल किए हैं!"
+      },
+      "expertAdvice": {
+        "title": "विशेषज्ञ की सलाह"
+      }
+    }
+  }
+}

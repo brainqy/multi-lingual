@@ -1,0 +1,16 @@
+
+{
+  "translateTool": {
+    "title": "भाषांतर साधन",
+    "enterTextLabel": "भाषांतर करण्यासाठी मजकूर प्रविष्ट करा",
+    "enterTextPlaceholder": "येथे कोणताही शब्द किंवा वाक्य टाइप करा...",
+    "submitButton": "भाषांतर करा",
+    "originalText": "मूळ मजकूर",
+    "suggestedTranslations": "सुचवलेले भाषांतर",
+    "qualityScore": "गुणवत्ता गुण",
+    "errorTranslating": "भाषांतर करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.",
+    "english": "इंग्रजी",
+    "marathi": "मराठी",
+    "hindi": "हिंदी"
+  }
+}

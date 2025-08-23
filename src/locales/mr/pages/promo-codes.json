@@ -1,0 +1,92 @@
+
+{
+  "promoCodes": {
+    "title": "प्रोमो कोड व्यवस्थापन",
+    "description": "वापरकर्ता पुरस्कारांसाठी प्रचार कोड तयार करा, व्यवस्थापित करा आणि ट्रॅक करा.",
+    "generateButton": "बल्क कोड तयार करा",
+    "createButton": "नवीन कोड तयार करा",
+    "currentCodesTitle": "सध्याचे प्रोमो कोड",
+    "noCodesFound": "कोणतेही प्रोमो कोड सापडले नाहीत.",
+    "rewardLabel": "बक्षीस",
+    "usageLabel": "वापर",
+    "expiresLabel": "कालबाह्य होते",
+    "editButton": "संपादित करा",
+    "deleteButton": "हटवा",
+    "table": {
+      "code": "कोड",
+      "description": "वर्णन",
+      "reward": "बक्षीस",
+      "status": "स्थिती",
+      "usage": "वापर",
+      "expires": "कालबाह्य होते",
+      "actions": "क्रिया"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "never": "कधीही नाही"
+    },
+    "rewardTypes": {
+      "coins": "नाणी",
+      "flash_coins": "फ्लॅश नाणी",
+      "xp": "XP",
+      "premium_days": "प्रीमियम दिवस"
+    },
+    "dialog": {
+      "editTitle": "प्रोमो कोड संपादित करा",
+      "createTitle": "नवीन प्रोमो कोड तयार करा",
+      "saveButton": "बदल जतन करा",
+      "createButton": "कोड तयार करा"
+    },
+    "form": {
+      "codeLabel": "कोड",
+      "codePlaceholder": "उदा., WELCOME50",
+      "descriptionLabel": "वर्णन",
+      "descriptionPlaceholder": "उदा., नवीन वापरकर्त्यांसाठी 50 बोनस नाणी",
+      "rewardTypeLabel": "बक्षीस प्रकार",
+      "rewardTypePlaceholder": "बक्षीस प्रकार निवडा...",
+      "rewardValueLabel": "बक्षीस मूल्य",
+      "usageLimitLabel": "वापर मर्यादा (अमर्यादितसाठी 0)",
+      "expirationDateLabel": "कालबाह्यता तारीख (पर्यायी)",
+      "expirationDatePlaceholder": "कधीही कालबाह्य होत नाही",
+      "activeLabel": "सक्रिय"
+    },
+    "generatorDialog": {
+      "title": "बल्क प्रोमो कोड तयार करा",
+      "prefixLabel": "कोड उपसर्ग",
+      "prefixPlaceholder": "उदा., ONETIME",
+      "countLabel": "तयार करायच्या कोडची संख्या",
+      "generateButton": "कोड तयार करा"
+    },
+    "resultsDialog": {
+      "title": "{count} कोड तयार झाले",
+      "copyButton": "कोड कॉपी करा",
+      "closeButton": "बंद करा"
+    },
+    "toast": {
+      "updated": {
+        "title": "प्रोमो कोड अद्यतनित",
+        "description": "कोड '{code}' यशस्वीरित्या अद्यतनित केला आहे."
+      },
+      "created": {
+        "title": "प्रोमो कोड तयार केला",
+        "description": "कोड '{code}' यशस्वीरित्या तयार केला आहे."
+      },
+      "exists": {
+        "title": "कोड अस्तित्वात आहे",
+        "description": "कोड '{code}' आधीपासून अस्तित्वात आहे. कृपया एक अद्वितीय कोड निवडा."
+      },
+      "deleted": {
+        "title": "प्रोमो कोड हटवला"
+      },
+      "generated": {
+        "title": "{count} कोड तयार झाले",
+        "description": "बल्क प्रोमो कोड तयार केले आहेत आणि सूचीमध्ये जोडले आहेत."
+      },
+      "copied": {
+        "title": "कॉपी केले!",
+        "description": "तयार केलेले कोड क्लिपबोर्डवर कॉपी केले."
+      }
+    }
+  }
+}

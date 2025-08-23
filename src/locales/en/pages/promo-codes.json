@@ -1,0 +1,92 @@
+
+{
+  "promoCodes": {
+    "title": "Promo Code Management",
+    "description": "Create, manage, and track promotional codes for user rewards.",
+    "generateButton": "Generate Bulk Codes",
+    "createButton": "Create New Code",
+    "currentCodesTitle": "Current Promo Codes",
+    "noCodesFound": "No promo codes found.",
+    "rewardLabel": "Reward",
+    "usageLabel": "Usage",
+    "expiresLabel": "Expires",
+    "editButton": "Edit",
+    "deleteButton": "Delete",
+    "table": {
+      "code": "Code",
+      "description": "Description",
+      "reward": "Reward",
+      "status": "Status",
+      "usage": "Usage",
+      "expires": "Expires",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "never": "Never"
+    },
+    "rewardTypes": {
+      "coins": "Coins",
+      "flash_coins": "Flash Coins",
+      "xp": "XP",
+      "premium_days": "Premium Days"
+    },
+    "dialog": {
+      "editTitle": "Edit Promo Code",
+      "createTitle": "Create New Promo Code",
+      "saveButton": "Save Changes",
+      "createButton": "Create Code"
+    },
+    "form": {
+      "codeLabel": "Code",
+      "codePlaceholder": "e.g., WELCOME50",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "e.g., 50 Bonus Coins for new users",
+      "rewardTypeLabel": "Reward Type",
+      "rewardTypePlaceholder": "Select reward type...",
+      "rewardValueLabel": "Reward Value",
+      "usageLimitLabel": "Usage Limit (0 for unlimited)",
+      "expirationDateLabel": "Expiration Date (Optional)",
+      "expirationDatePlaceholder": "Never expires",
+      "activeLabel": "Active"
+    },
+    "generatorDialog": {
+      "title": "Generate Bulk Promo Codes",
+      "prefixLabel": "Code Prefix",
+      "prefixPlaceholder": "e.g., ONETIME",
+      "countLabel": "Number of Codes to Generate",
+      "generateButton": "Generate Codes"
+    },
+    "resultsDialog": {
+      "title": "{count} Codes Generated",
+      "copyButton": "Copy Codes",
+      "closeButton": "Close"
+    },
+    "toast": {
+      "updated": {
+        "title": "Promo Code Updated",
+        "description": "The code '{code}' has been successfully updated."
+      },
+      "created": {
+        "title": "Promo Code Created",
+        "description": "The code '{code}' has been successfully created."
+      },
+      "exists": {
+        "title": "Code Exists",
+        "description": "The code '{code}' already exists. Please choose a unique code."
+      },
+      "deleted": {
+        "title": "Promo Code Deleted"
+      },
+      "generated": {
+        "title": "{count} Codes Generated",
+        "description": "Bulk promo codes have been created and added to the list."
+      },
+      "copied": {
+        "title": "Copied!",
+        "description": "Generated codes copied to clipboard."
+      }
+    }
+  }
+}

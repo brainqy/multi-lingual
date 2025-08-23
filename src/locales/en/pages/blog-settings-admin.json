@@ -1,0 +1,54 @@
+
+{
+  "blogSettingsAdmin": {
+    "title": "AI Blog Settings",
+    "description": "Configure automated blog post generation and manually create posts with AI.",
+    "automationSettingsTitle": "Automation Settings",
+    "generationIntervalLabel": "Generation Interval (Hours)",
+    "generationIntervalHelp": "The time in hours between automatically generated blog posts (e.g., 24 for daily).",
+    "topicsLabel": "Topics for Automation",
+    "topicsPlaceholder": "Career Advice, Interview Tips, Networking...",
+    "topicsHelp": "Comma-separated list of topics the AI will choose from for automated posts.",
+    "styleLabel": "Writing Style",
+    "stylePlaceholder": "Choose a writing style...",
+    "styleInformative": "Informative",
+    "styleCasual": "Casual",
+    "styleFormal": "Formal",
+    "styleTechnical": "Technical",
+    "styleStorytelling": "Storytelling",
+    "saveAutomationButton": "Save Automation Settings",
+    "manualGenerationTitle": "Manual Generation",
+    "lastGeneratedPrefix": "Last generated:",
+    "lastGeneratedNever": "Never",
+    "selectTopicManualLabel": "Select Topic or Enter Custom",
+    "selectTopicManualPlaceholder": "Select a pre-defined topic",
+    "customTopicPlaceholder": "Or enter a custom topic...",
+    "generatingButton": "Generating...",
+    "generateNowButton": "Generate Now",
+    "importantNoteTitle": "Important Note on AI Usage",
+    "importantNoteContent": "Manual and automated blog post generation both consume AI API credits. Ensure your API key has sufficient quota. Automated generation will pause if it encounters an API error.",
+    "validation": {
+      "intervalMin": "Interval must be at least 1 hour.",
+      "intervalMax": "Interval cannot exceed 720 hours (30 days).",
+      "topicsRequired": "At least one topic is required."
+    },
+    "toast": {
+      "settingsSaved": {
+        "title": "Settings Saved",
+        "description": "Blog automation settings have been updated."
+      },
+      "noTopicSelected": {
+        "title": "No Topic Selected",
+        "description": "Please select or enter a topic to generate a blog post."
+      },
+      "postGenerated": {
+        "title": "Post Generated!",
+        "description": "New blog post '{title}' created successfully."
+      },
+      "generationFailed": {
+        "title": "Generation Failed",
+        "description": "Could not generate the blog post. Please try again."
+      }
+    }
+  }
+}

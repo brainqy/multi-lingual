@@ -1,0 +1,15 @@
+
+{
+  "dashboard": {
+    "navigation": {
+      "overview": "आढावा",
+      "translate": "भाषांतर करा",
+      "settings": "सेटिंग्ज",
+      "admin": "प्रशासक पॅनेल"
+    },
+    "userMenu": {
+      "profile": "प्रोफाइल",
+      "logout": "लॉग आउट"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+
+{
+  "gamificationRules": {
+    "title": "Gamification Rules Management",
+    "description": "Configure badges and XP point rules for the entire platform.",
+    "badgeConfig": {
+      "title": "Badge Configuration",
+      "description": "Manage the badges users can earn for their achievements.",
+      "createButton": "Create New Badge",
+      "editButton": "Edit",
+      "deleteButton": "Delete",
+      "noBadges": "No badges have been created yet."
+    },
+    "xpRules": {
+      "title": "XP Point Rules",
+      "description": "Define rules for how users earn experience points for specific actions.",
+      "createButton": "Create New XP Rule",
+      "noRules": "No XP rules defined yet."
+    },
+    "table": {
+      "icon": "Icon",
+      "name": "Name",
+      "description": "Description",
+      "xpReward": "XP Reward",
+      "trigger": "Trigger",
+      "actions": "Actions",
+      "actionId": "Action ID",
+      "xpPoints": "XP Points"
+    },
+    "dialog": {
+      "editBadgeTitle": "Edit Badge",
+      "createBadgeTitle": "Create New Badge",
+      "badgeNameLabel": "Badge Name",
+      "badgeNameTooltip": "This will be displayed to the user.",
+      "descriptionLabel": "Description",
+      "descriptionTooltip": "Explain what this badge is for.",
+      "iconNameLabel": "Icon Name",
+      "iconNameTooltip": "Enter a valid icon name from",
+      "iconNamePlaceholder": "e.g., Award, UserCheck, Zap",
+      "iconNameHelpText": "Browse available icons at",
+      "xpRewardLabel": "XP Reward",
+      "xpRewardTooltip": "How much XP is awarded with this badge?",
+      "triggerConditionLabel": "Trigger Condition",
+      "triggerConditionTooltip": "Describe how this badge is earned.",
+      "triggerConditionPlaceholder": "e.g., Complete profile to 100%",
+      "saveChangesButton": "Save Changes",
+      "createButton": "Create",
+      "editXpRuleTitle": "Edit XP Rule",
+      "createXpRuleTitle": "Create New XP Rule",
+      "actionIdLabel": "Action ID",
+      "actionIdTooltip": "A unique identifier for the action (e.g., 'complete_profile').",
+      "actionIdPlaceholder": "e.g., 'login', 'post_comment'",
+      "actionIdHelpText": "Cannot be changed after creation.",
+      "ruleDescriptionLabel": "Rule Description",
+      "ruleDescriptionTooltip": "A user-friendly description of the action.",
+      "ruleDescriptionPlaceholder": "e.g., 'Complete your profile'",
+      "xpPointsLabel": "XP Points",
+      "xpPointsTooltip": "How many points this action is worth."
+    },
+    "toast": {
+      "badgeUpdated": {
+        "title": "Badge Updated",
+        "description": "The badge '{name}' has been updated."
+      },
+      "badgeCreated": {
+        "title": "Badge Created",
+        "description": "The badge '{name}' has been created."
+      },
+      "xpRuleUpdated": {
+        "title": "XP Rule Updated",
+        "description": "The rule for '{description}' has been updated."
+      },
+      "error": {
+        "title": "Error",
+        "description": "Action ID '{actionId}' already exists."
+      },
+      "xpRuleCreated": {
+        "title": "XP Rule Created",
+        "description": "The rule for '{description}' has been created."
+      },
+      "badgeDeleted": {
+        "title": "Badge Deleted",
+        "description": "The badge has been successfully deleted."
+      },
+      "xpRuleDeleted": {
+        "title": "XP Rule Deleted",
+        "description": "The XP rule has been successfully deleted."
+      }
+    }
+  }
+}

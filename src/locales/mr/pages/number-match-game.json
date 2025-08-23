@@ -1,0 +1,42 @@
+
+{
+  "numberMatchGame": {
+    "title": "नंबर मॅच गेम",
+    "description": "मोठे बक्षीस जिंकण्यासाठी 777 क्रमांकाशी जुळवा!",
+    "initialMessage": "खेळ सुरू करण्यासाठी 'Play' वर क्लिक करा!",
+    "rollingMessage": "रोलिंग...",
+    "winMessage": "हा 777 आहे! तुम्ही {reward} कॉइन्स जिंकले!",
+    "gameOverMessage": "खेळ संपला! तुम्ही एकूण {total} कॉइन्स जिंकले.",
+    "notAMatchMessage": "जुळले नाही. पुढच्या वेळी शुभेच्छा!",
+    "resetMessage": "नवीन खेळ सुरू करण्यासाठी 'Play' वर क्लिक करा!",
+    "gameOverTitle": "खेळ संपला!",
+    "consolationPrizeMessage": "तुम्ही एकूण सांत्वन बक्षीस जिंकले:",
+    "coins": "कॉइन्स",
+    "cost": "किंमत",
+    "attemptsLeft": "शिल्लक प्रयत्न",
+    "playButton": "आता खेळा",
+    "rollingButton": "रोलिंग...",
+    "resetButton": "खेळ रीसेट करा",
+    "otherGames": "इतर खेळ",
+    "playKBC": "KBC क्विझ गेम खेळा",
+    "prizeTitle": "बक्षीस",
+    "toast": {
+      "gameOver": {
+        "title": "खेळ संपला",
+        "description": "पुन्हा खेळण्यासाठी कृपया रीसेट करा."
+      },
+      "insufficientCoins": {
+        "title": "अपुरे कॉइन्स",
+        "description": "खेळण्यासाठी तुम्हाला {cost} कॉइन्सची आवश्यकता आहे."
+      },
+      "gameStart": {
+        "title": "-{cost} कॉइन्स",
+        "description": "शुभेच्छा!"
+      },
+      "win": {
+        "title": "अभिनंदन!",
+        "description": "तुम्ही {reward} कॉइन्स जिंकले! ते तुमच्या वॉलेटमध्ये जमा केले आहेत."
+      }
+    }
+  }
+}

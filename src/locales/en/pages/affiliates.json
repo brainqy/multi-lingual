@@ -1,0 +1,45 @@
+
+{
+  "affiliates": {
+    "title": "Affiliates Program",
+    "pageDescription": "Partner with JobMatch AI, share with your network, and earn commissions!",
+    "yourDetails": "Your Affiliate Details",
+    "detailsDesc": "Use this code or link to promote JobMatch AI.",
+    "codeLabel": "Your Unique Affiliate Code",
+    "linkLabel": "Your Affiliate Link",
+    "commissionRate": "Commission Rate",
+    "shareLink": "Share Affiliate Link",
+    "performance": "Affiliate Performance",
+    "performanceDesc": "Track your clicks, signups, and earnings.",
+    "totalClicks": "Total Clicks",
+    "successfulSignups": "Successful Signups",
+    "totalEarned": "Total Earned",
+    "recentSignups": "Recent Signups via Your Link",
+    "noSignups": "No signups through your affiliate link yet.",
+    "userIdMasked": "User ID (Masked)",
+    "signupDate": "Signup Date",
+    "commissionEarned": "Commission Earned",
+    "userMasked": "User...{last4}",
+    "pending": "Pending",
+    "commissionProcessNote": "Commissions are typically processed at the end of each month.",
+    "howItWorksCardTitle": "How It Works",
+    "howItWorks": [
+      {
+        "title": "Share Your Link",
+        "description": "Distribute your unique referral link through social media, email, or your website."
+      },
+      {
+        "title": "New User Signs Up",
+        "description": "A new user signs up on JobMatch AI through your unique referral link."
+      },
+      {
+        "title": "Earn Commission",
+        "description": "You earn a commission for qualifying purchases or subscriptions made by your referred user."
+      },
+      {
+        "title": "Get Paid",
+        "description": "Track your earnings and receive payouts, typically on a monthly basis."
+      }
+    ]
+  }
+}

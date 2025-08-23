@@ -1,0 +1,115 @@
+
+{
+  "userSettings": {
+    "pageTitle": "Settings",
+    "appearanceCardTitle": "Appearance",
+    "appearanceCardDescription": "Customize the look and feel of the application.",
+    "darkModeLabel": "Dark Mode",
+    "tenantBrandingCardTitle": "Tenant Branding",
+    "tenantBrandingCardDescription": "Customize the branding for your tenant: {tenantName}",
+    "tenantNameLabel": "Tenant Display Name",
+    "tenantNamePlaceholder": "e.g., State University Alumni",
+    "tenantLogoUrlLabel": "Tenant Logo URL",
+    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
+    "logoUploadLabel": "Or Upload Logo",
+    "logoUploadHelpText": "A new URL will be generated after upload.",
+    "tenantThemeColorsLabel": "Tenant Theme Colors",
+    "primaryColorLabel": "Primary Color",
+    "accentColorLabel": "Accent Color",
+    "colorPlaceholder": "e.g., hsl(221 83% 53%)",
+    "challengePrefsCardTitle": "Challenge Preferences",
+    "challengePrefsCardDescription": "Select your preferred categories for the Daily Challenge.",
+    "notificationsCardTitle": "Notifications",
+    "notificationsCardDescription": "Manage how you receive notifications from the platform.",
+    "emailNotificationsLabel": "Email Notifications",
+    "appNotificationsLabel": "In-App Notifications",
+    "gamificationNotificationsLabel": "Gamification & Rewards Notifications",
+    "referralNotificationsLabel": "Referral Program Notifications",
+    "devSettings": {
+      "title": "Developer Settings",
+      "description": "Configure advanced developer options for AI features.",
+      "apiKeyLabel": "Your Gemini API Key (Overrides platform default)",
+      "apiKeyPlaceholder": "Enter your Google AI Studio API Key...",
+      "apiKeyDescription": "Your key is stored locally in your browser and is never sent to our servers."
+    },
+    "platformFeaturesAdminCardTitle": "Platform Features (Admin)",
+    "platformFeaturesAdminCardDescription": "Enable or disable major features for all users.",
+    "walletEnablePlatformLabel": "Enable Digital Wallet (Coins) Platform-Wide",
+    "accountSecurityCardTitle": "Account & Security",
+    "accountSecurityCardDescription": "Manage your password and data privacy settings.",
+    "changePasswordButton": "Change Password",
+    "dataSharingLabel": "Allow data sharing for analytics",
+    "twoFactorAuthLabel": "Enable Two-Factor Authentication (2FA)",
+    "requestDataDeletionButton": "Request Data Deletion",
+    "saveAllSettingsButton": "Save All Settings",
+    "cancelButton": "Cancel",
+    "changePasswordDialogTitle": "Change Password",
+    "changePasswordDialogDescription": "Enter your current and new password.",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmNewPasswordLabel": "Confirm New Password",
+    "updatePasswordButton": "Update Password",
+    "confirmDataDeletionDialogTitle": "Are you absolutely sure?",
+    "confirmDataDeletionDialogDescription": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. To confirm, please type \"{phrase}\" below.",
+    "confirmDeletionInputPlaceholder": "Type \"{phrase}\" to confirm",
+    "deleteConfirmationPhrase": "delete my account",
+    "confirmDeletionButton": "Yes, delete my account",
+    "toast": {
+      "mockAction": {
+        "title": "Mock Action",
+        "description": "This is a placeholder for a real implementation."
+      },
+      "tenantBrandingSaved": {
+        "title": "Tenant Branding Saved",
+        "description": "Branding settings for {tenantName} have been updated."
+      },
+      "platformSettingsSaved": {
+        "title": "Platform Settings Saved",
+        "description": "Platform-wide features have been updated."
+      },
+      "userSettingsSaved": {
+        "title": "Settings Saved",
+        "description": "Your preferences have been updated."
+      },
+      "passwordChangedMock": {
+        "title": "Password Changed (Mock)",
+        "description": "Your password has been successfully updated."
+      },
+      "passwordMismatch": {
+        "title": "Passwords Do Not Match",
+        "description": "Please ensure the new password and confirmation match."
+      },
+      "passwordTooShort": {
+        "title": "Password Too Short",
+        "description": "Your new password must be at least 8 characters long."
+      },
+      "dataDeletionMock": {
+        "title": "Deletion Request Submitted (Mock)",
+        "description": "Your account deletion request has been received. This is a mock action."
+      },
+      "logoSelectedMock": {
+        "title": "Logo Selected (Mock)",
+        "description": "File '{fileName}' selected. Click Save to apply changes."
+      },
+      "themeChanged": {
+        "title": "Theme Changed",
+        "description": "Switched to {themeMode} Mode."
+      }
+    },
+    "apiKeyTour": {
+      "dialogTitle": "Using Your Own API Key",
+      "step1": {
+        "title": "What's this?",
+        "description": "This feature allows you to use your own Google AI Studio (Gemini) API key for all AI-powered actions in the app, potentially giving you more control and usage beyond the platform's default limits."
+      },
+      "step2": {
+        "title": "Find the Setting",
+        "description": "Your API key can be entered in the 'Developer Settings' card. This card is only visible if the platform administrator has enabled this feature."
+      },
+      "step3": {
+        "title": "Enter Your Key",
+        "description": "Paste your key here. It's saved only in your browser and never sent to our servers. Leaving it blank will revert to using the platform's default key."
+      }
+    }
+  }
+}
