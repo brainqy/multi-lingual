@@ -50,9 +50,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy'>): Promise<CommunityPost | null> {
-    console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
-        console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
         const dataForDb: Prisma.CommunityPostCreateInput = {
             tenantId: postData.tenantId,
             userId: postData.userId,
@@ -77,34 +75,32 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             votedBy: [],
             registeredBy: [],
         };
-        console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
-        console.log("[CommunityAction LOG] 4. Calling db.communityPost.create...");
         const newPost = await db.communityPost.create({
             data: dataForDb,
         });
-        console.log("[CommunityAction LOG] 5. Database create operation successful. Result:", newPost);
 
-        console.log("[CommunityAction LOG] 6. Triggering badge check for user:", postData.userId);
         await checkAndAwardBadges(postData.userId);
-        console.log("[CommunityAction LOG] 7. Badge check complete.");
 
-        console.log("[CommunityAction LOG] 8. Returning new post from function.");
         return newPost as unknown as CommunityPost;
     } catch (error) {
-        console.error('[CommunityAction LOG] 9. Error during post creation:', error);
+        console.error('[CommunityAction] Error during post creation:', error);
         return null;
     }
 }
 
 
 /**
- * Adds a comment to a specific post.
- * @param commentData The data for the new comment.
+ * Adds a comment to a specific post (either community or blog).
+ * @param commentData The data for the new comment. Must include either postId or blogPostId.
  * @returns The newly created CommunityComment object or null if failed.
  */
 export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' | 'timestamp' | 'replies'>): Promise<CommunityComment | null> {
   try {
+    if (!commentData.postId && !commentData.blogPostId) {
+      throw new Error("Comment must be associated with either a postId or a blogPostId.");
+    }
+
     const newComment = await db.communityComment.create({
       data: {
         userId: commentData.userId,
@@ -113,6 +109,7 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         comment: commentData.comment,
         parentId: commentData.parentId,
         timestamp: new Date(),
+        // Conditionally connect to either post or blogPost
         ...(commentData.postId && { post: { connect: { id: commentData.postId } } }),
         ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
       },
