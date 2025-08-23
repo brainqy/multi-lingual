@@ -104,14 +104,16 @@ export function AppSidebar() {
       isActive = pathname === item.href;
     }
     
-    if (item.adminOnly && currentUser.role !== 'admin') {
+    const userRole = currentUser.role.toLowerCase();
+
+    if (item.adminOnly && userRole !== 'admin') {
       return null;
     }
-    if (item.managerOnly && currentUser.role !== 'manager' && currentUser.role !== 'admin') {
+    if (item.managerOnly && userRole !== 'manager' && userRole !== 'admin') {
         return null;
     }
 
-    const effectiveHref = item.href === "/dashboard" && currentUser.role === 'admin'
+    const effectiveHref = item.href === "/dashboard" && userRole === 'admin'
       ? "/admin/dashboard"
       : item.href;
 
@@ -143,6 +145,8 @@ export function AppSidebar() {
   if (!currentUser) {
     return null; // Or a loading skeleton for the sidebar
   }
+
+  const userRole = currentUser.role.toLowerCase();
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -195,16 +199,16 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        {(currentUser.role === 'admin' || currentUser.role === 'manager') && (
+        {(userRole === 'admin' || userRole === 'manager') && (
           <>
             <SidebarSeparator className="my-4" />
             <SidebarGroup className="p-0">
               <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden text-xs text-sidebar-foreground/60 px-2">
-                {currentUser.role === 'admin' ? t("sideMenu.adminPanel") : t("sideMenu.managerPanel")}
+                {userRole === 'admin' ? t("sideMenu.adminPanel") : t("sideMenu.managerPanel")}
               </SidebarGroupLabel>
               <SidebarMenu>
                 {adminItems.filter(item => {
-                    if(currentUser.role === 'manager') {
+                    if(userRole === 'manager') {
                         const managerAccessible = [
                             "/admin/user-management", 
                             "/admin/content-moderation",

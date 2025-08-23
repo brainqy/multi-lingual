@@ -26,11 +26,11 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (user?.role !== 'admin') {
+  if (user?.role.toLowerCase() !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
   return (
-     <AdminDashboard />
+     <AdminDashboard user={user} />
   );
 }

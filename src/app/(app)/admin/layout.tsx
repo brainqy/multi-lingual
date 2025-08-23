@@ -21,7 +21,7 @@ export default function AdminLayout({
     );
   }
 
-  if (user?.role !== 'admin') {
+  if (user?.role.toLowerCase() !== 'admin') {
     return <AccessDeniedMessage />;
   }
 
