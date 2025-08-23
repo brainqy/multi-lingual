@@ -48,7 +48,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         throw new Error("Name, email, and role are required to create a user.");
     }
 
-    const defaultTenantId = 'Brainqy';
+    const defaultTenantId = 'brainqy';
     const password = data.password;
 
     const newUserPayload = {

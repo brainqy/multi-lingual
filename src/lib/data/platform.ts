@@ -2,13 +2,13 @@
 import type { Tenant, PlatformSettings, SystemAlert, GalleryEvent, ResumeTemplate, Badge, DailyChallenge, TourStep } from '@/types';
 import { AreasOfSupport } from '@/types';
 
-export const SAMPLE_TENANT_ID = 'Brainqy';
+export const SAMPLE_TENANT_ID = 'brainqy';
 export const SAMPLE_DATA_BASE_DATE = new Date('2025-06-01T12:00:00Z');
 export const graduationYears = Array.from({ length: 56 }, (_, i) => (new Date().getFullYear() + 5 - i).toString());
 
 export const sampleTenants: Tenant[] = [
   {
-    id: 'Brainqy',
+    id: 'brainqy',
     name: 'Brainqy University',
     createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
     domain: 'brainqy.JobMatch.ai',
