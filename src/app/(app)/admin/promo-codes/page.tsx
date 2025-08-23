@@ -27,7 +27,7 @@ const promoCodeSchema = z.object({
   id: z.string().optional(),
   code: z.string().min(3, "Code must be at least 3 characters").max(20, "Code cannot exceed 20 characters").transform(val => val.toUpperCase()),
   description: z.string().min(5, "Description must be at least 5 characters"),
-  rewardType: z.enum(['coins', 'xp', 'premium_days', 'flash_coins']),
+  rewardType: z.enum(['coins', 'xp', 'premium_days', 'flash_coins', 'streak_freeze']),
   rewardValue: z.coerce.number().min(1, "Reward value must be at least 1"),
   expiresAt: z.date().optional(),
   usageLimit: z.coerce.number().min(0, "Usage limit cannot be negative").default(0),
@@ -39,7 +39,7 @@ type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
 const generatorSchema = z.object({
   prefix: z.string().min(1, "Prefix is required").max(10, "Prefix cannot exceed 10 characters").transform(val => val.toUpperCase()),
   count: z.coerce.number().min(1, "Must generate at least 1 code").max(100, "Cannot generate more than 100 codes at once"),
-  rewardType: z.enum(['coins', 'xp', 'premium_days', 'flash_coins']),
+  rewardType: z.enum(['coins', 'xp', 'premium_days', 'flash_coins', 'streak_freeze']),
   rewardValue: z.coerce.number().min(1, "Reward value must be at least 1"),
   expiresAt: z.date().optional(),
 });
@@ -119,7 +119,7 @@ export default function PromoCodeManagementPage() {
         toast({ title: t("promoCodes.toast.exists.title"), description: t("promoCodes.toast.exists.description", { code: data.code }), variant: "destructive" });
         return;
       }
-      const newCodeData: Omit<PromoCode, 'id' | 'timesUsed'> = {
+      const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
         ...data,
         expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
       };
@@ -146,7 +146,7 @@ export default function PromoCodeManagementPage() {
     for (let i = 0; i < data.count; i++) {
       const uniquePart = Math.random().toString(36).substring(2, 10).toUpperCase();
       const code = `${data.prefix}-${uniquePart}`;
-      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed'> = {
+      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
         code,
         description: `One-time use code (${data.rewardValue} ${data.rewardType})`,
         rewardType: data.rewardType,
@@ -300,6 +300,7 @@ export default function PromoCodeManagementPage() {
                       <SelectItem value="flash_coins">{t("promoCodes.rewardTypes.flash_coins")}</SelectItem>
                       <SelectItem value="xp">{t("promoCodes.rewardTypes.xp")}</SelectItem>
                       <SelectItem value="premium_days">{t("promoCodes.rewardTypes.premium_days")}</SelectItem>
+                      <SelectItem value="streak_freeze">Streak Freeze</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
@@ -360,6 +361,7 @@ export default function PromoCodeManagementPage() {
                       <SelectItem value="coins">{t("promoCodes.rewardTypes.coins")}</SelectItem>
                       <SelectItem value="flash_coins">{t("promoCodes.rewardTypes.flash_coins")}</SelectItem>
                       <SelectItem value="xp">{t("promoCodes.rewardTypes.xp")}</SelectItem>
+                      <SelectItem value="streak_freeze">Streak Freeze</SelectItem>
                     </SelectContent>
                   </Select>
                 )} />
@@ -403,3 +405,5 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
+
+  

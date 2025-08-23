@@ -1242,7 +1242,7 @@ export interface PromoCode {
   id: string;
   code: string;
   description: string;
-  rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins';
+  rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
   rewardValue: number;
   expiresAt?: string;
   usageLimit: number;
@@ -1261,3 +1261,6 @@ export type UserDashboardWidgetId =
   | 'leaderboard';
 
 
+
+
+  

@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -125,6 +126,9 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                 case 'xp':
                     await updateUser(userId, { xpPoints: (user.xpPoints || 0) + promoCode.rewardValue });
                     break;
+                case 'streak_freeze':
+                    await updateUser(userId, { streakFreezes: (user.streakFreezes || 0) + promoCode.rewardValue });
+                    break;
                 case 'premium_days':
                     console.log(`Adding ${promoCode.rewardValue} premium days to user ${userId}`);
                     break;
@@ -146,3 +150,5 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
         return { success: false, message: 'An unexpected error occurred.' };
     }
 }
+
+  
