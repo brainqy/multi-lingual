@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -233,6 +234,8 @@ export interface CommunityPost {
   flagCount: number;
   comments?: CommunityComment[];
   bookmarkedBy?: string[];
+  votedBy?: string[];
+  registeredBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -285,6 +288,7 @@ export interface Badge {
   achieved?: boolean;
   xpReward?: number;
   triggerCondition?: string;
+  streakFreezeReward?: number;
 }
 
 export interface BlogPost {
@@ -1071,7 +1075,7 @@ export interface GenerateCoverLetterInput {
   additionalNotes?: string;
 }
 export interface GenerateCoverLetterOutput {
-  generatedCoverLetterText: string;
+  generatedResumeText: string;
 }
 
 export interface PersonalizedJobRecommendationsInput {
@@ -1239,7 +1243,7 @@ export interface PromoCode {
   id: string;
   code: string;
   description: string;
-  rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins';
+  rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
   rewardValue: number;
   expiresAt?: string;
   usageLimit: number;
@@ -1256,4 +1260,3 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
-
