@@ -651,7 +651,13 @@ export interface InterviewQuestionUserRating {
   | "post_job"
   | "power_edit_resume"
   | "create_quiz"
-  | "book_appointment";
+  | "book_appointment"
+  | "community_post"
+  | "community_comment"
+  | "profile_completion_percentage"
+  | "generate_cover_letter"
+  | "add_job_application"
+  | "daily_challenge_complete";
 export interface DailyChallenge {
   id: string;
   type: 'standard' | 'flip';
@@ -1245,3 +1251,4 @@ export type UserDashboardWidgetId =
   | 'userBadges'
   | 'leaderboard';
 
+    
