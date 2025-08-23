@@ -21,7 +21,7 @@ import { format, parseISO } from "date-fns";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getPromoCodes, createPromoCode, updatePromoCode, deletePromoCode } from "@/lib/actions/promo-codes";
+import { createPromoCode, deletePromoCode, getPromoCodes, updatePromoCode } from "../../../../../lib/actions/promo-codes";
 
 const promoCodeSchema = z.object({
   id: z.string().optional(),
