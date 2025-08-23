@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useCallback } from "react";
@@ -43,19 +44,22 @@ export default function FeatureRequestsPage() {
   });
   
   const fetchRequests = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
-    const fetchedRequests = await getFeatureRequests();
+    // Admins get all (tenantId is undefined), managers get scoped to their tenant
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
+    const fetchedRequests = await getFeatureRequests(tenantIdToFetch);
     setRequests(fetchedRequests);
     setIsLoading(false);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
 
 
-  if (!currentUser || currentUser.role !== 'admin') {
-    return <AccessDeniedMessage />;
+  if (!currentUser) {
+     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
 
   const onSubmitSuggestion = async (data: FeatureRequestFormData) => {

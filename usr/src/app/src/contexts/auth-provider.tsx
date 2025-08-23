@@ -113,7 +113,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setWallet(null);
     localStorage.removeItem('bhashaSetuUser');
-    if (!pathname.startsWith('/auth')) {
+    // Don't redirect if already on a public or auth page
+    if (!pathname.startsWith('/auth') && pathname !== '/') {
       router.push('/auth/login');
     }
   }, [router, pathname]);
@@ -165,7 +166,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password?: string) => {
     try {
-      let userToLogin = await loginUser(email, password || "mock_password");
+      let tenantId: string | undefined = undefined;
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        const parts = hostname.split('.');
+        if (parts.length > 2 && parts[0] !== 'www') {
+            tenantId = parts[0];
+        } else if (hostname.includes('localhost') && parts.length > 1 && parts[0] !== 'localhost') {
+            tenantId = parts[0];
+        }
+      }
+
+      let userToLogin = await loginUser(email, password || "mock_password", tenantId);
 
       if (userToLogin) {
         userToLogin = await handleStreakAndBadges(userToLogin);
@@ -177,7 +189,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         toast({
           title: "Login Failed",
-          description: "User not found or password incorrect. Please check your credentials or sign up.",
+          description: "User not found in this tenant or password incorrect. Please check your credentials or sign up.",
           variant: "destructive",
         });
       }
