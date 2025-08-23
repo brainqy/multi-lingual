@@ -418,8 +418,7 @@ export interface FlashCoinBatch {
 
 export type WalletTransaction = {
   id: string;
-  tenantId: string;
-  userId: string;
+  walletId: string;
   date: string;
   description: string;
   amount: number;
@@ -567,6 +566,7 @@ export interface ResumeTemplate {
   bodyColor?: string;
   headerFontSize?: string; // e.g., '1.5rem'
   textAlign?: 'left' | 'center' | 'right';
+  layout?: 'one-column' | 'two-column';
 }
 
 export interface TourStep {

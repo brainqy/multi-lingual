@@ -32,6 +32,7 @@ const templateSchema = z.object({
   bodyColor: z.string().optional(),
   headerFontSize: z.string().optional(),
   textAlign: z.enum(['left', 'center', 'right']).optional(),
+  layout: z.enum(['one-column', 'two-column']).optional(),
 });
 
 type TemplateFormData = z.infer<typeof templateSchema>;
@@ -87,6 +88,7 @@ export default function TemplateDesignerPage() {
       bodyColor: '#333333',
       headerFontSize: '1.5rem',
       textAlign: 'left',
+      layout: 'one-column',
     });
     setIsFormDialogOpen(true);
   };
@@ -144,6 +146,18 @@ export default function TemplateDesignerPage() {
               <Controller name="previewImageUrl" control={control} render={({ field }) => <Input id="template-img" {...field} />} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="template-layout">Layout</Label>
+                <Controller name="layout" control={control} render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one-column">One Column</SelectItem>
+                      <SelectItem value="two-column">Two Column</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
               <div>
                 <Label htmlFor="template-headerColor">Header Color</Label>
                 <Controller name="headerColor" control={control} render={({ field }) => <Input id="template-headerColor" type="color" {...field} />} />
