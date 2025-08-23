@@ -44,28 +44,45 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments'>): Promise<CommunityPost | null> {
-  console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
-  try {
-    // Destructure to explicitly exclude 'comments' which shouldn't be in the create payload.
-    const { comments, ...restOfPostData } = postData;
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'>): Promise<CommunityPost | null> {
+    console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
+    try {
+        const dataForDb: Prisma.CommunityPostCreateInput = {
+            tenantId: postData.tenantId,
+            userId: postData.userId,
+            userName: postData.userName,
+            userAvatar: postData.userAvatar,
+            content: postData.content,
+            type: postData.type,
+            tags: postData.tags || [],
+            moderationStatus: postData.moderationStatus,
+            flagCount: postData.flagCount,
+            timestamp: new Date(),
+            
+            // Type-specific fields
+            imageUrl: postData.type === 'text' ? postData.imageUrl : undefined,
+            pollOptions: postData.type === 'poll' ? (postData.pollOptions || Prisma.JsonNull) : Prisma.JsonNull,
+            eventTitle: postData.type === 'event' ? postData.eventTitle : undefined,
+            eventDate: postData.type === 'event' ? (postData.eventDate ? new Date(postData.eventDate) : undefined) : undefined,
+            eventLocation: postData.type === 'event' ? postData.eventLocation : undefined,
+            attendees: postData.type === 'event' ? postData.attendees : undefined,
+            capacity: postData.type === 'event' ? postData.capacity : undefined,
+            assignedTo: postData.type === 'request' ? postData.assignedTo : undefined,
+            status: postData.type === 'request' ? postData.status : undefined,
+        };
 
-    const dataForDb = {
-      ...restOfPostData,
-      timestamp: new Date(),
-      pollOptions: postData.pollOptions || Prisma.JsonNull, // Prisma expects JsonNull for empty JSON
-      tags: postData.tags || [],
-    };
-    console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
-    const newPost = await db.communityPost.create({
-      data: dataForDb,
-    });
-    console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
-    return newPost as unknown as CommunityPost;
-  } catch (error) {
-    console.error('[CommunityAction LOG] 4. Error during post creation:', error);
-    return null;
-  }
+        console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
+        
+        const newPost = await db.communityPost.create({
+            data: dataForDb,
+        });
+
+        console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
+        return newPost as unknown as CommunityPost;
+    } catch (error) {
+        console.error('[CommunityAction LOG] 4. Error during post creation:', error);
+        return null;
+    }
 }
 
 

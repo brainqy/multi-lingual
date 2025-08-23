@@ -9,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
-
-import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost } from '@/lib/actions/community';
+import { useAuth } from "@/hooks/use-auth";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
@@ -25,8 +24,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { useAuth } from "@/hooks/use-auth";
-import { getAppointments } from "@/lib/actions/appointments";
+import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost } from '@/lib/actions/community';
+import { getUsers } from "@/lib/data-services/users";
+
 
 const postSchema = z.object({
   content: z.string().min(1, "Post content cannot be empty"),
@@ -69,7 +69,7 @@ const renderCommentWithMentions = (text: string) => {
   });
 };
 
-const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, replyingToCommentId, replyText, onReplyTextChange }: {
+const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, replyingToCommentId, replyText, onReplyTextChange, currentUser }: {
   comment: CommunityComment;
   allComments: CommunityComment[];
   onReply: (commentId: string | null) => void;
@@ -78,9 +78,9 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
   replyingToCommentId: string | null;
   replyText: string;
   onReplyTextChange: (text: string) => void;
+  currentUser: UserProfile;
 }) => {
   const replies = allComments.filter(c => c.parentId === comment.id);
-  const { user: currentUser } = useAuth();
 
   return (
     <div className={cn("flex items-start space-x-2", level > 0 && "ml-6 mt-2")}>
@@ -92,12 +92,12 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
         <div className="bg-secondary/40 p-2 rounded-md">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
-            <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(comment.timestamp, { addSuffix: true })}</p>
+            <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</p>
           </div>
           <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
         </div>
         <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id)}>Reply</Button>
-        {replyingToCommentId === comment.id && currentUser && (
+        {replyingToCommentId === comment.id && (
            <div className="flex items-center gap-2 pt-2">
               <Avatar className="h-8 w-8">
                   <AvatarImage src={currentUser.profilePictureUrl} alt={currentUser.name} data-ai-hint="person face" />
@@ -126,6 +126,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
                 replyingToCommentId={replyingToCommentId}
                 replyText={replyText}
                 onReplyTextChange={onReplyTextChange}
+                currentUser={currentUser}
             />
         ))}
       </div>
@@ -165,17 +166,21 @@ export default function CommunityFeedPage() {
 
   const postType = watch("type");
 
-  const fetchPosts = useCallback(async () => {
-    if (!currentUser) return; // Guard against running before user is loaded
+  const fetchData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
-    const fetchedPosts = await getCommunityPosts(currentUser.tenantId, currentUser.id);
+    const [fetchedPosts, fetchedUsers] = await Promise.all([
+      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getUsers()
+    ]);
     setPosts(fetchedPosts);
+    setAllUsers(fetchedUsers);
     setIsLoading(false);
   }, [currentUser]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchData();
+  }, [fetchData]);
 
   const mostActiveUsers = useMemo(() => {
     if (!allUsers.length || !currentUser) return [];
@@ -186,30 +191,18 @@ export default function CommunityFeedPage() {
   }, [allUsers, currentUser]);
 
   const handleFormSubmit = async (data: PostFormData) => {
-    if (!currentUser) return;
-    let pollOptionsFinal = undefined;
-    if (data.type === 'poll' && data.pollOptions) {
-        pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
-        if (pollOptionsFinal.length < 2) {
-            toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
-            return;
-        }
+    console.log("[CommunityFeedPage LOG] 1. handleFormSubmit triggered with form data:", data);
+    if (!currentUser) {
+      console.log("[CommunityFeedPage LOG] 2. No current user found. Aborting.");
+      return;
     }
+    console.log("[CommunityFeedPage LOG] 3. Current user is present:", currentUser.id);
 
     if (editingPost) {
-      const updatedPostData: Partial<CommunityPost> = {
-        content: data.content,
-        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        type: data.type as any,
-        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-        eventDate: data.type === 'event' ? data.eventDate : undefined,
-        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
-      };
-      const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
+      console.log("[CommunityFeedPage LOG] 4a. Mode: Editing post with ID:", editingPost.id);
+      // Simplified update logic for demonstration. A real app might need more granular updates.
+      const updatedPost = await updateCommunityPost(editingPost.id, data as Partial<CommunityPost>);
+       console.log("[CommunityFeedPage LOG] 5a. Received response from updateCommunityPost:", updatedPost);
       if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
@@ -217,28 +210,44 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      console.log("[CommunityFeedPage DEBUG] Creating new post with data:", data);
-      const newPostData = {
-        tenantId: currentUser.tenantId || 'platform',
-        userId: currentUser.id,
-        userName: currentUser.name,
-        userAvatar: currentUser.profilePictureUrl,
-        content: data.content,
-        type: data.type as any,
-        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
-        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-        eventDate: data.type === 'event' ? data.eventDate : undefined,
-        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
-        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        moderationStatus: 'visible' as const,
-        flagCount: 0,
-        status: data.type === 'request' ? 'open' as const : undefined,
+      console.log("[CommunityFeedPage LOG] 4b. Mode: Creating new post.");
+      
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'> = {
+          tenantId: currentUser.tenantId || 'platform',
+          userId: currentUser.id,
+          userName: currentUser.name,
+          userAvatar: currentUser.profilePictureUrl,
+          content: data.content,
+          type: data.type,
+          tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+          moderationStatus: 'visible',
+          flagCount: 0,
       };
-      console.log("[CommunityFeedPage DEBUG] New post data:", newPostData);
-      const newPost = await createCommunityPost(newPostData);
+
+      // Add type-specific fields
+      if (data.type === 'text') {
+        newPostData.imageUrl = data.imageUrl || undefined;
+      } else if (data.type === 'poll' && data.pollOptions) {
+          const pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
+          if (pollOptionsFinal.length < 2) {
+              toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
+              return;
+          }
+          newPostData.pollOptions = pollOptionsFinal;
+      } else if (data.type === 'event') {
+          newPostData.eventTitle = data.eventTitle;
+          newPostData.eventDate = data.eventDate;
+          newPostData.eventLocation = data.eventLocation;
+          newPostData.attendees = data.attendees || 0;
+          newPostData.capacity = data.capacity || 0;
+      } else if (data.type === 'request') {
+          newPostData.status = 'open';
+      }
+      
+      console.log("[CommunityFeedPage LOG] 5b. Prepared create data:", newPostData);
+      const newPost = await createCommunityPost(newPostData as any); // Cast because Omit is strict
+      console.log("[CommunityFeedPage LOG] 6b. Received response from createCommunityPost:", newPost);
+      
       if (newPost) {
         setPosts(prev => [newPost, ...prev]);
         toast({ title: "Post Created", description: "Your post has been added to the feed." });
@@ -246,6 +255,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
       }
     }
+    console.log("[CommunityFeedPage LOG] 7. Closing dialog and resetting form.");
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
@@ -619,7 +629,7 @@ export default function CommunityFeedPage() {
                     <div className="flex-1">
                       <p className="font-semibold text-foreground">{post.userName}</p>
                       <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
-                        <span>{formatDistanceToNow(post.timestamp, { addSuffix: true })}</span>
+                        <span>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</span>
                         {post.type === 'poll' && (
                           <Badge variant="outline" className="border-blue-500 text-blue-500">Poll</Badge>
                         )}
@@ -681,12 +691,12 @@ export default function CommunityFeedPage() {
                              {post.capacity !== undefined && post.capacity === 0 && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1"><UsersIcon className="h-3 w-3" /> Unlimited spots</p>
                              )}
-                            {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
+                            {post.eventDate && dateIsFuture(new Date(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
                               <Button variant="outline" size="sm" className="mt-2 text-primary border-primary hover:bg-primary/10" onClick={() => handleRegisterForEvent(post.id, post.eventTitle)}>
                                 <Ticket className="mr-1 h-4 w-4"/> Register Now
                               </Button>
                             )}
-                             {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
+                             {post.eventDate && dateIsFuture(new Date(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
                               <Badge variant="destructive">Event Full</Badge>
                             )}
                           </div>
@@ -698,7 +708,7 @@ export default function CommunityFeedPage() {
                                   <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
                                 </Button>
                               )}
-                            {post.assignedTo && post.status === 'assigned' && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
+                            {post.assignedTo && post.status === 'in progress' && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
                             {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
                           </div>
                         )}
@@ -761,6 +771,7 @@ export default function CommunityFeedPage() {
                                     replyingToCommentId={replyingToCommentId}
                                     replyText={replyText}
                                     onReplyTextChange={setReplyText}
+                                    currentUser={currentUser}
                                   />
                               ))}
                               </div>
