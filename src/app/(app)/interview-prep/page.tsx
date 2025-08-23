@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
+import { getUserByEmail } from '@/lib/data-services/users';
 
 const logger = {
   log: (message: string, ...args: any[]) => console.log(`[InterviewPrepPage] ${message}`, ...args),
@@ -126,10 +127,18 @@ export default function InterviewPracticeHubPage() {
         }
     } else {
       logger.log('4. Session type is "experts" or "friends". Preparing to create an appointment.');
+      const expertUser = await getUserByEmail('admin@bhashasetu.com');
+      if (!expertUser) {
+        logger.log('4.1. Could not find expert user (admin@bhashasetu.com). Aborting.');
+        toast({ title: "Error", description: "Could not find an available expert to book.", variant: "destructive" });
+        return;
+      }
+      logger.log('4.2. Found expert user:', expertUser.id);
+      
       const newAppointmentData: Omit<Appointment, 'id'> = {
         tenantId: currentUser.tenantId,
         requesterUserId: currentUser.id,
-        alumniUserId: 'expert-placeholder', // In a real app, this would be selected
+        alumniUserId: expertUser.id, // Use a real user ID
         title: `Practice Session: ${newSessionConfig.topics.join(', ')}`,
         dateTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
         status: 'Pending',
@@ -305,4 +314,3 @@ export default function InterviewPracticeHubPage() {
     </div>
   );
 }
-
