@@ -134,7 +134,7 @@ export default function AppointmentsPage() {
   const openRescheduleDialog = (appointment: Appointment) => {
     setAppointmentToReschedule(appointment);
     resetRescheduleForm({
-      preferredDate: parseISO(appointment.dateTime),
+      preferredDate: new Date(appointment.dateTime),
       preferredTimeSlot: PreferredTimeSlots[0], 
       message: '',
     });
@@ -191,7 +191,7 @@ export default function AppointmentsPage() {
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
       if (!appt) return false;
-      const apptDate = parseISO(appt.dateTime);
+      const apptDate = new Date(appt.dateTime);
       
       const partnerDetails = getPartnerDetails(appt);
 
@@ -281,8 +281,8 @@ export default function AppointmentsPage() {
               {filteredAppointments.map((appt) => {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
-                const apptDate = parseISO(appt.dateTime);
-                const reminderDate = appt.reminderDate ? parseISO(appt.reminderDate) : null;
+                const apptDate = new Date(appt.dateTime);
+                const reminderDate = appt.reminderDate ? new Date(appt.reminderDate) : null;
                 const daysToReminder = reminderDate && isFuture(reminderDate) ? differenceInDays(reminderDate, new Date()) : null;
 
                 return (
