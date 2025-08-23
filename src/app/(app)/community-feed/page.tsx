@@ -33,10 +33,7 @@ const postSchema = z.object({
   tags: z.string().optional(),
   type: z.enum(['text', 'poll', 'event', 'request']),
   imageUrl: z.string().url("Invalid URL format").optional().or(z.literal('')),
-  pollOptions: z.array(z.object({ option: z.string().min(1, "Option cannot be empty"), votes: z.number().default(0) })).optional()
-    .refine(options => !options || options.length === 0 || options.length >= 2, {
-      message: "Polls must have at least two options if options are provided.",
-    }),
+  pollOptions: z.array(z.object({ option: z.string().min(1, "Option cannot be empty"), votes: z.number().default(0) })).optional(),
   eventDate: z.string().optional(),
   eventLocation: z.string().optional(),
   eventTitle: z.string().optional(),
@@ -44,6 +41,14 @@ const postSchema = z.object({
   capacity: z.coerce.number().min(0).optional().default(0),
   assignedTo: z.string().optional(),
   status: z.enum(['open', 'assigned', 'completed']).optional(),
+}).refine(data => {
+  if (data.type === 'poll') {
+    return data.pollOptions && data.pollOptions.filter(opt => opt.option.trim() !== '').length >= 2;
+  }
+  return true;
+}, {
+  message: "Polls must have at least two valid options.",
+  path: ["pollOptions"], 
 }).refine(data => {
   if (data.type === 'event') {
     return !!data.eventTitle && !!data.eventDate && !!data.eventLocation;
@@ -110,7 +115,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
                   rows={1}
                   className="flex-1 min-h-[40px] text-sm"
               />
-              <Button size="sm" onClick={() => onCommentSubmit(comment.postId!, replyText, comment.id)} disabled={!replyText.trim()}>
+              <Button size="sm" onClick={() => onCommentSubmit(comment.postId, replyText, comment.id)} disabled={!replyText.trim()}>
                   <Send className="h-4 w-4" />
               </Button>
           </div>
@@ -191,18 +196,35 @@ export default function CommunityFeedPage() {
   }, [allUsers, currentUser]);
 
   const handleFormSubmit = async (data: PostFormData) => {
-    console.log("[CommunityFeedPage LOG] 1. handleFormSubmit triggered with form data:", data);
     if (!currentUser) {
-      console.log("[CommunityFeedPage LOG] 2. No current user found. Aborting.");
       return;
     }
-    console.log("[CommunityFeedPage LOG] 3. Current user is present:", currentUser.id);
+
+    let pollOptionsFinal = undefined;
+    if (data.type === 'poll' && data.pollOptions) {
+        pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
+        if (pollOptionsFinal.length < 2) {
+            toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
+            return;
+        }
+    }
 
     if (editingPost) {
-      console.log("[CommunityFeedPage LOG] 4a. Mode: Editing post with ID:", editingPost.id);
-      // Simplified update logic for demonstration. A real app might need more granular updates.
-      const updatedPost = await updateCommunityPost(editingPost.id, data as Partial<CommunityPost>);
-       console.log("[CommunityFeedPage LOG] 5a. Received response from updateCommunityPost:", updatedPost);
+      const updatedPostData: Partial<CommunityPost> = {
+        content: data.content,
+        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+        type: data.type,
+        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
+        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
+        eventDate: data.type === 'event' ? data.eventDate : undefined,
+        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
+        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
+        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
+        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+      };
+
+      const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
+
       if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
@@ -210,43 +232,27 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      console.log("[CommunityFeedPage LOG] 4b. Mode: Creating new post.");
-      
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'> = {
-          tenantId: currentUser.tenantId || 'platform',
-          userId: currentUser.id,
-          userName: currentUser.name,
-          userAvatar: currentUser.profilePictureUrl,
-          content: data.content,
-          type: data.type,
-          tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-          moderationStatus: 'visible',
-          flagCount: 0,
+      const newPostData = {
+        tenantId: currentUser.tenantId || 'platform',
+        userId: currentUser.id,
+        userName: currentUser.name,
+        userAvatar: currentUser.profilePictureUrl,
+        content: data.content,
+        type: data.type,
+        imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
+        pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
+        eventDate: data.type === 'event' ? data.eventDate : undefined,
+        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
+        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
+        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
+        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+        tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
+        moderationStatus: 'visible' as const,
+        flagCount: 0,
+        status: data.type === 'request' ? 'open' as const : undefined,
       };
 
-      // Add type-specific fields
-      if (data.type === 'text') {
-        newPostData.imageUrl = data.imageUrl || undefined;
-      } else if (data.type === 'poll' && data.pollOptions) {
-          const pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
-          if (pollOptionsFinal.length < 2) {
-              toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
-              return;
-          }
-          newPostData.pollOptions = pollOptionsFinal;
-      } else if (data.type === 'event') {
-          newPostData.eventTitle = data.eventTitle;
-          newPostData.eventDate = data.eventDate;
-          newPostData.eventLocation = data.eventLocation;
-          newPostData.attendees = data.attendees || 0;
-          newPostData.capacity = data.capacity || 0;
-      } else if (data.type === 'request') {
-          newPostData.status = 'open';
-      }
-      
-      console.log("[CommunityFeedPage LOG] 5b. Prepared create data:", newPostData);
-      const newPost = await createCommunityPost(newPostData as any); // Cast because Omit is strict
-      console.log("[CommunityFeedPage LOG] 6b. Received response from createCommunityPost:", newPost);
+      const newPost = await createCommunityPost(newPostData);
       
       if (newPost) {
         setPosts(prev => [newPost, ...prev]);
@@ -255,7 +261,6 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
       }
     }
-    console.log("[CommunityFeedPage LOG] 7. Closing dialog and resetting form.");
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
@@ -532,7 +537,7 @@ export default function CommunityFeedPage() {
                        )}
                     </div>
                   ))}
-                  {errors.pollOptions && typeof errors.pollOptions === 'object' && !Array.isArray(errors.pollOptions) && (errors.pollOptions as any).message && <p className="text-sm text-destructive mt-1">{(errors.pollOptions as any).message}</p>}
+                  {errors.pollOptions && <p className="text-sm text-destructive mt-1">{errors.pollOptions.message}</p>}
                   {(watch("pollOptions") || []).length < 6 && (
                     <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => {
                         const currentOptions = watch("pollOptions") || [];
