@@ -39,6 +39,17 @@ async function main() {
 
   console.log('Seeded platform tenant:', platformTenant)
 
+    const platformTenant1 = await prisma.tenant.upsert({
+    where: { id: 'brainqy' },
+    update: {},
+    create: {
+      id: 'brainqy',
+      name: 'Bhasha Setu Platform',
+    },
+  })
+
+  console.log('Seeded platform tenant:', platformTenant1)
+
 
   // Create a default admin user and connect to the platform tenant
   const adminUser = await prisma.user.upsert({
@@ -48,12 +59,26 @@ async function main() {
       email: 'admin@bhashasetu.com',
       name: 'Admin User',
       password: 'password123',
-      role: 'ADMIN',
+      role: 'admin',
       tenantId: platformTenant.id,
     },
   })
 
   console.log('Seeded admin user:', adminUser)
+
+    const adminUser2 = await prisma.user.upsert({
+    where: { email: 'admin@bhashasetu.com' },
+    update: {},
+    create: {
+      email: 'admin2@bhashasetu.com',
+      name: 'Admin User',
+      password: 'password123',
+      role: 'admin',
+      tenantId: platformTenant.id,
+    },
+  })
+
+  console.log('Seeded admin user:', adminUser2)
 
   // Seed Promotional Content
   await prisma.promotionalContent.createMany({
