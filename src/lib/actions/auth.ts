@@ -34,7 +34,7 @@ export async function loginUser(email: string, password?: string): Promise<UserP
  * @param userData The data for the new user, including password.
  * @returns An object with success status, a message, and the user object if successful.
  */
-export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin'; password?: string }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
+export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin'; password?: string; tenantId?: string; }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
   const existingUser = await getUserByEmail(userData.email);
   if (existingUser) {
     return {

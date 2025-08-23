@@ -21,7 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { User, KeyRound, Mail, Gift, Eye, EyeOff } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { samplePlatformSettings } from "@/lib/sample-data";
 
@@ -30,6 +30,17 @@ export function SignupForm() {
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
   const platformName = t("appName", { default: "Bhasha Setu" });
+  const [tenantId, setTenantId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    // This runs on the client, so window is available.
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    // Handles localhost (e.g., 'brainqy.localhost') and production (e.g., 'brainqy.jobmatch.ai')
+    if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
+        setTenantId(parts[0]);
+    }
+  }, []);
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),
@@ -53,14 +64,14 @@ export function SignupForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    signup(values.name, values.email, 'user', values.password);
+    signup(values.name, values.email, 'user', values.password, tenantId);
   }
 
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-3xl font-headline text-center text-primary">{t("signup.title")}</CardTitle>
-        <CardDescription className="text-center">{platformName}</CardDescription>
+        <CardDescription className="text-center">{tenantId ? `Joining: ${tenantId}` : platformName}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
