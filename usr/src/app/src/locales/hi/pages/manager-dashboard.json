@@ -1,0 +1,66 @@
+
+{
+  "managerDashboard": {
+    "title": "प्रबंधक डैशबोर्ड ({tenantName})",
+    "description": "अपने किरायेदार के लिए जुड़ाव की निगरानी करें और सुविधाओं का प्रबंधन करें।",
+    "customizeButton": "अनुकूलित करें",
+    "stats": {
+      "activeUsers": {
+        "title": "सक्रिय उपयोगकर्ता (पिछले 7 दिन)",
+        "description": "किरायेदार में कुल {count} उपयोगकर्ता"
+      },
+      "resumesAnalyzed": {
+        "title": "विश्लेषित रिज्यूमे",
+        "description": "आपके किरायेदार के भीतर कुल स्कैन"
+      },
+      "communityPosts": {
+        "title": "सामुदायिक पोस्ट",
+        "description": "आपके सदस्यों द्वारा कुल पोस्ट"
+      },
+      "pendingApprovals": {
+        "title": "लंबित स्वीकृतियाँ",
+        "description": "समीक्षा की आवश्यकता वाले ईवेंट सबमिशन"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "किरायेदार जुड़ाव अवलोकन",
+        "description": "आपके किरायेदार के भीतर प्रमुख गतिविधियों का एक स्नैपशॉट।",
+        "legendPosts": "सामुदायिक पोस्ट",
+        "legendResumesAnalyzed": "विश्लेषित रिज्यूमे",
+        "legendAppointments": "सक्रिय अपॉइंटमेंट्स",
+        "activityCount": "गतिविधि गणना"
+      }
+    },
+    "quickActions": {
+      "title": "किरायेदार प्रबंधन क्रियाएँ",
+      "description": "अपने किरायेदार के समुदाय और सेटिंग्स को प्रबंधित करने के लिए त्वरित लिंक।",
+      "manageTenantUsers": "किरायेदार उपयोगकर्ताओं का प्रबंधन करें",
+      "moderateTenantFeed": "किरायेदार फ़ीड को मॉडरेट करें",
+      "manageEventGallery": "इवेंट गैलरी प्रबंधित करें",
+      "reviewEventSubmissions": "इवेंट सबमिशन की समीक्षा करें",
+      "manageAnnouncements": "घोषणाओं का प्रबंधन करें",
+      "promoCodeMgt": "प्रोमो कोड"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "डैशबोर्ड अपडेट किया गया",
+        "description": "आपकी विजेट प्राथमिकताएँ सहेज ली गई हैं।"
+      }
+    },
+    "customizeDialog": {
+      "title": "प्रबंधक डैशबोर्ड अनुकूलित करें",
+      "description": "आप जो विजेट देखना चाहते हैं उन्हें चुनें।",
+      "cancelButton": "रद्द करें",
+      "saveButton": "सहेजें"
+    },
+    "widgets": {
+      "activeUsersStat": "सक्रिय उपयोगकर्ता स्टेट",
+      "resumesAnalyzedStat": "विश्लेषित रिज्यूमे स्टेट",
+      "communityPostsStat": "सामुदायिक पोस्ट स्टेट",
+      "pendingApprovalsStat": "लंबित अनुमोदन स्टेट",
+      "tenantEngagementOverview": "किरायेदार जुड़ाव अवलोकन",
+      "tenantManagementActions": "किरायेदार प्रबंधन क्रियाएँ"
+    }
+  }
+}
