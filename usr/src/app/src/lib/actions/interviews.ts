@@ -48,7 +48,7 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
 }
 
 /**
- * Updates a mock interview session, e.g., to add feedback or answers.
+ * Updates a mock interview session, e.g., to add questions, feedback or answers.
  * @param sessionId The ID of the session to update.
  * @param updateData The data to update.
  * @returns The updated MockInterviewSession or null.
@@ -60,6 +60,7 @@ export async function updateMockInterviewSession(sessionId: string, updateData: 
             data: {
                 ...updateData,
                 // Handle JSON fields if they are updated
+                questions: updateData.questions ? { set: updateData.questions as any } : undefined,
                 answers: updateData.answers ? { set: updateData.answers as any } : undefined,
                 overallFeedback: updateData.overallFeedback ? updateData.overallFeedback as any : undefined,
                 recordingReferences: updateData.recordingReferences ? { set: updateData.recordingReferences as any } : undefined,
