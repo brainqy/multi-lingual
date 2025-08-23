@@ -36,6 +36,7 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
       data: {
         ...codeData,
         code: codeData.code.toUpperCase(),
+        expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
       },
     });
     return newCode as unknown as PromoCode;
@@ -58,6 +59,7 @@ export async function updatePromoCode(codeId: string, updateData: Partial<Omit<P
       data: {
         ...updateData,
         code: updateData.code ? updateData.code.toUpperCase() : undefined,
+        expiresAt: updateData.expiresAt ? new Date(updateData.expiresAt) : undefined,
       },
     });
     return updatedCode as unknown as PromoCode;
