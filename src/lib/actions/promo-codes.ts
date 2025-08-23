@@ -1,8 +1,7 @@
 
-
 'use server';
 
-import { db } from '@/lib/db';
+import { db } from '../db';
 import type { PromoCode } from '@/types';
 import { isPast, parseISO } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
@@ -57,6 +56,7 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
     return null;
   }
 }
+
 
 /**
  * Updates an existing promo code.
