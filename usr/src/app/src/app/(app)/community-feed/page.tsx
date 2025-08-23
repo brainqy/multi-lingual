@@ -684,12 +684,12 @@ export default function CommunityFeedPage() {
                              {post.capacity !== undefined && post.capacity === 0 && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1"><UsersIcon className="h-3 w-3" /> Unlimited spots</p>
                              )}
-                            {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
+                            {post.eventDate && dateIsFuture(new Date(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
                               <Button variant="outline" size="sm" className="mt-2 text-primary border-primary hover:bg-primary/10" onClick={() => handleRegisterForEvent(post.id, post.eventTitle)}>
                                 <Ticket className="mr-1 h-4 w-4"/> Register Now
                               </Button>
                             )}
-                             {post.eventDate && dateIsFuture(parseISO(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
+                             {post.eventDate && dateIsFuture(new Date(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
                               <Badge variant="destructive">Event Full</Badge>
                             )}
                           </div>
@@ -701,7 +701,7 @@ export default function CommunityFeedPage() {
                                   <CheckCircleIcon className="mr-1 h-4 w-4"/> Assign to Me
                                 </Button>
                               )}
-                            {post.assignedTo && post.status === 'assigned' && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
+                            {post.assignedTo && post.status === 'in progress' && <p className="text-xs text-muted-foreground mt-2">Assigned to: <strong>{post.assignedTo}</strong></p>}
                             {post.status && <Badge variant={post.status === 'completed' ? 'default' : post.status === 'in progress' ? 'secondary' : 'outline'} className={post.status === 'completed' ? 'bg-green-100 text-green-700 border-green-300' : post.status === 'in progress' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}>{post.status}</Badge>}
                           </div>
                         )}
@@ -836,4 +836,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-
