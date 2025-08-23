@@ -21,7 +21,9 @@ export default function AdminLayout({
     );
   }
 
-  if (user?.role.toLowerCase() !== 'admin') {
+  // Allow both admins and managers to access routes under /admin
+  // Individual pages will handle more specific role checks if needed.
+  if (user?.role.toLowerCase() !== 'admin' && user?.role.toLowerCase() !== 'manager') {
     return <AccessDeniedMessage />;
   }
 
