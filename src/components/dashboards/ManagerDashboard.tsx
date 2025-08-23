@@ -231,14 +231,46 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
             </CardContent>
           </Card>
         )}
-
+        
         {visibleWidgetIds.has('tenantManagementActions') && (
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>{t("managerDashboard.quickActions.title")}</CardTitle>
-              <CardDescription>{t("managerDashboard.quickActions.description")}</CardDescription>
-            </CardContent>
-          </Card>
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle>{t("managerDashboard.quickActions.title")}</CardTitle>
+                <CardDescription>{t("managerDashboard.quickActions.description")}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <Button asChild variant="outline">
+                        <Link href="/admin/user-management">
+                            <Users className="mr-2 h-4 w-4"/> {t("managerDashboard.quickActions.manageTenantUsers")}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/admin/content-moderation">
+                            <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.moderateTenantFeed")}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/admin/gallery-management">
+                            <Activity className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageEventGallery")}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/events">
+                            <CalendarCheck2 className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.reviewEventSubmissions")}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/admin/announcements">
+                            <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageAnnouncements")}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                        <Link href="/admin/promo-codes">
+                            <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", { defaultValue: "Promo Codes" })}
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
         )}
       </div>
 
@@ -275,3 +307,5 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
     </>
   );
 }
+
+    
