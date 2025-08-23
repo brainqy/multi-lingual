@@ -73,6 +73,26 @@ export async function createTenantWithAdmin(
     }
 }
 
+/**
+ * Updates an existing tenant.
+ * @param tenantId The ID of the tenant to update.
+ * @param updateData The data to update (e.g., name, domain).
+ * @returns The updated Tenant object or null if failed.
+ */
+export async function updateTenant(tenantId: string, updateData: Partial<Pick<Tenant, 'name' | 'domain'>>): Promise<Tenant | null> {
+    try {
+        const updatedTenant = await db.tenant.update({
+            where: { id: tenantId },
+            data: updateData,
+            include: { settings: true },
+        });
+        return updatedTenant as unknown as Tenant;
+    } catch (error) {
+        console.error(`[TenantAction] Error updating tenant ${tenantId}:`, error);
+        return null;
+    }
+}
+
 
 /**
  * Deletes a tenant and all associated users.
