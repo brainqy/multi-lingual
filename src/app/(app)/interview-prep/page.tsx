@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession } from '@/types';
+import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession, Appointment } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
 import QuestionFormDialog from '@/components/features/interview-prep/QuestionFormDialog';
@@ -18,7 +18,7 @@ import CreatedQuizzesList from '@/components/features/interview-prep/CreatedQuiz
 import QuestionBank from '@/components/features/interview-prep/QuestionBank';
 import { getInterviewQuestions, createInterviewQuestion, updateInterviewQuestion, deleteInterviewQuestion, toggleBookmarkQuestion } from "@/lib/actions/questions";
 import { useAuth } from '@/hooks/use-auth';
-import { getAppointments } from '@/lib/actions/appointments';
+import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
 
@@ -112,7 +112,33 @@ export default function InterviewPracticeHubPage() {
         }
     } else {
       // Logic for booking with experts or friends
-      toast({ title: "Session Booked!", description: "Your new practice session is scheduled." });
+      const newAppointmentData: Omit<Appointment, 'id'> = {
+        tenantId: currentUser.tenantId,
+        requesterUserId: currentUser.id,
+        alumniUserId: 'expert-placeholder', // In a real app, this would be selected
+        title: `Practice Session: ${newSessionConfig.topics.join(', ')}`,
+        dateTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
+        status: 'Pending',
+        withUser: newSessionConfig.type === 'experts' ? 'Industry Expert' : newSessionConfig.friendEmail,
+        notes: newSessionConfig.type === 'friends' ? `Invitation sent to ${newSessionConfig.friendEmail}` : `Category: ${newSessionConfig.interviewCategory}`
+      };
+      
+      const newAppointment = await createAppointment(newAppointmentData);
+
+      if (newAppointment) {
+        setPracticeSessions(prev => [...prev, {
+          id: newAppointment.id,
+          userId: newAppointment.requesterUserId,
+          date: newAppointment.dateTime,
+          category: newSessionConfig.type === 'experts' ? "Practice with Experts" : "Practice with Friends",
+          type: newAppointment.title,
+          language: "English",
+          status: 'SCHEDULED'
+        }]);
+        toast({ title: "Session Booked!", description: "Your new practice session is scheduled and visible in 'My Appointments'." });
+      } else {
+        toast({ title: "Booking Failed", description: "Could not schedule the practice session.", variant: "destructive" });
+      }
     }
     setIsSetupDialogOpen(false);
   };

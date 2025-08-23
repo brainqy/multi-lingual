@@ -37,7 +37,10 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
   try {
     const newAppointment = await db.appointment.create({
-      data: appointmentData,
+      data: {
+        ...appointmentData,
+        dateTime: new Date(appointmentData.dateTime), // Ensure it's a Date object
+      },
     });
     return newAppointment as unknown as Appointment;
   } catch (error) {
@@ -45,6 +48,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
     return null;
   }
 }
+
 
 /**
  * Updates an existing appointment.
