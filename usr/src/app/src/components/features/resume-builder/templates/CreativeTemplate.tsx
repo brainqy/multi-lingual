@@ -36,8 +36,15 @@ const CreativeTemplate = ({ data, styles }: TemplateProps) => {
     textAlign: styles?.textAlign,
   };
 
+  const gridBackgroundStyles: React.CSSProperties = {
+    backgroundImage:
+      `linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+       linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)`,
+    backgroundSize: '20px 20px',
+  };
+
   return (
-    <div className="p-6 font-sans flex" style={bodyStyles}>
+    <div className="p-6 font-sans flex" style={{...bodyStyles, ...gridBackgroundStyles}}>
       {/* Left Sidebar */}
       <div className="w-1/3 bg-gray-100 p-4 rounded-l-lg">
         <h1 className="text-2xl font-bold" style={headerStyles}>{data.header.fullName}</h1>

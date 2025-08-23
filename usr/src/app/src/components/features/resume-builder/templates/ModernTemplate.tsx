@@ -27,8 +27,15 @@ const ModernTemplate = ({ data, styles }: TemplateProps) => {
     fontSize: styles?.headerFontSize,
   };
 
+  const gridBackgroundStyles: React.CSSProperties = {
+    backgroundImage:
+      `linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+       linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)`,
+    backgroundSize: '20px 20px',
+  };
+
   return (
-    <div className="p-4 text-sm font-sans" style={dynamicStyles}>
+    <div className="p-4 text-sm font-sans" style={{...dynamicStyles, ...gridBackgroundStyles}}>
       {/* Header Section */}
       <div className="text-center mb-3 border-b pb-2 border-slate-200" style={{ textAlign: styles?.textAlign }}>
         {data.header.fullName && <h1 className="text-xl font-bold" style={headerStyles}>{data.header.fullName}</h1>}
