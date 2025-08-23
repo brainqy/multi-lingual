@@ -206,6 +206,18 @@ async function main() {
   });
   console.log('Seeded daily challenges.');
 
+  // Seed Badges
+  await prisma.badge.createMany({
+    data: [
+      { id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' },
+      { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3' },
+      { id: 'networker', name: 'Networker', description: 'Made 10+ alumni connections.', icon: 'Users', xpReward: 75, triggerCondition: 'connections_10' },
+      { id: 'analyzer-ace', name: 'Analyzer Ace', description: 'Analyzed 5+ resumes.', icon: 'Zap', xpReward: 50, triggerCondition: 'resume_scans_5' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded badges.');
+
 
   console.log(`Seeding finished.`)
 }

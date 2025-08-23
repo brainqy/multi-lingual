@@ -2,7 +2,67 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Badge, GamificationRule } from '@/types';
+import type { Badge, GamificationRule, UserProfile } from '@/types';
+import { updateUser } from '@/lib/data-services/users';
+import { createActivity } from './activities';
+
+/**
+ * Checks a user's profile against all available badges and awards any new ones they have earned.
+ * @param userId The ID of the user to check.
+ * @returns A promise that resolves to an array of newly awarded badges.
+ */
+export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
+  try {
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) return [];
+    
+    const allBadges = await getBadges();
+    if (!allBadges) return [];
+    
+    const earnedBadgeIds = new Set(user.earnedBadges || []);
+    const newlyAwardedBadges: Badge[] = [];
+
+    for (const badge of allBadges) {
+      if (!earnedBadgeIds.has(badge.id)) {
+        // This is a simplified check. A real system might have a more robust condition engine.
+        let criteriaMet = false;
+        if (badge.triggerCondition === 'daily_streak_3' && (user.dailyStreak || 0) >= 3) {
+            criteriaMet = true;
+        }
+        if (badge.triggerCondition === 'profile_completion_100' && (user as any).profileCompletion === 100) {
+            // Assuming profileCompletion is a calculated field or stored on the user
+            criteriaMet = true;
+        }
+        // Add more badge trigger condition checks here...
+
+        if (criteriaMet) {
+          earnedBadgeIds.add(badge.id);
+          newlyAwardedBadges.push(badge);
+          await createActivity({
+            userId: user.id,
+            tenantId: user.tenantId,
+            description: `Earned a new badge: "${badge.name}"!`
+          });
+        }
+      }
+    }
+
+    if (newlyAwardedBadges.length > 0) {
+      const totalXpReward = newlyAwardedBadges.reduce((sum, badge) => sum + (badge.xpReward || 0), 0);
+      await updateUser(userId, { 
+        earnedBadges: Array.from(earnedBadgeIds),
+        xpPoints: (user.xpPoints || 0) + totalXpReward
+      });
+    }
+
+    return newlyAwardedBadges;
+
+  } catch (error) {
+    console.error(`[GamificationAction] Error checking/awarding badges for user ${userId}:`, error);
+    return [];
+  }
+}
+
 
 /**
  * Fetches all badges from the database.

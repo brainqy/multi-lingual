@@ -8,6 +8,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
+import { differenceInCalendarDays } from 'date-fns';
+import { updateUser } from '@/lib/data-services/users';
+import { checkAndAwardBadges } from '@/lib/actions/gamification';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -39,6 +42,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const walletData = await getWallet(userId);
     setWallet(walletData);
   }, []);
+  
+  const handleStreakAndBadges = async (userToUpdate: UserProfile): Promise<UserProfile> => {
+      const today = new Date();
+      const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
+      const daysSinceLastLogin = differenceInCalendarDays(today, lastLogin);
+      
+      let updatedUserData: Partial<UserProfile> = {};
+
+      if (daysSinceLastLogin > 0) { // Only update if it's a new day
+          let newStreak = userToUpdate.dailyStreak || 0;
+          let newLongestStreak = userToUpdate.longestStreak || 0;
+          let newStreakFreezes = userToUpdate.streakFreezes || 0;
+
+          if (daysSinceLastLogin === 1) {
+              newStreak++;
+          } else if (daysSinceLastLogin > 1) {
+              if (newStreakFreezes > 0) {
+                  newStreakFreezes--; // Use a freeze
+                  toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
+              } else {
+                  newStreak = 1; // Reset streak
+              }
+          }
+          if (newStreak > newLongestStreak) {
+              newLongestStreak = newStreak;
+          }
+          
+          updatedUserData = { 
+              ...updatedUserData,
+              dailyStreak: newStreak, 
+              longestStreak: newLongestStreak,
+              streakFreezes: newStreakFreezes,
+              lastLogin: today.toISOString() 
+          };
+      }
+      
+      if (Object.keys(updatedUserData).length > 0) {
+        const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
+        if(updatedUser) {
+            // After streak is updated, check for new badges
+            const newBadges = await checkAndAwardBadges(updatedUser.id);
+            newBadges.forEach(badge => {
+                toast({
+                    title: "Badge Unlocked!",
+                    description: `You've earned the "${badge.name}" badge.`,
+                });
+            });
+            // Re-fetch the user to get the latest badge and XP info
+            const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
+            return finalUser || updatedUser;
+        }
+      }
+      
+      return userToUpdate; // Return original user if no updates were made
+  };
+
 
   const logout = useCallback(() => {
     setUser(null);
@@ -55,8 +114,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const storedUserJSON = localStorage.getItem('bhashaSetuUser');
         if (storedUserJSON) {
           const storedUser = JSON.parse(storedUserJSON);
-          const freshUser = await validateSession(storedUser.email, storedUser.sessionId);
+          let freshUser = await validateSession(storedUser.email, storedUser.sessionId);
           if (freshUser) {
+            freshUser = await handleStreakAndBadges(freshUser);
             setUser(freshUser);
             await fetchWalletForUser(freshUser.id);
           } else {
@@ -95,9 +155,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password?: string) => {
     try {
-      const userToLogin = await loginUser(email, password || "mock_password");
+      let userToLogin = await loginUser(email, password || "mock_password");
 
       if (userToLogin) {
+        userToLogin = await handleStreakAndBadges(userToLogin);
         setUser(userToLogin);
         await fetchWalletForUser(userToLogin.id);
         localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
