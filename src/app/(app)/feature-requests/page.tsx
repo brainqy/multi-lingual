@@ -18,8 +18,8 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
-import { getFeatureRequests, createFeatureRequest, updateFeatureRequest, upvoteFeatureRequest } from "@/lib/actions/feature-requests";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { createFeatureRequest, getFeatureRequests, updateFeatureRequest, upvoteFeatureRequest } from "../../../../lib/actions/feature-requests";
 
 export default function FeatureRequestsPage() {
   const { user: currentUser } = useAuth();
