@@ -44,7 +44,7 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
     
     console.log('[PromoCodeAction LOG] 4. Calling db.promoCode.create to insert into the database...');
     const newCode = await db.promoCode.create({
-      data: dataForDb,
+      data: dataForDb as any,
     });
     console.log('[PromoCodeAction LOG] 5. Database operation successful. New code created:', newCode);
 
