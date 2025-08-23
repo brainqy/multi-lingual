@@ -60,8 +60,8 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             flagCount: postData.flagCount,
             timestamp: new Date(),
             
-            // Type-specific fields
-            imageUrl: postData.type === 'text' ? postData.imageUrl : undefined,
+            // Type-specific fields handled correctly
+            imageUrl: postData.type === 'text' && postData.imageUrl ? postData.imageUrl : undefined,
             pollOptions: postData.type === 'poll' ? (postData.pollOptions || Prisma.JsonNull) : Prisma.JsonNull,
             eventTitle: postData.type === 'event' ? postData.eventTitle : undefined,
             eventDate: postData.type === 'event' ? (postData.eventDate ? new Date(postData.eventDate) : undefined) : undefined,
