@@ -186,13 +186,13 @@ export default function PromoCodeManagementPage() {
           </span>
         </div>
         <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
-          <p><strong>Reward:</strong> {code.rewardValue} {code.rewardType}</p>
-          <p><strong>Usage:</strong> {code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</p>
-          <p><strong>Expires:</strong> {code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</p>
+          <p><strong>{t("promoCodes.rewardLabel")}:</strong> {code.rewardValue} {t(`promoCodes.rewardTypes.${code.rewardType}`)}</p>
+          <p><strong>{t("promoCodes.usageLabel")}:</strong> {code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</p>
+          <p><strong>{t("promoCodes.expiresLabel")}:</strong> {code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</p>
         </div>
         <div className="flex justify-end gap-2 border-t pt-3">
-          <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4 mr-1"/> Edit</Button>
-          <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4 mr-1"/> Delete</Button>
+          <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4 mr-1"/> {t("promoCodes.editButton")}</Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4 mr-1"/> {t("promoCodes.deleteButton")}</Button>
         </div>
       </CardContent>
     </Card>
@@ -225,7 +225,7 @@ export default function PromoCodeManagementPage() {
           {isLoading ? (
             <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
           ) : promoCodes.length === 0 ? (
-             <p className="text-center text-muted-foreground py-8">No promo codes found.</p>
+             <p className="text-center text-muted-foreground py-8">{t("promoCodes.noCodesFound")}</p>
           ) : (
           <>
             {/* Mobile View */}
@@ -251,7 +251,7 @@ export default function PromoCodeManagementPage() {
                     <TableRow key={code.id}>
                       <TableCell className="font-mono">{code.code}</TableCell>
                       <TableCell>{code.description}</TableCell>
-                      <TableCell>{code.rewardValue} {code.rewardType}</TableCell>
+                      <TableCell>{code.rewardValue} {t(`promoCodes.rewardTypes.${code.rewardType}`)}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                           {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}

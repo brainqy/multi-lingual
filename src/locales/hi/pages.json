@@ -222,94 +222,226 @@
     "untitledRequest": "अशीर्षक अनुरोध",
     "whatWentWell": "क्या अच्छा हुआ? सुधार के लिए कोई क्षेत्र हैं?"
   },
-  "gamificationRules": {
-    "title": "गेमिफिकेशन नियम प्रबंधन",
-    "description": "पूरे प्लेटफॉर्म के लिए बैज और XP पॉइंट नियम कॉन्फ़िगर करें।",
-    "badgeConfig": {
-      "title": "बैज कॉन्फ़िगरेशन",
-      "description": "उपयोगकर्ताओं द्वारा उनकी उपलब्धियों के लिए अर्जित किए जा सकने वाले बैज प्रबंधित करें।",
-      "createButton": "नया बैज बनाएं",
-      "editButton": "संपादित करें",
-      "deleteButton": "हटाएं",
-      "noBadges": "अभी तक कोई बैज नहीं बनाया गया है।"
+  "gamification": {
+    "title": "पुरस्कार और बैज",
+    "pageDescription": "अपने XP, दैनिक स्ट्रीक, और अर्जित बैज को ट्रैक करें।",
+    "xpLevel": {
+      "title": "XP और स्तर",
+      "level": "स्तर",
+      "xpToNextLevel": "अगले स्तर {level} के लिए {count} XP",
+      "totalXp": "कुल {count} XP"
     },
-    "xpRules": {
-      "title": "XP पॉइंट नियम",
-      "description": "उपयोगकर्ता विशिष्ट कार्यों के लिए अनुभव अंक कैसे अर्जित करते हैं, इसके लिए नियम परिभाषित करें।",
-      "createButton": "नया XP नियम बनाएं",
-      "noRules": "अभी तक कोई XP नियम परिभाषित नहीं किया गया है।"
+    "dailyStreak": {
+      "title": "दैनिक स्ट्रीक",
+      "dayStreak": "दिन की स्ट्रीक"
     },
+    "badgesEarned": {
+      "title": "अर्जित बैज",
+      "totalBadges": "कुल बैज"
+    },
+    "yourBadges": "आपका बैज संग्रह",
+    "badgesDescription": "प्लेटफ़ॉर्म पर कार्यों और मील के पत्थर को पूरा करने के लिए बैज प्रदान किए जाते हैं। यह देखने के लिए कि यह किस लिए है, एक बैज पर होवर करें।",
+    "notYetEarned": "(अभी तक अर्जित नहीं)",
+    "leaderboard": "सामुदायिक लीडरबोर्ड",
+    "leaderboardDescription": "देखें कि आप XP अंकों के आधार पर अन्य उपयोगकर्ताओं के मुकाबले कहाँ रैंक करते हैं।",
+    "noLeaderboardData": "लीडरबोर्ड डेटा की गणना वर्तमान में की जा रही है। जल्द ही वापस देखें!",
     "table": {
-      "icon": "आइकन",
-      "name": "नाम",
-      "description": "विवरण",
-      "xpReward": "XP पुरस्कार",
-      "trigger": "ट्रिगर",
-      "actions": "कार्रवाइयाँ",
-      "actionId": "एक्शन आईडी",
+      "rank": "रैंक",
+      "user": "उपयोगकर्ता",
       "xpPoints": "XP अंक"
     },
-    "dialog": {
-      "editBadgeTitle": "बैज संपादित करें",
-      "createBadgeTitle": "नया बैज बनाएं",
-      "badgeNameLabel": "बैज का नाम",
-      "badgeNameTooltip": "यह उपयोगकर्ता को प्रदर्शित किया जाएगा।",
-      "descriptionLabel": "विवरण",
-      "descriptionTooltip": "यह बैज किस लिए है, इसका वर्णन करें।",
-      "iconNameLabel": "आइकन का नाम",
-      "iconNameTooltip": "से एक वैध आइकन नाम दर्ज करें",
-      "iconNamePlaceholder": "जैसे, Award, UserCheck, Zap",
-      "iconNameHelpText": "पर उपलब्ध आइकन ब्राउज़ करें",
-      "xpRewardLabel": "XP पुरस्कार",
-      "xpRewardTooltip": "इस बैज के साथ कितना XP दिया जाता है?",
-      "triggerConditionLabel": "ट्रिगर शर्त",
-      "triggerConditionTooltip": "यह बैज कैसे अर्जित किया जाता है इसका वर्णन करें।",
-      "triggerConditionPlaceholder": "जैसे, प्रोफाइल 100% पूर्ण करें",
-      "saveChangesButton": "बदलाव सहेजें",
-      "createButton": "बनाएं",
-      "editXpRuleTitle": "XP नियम संपादित करें",
-      "createXpRuleTitle": "नया XP नियम बनाएं",
-      "actionIdLabel": "एक्शन आईडी",
-      "actionIdTooltip": "कार्रवाई के लिए एक अद्वितीय पहचानकर्ता (जैसे, 'complete_profile')।",
-      "actionIdPlaceholder": "जैसे, 'login', 'post_comment'",
-      "actionIdHelpText": "बनाने के बाद बदला नहीं जा सकता।",
-      "ruleDescriptionLabel": "नियम विवरण",
-      "ruleDescriptionTooltip": "कार्रवाई का एक उपयोगकर्ता-अनुकूल विवरण।",
-      "ruleDescriptionPlaceholder": "जैसे, 'अपना प्रोफाइल पूर्ण करें'",
-      "xpPointsLabel": "XP अंक",
-      "xpPointsTooltip": "यह कार्रवाई कितने अंकों के लायक है।"
+    "you": "(आप)"
+  },
+  "numberMatchGame": {
+    "title": "नंबर मैच गेम",
+    "description": "एक बड़ा पुरस्कार जीतने के लिए 777 नंबर का मिलान करें!",
+    "initialMessage": "खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
+    "rollingMessage": "रोलिंग...",
+    "winMessage": "यह 777 है! आपने {reward} सिक्के जीते!",
+    "gameOverMessage": "खेल समाप्त! आपने कुल {total} सिक्के जीते।",
+    "notAMatchMessage": "मिलान नहीं हुआ। अगली बार बेहतर भाग्य!",
+    "resetMessage": "एक नया खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
+    "gameOverTitle": "खेल समाप्त!",
+    "consolationPrizeMessage": "आपने कुल सांत्वना पुरस्कार जीता:",
+    "coins": "सिक्के",
+    "cost": "लागत",
+    "attemptsLeft": "शेष प्रयास",
+    "playButton": "अभी खेलें",
+    "rollingButton": "रोलिंग...",
+    "resetButton": "खेल रीसेट करें",
+    "otherGames": "अन्य खेल",
+    "playKBC": "केबीसी क्विज़ गेम खेलें",
+    "prizeTitle": "पुरस्कार",
+    "toast": {
+      "gameOver": {
+        "title": "खेल समाप्त",
+        "description": "फिर से खेलने के लिए कृपया रीसेट करें।"
+      },
+      "insufficientCoins": {
+        "title": "अपर्याप्त सिक्के",
+        "description": "खेलने के लिए आपको {cost} सिक्कों की आवश्यकता है।"
+      },
+      "gameStart": {
+        "title": "-{cost} सिक्के",
+        "description": "शुभकामनाएं!"
+      },
+      "win": {
+        "title": "बधाई हो!",
+        "description": "आपने {reward} सिक्के जीते! वे आपके वॉलेट में जोड़ दिए गए हैं।"
+      }
+    }
+  },
+  "kbcGame": {
+    "initialMessage": "Select an answer and lock it!",
+    "winMessage": "Congratulations! You've won the game with {xp} XP!",
+    "correctMessage": "Correct! Click 'Next Question' to continue.",
+    "wrongMessage": "Wrong Answer! You walk away with {xp} XP.",
+    "nextReward": "Next Reward",
+    "audiencePollResults": "Audience Poll Results",
+    "backToQuestion": "Back to Question",
+    "questionForXP": "Question {number} for {xp} XP",
+    "lockAnswer": "Lock Answer",
+    "nextQuestion": "Next Question",
+    "playAgain": "Play Again",
+    "xpLadder": "XP Ladder",
+    "otherGames": "Other Games",
+    "playNumberMatch": "Play Number Match Game",
+    "setup": {
+      "title": "Choose Your Topic",
+      "description": "Select a category to start the KBC quiz game. It costs {cost} coins to play.",
+      "allTopics": "All Topics",
+      "startButton": "Start Game"
+    },
+    "gameOver": {
+      "title": "Incorrect Answer",
+      "correctAnswerWas": "The correct answer was:",
+      "explanation": "Explanation:"
     },
     "toast": {
-      "badgeUpdated": {
-        "title": "बैज अपडेट किया गया",
-        "description": "'{name}' बैज अपडेट कर दिया गया है।"
+      "walletNotLoaded": {
+        "title": "Wallet not loaded",
+        "description": "Please wait a moment for your wallet to load."
       },
-      "badgeCreated": {
-        "title": "बैज बनाया गया",
-        "description": "'{name}' बैज बना दिया गया है।"
+      "insufficientCoins": {
+        "title": "Insufficient Coins",
+        "description": "You need {cost} coins to play. Earn more through referrals or other activities!"
       },
-      "xpRuleUpdated": {
-        "title": "XP नियम अपडेट किया गया",
-        "description": "'{description}' के लिए नियम अपडेट कर दिया गया है।"
+      "notEnoughQuestions": {
+        "title": "Not Enough Questions",
+        "description": "There aren't enough questions tagged with \"{topic}\" to start a game. Please select another topic or 'All'."
       },
-      "error": {
-        "title": "त्रुटि",
-        "description": "एक्शन आईडी '{actionId}' पहले से मौजूद है।"
+      "gameStart": {
+        "title": "-{cost} Coins",
+        "description": "Good luck in the game!"
       },
-      "xpRuleCreated": {
-        "title": "XP नियम बनाया गया",
-        "description": "'{description}' के लिए नियम बना दिया गया है।"
+      "fullscreenError": {
+        "title": "Fullscreen Mode",
+        "description": "Could not enter fullscreen automatically. You can try it manually."
       },
-      "badgeDeleted": {
-        "title": "बैज हटा दिया गया",
-        "description": "बैज सफलतापूर्वक हटा दिया गया है।"
+      "noAnswer": {
+        "title": "No Answer Selected",
+        "description": "Please select an answer before locking."
       },
-      "xpRuleDeleted": {
-        "title": "XP नियम हटा दिया गया",
-        "description": "XP नियम सफलतापूर्वक हटा दिया गया है।"
+      "gameWon": {
+        "title": "You've Won!",
+        "description": "You've answered all questions correctly!"
+      },
+      "correctAnswer": {
+        "title": "Correct Answer!",
+        "description": "You've secured {xp} XP!"
+      },
+      "expertAdvice": {
+        "title": "Expert Advice"
+      }
+    }
+  },
+  "promoCodes": {
+    "title": "प्रोमो कोड प्रबंधन",
+    "description": "उपयोगकर्ता पुरस्कारों के लिए प्रचार कोड बनाएं, प्रबंधित करें और ट्रैक करें।",
+    "generateButton": "बल्क कोड उत्पन्न करें",
+    "createButton": "नया कोड बनाएं",
+    "currentCodesTitle": "वर्तमान प्रोमो कोड",
+    "noCodesFound": "कोई प्रोमो कोड नहीं मिला।",
+    "rewardLabel": "पुरस्कार",
+    "usageLabel": "उपयोग",
+    "expiresLabel": "समाप्त होता है",
+    "editButton": "संपादित करें",
+    "deleteButton": "हटाएं",
+    "table": {
+      "code": "कोड",
+      "description": "विवरण",
+      "reward": "पुरस्कार",
+      "status": "स्थिति",
+      "usage": "उपयोग",
+      "expires": "समाप्त होता है",
+      "actions": "कार्रवाइयाँ"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "never": "कभी नहीं"
+    },
+    "rewardTypes": {
+      "coins": "सिक्के",
+      "flash_coins": "फ्लैश सिक्के",
+      "xp": "XP",
+      "premium_days": "प्रीमियम दिन"
+    },
+    "dialog": {
+      "editTitle": "प्रोमो कोड संपादित करें",
+      "createTitle": "नया प्रोमो कोड बनाएं",
+      "saveButton": "बदलाव सहेजें",
+      "createButton": "कोड बनाएं"
+    },
+    "form": {
+      "codeLabel": "कोड",
+      "codePlaceholder": "उदा., WELCOME50",
+      "descriptionLabel": "विवरण",
+      "descriptionPlaceholder": "उदा., नए उपयोगकर्ताओं के लिए 50 बोनस सिक्के",
+      "rewardTypeLabel": "पुरस्कार का प्रकार",
+      "rewardTypePlaceholder": "पुरस्कार का प्रकार चुनें...",
+      "rewardValueLabel": "पुरस्कार का मूल्य",
+      "usageLimitLabel": "उपयोग सीमा (असीमित के लिए 0)",
+      "expirationDateLabel": "समाप्ति तिथि (वैकल्पिक)",
+      "expirationDatePlaceholder": "कभी समाप्त नहीं होता",
+      "activeLabel": "सक्रिय"
+    },
+    "generatorDialog": {
+      "title": "बल्क प्रोमो कोड उत्पन्न करें",
+      "prefixLabel": "कोड उपसर्ग",
+      "prefixPlaceholder": "उदा., ONETIME",
+      "countLabel": "उत्पन्न करने के लिए कोड की संख्या",
+      "generateButton": "कोड उत्पन्न करें"
+    },
+    "resultsDialog": {
+      "title": "{count} कोड उत्पन्न हुए",
+      "copyButton": "कोड कॉपी करें",
+      "closeButton": "बंद करें"
+    },
+    "toast": {
+      "updated": {
+        "title": "प्रोमो कोड अपडेट किया गया",
+        "description": "कोड '{code}' सफलतापूर्वक अपडेट किया गया है।"
+      },
+      "created": {
+        "title": "प्रोमो कोड बनाया गया",
+        "description": "कोड '{code}' सफलतापूर्वक बनाया गया है।"
+      },
+      "exists": {
+        "title": "कोड मौजूद है",
+        "description": "कोड '{code}' पहले से मौजूद है। कृपया एक अद्वितीय कोड चुनें।"
+      },
+      "deleted": {
+        "title": "प्रोमो कोड हटा दिया गया"
+      },
+      "generated": {
+        "title": "{count} कोड उत्पन्न हुए",
+        "description": "बल्क प्रोमो कोड बनाए गए हैं और सूची में जोड़े गए हैं।"
+      },
+      "copied": {
+        "title": "कॉपी किया गया!",
+        "description": "उत्पन्न कोड क्लिपबोर्ड पर कॉपी किए गए।"
       }
     }
   }
 }
-
-    
