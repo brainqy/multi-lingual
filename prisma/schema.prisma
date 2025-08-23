@@ -479,12 +479,12 @@ model AffiliateSignup {
 model ReferralHistoryItem {
   id                  String   @id @default(cuid())
   referrerUserId      String
-  referrer            User     @relation(fields: [referrerUserId], references: [id])
+ referrer User @relation("ReferrerReferralHistory", fields: [referrerUserId], references: [id])
   referredEmailOrName String
   referralDate        DateTime @default(now())
   status              String
   rewardAmount        Int?
-  referred           User?     @relation(fields: [referredUserId], references: [id]) //Added missing relation
+ referred User? @relation("ReferredReferralHistory", fields: [referredUserId], references: [id])
   referredUserId      String?
 }
 
