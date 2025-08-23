@@ -107,6 +107,7 @@ model Tenant {
   jobApplications JobApplication[]
   resumeProfiles  ResumeProfile[]
   scanHistories   ResumeScanHistoryItem[]
+  galleryEvents   GalleryEvent[] // Added missing relation
   communityPosts  CommunityPost[]
   announcements   Announcement[]
   settings        TenantSettings?
