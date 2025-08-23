@@ -184,6 +184,28 @@ async function main() {
 
   console.log('Seeded community comments.');
 
+  // Seed System Alerts
+  await prisma.systemAlert.createMany({
+    data: [
+      { type: 'error', title: 'Database Connection Issue', message: 'Failed to connect to the primary database. Services might be affected.', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
+      { type: 'warning', title: 'High CPU Usage Detected', message: 'CPU usage on server EU-WEST-1A has exceeded 85%.', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
+      { type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog/platform-update-v2-5-1' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded system alerts.');
+
+  // Seed Daily Challenges
+  await prisma.dailyChallenge.createMany({
+    data: [
+      { id: "flip-challenge-1", type: 'flip', title: "Platform Power User", description: "Complete tasks to prove your mastery.", xpReward: 1000, tasks: { create: [ { description: "Refer 5 colleagues.", action: "refer", target: 5 }, { description: "Analyze 3 resumes.", action: "analyze_resume", target: 3 } ] } },
+      { id: "challenge-1", type: 'standard', date: "2023-10-27", title: "Reverse a String", description: "Write a function that reverses a given string.", difficulty: "Easy", category: "Coding", solution: "Use `str.split('').reverse().join('')` or a two-pointer technique." },
+      { id: "challenge-2", type: 'standard', date: "2023-10-28", title: "Find the Missing Number", description: "Given an array of n distinct numbers from 0 to n, find the missing one.", difficulty: "Medium", category: "Coding", solution: "Use the sum formula n*(n+1)/2 and subtract the array's sum." },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded daily challenges.');
+
 
   console.log(`Seeding finished.`)
 }
