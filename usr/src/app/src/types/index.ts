@@ -427,7 +427,6 @@ export type WalletTransaction = {
 
 export type Wallet = {
   id: string;
-  tenantId: string;
   userId: string;
   coins: number;
   flashCoins?: FlashCoinBatch[];
@@ -657,7 +656,13 @@ export interface InterviewQuestionUserRating {
   | "post_job"
   | "power_edit_resume"
   | "create_quiz"
-  | "book_appointment";
+  | "book_appointment"
+  | "community_post"
+  | "community_comment"
+  | "profile_completion_percentage"
+  | "generate_cover_letter"
+  | "add_job_application"
+  | "daily_challenge_complete";
 export interface DailyChallenge {
   id: string;
   type: 'standard' | 'flip';
@@ -874,6 +879,7 @@ export const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; title: string; descrip
 export type ProfileVisibility = 'public' | 'alumni_only' | 'private';
 
 export interface PlatformSettings {
+  id: string;
   platformName: string;
   maintenanceMode: boolean;
   communityFeedEnabled: boolean;
@@ -1250,3 +1256,4 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+

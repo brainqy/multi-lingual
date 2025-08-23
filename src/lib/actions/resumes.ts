@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { ResumeProfile, ResumeScanHistoryItem } from '@/types';
+import { checkAndAwardBadges } from './gamification';
 
 /**
  * Fetches all resume profiles for a specific user.
@@ -108,6 +109,10 @@ export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'i
     const newScan = await db.resumeScanHistory.create({
       data: scanData,
     });
+    
+    // Award badges after action
+    await checkAndAwardBadges(scanData.userId);
+    
     return newScan as unknown as ResumeScanHistoryItem;
   } catch (error) {
     console.error('[ResumeAction] Error creating scan history:', error);

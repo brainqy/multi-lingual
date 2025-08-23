@@ -7,7 +7,6 @@ import { isPast, parseISO } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
 import { createActivity } from './activities';
-import { checkAndAwardBadges } from './gamification';
 
 /**
  * Fetches all promo codes.
@@ -101,10 +100,13 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
         if (promoCode.expiresAt && isPast(promoCode.expiresAt)) return { success: false, message: 'This promo code has expired.' };
         if (promoCode.usageLimit > 0 && promoCode.timesUsed >= promoCode.usageLimit) return { success: false, message: 'This promo code has reached its usage limit.' };
 
+        // In a real app, you would also check if this specific user has already used a one-time code.
         const user = await db.user.findUnique({ where: { id: userId } });
         if (!user) return { success: false, message: 'User not found.' };
 
+        // Use a transaction to ensure all updates succeed or fail together
         await db.$transaction(async (prisma) => {
+            // Increment promo code usage
             await prisma.promoCode.update({
                 where: { id: promoCode.id },
                 data: { timesUsed: { increment: 1 } },
@@ -112,6 +114,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
 
             const rewardDescription = `Redeemed promo code: ${promoCode.code}`;
 
+            // Apply reward
             switch (promoCode.rewardType) {
                 case 'coins':
                 case 'flash_coins':
@@ -124,18 +127,18 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateUser(userId, { xpPoints: (user.xpPoints || 0) + promoCode.rewardValue });
                     break;
                 case 'premium_days':
+                    // Logic to extend premium subscription would go here
                     console.log(`Adding ${promoCode.rewardValue} premium days to user ${userId}`);
                     break;
             }
 
+            // Log activity
             await createActivity({
                 userId: user.id,
                 tenantId: user.tenantId,
                 description: `${rewardDescription} for ${promoCode.rewardValue} ${promoCode.rewardType}.`
             });
         });
-        
-        await checkAndAwardBadges(userId);
 
         return { success: true, message: `Successfully redeemed code for ${promoCode.rewardValue} ${promoCode.rewardType}!`, rewardType: promoCode.rewardType, rewardValue: promoCode.rewardValue };
 

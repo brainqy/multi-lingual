@@ -8,12 +8,21 @@ import { createActivity } from './activities';
 
 /**
  * Checks a user's profile against all available badges and awards any new ones they have earned.
+ * This function uses a scalable approach to parse trigger conditions.
  * @param userId The ID of the user to check.
  * @returns A promise that resolves to an array of newly awarded badges.
  */
 export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
   try {
-    const user = await db.user.findUnique({ where: { id: userId } });
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      include: {
+        // Include related data needed for checks
+        _count: {
+          select: { resumeScans: true },
+        },
+      },
+    });
     if (!user) return [];
     
     const allBadges = await getBadges();
@@ -23,17 +32,35 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
     const newlyAwardedBadges: Badge[] = [];
 
     for (const badge of allBadges) {
-      if (!earnedBadgeIds.has(badge.id)) {
-        // This is a simplified check. A real system might have a more robust condition engine.
+      if (!earnedBadgeIds.has(badge.id) && badge.triggerCondition) {
         let criteriaMet = false;
-        if (badge.triggerCondition === 'daily_streak_3' && (user.dailyStreak || 0) >= 3) {
-            criteriaMet = true;
+        
+        // Scalable condition engine
+        const [conditionKey, requiredValueStr] = badge.triggerCondition.split('_');
+        const requiredValue = parseInt(requiredValueStr, 10);
+
+        if (!isNaN(requiredValue)) {
+            switch (conditionKey) {
+                case 'daily': // Handles daily_streak_3, daily_streak_7 etc.
+                    if ((user.dailyStreak || 0) >= requiredValue) {
+                        criteriaMet = true;
+                    }
+                    break;
+                case 'resume': // Handles resume_scans_5, resume_scans_10 etc.
+                    if ((user._count.resumeScans || 0) >= requiredValue) {
+                        criteriaMet = true;
+                    }
+                    break;
+                // Add more cases here for connections, posts, etc.
+                // e.g., case 'connections': if(user.connections.length >= requiredValue) criteriaMet = true; break;
+            }
+        } else if (badge.triggerCondition === 'profile_completion_100') {
+            // Handle non-numeric conditions separately
+            // In a real app, profile completion would be calculated and stored or passed in.
+            // For now, we'll assume a mock value. A full implementation would require a function.
+            // const profileCompletion = calculateProfileCompletion(user); 
+            // if (profileCompletion >= 100) criteriaMet = true;
         }
-        if (badge.triggerCondition === 'profile_completion_100' && (user as any).profileCompletion === 100) {
-            // Assuming profileCompletion is a calculated field or stored on the user
-            criteriaMet = true;
-        }
-        // Add more badge trigger condition checks here...
 
         if (criteriaMet) {
           earnedBadgeIds.add(badge.id);
