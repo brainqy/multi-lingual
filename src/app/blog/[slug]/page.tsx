@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, User, Tag, MessageSquare, Share2, Copy, Send, ArrowLeft, Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, parseISO, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -102,7 +102,7 @@ export default function BlogPostClientView() {
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
       comment: commentText.trim(),
-      postId: post.id, // This is now blogPostId in the prisma schema
+      blogPostId: post.id,
     };
 
     const newComment = await addCommentToPost(newCommentData);
@@ -192,7 +192,7 @@ export default function BlogPostClientView() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold text-foreground">{comment.userName}</p>
-                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</p>
+                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(parseISO(comment.timestamp), { addSuffix: true })}</p>
                       </div>
                       <p className="text-sm mt-0.5 text-foreground/90">{comment.comment}</p>
                     </div>

@@ -201,7 +201,8 @@ export type CommunityPostModerationStatus = 'visible' | 'flagged' | 'removed';
 
 export interface CommunityComment {
   id: string;
-  postId: string; // To associate comment with a post
+  postId?: string; // To associate comment with a community post
+  blogPostId?: string; // To associate comment with a blog post
   userId: string;
   userName: string;
   userAvatar?: string;
@@ -288,6 +289,7 @@ export interface Badge {
   achieved?: boolean;
   xpReward?: number;
   triggerCondition?: string;
+  streakFreezeReward?: number;
 }
 
 export interface BlogPost {
@@ -1074,7 +1076,7 @@ export interface GenerateCoverLetterInput {
   additionalNotes?: string;
 }
 export interface GenerateCoverLetterOutput {
-  generatedCoverLetterText: string;
+  generatedResumeText: string;
 }
 
 export interface PersonalizedJobRecommendationsInput {

@@ -14,9 +14,6 @@ import { checkAndAwardBadges } from './gamification';
  */
 export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
   try {
-    // Construct the where clause to properly scope posts.
-    // A user should only see posts from their tenant OR platform-wide posts.
-    // An admin (tenantId: null) can see posts from all tenants.
     const whereClause: Prisma.CommunityPostWhereInput = tenantId
       ? {
           OR: [
@@ -24,7 +21,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
             { tenantId: 'platform' },
           ],
         }
-      : {}; // Admin sees all
+      : {}; 
 
     const posts = await db.communityPost.findMany({
       where: whereClause,
@@ -38,7 +35,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
       orderBy: {
         timestamp: 'desc',
       },
-      take: 50, // Limit to the latest 50 posts for performance
+      take: 50,
     });
     return posts as unknown as CommunityPost[];
   } catch (error) {
@@ -55,6 +52,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy'>): Promise<CommunityPost | null> {
     console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
+        console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
         const dataForDb: Prisma.CommunityPostCreateInput = {
             tenantId: postData.tenantId,
             userId: postData.userId,
@@ -67,7 +65,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             flagCount: postData.flagCount,
             timestamp: new Date(),
             
-            // Type-specific fields are only added if they are relevant to the post type
             imageUrl: postData.type === 'text' && postData.imageUrl ? postData.imageUrl : undefined,
             pollOptions: postData.type === 'poll' && postData.pollOptions ? postData.pollOptions : Prisma.JsonNull,
             eventTitle: postData.type === 'event' ? postData.eventTitle : undefined,
@@ -80,18 +77,22 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             votedBy: [],
             registeredBy: [],
         };
-        console.log("[CommunityAction LOG] 2. Prepared data for database insertion:", dataForDb);
+        console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
+        console.log("[CommunityAction LOG] 4. Calling db.communityPost.create...");
         const newPost = await db.communityPost.create({
             data: dataForDb,
         });
+        console.log("[CommunityAction LOG] 5. Database create operation successful. Result:", newPost);
 
-        // Award badges after action
+        console.log("[CommunityAction LOG] 6. Triggering badge check for user:", postData.userId);
         await checkAndAwardBadges(postData.userId);
-        console.log("[CommunityAction LOG] 3. Database create operation successful. Result:", newPost);
+        console.log("[CommunityAction LOG] 7. Badge check complete.");
+
+        console.log("[CommunityAction LOG] 8. Returning new post from function.");
         return newPost as unknown as CommunityPost;
     } catch (error) {
-        console.error('[CommunityAction LOG] 4. Error during post creation:', error);
+        console.error('[CommunityAction LOG] 9. Error during post creation:', error);
         return null;
     }
 }
@@ -106,12 +107,17 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
   try {
     const newComment = await db.communityComment.create({
       data: {
-        ...commentData,
+        userId: commentData.userId,
+        userName: commentData.userName,
+        userAvatar: commentData.userAvatar,
+        comment: commentData.comment,
+        parentId: commentData.parentId,
         timestamp: new Date(),
+        ...(commentData.postId && { post: { connect: { id: commentData.postId } } }),
+        ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
       },
     });
 
-    // Award badges after action
     await checkAndAwardBadges(commentData.userId);
 
     return newComment as unknown as CommunityComment;

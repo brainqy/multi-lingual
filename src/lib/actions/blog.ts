@@ -31,7 +31,13 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const post = await db.blogPost.findUnique({
       where: { slug },
-      include: { comments: true },
+      include: {
+        comments: {
+          orderBy: {
+            timestamp: 'asc'
+          }
+        }
+      },
     });
     return post as unknown as BlogPost | null;
   } catch (error) {
