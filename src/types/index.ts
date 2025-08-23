@@ -1242,14 +1242,16 @@ export interface PromotionalContent {
 
 export interface PromoCode {
   id: string;
+  tenantId: string;
   code: string;
   description: string;
   rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
   rewardValue: number;
   expiresAt?: string;
   usageLimit: number;
-  timesUsed?: number;
+  timesUsed: number;
   isActive: boolean;
+  createdAt: string;
 }
 
 export type UserDashboardWidgetId =
@@ -1266,3 +1268,4 @@ export type UserDashboardWidgetId =
 
 
   
+

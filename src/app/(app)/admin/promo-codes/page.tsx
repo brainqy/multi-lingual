@@ -21,7 +21,8 @@ import { format, parseISO } from "date-fns";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createPromoCode, deletePromoCode, getPromoCodes, updatePromoCode } from "../../../../../lib/actions/promo-codes";
+import { createPromoCode, deletePromoCode, getPromoCodes, updatePromoCode } from "@/lib/actions/promo-codes";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const promoCodeSchema = z.object({
   id: z.string().optional(),
@@ -32,6 +33,7 @@ const promoCodeSchema = z.object({
   expiresAt: z.date().optional(),
   usageLimit: z.coerce.number().min(0, "Usage limit cannot be negative").default(0),
   isActive: z.boolean().default(true),
+  isPlatformWide: z.boolean().default(false),
 });
 
 type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
@@ -60,11 +62,13 @@ export default function PromoCodeManagementPage() {
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
+    if (!currentUser) return;
     setIsLoading(true);
-    const codes = await getPromoCodes();
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
+    const codes = await getPromoCodes(tenantIdToFetch);
     setPromoCodes(codes);
     setIsLoading(false);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchData();
@@ -94,6 +98,7 @@ export default function PromoCodeManagementPage() {
       isActive: true,
       usageLimit: 0,
       expiresAt: undefined,
+      isPlatformWide: false,
     });
     setIsDialogOpen(true);
   };
@@ -103,13 +108,22 @@ export default function PromoCodeManagementPage() {
     reset({
         ...code,
         expiresAt: code.expiresAt ? parseISO(code.expiresAt) : undefined,
+        isPlatformWide: code.tenantId === 'platform',
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = async (data: PromoCodeFormData) => {
+    if (!currentUser) return;
+
+    const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
+      ...data,
+      expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
+      tenantId: data.isPlatformWide ? 'platform' : currentUser.tenantId,
+    };
+
     if (editingCode) {
-      const updatedCode = await updatePromoCode(editingCode.id, data);
+      const updatedCode = await updatePromoCode(editingCode.id, newCodeData);
       if (updatedCode) {
         setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
         toast({ title: t("promoCodes.toast.updated.title"), description: t("promoCodes.toast.updated.description", { code: data.code }) });
@@ -119,10 +133,6 @@ export default function PromoCodeManagementPage() {
         toast({ title: t("promoCodes.toast.exists.title"), description: t("promoCodes.toast.exists.description", { code: data.code }), variant: "destructive" });
         return;
       }
-      const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
-        ...data,
-        expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
-      };
       const newCode = await createPromoCode(newCodeData as any);
       if (newCode) {
         setPromoCodes(prev => [newCode, ...prev]);
@@ -141,6 +151,7 @@ export default function PromoCodeManagementPage() {
   };
 
   const onGeneratorSubmit = async (data: GeneratorFormData) => {
+    if (!currentUser) return;
     const newCodeStrings: string[] = [];
     let createdCount = 0;
     for (let i = 0; i < data.count; i++) {
@@ -154,6 +165,7 @@ export default function PromoCodeManagementPage() {
         expiresAt: data.expiresAt?.toISOString(),
         usageLimit: 1,
         isActive: true,
+        tenantId: currentUser.tenantId, // Generated codes are for the current manager's tenant
       };
       const created = await createPromoCode(newPromoCodeData as any);
       if (created) {
@@ -180,6 +192,7 @@ export default function PromoCodeManagementPage() {
           <div>
             <p className="font-bold font-mono">{code.code}</p>
             <p className="text-sm text-muted-foreground">{code.description}</p>
+            <p className="text-xs text-muted-foreground mt-1">Scope: {code.tenantId === 'platform' ? 'Platform-Wide' : `Tenant (${code.tenantId})`}</p>
           </div>
           <span className={`px-2 py-0.5 text-xs rounded-full capitalize shrink-0 ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
             {code.isActive ? t("promoCodes.status.active") : t("promoCodes.status.inactive")}
@@ -239,6 +252,7 @@ export default function PromoCodeManagementPage() {
                   <TableRow>
                     <TableHead>{t("promoCodes.table.code")}</TableHead>
                     <TableHead>{t("promoCodes.table.description")}</TableHead>
+                    <TableHead>Scope</TableHead>
                     <TableHead>{t("promoCodes.table.reward")}</TableHead>
                     <TableHead>{t("promoCodes.table.status")}</TableHead>
                     <TableHead>{t("promoCodes.table.usage")}</TableHead>
@@ -251,6 +265,7 @@ export default function PromoCodeManagementPage() {
                     <TableRow key={code.id}>
                       <TableCell className="font-mono">{code.code}</TableCell>
                       <TableCell>{code.description}</TableCell>
+                      <TableCell>{code.tenantId === 'platform' ? 'Platform-Wide' : `Tenant (${code.tenantId})`}</TableCell>
                       <TableCell>{code.rewardValue} {t(`promoCodes.rewardTypes.${code.rewardType}`)}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-0.5 text-xs rounded-full ${code.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
@@ -326,6 +341,12 @@ export default function PromoCodeManagementPage() {
               <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />
               <Label htmlFor="isActive">{t("promoCodes.form.activeLabel")}</Label>
             </div>
+            {currentUser.role === 'admin' && (
+              <div className="flex items-center space-x-2">
+                <Controller name="isPlatformWide" control={control} render={({ field }) => <Checkbox id="isPlatformWide" checked={field.value} onCheckedChange={field.onChange} />} />
+                <Label htmlFor="isPlatformWide">Make this a platform-wide code (available to all tenants)</Label>
+              </div>
+            )}
             <DialogFooter>
               <DialogClose asChild><Button variant="outline">{t("common.cancel")}</Button></DialogClose>
               <Button type="submit">{editingCode ? t("promoCodes.dialog.saveButton") : t("promoCodes.dialog.createButton")}</Button>
@@ -405,5 +426,3 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
-
-  

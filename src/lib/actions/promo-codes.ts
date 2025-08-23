@@ -8,14 +8,24 @@ import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
 import { createActivity } from './activities';
 import { checkAndAwardBadges } from './gamification';
+import { Prisma } from '@prisma/client';
 
 /**
- * Fetches all promo codes.
+ * Fetches all promo codes, scoped by tenant for managers.
+ * @param tenantId Optional tenant ID. If undefined, fetches all. If provided, fetches for that tenant and platform-wide.
  * @returns A promise that resolves to an array of PromoCode objects.
  */
-export async function getPromoCodes(): Promise<PromoCode[]> {
+export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
   try {
+    const whereClause: Prisma.PromoCodeWhereInput = {};
+    if (tenantId) {
+      whereClause.OR = [
+        { tenantId: tenantId },
+        { tenantId: 'platform' },
+      ];
+    }
     const codes = await db.promoCode.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
     });
     return codes as unknown as PromoCode[];
@@ -31,28 +41,17 @@ export async function getPromoCodes(): Promise<PromoCode[]> {
  * @returns The newly created PromoCode object or null.
  */
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
-  console.log('[PromoCodeAction LOG] 1. createPromoCode action initiated.');
   try {
-    console.log('[PromoCodeAction LOG] 2. Received data from client:', codeData);
-    const dataForDb = {
-      ...codeData,
-      code: codeData.code.toUpperCase(),
-      expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
-    };
-    console.log('[PromoCodeAction LOG] 3. Prepared data for database insertion:', dataForDb);
-    
-    console.log('[PromoCodeAction LOG] 4. Calling db.promoCode.create to insert into the database...');
     const newCode = await db.promoCode.create({
-      data: dataForDb as any,
+      data: {
+        ...codeData,
+        code: codeData.code.toUpperCase(),
+        expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
+      } as any,
     });
-    console.log('[PromoCodeAction LOG] 5. Database operation successful. New code created:', newCode);
-
-    console.log('[PromoCodeAction LOG] 6. Returning the new promo code.');
     return newCode as unknown as PromoCode;
   } catch (error) {
-    console.error('[PromoCodeAction LOG] 7. An error occurred in the try block.');
     console.error('[PromoCodeAction] Error creating promo code:', error);
-    console.log('[PromoCodeAction LOG] 8. Returning null due to error.');
     return null;
   }
 }
@@ -117,6 +116,11 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
 
         const user = await db.user.findUnique({ where: { id: userId } });
         if (!user) return { success: false, message: 'User not found.' };
+        
+        // Check if the code is for a specific tenant and if the user belongs to it
+        if (promoCode.tenantId && promoCode.tenantId !== 'platform' && user.tenantId !== promoCode.tenantId) {
+            return { success: false, message: 'This promo code is not valid for your account.' };
+        }
 
         await db.$transaction(async (prisma) => {
             await prisma.promoCode.update({
