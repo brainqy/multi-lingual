@@ -1,5 +1,4 @@
 
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -12,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PlatformSettings, ProfileVisibility } from "@/types";
-import { samplePlatformSettings } from "@/lib/sample-data";
 import Link from "next/link";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +19,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Textarea } from "@/components/ui/textarea"; 
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
+import { getPlatformSettings, updatePlatformSettings } from "@/lib/actions/platform-settings";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const settingsSchema = z.object({
   platformName: z.string().min(3, "platformSettings.validation.platformNameMin"),
@@ -58,9 +58,9 @@ const settingsSchema = z.object({
 type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export default function PlatformSettingsPage() {
-  const [currentSettings, setCurrentSettings] = useState<PlatformSettings>(samplePlatformSettings);
+  const [currentSettings, setCurrentSettings] = useState<PlatformSettings | null>(null);
   const { toast } = useToast();
-  const { user: currentUser, isLoading } = useAuth();
+  const { user: currentUser, isLoading: isUserLoading } = useAuth();
   const { t } = useI18n();
 
   const translatedSchema = z.object({
@@ -96,30 +96,47 @@ export default function PlatformSettingsPage() {
     walletEnabled: z.boolean().optional().default(true),
   });
   
-
   const { control, handleSubmit, reset, formState: { errors, isDirty } } = useForm<SettingsFormData>({
     resolver: zodResolver(translatedSchema),
-    defaultValues: currentSettings,
   });
 
   useEffect(() => {
-    reset(currentSettings);
-  }, [currentSettings, reset]);
+    async function loadSettings() {
+        const settings = await getPlatformSettings();
+        setCurrentSettings(settings);
+        reset(settings);
+    }
+    loadSettings();
+  }, [reset]);
 
-  if (isLoading || !currentUser) {
+
+  if (isUserLoading || !currentUser) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
 
   if (currentUser.role !== 'admin') {
     return <AccessDeniedMessage />;
   }
+  
+  if (!currentSettings) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-1/4" />
+          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      );
+  }
 
-  const onSubmit = (data: SettingsFormData) => {
-    const updatedSettings: PlatformSettings = { ...currentSettings, ...data };
-    Object.assign(samplePlatformSettings, updatedSettings); 
-    setCurrentSettings(updatedSettings);
-    toast({ title: t("platformSettings.toast.settingsSaved.title"), description: t("platformSettings.toast.settingsSaved.description") });
-    reset(updatedSettings); 
+  const onSubmit = async (data: SettingsFormData) => {
+    const updatedSettings = await updatePlatformSettings(data);
+    if (updatedSettings) {
+      setCurrentSettings(updatedSettings);
+      reset(updatedSettings); 
+      toast({ title: t("platformSettings.toast.settingsSaved.title"), description: t("platformSettings.toast.settingsSaved.description") });
+    } else {
+        toast({ title: "Error", description: "Failed to save platform settings.", variant: "destructive"});
+    }
   };
 
   const renderSettingRow = (id: keyof SettingsFormData, labelKey: string, controlElement: React.ReactNode, descriptionKey?: string, error?: string) => (
