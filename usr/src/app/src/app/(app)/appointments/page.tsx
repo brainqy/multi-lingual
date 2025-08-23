@@ -134,7 +134,7 @@ export default function AppointmentsPage() {
   const openRescheduleDialog = (appointment: Appointment) => {
     setAppointmentToReschedule(appointment);
     resetRescheduleForm({
-      preferredDate: parseISO(appointment.dateTime),
+      preferredDate: new Date(appointment.dateTime),
       preferredTimeSlot: PreferredTimeSlots[0], 
       message: '',
     });
@@ -282,7 +282,7 @@ export default function AppointmentsPage() {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
                 const apptDate = new Date(appt.dateTime);
-                const reminderDate = appt.reminderDate ? parseISO(appt.reminderDate) : null;
+                const reminderDate = appt.reminderDate ? new Date(appt.reminderDate) : null;
                 const daysToReminder = reminderDate && isFuture(reminderDate) ? differenceInDays(reminderDate, new Date()) : null;
 
                 return (
@@ -384,7 +384,7 @@ export default function AppointmentsPage() {
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
             <DialogTitle className="text-2xl">{t("appointments.rescheduleTitle", { default: "Reschedule Appointment" })}</DialogTitle>
-            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: getPartnerDetails(appointmentToReschedule!)?.name || "" })}</CardDescription>
+            <CardDescription>{t("appointments.rescheduleDesc", { default: "Suggest a new time for your appointment with {user}", user: getPartnerDetails(appointmentToReschedule)?.name || "" })}</CardDescription>
           </DialogHeader>
           {appointmentToReschedule && (
             <form onSubmit={handleRescheduleSubmit(onRescheduleSubmit)} className="space-y-4 py-4">
@@ -452,3 +452,4 @@ export default function AppointmentsPage() {
     </div>
   );
 }
+

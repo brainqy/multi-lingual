@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Video, Edit3, XCircle as XCircleIcon, Calendar, Eye, Brain as BrainIcon } from 'lucide-react';
-import { format, parseISO, isFuture, isPast, differenceInMinutes, compareAsc } from 'date-fns';
+import { format, isFuture, isPast, differenceInMinutes, compareAsc } from 'date-fns';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
@@ -20,17 +20,17 @@ interface PracticeSessionListProps {
   onRescheduleSession: (sessionId: string) => void;
 }
 
-const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
-    if (!isoDateString) {
+const SessionDateTime = ({ date: dateInput }: { date: string | Date }) => {
+    if (!dateInput) {
         return <span>Date not set</span>;
     }
     try {
-        const sessionDate = new Date(isoDateString);
+        const sessionDate = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
         const datePart = format(sessionDate, "MMM dd, yyyy");
         const timePart = format(sessionDate, "p");
         return <span>{`${datePart} - ${timePart}`}</span>;
     } catch (e) {
-        console.error("[SessionDateTime] Error formatting date:", isoDateString, e);
+        console.error("[SessionDateTime] Error formatting date:", dateInput, e);
         return <span>Invalid Date</span>;
     }
 };
