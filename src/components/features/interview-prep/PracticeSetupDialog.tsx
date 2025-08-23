@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { PracticeSession, PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
+import type { PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import PracticeTopicSelection from './PracticeTopicSelection';
