@@ -20,15 +20,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Eye, EyeOff, KeyRound, Mail } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { samplePlatformSettings } from "@/lib/sample-data";
 
 export function LoginForm() {
   const { login } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
   const platformName = t("appName", { default: "Bhasha Setu" });
+  const [tenantId, setTenantId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const parts = hostname.split('.');
+      if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
+          setTenantId(parts[0]);
+      }
+    }
+  }, []);
 
   const formSchema = z.object({
     email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address." }) }),
@@ -46,15 +56,14 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, you'd also send the password for verification
-    login(values.email); 
+    login(values.email, values.password, tenantId); 
   }
 
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-3xl font-headline text-center text-primary">{t("login.title")}</CardTitle>
-        <CardDescription className="text-center">{platformName}</CardDescription>
+        <CardDescription className="text-center">{tenantId ? `Signing in to: ${tenantId}` : platformName}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

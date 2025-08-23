@@ -3,21 +3,27 @@
 
 import { getUserByEmail, createUser, updateUser } from '@/lib/data-services/users';
 import type { UserProfile } from '@/types';
+import { db } from '@/lib/db';
 
 /**
- * Handles user login. Generates a new session ID and updates the user record.
+ * Handles user login, scoped to a specific tenant.
  * @param email The user's email address.
- * @param password The user's password (for now, this is mocked).
+ * @param password The user's password.
+ * @param tenantId The ID of the tenant from the URL subdomain.
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string, password?: string): Promise<UserProfile | null> {
-  const user = await getUserByEmail(email);
+export async function loginUser(email: string, password?: string, tenantId?: string): Promise<UserProfile | null> {
+  
+  const user = await db.user.findFirst({
+    where: {
+      email: email,
+      tenantId: tenantId || 'platform', // Fallback to 'platform' if no tenantId is provided
+    },
+  });
 
   if (user) {
     // In a real app, you would verify the hashed password here.
-    // For this demo, we'll bypass the password check if it's not set in the DB
-    // or matches a mock password for older users.
-    const isPasswordMatch = user.password ? (password === 'mock_password' || user.password === password) : true;
+    const isPasswordMatch = user.password ? (password === user.password) : true;
     
     if (isPasswordMatch) {
       const sessionId = `session-${Date.now()}`;

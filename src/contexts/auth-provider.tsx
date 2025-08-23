@@ -17,7 +17,7 @@ interface AuthContextType {
   wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string, tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
@@ -67,6 +67,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
           if (newStreak > newLongestStreak) {
               newLongestStreak = newStreak;
+          }
+
+          // ** NEW: Award streak freeze for milestones **
+          const STREAK_MILESTONES = [7, 14, 30];
+          if (STREAK_MILESTONES.includes(newStreak)) {
+            newStreakFreezes++;
+            toast({
+              title: "Streak Milestone Achieved!",
+              description: `You've reached a ${newStreak}-day streak and earned a Free Pass!`
+            });
           }
           
           updatedUserData = { 
@@ -153,9 +163,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback(async (email: string, password?: string) => {
+  const login = useCallback(async (email: string, password?: string, tenantId?: string) => {
     try {
-      let userToLogin = await loginUser(email, password || "mock_password");
+      let userToLogin = await loginUser(email, password || "mock_password", tenantId);
 
       if (userToLogin) {
         userToLogin = await handleStreakAndBadges(userToLogin);
@@ -167,7 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         toast({
           title: "Login Failed",
-          description: "User not found or password incorrect. Please check your credentials or sign up.",
+          description: "User not found in this tenant or password incorrect. Please check your credentials or sign up.",
           variant: "destructive",
         });
       }
