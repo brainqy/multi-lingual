@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,13 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { Layers3, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ResumeTemplate } from "@/types";
-import { sampleResumeTemplates } from "@/lib/sample-data";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { getResumeTemplates, createResumeTemplate, updateResumeTemplate, deleteResumeTemplate } from "@/lib/actions/templates";
 
 const templateSchema = z.object({
   id: z.string().optional(),
@@ -34,7 +34,8 @@ type TemplateFormData = z.infer<typeof templateSchema>;
 export default function TemplateDesignerPage() {
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
   const { toast } = useToast();
-  const [templates, setTemplates] = useState<ResumeTemplate[]>(sampleResumeTemplates);
+  const [templates, setTemplates] = useState<ResumeTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ResumeTemplate | null>(null);
 
@@ -42,6 +43,17 @@ export default function TemplateDesignerPage() {
     resolver: zodResolver(templateSchema),
   });
   
+  const fetchTemplates = useCallback(async () => {
+    setIsLoading(true);
+    const fetchedTemplates = await getResumeTemplates();
+    setTemplates(fetchedTemplates);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
   if (isUserLoading || !currentUser) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
   }
@@ -50,21 +62,19 @@ export default function TemplateDesignerPage() {
     return <AccessDeniedMessage />;
   }
 
-  const onSubmitForm = (data: TemplateFormData) => {
+  const onSubmitForm = async (data: TemplateFormData) => {
     if (editingTemplate) {
-      const updatedTemplate = { ...editingTemplate, ...data };
-      setTemplates(prev => prev.map(t => t.id === editingTemplate.id ? updatedTemplate : t));
-      const globalIndex = sampleResumeTemplates.findIndex(t => t.id === editingTemplate.id);
-      if (globalIndex > -1) sampleResumeTemplates[globalIndex] = updatedTemplate;
-      toast({ title: "Template Updated", description: `Template "${data.name}" has been saved.` });
+      const updated = await updateResumeTemplate(editingTemplate.id, data);
+      if (updated) {
+        setTemplates(prev => prev.map(t => t.id === editingTemplate.id ? updated : t));
+        toast({ title: "Template Updated", description: `Template "${data.name}" has been saved.` });
+      }
     } else {
-      const newTemplate: ResumeTemplate = {
-        id: `template-${Date.now()}`,
-        ...data,
-      };
-      setTemplates(prev => [newTemplate, ...prev]);
-      sampleResumeTemplates.unshift(newTemplate);
-      toast({ title: "Template Created", description: `New template "${data.name}" has been added.` });
+      const created = await createResumeTemplate(data);
+      if (created) {
+        setTemplates(prev => [created, ...prev]);
+        toast({ title: "Template Created", description: `New template "${data.name}" has been added.` });
+      }
     }
     setIsFormDialogOpen(false);
     setEditingTemplate(null);
@@ -88,11 +98,12 @@ export default function TemplateDesignerPage() {
     setIsFormDialogOpen(true);
   };
 
-  const handleDeleteTemplate = (templateId: string) => {
-    setTemplates(prev => prev.filter(t => t.id !== templateId));
-    const globalIndex = sampleResumeTemplates.findIndex(t => t.id === templateId);
-    if (globalIndex > -1) sampleResumeTemplates.splice(globalIndex, 1);
-    toast({ title: "Template Deleted", variant: "destructive" });
+  const handleDeleteTemplate = async (templateId: string) => {
+    const success = await deleteResumeTemplate(templateId);
+    if(success) {
+      setTemplates(prev => prev.filter(t => t.id !== templateId));
+      toast({ title: "Template Deleted", variant: "destructive" });
+    }
   };
 
   return (
@@ -151,37 +162,41 @@ export default function TemplateDesignerPage() {
           <CardTitle>Existing Templates</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Preview</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {templates.map((template) => (
-                <TableRow key={template.id}>
-                  <TableCell>
-                    <div className="w-12 h-16 relative rounded overflow-hidden border">
-                      <Image src={template.previewImageUrl} alt={template.name} layout="fill" objectFit="contain" className="p-1"/>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">{template.name}</TableCell>
-                  <TableCell>{template.category}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => openEditDialog(template)}>
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Preview</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {templates.map((template) => (
+                  <TableRow key={template.id}>
+                    <TableCell>
+                      <div className="w-12 h-16 relative rounded overflow-hidden border">
+                        <Image src={template.previewImageUrl} alt={template.name} layout="fill" objectFit="contain" className="p-1"/>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{template.name}</TableCell>
+                    <TableCell>{template.category}</TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => openEditDialog(template)}>
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteTemplate(template.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

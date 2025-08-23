@@ -7,18 +7,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GalleryVerticalEnd, CalendarDays, Users, UserCircle, Eye, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { sampleUserProfile, samplePlatformUsers } from "@/lib/sample-data";
 import Image from "next/image";
 import type { UserProfile, GalleryEvent } from "@/types"; 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"; 
-import { getGalleryEvents } from "@/lib/actions/gallery";
+import { getVisibleGalleryEvents } from "@/lib/actions/gallery";
+import { getUsers } from "@/lib/data-services/users";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function GalleryPage() {
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
   const [events, setEvents] = useState<GalleryEvent[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedEventParticipants, setSelectedEventParticipants] = useState<UserProfile[]>([]);
   const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false);
@@ -27,16 +28,21 @@ export default function GalleryPage() {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [selectedEventForImageView, setSelectedEventForImageView] = useState<GalleryEvent | null>(null);
 
-  useEffect(() => {
-    async function loadEvents() {
-      if (!currentUser) return;
-      setIsLoading(true);
-      const fetchedEvents = await getGalleryEvents(currentUser);
-      setEvents(fetchedEvents);
-      setIsLoading(false);
-    }
-    loadEvents();
+  const fetchData = useCallback(async () => {
+    if (!currentUser) return;
+    setIsLoading(true);
+    const [fetchedEvents, fetchedUsers] = await Promise.all([
+        getVisibleGalleryEvents(currentUser),
+        getUsers(),
+    ]);
+    setEvents(fetchedEvents);
+    setAllUsers(fetchedUsers);
+    setIsLoading(false);
   }, [currentUser]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
 
   const handleViewParticipants = (event: GalleryEvent) => {
@@ -46,7 +52,7 @@ export default function GalleryPage() {
       setIsParticipantDialogOpen(true);
       return;
     }
-    const participants = samplePlatformUsers.filter(user => event.attendeeUserIds!.includes(user.id));
+    const participants = allUsers.filter(user => event.attendeeUserIds!.includes(user.id));
     setSelectedEventParticipants(participants);
     setViewingEventTitle(event.title);
     setIsParticipantDialogOpen(true);
