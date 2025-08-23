@@ -2,7 +2,7 @@
 "use client";
 
 import React, { forwardRef } from 'react';
-import type { ResumeBuilderData } from "@/types";
+import type { ResumeBuilderData, ResumeTemplate } from "@/types";
 import { Card, CardContent } from '@/components/ui/card';
 import { sampleResumeTemplates } from '@/lib/sample-data';
 import ModernTemplate from './templates/ModernTemplate';
@@ -17,15 +17,22 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
   ({ data, templateId }, ref) => {
     const template = sampleResumeTemplates.find(t => t.id === templateId);
 
+    const styles = {
+      headerColor: template?.headerColor,
+      bodyColor: template?.bodyColor,
+      headerFontSize: template?.headerFontSize,
+      textAlign: template?.textAlign,
+    };
+
     const renderTemplate = () => {
       switch (templateId) {
         case 'template2':
         case 'template4': // Let's use creative for academic for now
-          return <CreativeTemplate data={data} />;
+          return <CreativeTemplate data={data} styles={styles} />;
         case 'template1':
         case 'template3':
         default:
-          return <ModernTemplate data={data} />;
+          return <ModernTemplate data={data} styles={styles} />;
       }
     };
 
@@ -34,7 +41,7 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-lg font-semibold text-slate-700">Live Preview</h3>
         </div>
-        <Card ref={ref} id="resume-preview-content" className="shadow-lg border-slate-300 h-[calc(100vh-10rem)] overflow-y-auto">
+        <Card ref={ref} id="resume-preview-content" className="shadow-lg border-slate-300">
           <CardContent className="p-0">
             {renderTemplate()}
             <p className="text-center text-[8px] text-slate-400 mt-4 p-2">
