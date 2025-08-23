@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -204,7 +205,7 @@ export interface CommunityComment {
   userId: string;
   userName: string;
   userAvatar?: string;
-  timestamp: Date;
+  timestamp: string;
   comment: string;
   parentId?: string; // For threaded replies
   replies?: CommunityComment[]; // For nesting, though client-side filtering is often used
@@ -216,7 +217,7 @@ export interface CommunityPost {
   userId: string;
   userName: string;
   userAvatar?: string;
-  timestamp: Date;
+  timestamp: string;
   content?: string;
   type: 'text' | 'poll' | 'event' | 'request';
   tags?: string[];
@@ -233,6 +234,8 @@ export interface CommunityPost {
   flagCount: number;
   comments?: CommunityComment[];
   bookmarkedBy?: string[];
+  votedBy?: string[];
+  registeredBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -296,13 +299,13 @@ export interface BlogPost {
   title: string;
   slug: string;
   author: string;
-  date: Date;
+  date: string;
   imageUrl: string;
   dataAiHint?: string;
   content: string;
   excerpt: string;
   tags: string[];
-  comments: any[];
+  comments: CommunityComment[];
   bookmarkedBy: string[];
   // possibly other properties
 }
@@ -418,8 +421,7 @@ export interface FlashCoinBatch {
 
 export type WalletTransaction = {
   id: string;
-  tenantId: string;
-  userId: string;
+  walletId: string;
   date: string;
   description: string;
   amount: number;
@@ -427,7 +429,7 @@ export type WalletTransaction = {
 };
 
 export type Wallet = {
-  tenantId: string;
+  id: string;
   userId: string;
   coins: number;
   flashCoins?: FlashCoinBatch[];
@@ -561,6 +563,12 @@ export interface ResumeTemplate {
   category: string;
   dataAiHint?: string;
   content: string;
+  // New styling fields
+  headerColor?: string;
+  bodyColor?: string;
+  headerFontSize?: string; // e.g., '1.5rem'
+  textAlign?: 'left' | 'center' | 'right';
+  layout?: 'one-column' | 'two-column';
 }
 
 export interface TourStep {
@@ -874,6 +882,7 @@ export const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; title: string; descrip
 export type ProfileVisibility = 'public' | 'alumni_only' | 'private';
 
 export interface PlatformSettings {
+  id: string;
   platformName: string;
   maintenanceMode: boolean;
   communityFeedEnabled: boolean;
@@ -1251,4 +1260,4 @@ export type UserDashboardWidgetId =
   | 'userBadges'
   | 'leaderboard';
 
-    
+
