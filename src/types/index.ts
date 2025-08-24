@@ -447,7 +447,7 @@ export type Wallet = {
   id: string;
   userId: string;
   coins: number;
-  flashCoins?: FlashCoinBatch[];
+  flashCoins: FlashCoinBatch[];
   transactions: WalletTransaction[];
 };
 
@@ -1312,3 +1312,18 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
+
+// Schemas for evaluateDailyChallengeAnswer flow
+export const EvaluateDailyChallengeAnswerInputSchema = z.object({
+  question: z.string().describe("The interview question that was asked."),
+  answer: z.string().describe("The user's answer to the question."),
+  solution: z.string().optional().describe("The ideal solution or key points for a correct answer."),
+});
+export type EvaluateDailyChallengeAnswerInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
+
+export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
+  feedback: z.string().describe("Constructive feedback on the user's answer, explaining what was good and what could be improved."),
+  score: z.number().min(0).max(100).describe("A numerical score (0-100) evaluating the quality of the answer."),
+  isCorrect: z.boolean().describe("A boolean indicating if the answer is fundamentally correct."),
+});
+export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
