@@ -115,7 +115,7 @@ export default function GalleryManagementPage() {
   const openEditEventDialog = (event: GalleryEvent) => {
     setEditingEvent(event);
     setValue('title', event.title);
-    setValue('date', parseISO(event.date));
+    setValue('date', new Date(event.date));
     setValue('imageUrls', event.imageUrls.join(', '));
     setValue('description', event.description || '');
     setValue('dataAiHint', event.dataAiHint || '');
@@ -249,7 +249,7 @@ export default function GalleryManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{event.title}</TableCell>
-                    <TableCell>{format(parseISO(event.date), "MMM dd, yyyy")}</TableCell>
+                    <TableCell>{format(new Date(event.date), "MMM dd, yyyy")}</TableCell>
                     {currentUser.role === 'admin' && <TableCell>{event.tenantId === 'platform' ? t("galleryManagement.table.platformGlobal") : `${t("galleryManagement.table.tenantPrefix")}: ${event.tenantId}`}</TableCell>}
                     <TableCell>{event.approved ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-right space-x-2">
