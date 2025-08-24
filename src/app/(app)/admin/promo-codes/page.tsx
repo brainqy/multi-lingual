@@ -34,6 +34,7 @@ const promoCodeSchema = z.object({
   usageLimit: z.coerce.number().min(0, "Usage limit cannot be negative").default(0),
   isActive: z.boolean().default(true),
   isPlatformWide: z.boolean().default(false),
+  tenantId: z.string().optional(),
 });
 
 type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
@@ -115,6 +116,8 @@ export default function PromoCodeManagementPage() {
 
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
+    
+    console.log("Submitting form data:", data);
 
     const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
       ...data,
@@ -133,7 +136,7 @@ export default function PromoCodeManagementPage() {
         toast({ title: t("promoCodes.toast.exists.title"), description: t("promoCodes.toast.exists.description", { code: data.code }), variant: "destructive" });
         return;
       }
-      const newCode = await createPromoCode(newCodeData as any);
+      const newCode = await createPromoCode(newCodeData);
       if (newCode) {
         setPromoCodes(prev => [newCode, ...prev]);
         toast({ title: t("promoCodes.toast.created.title"), description: t("promoCodes.toast.created.description", { code: data.code }) });
@@ -167,7 +170,7 @@ export default function PromoCodeManagementPage() {
         isActive: true,
         tenantId: currentUser.tenantId, // Generated codes are for the current manager's tenant
       };
-      const created = await createPromoCode(newPromoCodeData as any);
+      const created = await createPromoCode(newPromoCodeData);
       if (created) {
         newCodeStrings.push(code);
         createdCount++;
