@@ -43,8 +43,9 @@ export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
   console.log('[PromoCodeAction LOG] 1. Starting createPromoCode with data:', codeData);
   try {
+    const { isPlatformWide, ...restOfData } = codeData as any;
     const dataForDb = {
-      ...codeData,
+      ...restOfData,
       code: codeData.code.toUpperCase(),
       expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
     };
@@ -165,65 +166,65 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
             const rewardDescription = `Redeemed promo code: ${promoCode.code}`;
             console.log(`[PromoCodeAction LOG] 13. Applying reward. Type: ${promoCode.rewardType}, Value: ${promoCode.rewardValue}`);
 
+            const wallet = await getWallet(userId);
+            if (!wallet) {
+              console.error(`[PromoCodeAction LOG] CRITICAL: Wallet not found for user ${userId}. Cannot apply coin-based rewards.`);
+              throw new Error(`Wallet not found for user ${userId}.`);
+            }
+
             switch (promoCode.rewardType) {
                 case 'coins':
-                    console.log(`[PromoCodeAction LOG] 14a. Reward type is coins. Fetching wallet.`);
-                    const wallet = await getWallet(userId);
-                    if (wallet) {
-                        console.log(`[PromoCodeAction LOG] 14b. Wallet found. Updating coins.`);
-                        await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
-                        console.log(`[PromoCodeAction LOG] 14c. Wallet updated.`);
-                    }
+                    console.log(`[PromoCodeAction LOG] 14a. Reward type is coins. Current balance: ${wallet.coins}.`);
+                    await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
+                    console.log(`[PromoCodeAction LOG] 14b. Wallet updated for coins.`);
                     break;
                 case 'flash_coins':
-                    console.log(`[PromoCodeAction LOG] 14d. Reward type is flash_coins. Fetching wallet.`);
-                    const currentWallet = await getWallet(userId);
-                    if (currentWallet) {
-                        const newFlashCoin = {
-                            id: `fc-${Date.now()}`,
-                            amount: promoCode.rewardValue,
-                            expiresAt: addDays(new Date(), 30).toISOString(), // Expires in 30 days
-                            source: `Promo Code: ${promoCode.code}`,
-                        };
-                        const updatedFlashCoins = [...(currentWallet.flashCoins || []), newFlashCoin];
-                        await updateWallet(userId, { flashCoins: updatedFlashCoins }, rewardDescription);
-                    }
+                    console.log(`[PromoCodeAction LOG] 15a. Reward type is flash_coins.`);
+                    const newFlashCoin = {
+                        id: `fc-${Date.now()}`,
+                        amount: promoCode.rewardValue,
+                        expiresAt: addDays(new Date(), 30).toISOString(), // Expires in 30 days
+                        source: `Promo Code: ${promoCode.code}`,
+                    };
+                    const updatedFlashCoins = [...(wallet.flashCoins || []), newFlashCoin];
+                    await updateWallet(userId, { flashCoins: updatedFlashCoins }, rewardDescription);
+                     console.log(`[PromoCodeAction LOG] 15b. Wallet updated for flash coins.`);
                     break;
                 case 'xp':
-                    console.log(`[PromoCodeAction LOG] 15a. Reward type is xp. Updating user XP.`);
+                    console.log(`[PromoCodeAction LOG] 16a. Reward type is xp. Updating user XP.`);
                     await updateUser(userId, { xpPoints: (user.xpPoints || 0) + promoCode.rewardValue });
-                    console.log(`[PromoCodeAction LOG] 15b. User XP updated.`);
+                    console.log(`[PromoCodeAction LOG] 16b. User XP updated.`);
                     break;
                 case 'streak_freeze':
-                    console.log(`[PromoCodeAction LOG] 16a. Reward type is streak_freeze. Updating user freezes.`);
+                    console.log(`[PromoCodeAction LOG] 17a. Reward type is streak_freeze. Updating user freezes.`);
                     await updateUser(userId, { streakFreezes: (user.streakFreezes || 0) + promoCode.rewardValue });
-                    console.log(`[PromoCodeAction LOG] 16b. User streak freezes updated.`);
+                    console.log(`[PromoCodeAction LOG] 17b. User streak freezes updated.`);
                     break;
                 case 'premium_days':
-                    console.log(`[PromoCodeAction LOG] 17. Reward type is premium_days. (Mocked action)`);
-                    console.log(`Adding ${promoCode.rewardValue} premium days to user ${userId}`);
+                    console.log(`[PromoCodeAction LOG] 18. Reward type is premium_days. (Mocked action)`);
+                    // Mocked action: In a real app, you'd update a subscription status or expiry date.
                     break;
             }
             
-            console.log(`[PromoCodeAction LOG] 18. Creating activity log.`);
+            console.log(`[PromoCodeAction LOG] 19. Creating activity log.`);
             await createActivity({
                 userId: user.id,
                 tenantId: user.tenantId,
                 description: `${rewardDescription} for ${promoCode.rewardValue} ${promoCode.rewardType}.`
             });
-            console.log(`[PromoCodeAction LOG] 19. Activity log created.`);
+            console.log(`[PromoCodeAction LOG] 20. Activity log created.`);
         });
-        console.log(`[PromoCodeAction LOG] 20. Database transaction completed successfully.`);
+        console.log(`[PromoCodeAction LOG] 21. Database transaction completed successfully.`);
 
-        console.log(`[PromoCodeAction LOG] 21. Checking for new badges for user ${userId}.`);
+        console.log(`[PromoCodeAction LOG] 22. Checking for new badges for user ${userId}.`);
         await checkAndAwardBadges(userId);
-        console.log(`[PromoCodeAction LOG] 22. Badge check complete.`);
+        console.log(`[PromoCodeAction LOG] 23. Badge check complete.`);
 
-        console.log(`[PromoCodeAction LOG] 23. Returning success response.`);
+        console.log(`[PromoCodeAction LOG] 24. Returning success response.`);
         return { success: true, message: `Successfully redeemed code for ${promoCode.rewardValue} ${promoCode.rewardType}!`, rewardType: promoCode.rewardType, rewardValue: promoCode.rewardValue };
 
     } catch (error) {
-        console.error(`[PromoCodeAction LOG] 24. An error occurred in the redeem process for code ${code}:`, error);
+        console.error(`[PromoCodeAction LOG] 25. An error occurred in the redeem process for code ${code}:`, error);
         return { success: false, message: 'An unexpected error occurred.' };
     }
 }
