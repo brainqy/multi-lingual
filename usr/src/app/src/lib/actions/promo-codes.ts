@@ -3,7 +3,7 @@
 
 import { db } from '../db';
 import type { PromoCode } from '@/types';
-import { isPast, parseISO } from 'date-fns';
+import { isPast, parseISO, addDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
 import { createActivity } from './activities';
@@ -167,15 +167,26 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
 
             switch (promoCode.rewardType) {
                 case 'coins':
-                case 'flash_coins':
-                    console.log(`[PromoCodeAction LOG] 14a. Reward type is coins/flash_coins. Fetching wallet.`);
+                    console.log(`[PromoCodeAction LOG] 14a. Reward type is coins. Fetching wallet.`);
                     const wallet = await getWallet(userId);
                     if (wallet) {
                         console.log(`[PromoCodeAction LOG] 14b. Wallet found. Updating coins.`);
                         await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
                         console.log(`[PromoCodeAction LOG] 14c. Wallet updated.`);
-                    } else {
-                        console.error(`[PromoCodeAction LOG] 14d. Wallet not found for user ${userId}. Cannot apply coin reward.`);
+                    }
+                    break;
+                case 'flash_coins':
+                    console.log(`[PromoCodeAction LOG] 14d. Reward type is flash_coins. Fetching wallet.`);
+                    const currentWallet = await getWallet(userId);
+                    if (currentWallet) {
+                        const newFlashCoin = {
+                            id: `fc-${Date.now()}`,
+                            amount: promoCode.rewardValue,
+                            expiresAt: addDays(new Date(), 30).toISOString(), // Expires in 30 days
+                            source: `Promo Code: ${promoCode.code}`,
+                        };
+                        const updatedFlashCoins = [...(currentWallet.flashCoins || []), newFlashCoin];
+                        await updateWallet(userId, { flashCoins: updatedFlashCoins }, rewardDescription);
                     }
                     break;
                 case 'xp':

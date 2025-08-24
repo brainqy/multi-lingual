@@ -447,7 +447,7 @@ export type Wallet = {
   id: string;
   userId: string;
   coins: number;
-  flashCoins?: FlashCoinBatch[];
+  flashCoins: FlashCoinBatch[];
   transactions: WalletTransaction[];
 };
 
@@ -1301,3 +1301,14 @@ export type AdminDashboardWidgetId =
   | 'contentModerationQueueSummary'
   | 'systemAlerts'
   | 'adminQuickActions';
+
+export type NotificationType = 'mention' | 'event' | 'system';
+export interface Notification {
+    id: string;
+    userId: string;
+    type: NotificationType;
+    content: string;
+    link?: string; // e.g., /community-feed#comment-123
+    isRead: boolean;
+    createdAt: string;
+}

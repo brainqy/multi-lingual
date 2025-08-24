@@ -77,11 +77,10 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
  * @param transactionDescription A description of the transaction.
  * @returns The updated Wallet object or null on error.
  */
-export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'coins'>>, transactionDescription: string): Promise<Wallet | null> {
+export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'coins' | 'flashCoins'>>, transactionDescription: string): Promise<Wallet | null> {
     try {
         const currentWallet = await db.wallet.findUnique({ where: { userId } });
         if (!currentWallet) {
-            // If for some reason the wallet doesn't exist, create it
             return await getWallet(userId);
         }
 
@@ -92,7 +91,8 @@ export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'c
         const updatedWallet = await db.wallet.update({
             where: { userId },
             data: {
-                coins: data.coins
+                coins: data.coins,
+                flashCoins: data.flashCoins ? data.flashCoins as any : undefined,
             },
         });
 
@@ -103,7 +103,7 @@ export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'c
                     description: transactionDescription,
                     amount: amountChange,
                     type: amountChange > 0 ? 'credit' : 'debit',
-                    date: new Date(),
+                    date: new Date(), // This was the missing field
                 }
             });
         }
