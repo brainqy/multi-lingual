@@ -1,4 +1,3 @@
-
 'use server';
 
 import type { UserProfile, Tenant } from '@/types';
@@ -73,8 +72,6 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         earnedBadges: [],
         interviewCredits: 5,
         isDistinguished: false,
-        shortBio: '',
-        university: '',
         streakFreezes: 1, // Start with one free pass
     };
     
@@ -134,4 +131,4 @@ export async function deleteUser(userId: string): Promise<boolean> {
   }
 }
 
-    
+

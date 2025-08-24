@@ -49,6 +49,7 @@ model User {
   resumeText                 String?
   careerInterests            String?
   bio                        String?
+  shortBio                   String?
   interests                  String[]
   userApiKey                 String?
   isDistinguished            Boolean?

@@ -1,5 +1,7 @@
 
-import { PrismaClient } from '@prisma/client'
+
+import { PrismaClient } from '@prisma/client';
+
 
 const prisma = new PrismaClient()
 
@@ -182,7 +184,7 @@ async function main() {
     },
   });
 
-  console.log('Seeded community posts.');
+  console.log('Seeded community posts.')
 
   // Seed Comments
   const comment1 = await prisma.communityComment.create({
@@ -219,7 +221,7 @@ async function main() {
     }
   });
 
-  console.log('Seeded community comments.');
+  console.log('Seeded community comments.')
 
   // Seed System Alerts
   await prisma.systemAlert.createMany({
@@ -261,6 +263,34 @@ async function main() {
   });
   console.log('Seeded gamification rules.');
 
+  // Seed Notifications
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: adminUser.id,
+        type: 'mention',
+        content: 'You were mentioned in a post!',
+        link: `/community-feed#comment-1`,
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'event',
+        content: 'You have an upcoming event: Alumni Virtual Networking Night.',
+        link: `/events/alumni-networking`,
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'system',
+        content: 'Welcome to the platform! Your account has been created.',
+        link: `/profile`,
+        isRead: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded notifications.');
 
   console.log(`Seeding finished.`)
 }

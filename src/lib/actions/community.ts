@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -119,9 +118,8 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         comment: commentData.comment,
         parentId: commentData.parentId,
         timestamp: new Date(),
-        // Conditionally connect to either post or blogPost
-        ...(commentData.postId && { post: { connect: { id: commentData.postId } } }),
-        ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
+        postId: commentData.postId,
+        blogPostId: commentData.blogPostId,
       },
     });
 
@@ -197,4 +195,36 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
         console.error(`[CommunityAction] Error updating post ${postId}:`, error);
         return null;
     }
+}
+
+/**
+ * Registers a vote for a poll or event for a user, ensuring only one vote/registration per user.
+ * @param postId The ID of the post (poll/event).
+ * @param userId The ID of the user voting/registering.
+ * @param type 'vote' for poll, 'register' for event
+ * @returns Success/failure message
+ */
+export async function registerUserAction(postId: string, userId: string, type: 'vote' | 'register'): Promise<{ success: boolean; message: string }> {
+    const post = await db.communityPost.findUnique({ where: { id: postId } });
+    if (!post) return { success: false, message: 'Post not found.' };
+    if (type === 'vote') {
+        if (post.votedBy.includes(userId)) {
+            return { success: false, message: 'You have already voted in this poll.' };
+        }
+        await db.communityPost.update({
+            where: { id: postId },
+            data: { votedBy: [...post.votedBy, userId] }
+        });
+        return { success: true, message: 'Vote registered.' };
+    } else if (type === 'register') {
+        if (post.registeredBy.includes(userId)) {
+            return { success: false, message: 'You have already registered for this event.' };
+        }
+        await db.communityPost.update({
+            where: { id: postId },
+            data: { registeredBy: [...post.registeredBy, userId] }
+        });
+        return { success: true, message: 'Registration successful.' };
+    }
+    return { success: false, message: 'Invalid action.' };
 }
