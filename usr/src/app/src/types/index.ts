@@ -201,7 +201,8 @@ export type CommunityPostModerationStatus = 'visible' | 'flagged' | 'removed';
 
 export interface CommunityComment {
   id: string;
-  postId: string; // To associate comment with a post
+  postId?: string; // To associate comment with a community post
+  blogPostId?: string; // To associate comment with a blog post
   userId: string;
   userName: string;
   userAvatar?: string;
@@ -383,6 +384,19 @@ export interface UserProfile extends AlumniProfile {
   }>;
   sessionId?: string;
   streakFreezes?: number;
+
+  // Notification Preferences
+  emailNotificationsEnabled?: boolean;
+  appNotificationsEnabled?: boolean;
+  gamificationNotificationsEnabled?: boolean;
+  referralNotificationsEnabled?: boolean;
+  
+  // Dashboard Customization
+  dashboardWidgets?: {
+    user?: UserDashboardWidgetId[];
+    manager?: ManagerDashboardWidgetId[];
+    admin?: AdminDashboardWidgetId[];
+  };
 }
 
 export interface ResumeProfile {
@@ -1241,6 +1255,7 @@ export interface PromotionalContent {
 
 export interface PromoCode {
   id: string;
+  tenantId?: string;
   code: string;
   description: string;
   rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
@@ -1260,3 +1275,29 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+
+export type ManagerDashboardWidgetId =
+  | 'activeUsersStat'
+  | 'resumesAnalyzedStat'
+  | 'communityPostsStat'
+  | 'pendingApprovalsStat'
+  | 'tenantEngagementOverview'
+  | 'tenantManagementActions';
+
+export type AdminDashboardWidgetId =
+  | 'promotionalSpotlight'
+  | 'totalUsersStat'
+  | 'totalTenantsStat'
+  | 'resumesAnalyzedStat'
+  | 'communityPostsStat'
+  | 'platformActivityStat'
+  | 'jobApplicationsStat'
+  | 'alumniConnectionsStat'
+  | 'mockInterviewsStat'
+  | 'timeSpentStats'
+  | 'tenantActivityOverview'
+  | 'registrationTrendsChart'
+  | 'aiUsageBreakdownChart'
+  | 'contentModerationQueueSummary'
+  | 'systemAlerts'
+  | 'adminQuickActions';
