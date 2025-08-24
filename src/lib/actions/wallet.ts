@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -77,41 +76,37 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
  * @param transactionDescription A description of the transaction.
  * @returns The updated Wallet object or null on error.
  */
-export async function updateWallet(userId: string, data: Partial<Pick<Wallet, 'coins'>>, transactionDescription: string): Promise<Wallet | null> {
+export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 'coins' | 'flashCoins'>>, description?: string): Promise<void> {
     try {
         const currentWallet = await db.wallet.findUnique({ where: { userId } });
         if (!currentWallet) {
             // If for some reason the wallet doesn't exist, create it
-            return await getWallet(userId);
+            await getWallet(userId);
         }
 
         const oldCoins = currentWallet.coins;
-        const newCoins = data.coins ?? oldCoins;
+        const newCoins = update.coins ?? oldCoins;
         const amountChange = newCoins - oldCoins;
 
-        const updatedWallet = await db.wallet.update({
+        await db.wallet.update({
             where: { userId },
             data: {
-                coins: data.coins
+                coins: update.coins
             },
         });
 
         if (amountChange !== 0) {
              await db.walletTransaction.create({
                 data: {
-                    walletId: updatedWallet.id,
-                    description: transactionDescription,
+                    walletId: currentWallet.id,
+                    description: description ?? 'Wallet update',
                     amount: amountChange,
                     type: amountChange > 0 ? 'credit' : 'debit'
                 }
             });
         }
-        
-        // Refetch to include the new transaction
-        return await getWallet(userId);
 
     } catch (error) {
         console.error(`[WalletAction] Error updating wallet for user ${userId}:`, error);
-        return null;
     }
 }

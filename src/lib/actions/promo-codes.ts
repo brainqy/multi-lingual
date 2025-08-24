@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '../db';
@@ -6,9 +5,9 @@ import type { PromoCode } from '@/types';
 import { isPast, parseISO, addDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
-
 import { checkAndAwardBadges } from './gamification';
-import { Prisma } from '@prisma/client';
+//import from node modules instead of @prisma/client to avoid TS errors
+import { PrismaClient } from '../../../generated/prisma';
 import { createActivity } from '@/lib/actions/activities';
 
 /**
@@ -18,7 +17,7 @@ import { createActivity } from '@/lib/actions/activities';
  */
 export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
   try {
-    const whereClause: Prisma.PromoCodeWhereInput = {};
+    const whereClause: PrismaClient.PromoCodeWhereInput = {}; // eslint-disable-line @typescript-eslint/no-unused-vars
     if (tenantId) {
       whereClause.OR = [
         { tenantId: tenantId },
@@ -166,10 +165,11 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
                     break;
                 case 'flash_coins':
+                    const expiryDays = promoCode.expiryDays || 30; // Use promoCode.expiryDays if set, else default to 30
                     const newFlashCoin = {
                         id: `fc-${Date.now()}`,
                         amount: promoCode.rewardValue,
-                        expiresAt: addDays(new Date(), 30).toISOString(), 
+                        expiresAt: addDays(new Date(), expiryDays).toISOString(),
                         source: `Promo Code: ${promoCode.code}`,
                     };
                     const updatedFlashCoins = [...(wallet.flashCoins || []), newFlashCoin];

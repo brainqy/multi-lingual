@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output = "../generated/prisma"
 }
 
 datasource db {
@@ -64,6 +65,7 @@ model User {
   yearsOfExperience    String?
   skills               String[]
   bio                  String?
+  shortBio             String?
   careerInterests      String?
   interests            String[]
   offersHelpWith       String[]

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -298,6 +297,7 @@ export default function UserManagementPage() {
             <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
                 <p><strong>Role:</strong> <span className="capitalize">{user.role}</span></p>
                 {currentUser.role === 'admin' && <p><strong>Tenant:</strong> {getTenantName(user.tenantId)}</p>}
+                <p><strong>Streak Freezes:</strong> {user.streakFreezes ?? 0}</p>
             </div>
              <div className="flex justify-end gap-2 border-t pt-3">
                 <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
