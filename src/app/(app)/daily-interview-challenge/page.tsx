@@ -1,9 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/hooks/use-i18n";
-import { sampleChallenges } from "@/lib/sample-data";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +15,7 @@ import { updateUser } from "@/lib/data-services/users";
 import { createActivity } from "@/lib/actions/activities";
 import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from "@/components/ui/score-circle";
+import { getChallenges } from "@/lib/actions/challenges";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
@@ -23,27 +23,44 @@ export default function DailyInterviewChallengePage() {
   const { user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   
+  const [allChallenges, setAllChallenges] = useState<DailyChallenge[]>([]);
   const [standardChallenge, setStandardChallenge] = useState<DailyChallenge | undefined>(undefined);
   const [flipChallenge, setFlipChallenge] = useState<DailyChallenge | undefined>(undefined);
   const [userAnswer, setUserAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<EvaluateDailyChallengeAnswerOutput | null>(null);
 
+  const fetchChallenges = useCallback(async () => {
+    setIsLoading(true);
+    const challenges = await getChallenges();
+    setAllChallenges(challenges);
+    
+    // Set initial random challenges
+    const standard = challenges.filter(c => c.type === 'standard');
+    const flip = challenges.filter(c => c.type === 'flip');
+    if (standard.length > 0) {
+        setStandardChallenge(standard[Math.floor(Math.random() * standard.length)]);
+    }
+    if (flip.length > 0) {
+        setFlipChallenge(flip[Math.floor(Math.random() * flip.length)]);
+    }
+    
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     if (user) {
-      setStandardChallenge(sampleChallenges.find(c => c.type === 'standard'));
-      setFlipChallenge(sampleChallenges.find(c => c.type === 'flip'));
-      setIsLoading(false);
+      fetchChallenges();
     }
-  }, [user]);
+  }, [user, fetchChallenges]);
 
   const handleRefreshChallenge = () => {
-    const allStandardChallenges = sampleChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
+    const allStandardChallenges = allChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
     if (allStandardChallenges.length > 0) {
       setStandardChallenge(allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)]);
     }
     
-    const allFlipChallenges = sampleChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
+    const allFlipChallenges = allChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
      if (allFlipChallenges.length > 0) {
       setFlipChallenge(allFlipChallenges[Math.floor(Math.random() * allFlipChallenges.length)]);
     }

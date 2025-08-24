@@ -235,6 +235,43 @@ async function main() {
   console.log('Seeded system alerts.');
 
   // Seed Daily Challenges
+  await prisma.dailyChallenge.createMany({
+    data: [
+      {
+        id: "flip-challenge-1",
+        type: 'flip',
+        title: "Platform Power User",
+        description: "Complete the following tasks to prove your mastery of the platform and earn a massive XP boost!",
+        xpReward: 1000,
+        tasks: [
+          { description: "Refer 5 colleagues to the platform.", action: "refer", target: 5 },
+          { description: "Analyze your resume against 3 different job descriptions.", action: "analyze_resume", target: 3 },
+        ]
+      },
+      {
+        id: "challenge-1",
+        type: 'standard',
+        date: new Date("2023-10-27"),
+        title: "Reverse a String",
+        description: "Write a function that reverses a given string.",
+        difficulty: "Easy",
+        category: "Coding",
+        solution: "A common approach is to use `str.split('').reverse().join('')` in JavaScript, or to use a two-pointer technique swapping characters from the start and end of the string.",
+      },
+      {
+        id: "challenge-2",
+        type: 'standard',
+        date: new Date("2023-10-28"),
+        title: "Find the Missing Number",
+        description: "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the one that is missing from the array.",
+        difficulty: "Medium",
+        category: "Coding",
+        solution: "Calculate the expected sum of the sequence using the formula n*(n+1)/2. The missing number is the difference between the expected sum and the actual sum of the array elements.",
+      }
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded daily challenges.');
 
   // Seed Badges
   await prisma.badge.createMany({
