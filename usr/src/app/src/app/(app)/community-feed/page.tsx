@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2, Star as StarIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -29,38 +29,48 @@ import { getUsers } from "@/lib/data-services/users";
 
 
 const postSchema = z.object({
-  content: z.string().min(1, "Post content cannot be empty"),
+  content: z.string().min(1, "Post content cannot be empty for most post types."),
   tags: z.string().optional(),
   type: z.enum(['text', 'poll', 'event', 'request']),
   imageUrl: z.string().url("Invalid URL format").optional().or(z.literal('')),
-  pollOptions: z.array(z.object({ option: z.string().min(1, "Option cannot be empty"), votes: z.number().default(0) })).optional()
-    .refine(options => !options || options.length === 0 || options.length >= 2, {
-      message: "Polls must have at least two options if options are provided.",
-    }),
+  pollOptions: z.array(z.object({ option: z.string(), votes: z.number().default(0) })).optional(),
   eventDate: z.string().optional(),
   eventLocation: z.string().optional(),
   eventTitle: z.string().optional(),
   attendees: z.coerce.number().min(0).optional().default(0),
   capacity: z.coerce.number().min(0).optional().default(0),
   assignedTo: z.string().optional(),
-  status: z.enum(['open', 'assigned', 'completed']).optional(),
-}).refine(data => {
-  if (data.type === 'event') {
-    return !!data.eventTitle && !!data.eventDate && !!data.eventLocation;
-  }
-  return true;
-}, {
-  message: "Event title, date, and location are required for event posts.",
-  path: ["eventTitle"],
+  status: z.enum(['open', 'in progress', 'completed']).optional(),
+}).superRefine((data, ctx) => {
+    if (data.type === 'poll') {
+        if (!data.pollOptions || data.pollOptions.filter(opt => opt.option.trim()).length < 2) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Polls must have at least two valid options.",
+                path: ["pollOptions"],
+            });
+        }
+    }
+    if (data.type === 'event') {
+        if (!data.eventTitle?.trim()) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event title is required.", path: ["eventTitle"] });
+        }
+        if (!data.eventDate) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event date is required.", path: ["eventDate"] });
+        }
+        if (!data.eventLocation?.trim()) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Event location is required.", path: ["eventLocation"] });
+        }
+    }
 });
 
 
 type PostFormData = z.infer<typeof postSchema>;
 
 // Helper function to render text with @mentions
-const renderCommentWithMentions = (text: string) => {
+const renderWithMentions = (text: string | null | undefined) => {
   if (!text) return null;
-  const parts = text.split(/(@\w+)/g);
+  const parts = text.split(/(@[\w\s]+)/g);
   return parts.map((part, i) => {
     if (part.startsWith('@')) {
       return <strong key={i} className="text-primary font-semibold">{part}</strong>;
@@ -72,7 +82,7 @@ const renderCommentWithMentions = (text: string) => {
 const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, replyingToCommentId, replyText, onReplyTextChange, currentUser }: {
   comment: CommunityComment;
   allComments: CommunityComment[];
-  onReply: (commentId: string | null) => void;
+  onReply: (commentId: string, userName: string) => void;
   onCommentSubmit: (postId: string, text: string, parentId: string) => void;
   level: number;
   replyingToCommentId: string | null;
@@ -94,9 +104,9 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
             <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
             <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</p>
           </div>
-          <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
+          <p className="text-sm mt-0.5">{renderWithMentions(comment.comment)}</p>
         </div>
-        <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id)}>Reply</Button>
+        <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id, comment.userName)}>Reply</Button>
         {replyingToCommentId === comment.id && (
            <div className="flex items-center gap-2 pt-2">
               <Avatar className="h-8 w-8">
@@ -109,6 +119,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
                   onChange={(e) => onReplyTextChange(e.target.value)}
                   rows={1}
                   className="flex-1 min-h-[40px] text-sm"
+                  autoFocus
               />
               <Button size="sm" onClick={() => onCommentSubmit(comment.postId!, replyText, comment.id)} disabled={!replyText.trim()}>
                   <Send className="h-4 w-4" />
@@ -191,32 +202,24 @@ export default function CommunityFeedPage() {
   }, [allUsers, currentUser]);
 
   const handleFormSubmit = async (data: PostFormData) => {
-    console.log("[CommunityFeedPage LOG] 1. handleFormSubmit triggered with form data:", data);
-
     if (!currentUser) {
-      console.log("[CommunityFeedPage LOG] 2. No current user found. Aborting.");
       return;
     }
-    console.log("[CommunityFeedPage LOG] 3. Current user is present:", currentUser.id);
 
     let pollOptionsFinal = undefined;
     if (data.type === 'poll' && data.pollOptions) {
-        console.log("[CommunityFeedPage LOG] 4a. Post type is 'poll'. Processing options.");
         pollOptionsFinal = data.pollOptions.filter(opt => opt.option.trim() !== '').map(opt => ({ option: opt.option.trim(), votes: 0 }));
-        console.log("[CommunityFeedPage LOG] 4b. Filtered poll options:", pollOptionsFinal);
         if (pollOptionsFinal.length < 2) {
-            console.log("[CommunityFeedPage LOG] 4c. Poll has less than 2 options. Aborting.");
             toast({ title: "Poll Error", description: "Polls must have at least two valid options.", variant: "destructive" });
             return;
         }
     }
 
     if (editingPost) {
-      console.log("[CommunityFeedPage LOG] 5a. Mode: Editing post with ID:", editingPost.id);
       const updatedPostData: Partial<CommunityPost> = {
         content: data.content,
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
-        type: data.type as any,
+        type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
         pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
         eventDate: data.type === 'event' ? data.eventDate : undefined,
@@ -225,9 +228,9 @@ export default function CommunityFeedPage() {
         attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
         capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
       };
-      console.log("[CommunityFeedPage LOG] 6a. Prepared update data:", updatedPostData);
+
       const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
-      console.log("[CommunityFeedPage LOG] 7a. Received response from updateCommunityPost:", updatedPost);
+
       if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
@@ -235,14 +238,13 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      console.log("[CommunityFeedPage LOG] 5b. Mode: Creating new post.");
-      const newPostData = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
         content: data.content,
-        type: data.type as any,
+        type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
         pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
         eventDate: data.type === 'event' ? data.eventDate : undefined,
@@ -255,9 +257,9 @@ export default function CommunityFeedPage() {
         flagCount: 0,
         status: data.type === 'request' ? 'open' as const : undefined,
       };
-      console.log("[CommunityFeedPage LOG] 6b. Prepared create data:", newPostData);
+
       const newPost = await createCommunityPost(newPostData);
-      console.log("[CommunityFeedPage LOG] 7b. Received response from createCommunityPost:", newPost);
+      
       if (newPost) {
         setPosts(prev => [newPost, ...prev]);
         toast({ title: "Post Created", description: "Your post has been added to the feed." });
@@ -265,10 +267,14 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
       }
     }
-    console.log("[CommunityFeedPage LOG] 8. Closing dialog and resetting form.");
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
+  };
+  
+  const handleReply = (commentId: string, userName: string) => {
+    setReplyingToCommentId(commentId);
+    setReplyText(`@${userName} `);
   };
 
   const handleCommentSubmit = async (postId: string, text: string, parentId?: string) => {
@@ -526,7 +532,7 @@ export default function CommunityFeedPage() {
             )}
              {postType === 'poll' && (
                 <div className="space-y-2">
-                  <Label>Poll Options (at least 2 required)</Label>
+                  <Label>Poll Options</Label>
                   {(watch("pollOptions") || []).map((_, index) => (
                     <div key={index} className="flex items-center gap-2">
                        <Controller
@@ -542,7 +548,7 @@ export default function CommunityFeedPage() {
                        )}
                     </div>
                   ))}
-                  {errors.pollOptions && typeof errors.pollOptions === 'object' && !Array.isArray(errors.pollOptions) && (errors.pollOptions as any).message && <p className="text-sm text-destructive mt-1">{(errors.pollOptions as any).message}</p>}
+                  {errors.pollOptions && <p className="text-sm text-destructive mt-1">{errors.pollOptions.message}</p>}
                   {(watch("pollOptions") || []).length < 6 && (
                     <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => {
                         const currentOptions = watch("pollOptions") || [];
@@ -668,7 +674,7 @@ export default function CommunityFeedPage() {
                         <p className="text-sm text-muted-foreground italic">This post has been removed by a moderator.</p>
                     ) : (
                       <>
-                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{renderCommentWithMentions(post.content)}</p>}
+                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{renderWithMentions(post.content)}</p>}
                         
                         {post.type === 'text' && post.imageUrl && (
                             <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
@@ -775,7 +781,7 @@ export default function CommunityFeedPage() {
                                     key={comment.id} 
                                     comment={comment} 
                                     allComments={post.comments!} 
-                                    onReply={setReplyingToCommentId} 
+                                    onReply={handleReply} 
                                     onCommentSubmit={handleCommentSubmit} 
                                     level={0}
                                     replyingToCommentId={replyingToCommentId}
@@ -834,7 +840,7 @@ export default function CommunityFeedPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{user.name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Star className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
+                          <StarIcon className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
                         </p>
                       </div>
                     </li>
