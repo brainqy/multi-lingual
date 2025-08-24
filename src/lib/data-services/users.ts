@@ -21,7 +21,38 @@ export async function getUsers(tenantId?: string): Promise<UserProfile[]> {
   }
 }
 
+async function generateUniqueReferralCode(name: string): Promise<string> {
+    let code = '';
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10;
 
+    // Sanitize name to create a base for the code
+    const namePart = name.replace(/\s+/g, '').substring(0, 4).toUpperCase();
+
+    while (!isUnique && attempts < maxAttempts) {
+        // Generate a random part to ensure uniqueness
+        const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+        code = `${namePart}${randomPart}`;
+
+        // Check if the code already exists in the database
+        const existingUser = await db.user.findUnique({
+            where: { referralCode: code },
+        });
+
+        if (!existingUser) {
+            isUnique = true;
+        }
+        attempts++;
+    }
+
+    if (!isUnique) {
+        // Fallback for the rare case of repeated collisions
+        code = `REF${Date.now()}`;
+    }
+
+    return code;
+}
 export async function getUserByEmail(email: string): Promise<UserProfile | null> {
   log(`[DataService] Fetching user by email: ${email}`);
   const user = await db.user.findUnique({
@@ -49,6 +80,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
     const defaultTenantId = 'brainqy';
     const tenantId = data.tenantId || defaultTenantId;
     const password = data.password;
+ const referralCode = await generateUniqueReferralCode(data.name);
 
     const newUserPayload = {
         id: `user-${Date.now()}`,
@@ -73,6 +105,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         interviewCredits: 5,
         isDistinguished: false,
         streakFreezes: 1, // Start with one free pass
+        referralCode: referralCode,
     };
     
     log(`[DataService] Creating user in real DB: ${data.email}`);
