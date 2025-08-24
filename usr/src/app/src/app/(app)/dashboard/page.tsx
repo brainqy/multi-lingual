@@ -14,8 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
   const { t } = useI18n();
-  const { user, isLoading } = useAuth();
-  const [showStreakPopup, setShowStreakPopup] = useState(false);
+  const { user, isLoading, isStreakPopupOpen, setStreakPopupOpen } = useAuth();
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [tourSteps, setTourSteps] = useState<any[]>([]);
   const [tourKey, setTourKey] = useState('');
@@ -26,27 +25,12 @@ export default function DashboardPage() {
 
     const role = user.role;
     
-    const today = new Date().toISOString().split('T')[0];
     if (typeof window !== 'undefined') {
-      // Condition to show popup for user, manager, or admin roles
-      if (role === 'user' || role === 'manager' || role === 'admin') {
-        const popupShownKey = `dailyStreakPopupShown_${user.id}_${today}`;
-        if (!localStorage.getItem(popupShownKey)) {
-          console.log(`[DashboardPage] Daily streak popup condition met for user ${user.id}, role ${role}. Key: ${popupShownKey}`);
-          setShowStreakPopup(true);
-          localStorage.setItem(popupShownKey, 'true');
-        } else {
-          console.log(`[DashboardPage] Daily streak popup already shown today for user ${user.id}. Key: ${popupShownKey}`);
-        }
-      }
-
       let currentTourKey = '';
       let currentTourSteps: any[] = [];
       let currentTourTitle = '';
 
       if (role === 'admin') {
-        // Admins are redirected, so this tour might not be seen here.
-        // Kept for robustness in case of direct navigation.
         currentTourKey = 'adminDashboardTourSeen';
         currentTourSteps = adminDashboardTourSteps;
         currentTourTitle = "Welcome Admin!";
@@ -72,7 +56,7 @@ export default function DashboardPage() {
   }, [isLoading, user]);
 
   const handleCloseStreakPopup = () => {
-    setShowStreakPopup(false);
+    setStreakPopupOpen(false);
   };
 
   const handleCloseWelcomeTour = () => {
@@ -103,7 +87,6 @@ export default function DashboardPage() {
   const renderDashboard = () => {
     switch (user.role) {
       case 'admin':
-        // Admin users should be on /admin/dashboard. This is a fallback.
         return <AdminDashboard user={user} />;
       case 'manager':
         return <ManagerDashboard user={user} />;
@@ -118,7 +101,7 @@ export default function DashboardPage() {
       {renderDashboard()}
       {(user.role === 'user' || user.role === 'manager' || user.role === 'admin') && user && (
          <DailyStreakPopup
-          isOpen={showStreakPopup}
+          isOpen={isStreakPopupOpen}
           onClose={handleCloseStreakPopup}
           userProfile={user}
         />

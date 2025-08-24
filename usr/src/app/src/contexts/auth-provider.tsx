@@ -17,11 +17,13 @@ interface AuthContextType {
   wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string, tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
+  isStreakPopupOpen: boolean;
+  setStreakPopupOpen: (isOpen: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStreakPopupOpen, setStreakPopupOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
@@ -51,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       let updatedUserData: Partial<UserProfile> = {};
 
       if (daysSinceLastLogin > 0) { // Only update if it's a new day
+          setStreakPopupOpen(true); // Show popup on new day login
           let newStreak = userToUpdate.dailyStreak || 0;
           let newLongestStreak = userToUpdate.longestStreak || 0;
           let newStreakFreezes = userToUpdate.streakFreezes || 0;
@@ -68,8 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (newStreak > newLongestStreak) {
               newLongestStreak = newStreak;
           }
-
-          // ** NEW: Award streak freeze for milestones **
+          
           const STREAK_MILESTONES = [7, 14, 30];
           if (STREAK_MILESTONES.includes(newStreak)) {
             newStreakFreezes++;
@@ -91,7 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (Object.keys(updatedUserData).length > 0) {
         const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
         if(updatedUser) {
-            // After streak is updated, check for new badges
             const newBadges = await checkAndAwardBadges(updatedUser.id);
             newBadges.forEach(badge => {
                 toast({
@@ -99,13 +101,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     description: `You've earned the "${badge.name}" badge.`,
                 });
             });
-            // Re-fetch the user to get the latest badge and XP info
             const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
             return finalUser || updatedUser;
         }
       }
       
-      return userToUpdate; // Return original user if no updates were made
+      return userToUpdate;
   };
 
 
@@ -113,7 +114,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setWallet(null);
     localStorage.removeItem('bhashaSetuUser');
-    // Don't redirect if already on a public or auth page
     if (!pathname.startsWith('/auth') && pathname !== '/') {
       router.push('/auth/login');
     }
@@ -164,19 +164,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback(async (email: string, password?: string) => {
+  const login = useCallback(async (email: string, password?: string, tenantId?: string) => {
     try {
-      let tenantId: string | undefined = undefined;
-      if (typeof window !== 'undefined') {
-        const hostname = window.location.hostname;
-        const parts = hostname.split('.');
-        if (parts.length > 2 && parts[0] !== 'www') {
-            tenantId = parts[0];
-        } else if (hostname.includes('localhost') && parts.length > 1 && parts[0] !== 'localhost') {
-            tenantId = parts[0];
-        }
-      }
-
       let userToLogin = await loginUser(email, password || "mock_password", tenantId);
 
       if (userToLogin) {
@@ -238,7 +227,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
       {children}
     </AuthContext.Provider>
   );
