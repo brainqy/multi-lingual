@@ -314,7 +314,7 @@ async function main() {
         userId: adminUser.id,
         type: 'event',
         content: 'You have an upcoming event: Alumni Virtual Networking Night.',
-        link: `/events/alumni-networking`,
+        link: `/community-feed#post-${post3.id}`,
         isRead: false,
       },
       {
