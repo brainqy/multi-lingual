@@ -47,7 +47,7 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
         ...codeData,
         code: codeData.code.toUpperCase(),
         expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
-      } as any,
+      },
     });
     return newCode as unknown as PromoCode;
   } catch (error) {

@@ -1242,7 +1242,7 @@ export interface PromotionalContent {
 
 export interface PromoCode {
   id: string;
-  tenantId: string;
+  tenantId?: string; // Optional for platform-wide codes
   code: string;
   description: string;
   rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
@@ -1263,9 +1263,3 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
-
-
-
-
-  
-
