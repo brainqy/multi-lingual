@@ -1,14 +1,16 @@
 
 'use server';
 
-import { db } from '../db';
+
 import type { PromoCode } from '@/types';
 import { isPast, parseISO, addDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
-import { createActivity } from './activities';
+
 import { checkAndAwardBadges } from './gamification';
 import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
+import { createActivity } from '@/lib/actions/activities';
 
 /**
  * Fetches all promo codes, scoped by tenant for managers.

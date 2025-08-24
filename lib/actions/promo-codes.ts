@@ -87,7 +87,9 @@ export async function deletePromoCode(codeId: string): Promise<boolean> {
  * @returns An object indicating success or failure with a message.
  */
 export async function redeemPromoCode(code: string, userId: string): Promise<{ success: boolean; message: string; rewardType?: string; rewardValue?: number; }> {
-    try {
+   console.log(" redeeming fn...")
+  
+  try {
         const promoCode = await db.promoCode.findUnique({
             where: { code: code.toUpperCase() },
         });

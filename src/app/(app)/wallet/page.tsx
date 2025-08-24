@@ -14,7 +14,7 @@ import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { redeemPromoCode } from "../../../../lib/actions/promo-codes";
+import { redeemPromoCode } from "../../../../usr/src/app/src/lib/actions/promo-codes";
 
 export default function WalletPage() {
   const { t } = useI18n();
@@ -31,7 +31,7 @@ export default function WalletPage() {
   const handleRedeemCode = async () => {
     if (!promoCodeInput.trim() || !user) return;
     setIsRedeeming(true);
-    
+    console.log(" redeeming code...")
     const result = await redeemPromoCode(promoCodeInput, user.id);
 
     if (result.success) {

@@ -4,7 +4,8 @@
 import { db } from '@/lib/db';
 import type { Badge, GamificationRule, UserProfile } from '@/types';
 import { updateUser } from '@/lib/data-services/users';
-import { createActivity } from './activities';
+import { createActivity } from '@/lib/actions/activities';
+
 
 /**
  * Checks a user's profile against all available badges and awards any new ones they have earned.
