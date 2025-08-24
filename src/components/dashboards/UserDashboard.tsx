@@ -358,7 +358,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         title={t("userDashboard.welcomeTour.title")}
       />
       <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("userDashboard.title")}</h1>
           <Button variant="outline" onClick={openCustomizeDialog}>
             <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton")}
