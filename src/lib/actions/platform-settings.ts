@@ -44,7 +44,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
           enablePublicProfilePages: false,
           sessionTimeoutMinutes: 60,
           maxEventRegistrationsPerUser: 3,
-          globalAnnouncement: 'Welcome to the new and improved JobMatch AI platform! Check out the AI Mock Interview feature.',
+          globalAnnouncement: 'Application is in beta-live: Welcome to the platform!',
           pointsForAffiliateSignup: 50,
           walletEnabled: true,
         },

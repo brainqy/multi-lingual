@@ -11,5 +11,52 @@
       "profile": "Profile",
       "logout": "Logout"
     }
+  },
+  "galleryManagement": {
+    "title": "Gallery Management",
+    "tenantLabel": "Tenant: {tenantId}",
+    "addNewButton": "Add New Event",
+    "description": "Create and manage photo gallery events for your tenant or the entire platform.",
+    "currentEventsTitle": "Current Gallery Events",
+    "noEventsText": "No gallery events found",
+    "forYourTenant": "for your tenant",
+    "dialog": {
+      "editTitle": "Edit Gallery Event",
+      "addTitle": "Add New Gallery Event",
+      "eventTitleLabel": "Event Title",
+      "eventDateLabel": "Event Date",
+      "imageUrlsLabel": "Image URLs (comma-separated)",
+      "imageUrlsPlaceholder": "https://example.com/img1.png, https://example.com/img2.png",
+      "descriptionLabel": "Description (Optional)",
+      "aiHintLabel": "AI Hint for Images (Optional)",
+      "aiHintPlaceholder": "e.g., conference, networking event",
+      "globalCheckbox": "Make this a platform-wide event (visible to all tenants)",
+      "saveButton": "Save Changes",
+      "addButton": "Add Event"
+    },
+    "table": {
+      "preview": "Preview",
+      "title": "Title",
+      "date": "Date",
+      "scope": "Scope",
+      "platformGlobal": "Platform-wide",
+      "tenantPrefix": "Tenant",
+      "noImage": "No Image",
+      "actions": "Actions"
+    },
+    "toast": {
+      "updated": {
+        "title": "Event Updated",
+        "description": "The event '{title}' has been successfully updated."
+      },
+      "created": {
+        "title": "Event Created",
+        "description": "The new event '{title}' has been added to the gallery."
+      },
+      "deleted": {
+        "title": "Event Deleted",
+        "description": "The event has been removed from the gallery."
+      }
+    }
   }
 }
