@@ -69,6 +69,11 @@ export function AppHeader() {
       fetchNotifications(); // Refresh notifications to show them as read
     }
   };
+  
+  const handleShowStreakPopup = () => {
+    const event = new CustomEvent('show-streak-popup');
+    window.dispatchEvent(event);
+  };
 
   const handleLogout = () => {
     logout();
@@ -188,10 +193,10 @@ export function AppHeader() {
         <div className="hidden sm:flex h-10 items-center justify-end gap-4 border-t bg-secondary/30 px-4 md:px-6">
            <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-default">
+              <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-sm font-medium text-muted-foreground" onClick={handleShowStreakPopup}>
                 <Flame className="h-5 w-5 text-orange-500" />
-                <span>{user.dailyStreak || 0}</span>
-              </div>
+                <span className="ml-1">{user.dailyStreak || 0}</span>
+              </Button>
             </TooltipTrigger>
             <TooltipContent><p>{t("appHeader.dailyStreak")}</p></TooltipContent>
           </Tooltip>

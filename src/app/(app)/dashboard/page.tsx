@@ -70,6 +70,16 @@ export default function DashboardPage() {
       }
     }
   }, [isLoading, user]);
+  
+  useEffect(() => {
+    const handleShowStreakPopup = () => setShowStreakPopup(true);
+    
+    window.addEventListener('show-streak-popup', handleShowStreakPopup);
+
+    return () => {
+      window.removeEventListener('show-streak-popup', handleShowStreakPopup);
+    };
+  }, []);
 
   const handleCloseStreakPopup = () => {
     setShowStreakPopup(false);
