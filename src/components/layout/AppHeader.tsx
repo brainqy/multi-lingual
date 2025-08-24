@@ -21,14 +21,16 @@ import {
   DropdownMenuSubContent, 
   DropdownMenuPortal, 
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from 'react'; 
 import { getRecentPages } from '@/lib/recent-pages'; 
 import { useAuth } from '@/hooks/use-auth';
-
+import { getNotifications, markNotificationsAsRead } from '@/lib/actions/notifications';
+import type { Notification, RecentPageItem } from "@/types";
+import { formatDistanceToNow } from 'date-fns';
 import { usePathname, useRouter } from "next/navigation"; 
-import { RecentPageItem } from "@/types";
 
 export function AppHeader() {
   const { toast } = useToast();
@@ -38,23 +40,46 @@ export function AppHeader() {
   const pathname = usePathname(); 
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    toast({ title: "Logged Out", description: "You have been logged out." });
-  };
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isNotificationPopoverOpen, setIsNotificationPopoverOpen] = useState(false);
 
   useEffect(() => {
     setRecentPages(getRecentPages());
   }, [pathname]);
+  
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000); // Poll for new notifications every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
-  const handleLanguageChange = (lang: string) => {
-    toast({ title: "Language Switch (Mock)", description: `Language would switch to ${lang}. This app is currently single-language.` });
-    // To re-enable next-intl, you'd use: router.push(`/${lang}${pathnameWithoutLocale}`);
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const userNotifications = await getNotifications(user.id);
+    setNotifications(userNotifications);
+  };
+  
+  const handleNotificationOpenChange = async (open: boolean) => {
+    setIsNotificationPopoverOpen(open);
+    if (!open && unreadCount > 0) {
+      // When popover closes, mark notifications as read
+      await markNotificationsAsRead(user!.id);
+      fetchNotifications(); // Refresh notifications to show them as read
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({ title: "Logged Out", description: "You have been logged out." });
   };
   
   if (!user) {
     return null; // or a loading skeleton
   }
+  
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <TooltipProvider>
@@ -67,10 +92,38 @@ export function AppHeader() {
           <div className="flex items-center gap-2 sm:gap-4">
             <LanguageSwitcher />
 
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <span className="sr-only">{t("appHeader.notifications")}</span>
-            </Button>
+            <Popover open={isNotificationPopoverOpen} onOpenChange={handleNotificationOpenChange}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full relative">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                    </span>
+                  )}
+                  <span className="sr-only">{t("appHeader.notifications")}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-0">
+                  <div className="p-3 font-medium border-b">{t("appHeader.notifications")}</div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center p-4">You have no notifications.</p>
+                    ) : (
+                      notifications.map(notification => (
+                        <Link href={notification.link || '#'} key={notification.id} passHref legacyBehavior>
+                           <a className={`block p-3 hover:bg-secondary ${!notification.isRead ? 'bg-primary/5' : ''}`} onClick={() => setIsNotificationPopoverOpen(false)}>
+                            <p className="text-sm">{notification.content}</p>
+                            <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}</p>
+                          </a>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+              </PopoverContent>
+            </Popover>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">

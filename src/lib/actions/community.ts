@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
+import { createNotification } from './notifications';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -50,7 +51,9 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy'>): Promise<CommunityPost | null> {
+    console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
+        console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
         const dataForDb: Prisma.CommunityPostCreateInput = {
             tenantId: postData.tenantId,
             userId: postData.userId,
@@ -63,6 +66,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             flagCount: postData.flagCount,
             timestamp: new Date(),
             
+            // Type-specific fields are only added if they are relevant to the post type
             imageUrl: postData.type === 'text' && postData.imageUrl ? postData.imageUrl : undefined,
             pollOptions: postData.type === 'poll' && postData.pollOptions ? postData.pollOptions : Prisma.JsonNull,
             eventTitle: postData.type === 'event' ? postData.eventTitle : undefined,
@@ -75,16 +79,22 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             votedBy: [],
             registeredBy: [],
         };
+        console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
+        console.log("[CommunityAction LOG] 4. Calling db.communityPost.create...");
         const newPost = await db.communityPost.create({
             data: dataForDb,
         });
+        console.log("[CommunityAction LOG] 5. Database create operation successful. Result:", newPost);
 
+        console.log("[CommunityAction LOG] 6. Triggering badge check for user:", postData.userId);
         await checkAndAwardBadges(postData.userId);
+        console.log("[CommunityAction LOG] 7. Badge check complete.");
 
+        console.log("[CommunityAction LOG] 8. Returning new post from function.");
         return newPost as unknown as CommunityPost;
     } catch (error) {
-        console.error('[CommunityAction] Error during post creation:', error);
+        console.error('[CommunityAction LOG] 9. Error during post creation:', error);
         return null;
     }
 }
@@ -114,6 +124,36 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
       },
     });
+
+    // Check for @mentions and create notifications
+    if (commentData.comment && commentData.postId) {
+        const mentionRegex = /@([\w\s]+)/g;
+        const mentions = [...commentData.comment.matchAll(mentionRegex)].map(match => match[1].trim());
+
+        if (mentions.length > 0) {
+            const mentionedUsers = await db.user.findMany({
+                where: {
+                    name: {
+                        in: mentions,
+                        mode: 'insensitive',
+                    },
+                },
+            });
+
+            for (const mentionedUser of mentionedUsers) {
+                // Don't notify the user who wrote the comment
+                if (mentionedUser.id !== commentData.userId) {
+                    await createNotification({
+                        userId: mentionedUser.id,
+                        type: 'mention',
+                        content: `${commentData.userName} mentioned you in a comment.`,
+                        link: `/community-feed#comment-${newComment.id}`, // Link to the new comment
+                        isRead: false,
+                    });
+                }
+            }
+        }
+    }
 
     await checkAndAwardBadges(commentData.userId);
 
