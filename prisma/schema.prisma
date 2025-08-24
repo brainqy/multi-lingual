@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGROW_URL_NON_POOLING") // uses a direct connection
+ provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Language {
@@ -93,7 +92,7 @@ model User {
   affiliateProfile    Affiliate?
   affiliateSignups    AffiliateSignup[]
   promoCodeRedemptions UserPromoCodeRedemption[]
-
+  mockInterviewSessions MockInterviewSession[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -485,6 +484,7 @@ model SurveyResponse {
   tenantId     String
   responseDate DateTime @default(now())
   data         Json
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Announcement {
@@ -576,6 +576,7 @@ model PromoCode {
   expiryDays Int?
   createdAt DateTime @default(now())
   redemptions UserPromoCodeRedemption[]
+  tenant Tenant? @relation(fields: [tenantId], references: [id]) 
 }
 
 model UserPromoCodeRedemption {
@@ -654,4 +655,16 @@ model ProductCompany {
   hrEmail       String?
   contactNumber String?
   logoUrl       String?
+}
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  message   String?
+  createdAt DateTime @default(now())
+  type      String?
+  content   String
+  link      String
+  isRead    Boolean? @default(false)
+  // Add other fields as needed
 }
