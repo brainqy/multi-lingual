@@ -31,9 +31,11 @@ import SpreadTheWordCard from "@/components/features/SpreadTheWordCard";
 import { TooltipProvider, Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as LucideIcons from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
+import { useAuth } from "@/hooks/use-auth";
+import { updateUser } from "@/lib/data-services/users";
 
 interface UserDashboardProps {
   user: UserProfile;
@@ -129,9 +131,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activePromotions, setActivePromotions] = useState<PromotionalContent[]>([]);
+  const { login } = useAuth();
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(
-    new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
+    new Set(user.dashboardWidgets?.user || AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
   );
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<UserDashboardWidgetId>>(visibleWidgetIds);
@@ -150,6 +153,12 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     }
     if (user) {
       loadData();
+      
+      // Load widget preferences from user profile
+      const savedWidgetIds = user.dashboardWidgets?.user;
+      if (savedWidgetIds) {
+        setVisibleWidgetIds(new Set(savedWidgetIds as UserDashboardWidgetId[]));
+      }
 
       if (typeof window !== 'undefined') {
         const tourSeen = localStorage.getItem('userDashboardTourSeen');
@@ -274,10 +283,26 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     });
   };
 
-  const handleSaveCustomization = () => {
+  const handleSaveCustomization = async () => {
     setVisibleWidgetIds(tempVisibleWidgetIds);
     setIsCustomizeDialogOpen(false);
-    toast({ title: t("userDashboard.toast.dashboardUpdated.title"), description: t("userDashboard.toast.dashboardUpdated.description") });
+    
+    // Save to DB
+    const updatedUser = await updateUser(user.id, {
+      dashboardWidgets: {
+        ...user.dashboardWidgets,
+        user: Array.from(tempVisibleWidgetIds)
+      }
+    });
+    
+    if (updatedUser) {
+      await login(updatedUser.email); // Refresh user in auth context
+      toast({ title: t("userDashboard.toast.dashboardUpdated.title"), description: t("userDashboard.toast.dashboardUpdated.description") });
+    } else {
+      // Revert on failure
+      setVisibleWidgetIds(new Set(user.dashboardWidgets?.user || []));
+      toast({ title: "Error", description: "Could not save widget preferences.", variant: "destructive" });
+    }
   };
 
   const openCustomizeDialog = () => {
@@ -308,6 +333,21 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     );
   }
 
+  const LeaderboardCard = ({ user: lbUser, rank }: { user: UserProfile; rank: number }) => (
+    <Card className="p-3 flex items-center gap-3">
+      <div className="font-bold text-lg w-6 text-center">{getRankIcon(rank)}</div>
+      <Avatar className="h-9 w-9">
+        <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face" />
+        <AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <p className="font-medium text-sm">{lbUser.name}</p>
+        <p className="text-xs text-muted-foreground">{lbUser.xpPoints?.toLocaleString() || 0} XP</p>
+      </div>
+      {lbUser.id === user.id && <Badge variant="outline">You</Badge>}
+    </Card>
+  );
+
   return (
     <>
       <WelcomeTourDialog
@@ -318,7 +358,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         title={t("userDashboard.welcomeTour.title")}
       />
       <div className="space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("userDashboard.title")}</h1>
           <Button variant="outline" onClick={openCustomizeDialog}>
             <Settings className="mr-2 h-4 w-4" /> {t("userDashboard.customizeButton")}
@@ -384,7 +424,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
         </div>
         
         {visibleWidgetIds.has('promotionCard') && activePromotions.length > 0 && (
-            <Card className="shadow-lg md:col-span-2 lg:col-span-4 p-0 overflow-hidden">
+            <Card className="shadow-lg p-0 overflow-hidden">
                 <Carousel plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]} className="w-full" opts={{ loop: true }}>
                 <CarouselContent>
                     {activePromotions.map((promotion: PromotionalContent) => (
@@ -392,23 +432,23 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         <div className={cn("text-primary-foreground bg-gradient-to-r", promotion.gradientFrom, promotion.gradientVia, promotion.gradientTo)}>
                         <div className="flex flex-col md:flex-row items-center p-6 gap-6">
                             <div className="md:w-1/3 flex justify-center">
-                            <Image src={promotion.imageUrl} alt={promotion.imageAlt} width={250} height={160} className="rounded-lg shadow-md object-cover" data-ai-hint={promotion.imageHint || "promotion"}/>
+                              <Image src={promotion.imageUrl} alt={promotion.imageAlt} width={250} height={160} className="rounded-lg shadow-md object-cover" data-ai-hint={promotion.imageHint || "promotion"}/>
                             </div>
                             <div className="md:w-2/3 text-center md:text-left">
-                            <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
-                            <p className="text-sm opacity-90 mb-4">{promotion.description}</p>
-                            <Button variant="secondary" size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" asChild>
-                                <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
-                                {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
+                              <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
+                              <p className="text-sm opacity-90 mb-4">{promotion.description}</p>
+                              <Button variant="secondary" size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" asChild>
+                                  <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
+                                  {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                                  </Link>
+                              </Button>
                             </div>
                         </div>
                         </div>
                     </CarouselItem>
                     ))}
                 </CarouselContent>
-                {activePromotions.length > 1 && (<><CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" /><CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" /></>)}
+                {activePromotions.length > 1 && (<><CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /><CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /></>)}
                 </Carousel>
             </Card>
         )}
@@ -491,22 +531,30 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                     <CardDescription>Top 5 users on the platform.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableBody>
-                            {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
-                                <TableRow key={lbUser.id} className={cn(lbUser.id === user.id && "bg-primary/10")}>
-                                    <TableCell className="text-center font-bold w-10">{getRankIcon(index + 1)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8"><AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/><AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback></Avatar>
-                                            <span className="font-medium text-sm">{lbUser.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-semibold">{lbUser.xpPoints?.toLocaleString() || 0} XP</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    {/* Responsive Leaderboard */}
+                    <div className="sm:hidden space-y-2"> {/* Mobile view: Cards */}
+                        {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
+                          <LeaderboardCard key={lbUser.id} user={lbUser} rank={index + 1} />
+                        ))}
+                    </div>
+                    <div className="hidden sm:block"> {/* Desktop view: Table */}
+                      <Table>
+                          <TableBody>
+                              {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
+                                  <TableRow key={lbUser.id} className={cn(lbUser.id === user.id && "bg-primary/10")}>
+                                      <TableCell className="text-center font-bold w-10">{getRankIcon(index + 1)}</TableCell>
+                                      <TableCell>
+                                          <div className="flex items-center gap-2">
+                                              <Avatar className="h-8 w-8"><AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/><AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback></Avatar>
+                                              <span className="font-medium text-sm">{lbUser.name}</span>
+                                          </div>
+                                      </TableCell>
+                                      <TableCell className="text-right font-semibold">{lbUser.xpPoints?.toLocaleString() || 0} XP</TableCell>
+                                  </TableRow>
+                              ))}
+                          </TableBody>
+                      </Table>
+                    </div>
                 </CardContent>
                 <CardFooter><Button variant="link" asChild className="text-xs p-0"><Link href="/gamification">View Full Leaderboard</Link></Button></CardFooter>
             </Card>
