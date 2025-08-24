@@ -5,27 +5,24 @@ import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
+import { createNotification } from './notifications';
 
 /**
- * Fetches community posts visible to the current user.
- * - Admins (tenantId is null or 'platform') see all posts.
- * - Regular users/managers see posts from their tenant and platform-wide posts.
- * @param tenantId The current user's tenant ID.
+ * Fetches community posts visible to the current user (tenant-specific and platform-wide).
+ * @param tenantId The current user's tenant ID. If null, it implies an admin viewing all posts.
  * @param currentUserId The current user's ID.
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
 export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
   try {
-    // If tenantId is null or 'platform', it's an admin-like view that should see everything.
-    // Otherwise, it's a tenant-scoped view.
-    const whereClause: Prisma.CommunityPostWhereInput = (tenantId && tenantId !== 'platform')
+    const whereClause: Prisma.CommunityPostWhereInput = tenantId
       ? {
           OR: [
             { tenantId: tenantId },
             { tenantId: 'platform' },
           ],
         }
-      : {}; // Empty where clause for admins fetches all posts.
+      : {}; 
 
     const posts = await db.communityPost.findMany({
       where: whereClause,
@@ -127,6 +124,36 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
         ...(commentData.blogPostId && { blogPost: { connect: { id: commentData.blogPostId } } }),
       },
     });
+
+    // Check for @mentions and create notifications
+    if (commentData.comment && commentData.postId) {
+        const mentionRegex = /@([\w\s]+)/g;
+        const mentions = [...commentData.comment.matchAll(mentionRegex)].map(match => match[1].trim());
+
+        if (mentions.length > 0) {
+            const mentionedUsers = await db.user.findMany({
+                where: {
+                    name: {
+                        in: mentions,
+                        mode: 'insensitive',
+                    },
+                },
+            });
+
+            for (const mentionedUser of mentionedUsers) {
+                // Don't notify the user who wrote the comment
+                if (mentionedUser.id !== commentData.userId) {
+                    await createNotification({
+                        userId: mentionedUser.id,
+                        type: 'mention',
+                        content: `${commentData.userName} mentioned you in a comment.`,
+                        link: `/community-feed#comment-${newComment.id}`, // Link to the new comment
+                        isRead: false,
+                    });
+                }
+            }
+        }
+    }
 
     await checkAndAwardBadges(commentData.userId);
 
