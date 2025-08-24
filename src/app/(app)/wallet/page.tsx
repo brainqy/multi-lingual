@@ -25,7 +25,7 @@ export default function WalletPage() {
 
   const totalFlashCoins = useMemo(() => {
     if (!wallet || !wallet.flashCoins) return 0;
-    return wallet.flashCoins.filter(fc => !isPast(parseISO(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0);
+    return wallet.flashCoins.filter(fc => !isPast(new Date(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0);
   }, [wallet]);
 
   const handleRedeemCode = async () => {
@@ -194,7 +194,7 @@ export default function WalletPage() {
                         {wallet.flashCoins.map(fc => (
                             <li key={fc.id} className={cn(
                                 "flex justify-between items-center p-2 rounded-md",
-                                isPast(parseISO(fc.expiresAt)) ? 'bg-secondary/50 opacity-60' : 'bg-secondary'
+                                isPast(new Date(fc.expiresAt)) ? 'bg-secondary/50 opacity-60' : 'bg-secondary'
                             )}>
                                 <div>
                                     <span className="font-medium text-foreground">+ {fc.amount} coins</span>
@@ -202,11 +202,11 @@ export default function WalletPage() {
                                 </div>
                                 <span className={cn(
                                     "text-xs font-semibold",
-                                    isPast(parseISO(fc.expiresAt)) ? 'text-red-500' : 'text-foreground'
+                                    isPast(new Date(fc.expiresAt)) ? 'text-red-500' : 'text-foreground'
                                 )}>
-                                    {isPast(parseISO(fc.expiresAt)) 
+                                    {isPast(new Date(fc.expiresAt)) 
                                         ? 'Expired' 
-                                        : `Expires in ${formatDistanceToNowStrict(parseISO(fc.expiresAt))}`
+                                        : `Expires in ${formatDistanceToNowStrict(new Date(fc.expiresAt))}`
                                     }
                                 </span>
                             </li>
