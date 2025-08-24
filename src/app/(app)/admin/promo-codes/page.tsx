@@ -116,11 +116,12 @@ export default function PromoCodeManagementPage() {
 
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
-    
-    console.log("Submitting form data:", data);
+
+    // Remove the temporary 'isPlatformWide' field before sending to the server action.
+    const { isPlatformWide, ...restOfData } = data;
 
     const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
-      ...data,
+      ...restOfData,
       expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
       tenantId: data.isPlatformWide ? 'platform' : currentUser.tenantId,
     };
@@ -429,3 +430,5 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
+
+    
