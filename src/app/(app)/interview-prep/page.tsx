@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type React from 'react';
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Mic, ListChecks, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession, Appointment } from '@/types';
+import type { PracticeSession, InterviewQuestion, MockInterviewSession, DialogStep, PracticeSessionConfig, InterviewQuestionCategory, LiveInterviewSession, Appointment, PlatformSettings } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import PracticeSetupDialog from '@/components/features/interview-prep/PracticeSetupDialog';
 import QuestionFormDialog from '@/components/features/interview-prep/QuestionFormDialog';
@@ -22,6 +23,8 @@ import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
 import { getUserByEmail } from '@/lib/data-services/users';
+import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import { updateWallet } from '@/lib/actions/wallet';
 
 const logger = {
   log: (message: string, ...args: any[]) => console.log(`[InterviewPrepPage] ${message}`, ...args),
@@ -36,10 +39,11 @@ export default function InterviewPracticeHubPage() {
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null);
 
   const router = useRouter();
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, wallet, refreshWallet } = useAuth();
   
   const fetchQuestions = useCallback(async () => {
     setIsLoadingQuestions(true);
@@ -51,9 +55,10 @@ export default function InterviewPracticeHubPage() {
   useEffect(() => {
     if (currentUser) {
       const loadData = async () => {
-        const [appointments, quizzes] = await Promise.all([
+        const [appointments, quizzes, settings] = await Promise.all([
           getAppointments(currentUser.id),
-          getCreatedQuizzes(currentUser.id)
+          getCreatedQuizzes(currentUser.id),
+          getPlatformSettings()
         ]);
 
         const userPracticeSessions = appointments
@@ -71,6 +76,7 @@ export default function InterviewPracticeHubPage() {
           })) as PracticeSession[];
         setPracticeSessions(userPracticeSessions);
         setCreatedQuizzes(quizzes);
+        setPlatformSettings(settings);
       };
       loadData();
       fetchQuestions();
@@ -83,15 +89,26 @@ export default function InterviewPracticeHubPage() {
 
   const handleSessionBooked = async (newSessionConfig: PracticeSessionConfig) => {
     logger.log('1. handleSessionBooked triggered with config:', newSessionConfig);
-    if (!currentUser) {
-        logger.log('2. No current user. Aborting and showing toast.');
-        toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+    if (!currentUser || !wallet) {
+        logger.log('2. No current user or wallet. Aborting and showing toast.');
+        toast({ title: "Error", description: "You must be logged in and wallet must be available.", variant: "destructive" });
         return;
     }
     logger.log('3. Current user found:', currentUser.id);
 
     if (newSessionConfig.type === "ai") {
         logger.log('4. Session type is "ai". Preparing to create a mock interview session.');
+        
+        const cost = platformSettings?.aiMockInterviewCost ?? 25;
+        if (wallet.coins < cost) {
+          toast({
+            title: "Insufficient Coins",
+            description: `You need ${cost} coins for an AI interview. You have ${wallet.coins}.`,
+            variant: "destructive",
+          });
+          return;
+        }
+
         const newSessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'> = {
             userId: currentUser.id,
             topic: newSessionConfig.aiTopicOrRole || 'AI Practice',
@@ -106,6 +123,9 @@ export default function InterviewPracticeHubPage() {
         const createdSession = await createMockInterviewSession(newSessionData);
         
         if (createdSession) {
+            await updateWallet(currentUser.id, { coins: wallet.coins - cost }, `Fee for AI Mock Interview: ${newSessionConfig.aiTopicOrRole}`);
+            await refreshWallet();
+
             logger.log('6. Session created successfully in DB. ID:', createdSession.id);
             const queryParams = new URLSearchParams();
             queryParams.set('topic', newSessionConfig.aiTopicOrRole || '');
@@ -314,3 +334,4 @@ export default function InterviewPracticeHubPage() {
     </div>
   );
 }
+

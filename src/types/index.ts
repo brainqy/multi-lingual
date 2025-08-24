@@ -911,6 +911,7 @@ export interface PlatformSettings {
   aiResumeWriterEnabled: boolean;
   coverLetterGeneratorEnabled: boolean;
   mockInterviewEnabled: boolean;
+  aiMockInterviewCost: number;
   referralsEnabled: boolean;
   affiliateProgramEnabled: boolean;
   alumniConnectEnabled: boolean;
@@ -1327,3 +1328,4 @@ export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   isCorrect: z.boolean().describe("A boolean indicating if the answer is fundamentally correct."),
 });
 export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
+

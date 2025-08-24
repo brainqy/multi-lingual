@@ -1,4 +1,5 @@
 
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect } from "react";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2, Loader2 } from "lucide-react";
+import { Settings, Server, Users, Briefcase, Zap, Handshake, Gift, Target, MessageSquare, ListChecks, Palette, Columns, HelpCircle, Coins, Settings2, UploadCloud, SunMoon, UserCheck, Clock as ClockIcon, Code2, Loader2, Mic } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PlatformSettings, ProfileVisibility } from "@/types";
 import Link from "next/link";
@@ -36,6 +37,7 @@ const settingsSchema = z.object({
   aiResumeWriterEnabled: z.boolean(),
   coverLetterGeneratorEnabled: z.boolean(),
   mockInterviewEnabled: z.boolean(),
+  aiMockInterviewCost: z.coerce.number().min(0, "platformSettings.validation.aiMockInterviewCostMin"),
   referralsEnabled: z.boolean(),
   affiliateProgramEnabled: z.boolean(),
   alumniConnectEnabled: z.boolean(),
@@ -77,6 +79,7 @@ export default function PlatformSettingsPage() {
     aiResumeWriterEnabled: z.boolean(),
     coverLetterGeneratorEnabled: z.boolean(),
     mockInterviewEnabled: z.boolean(),
+    aiMockInterviewCost: z.coerce.number().min(0, t("platformSettings.validation.aiMockInterviewCostMin")),
     referralsEnabled: z.boolean(),
     affiliateProgramEnabled: z.boolean(),
     alumniConnectEnabled: z.boolean(),
@@ -217,6 +220,7 @@ export default function PlatformSettingsPage() {
             {renderSettingRow("aiResumeWriterEnabled", "platformSettings.career.aiResumeWriterEnabled.label", <Controller name="aiResumeWriterEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
             {renderSettingRow("coverLetterGeneratorEnabled", "platformSettings.career.coverLetterGeneratorEnabled.label", <Controller name="coverLetterGeneratorEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
             {renderSettingRow("mockInterviewEnabled", "platformSettings.career.mockInterviewEnabled.label", <Controller name="mockInterviewEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("aiMockInterviewCost", "platformSettings.career.aiMockInterviewCost.label", <Controller name="aiMockInterviewCost" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, "platformSettings.career.aiMockInterviewCost.description", errors.aiMockInterviewCost?.message)}
           </CardContent>
         </Card>
 
@@ -290,3 +294,4 @@ export default function PlatformSettingsPage() {
     </TooltipProvider>
   );
 }
+
