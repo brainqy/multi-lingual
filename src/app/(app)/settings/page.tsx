@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sampleTenants, samplePlatformSettings } from "@/lib/sample-data";
-import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory, TourStep } from "@/types";
+import { samplePlatformSettings } from "@/lib/sample-data";
+import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory, TourStep, TenantSettings } from "@/types";
 import { ALL_CATEGORIES } from "@/types";
 import {
   AlertDialog,
@@ -28,11 +28,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import WelcomeTourDialog from "@/components/features/WelcomeTourDialog";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
+import { getTenants, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
 
 export default function SettingsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
-  const { user: currentUser, login } = useAuth(); // Use live user data
+  const { user: currentUser, login } = useAuth();
   
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>([]);
@@ -80,15 +81,20 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (currentUser?.role === 'manager' && currentUser.tenantId) {
-      const currentTenant = sampleTenants.find(t => t.id === currentUser.tenantId);
-      if (currentTenant) {
-        setTenantNameInput(currentTenant.name);
-        setTenantLogoUrlInput(currentTenant.settings?.customLogoUrl || "");
-        setCurrentPrimaryColor(currentTenant.settings?.primaryColor || "hsl(180 100% 25%)");
-        setCurrentAccentColor(currentTenant.settings?.accentColor || "hsl(180 100% 30%)");
+    const fetchTenantData = async () => {
+      if (currentUser?.role === 'manager' && currentUser.tenantId) {
+        // In a real app, you might fetch just one tenant, but getTenants is fine for demo
+        const allTenants = await getTenants();
+        const currentTenant = allTenants.find(t => t.id === currentUser.tenantId);
+        if (currentTenant) {
+          setTenantNameInput(currentTenant.name);
+          setTenantLogoUrlInput(currentTenant.settings?.customLogoUrl || "");
+          setCurrentPrimaryColor(currentTenant.settings?.primaryColor || "hsl(180 100% 25%)");
+          setCurrentAccentColor(currentTenant.settings?.accentColor || "hsl(180 100% 30%)");
+        }
       }
-    }
+    };
+    fetchTenantData();
     setWalletEnabled(platformSettings.walletEnabled);
 
     // Check for API Key tour
@@ -124,43 +130,47 @@ export default function SettingsPage() {
 
   const handleSaveSettings = async () => {
     if (!currentUser) return;
-    
-    const updatedUserData = { ...currentUser, challengeTopics, userApiKey };
-    const updatedUser = await updateUser(currentUser.id, updatedUserData);
+
+    let userUpdateSuccess = false;
+    let tenantUpdateSuccess = true; // Default to true if not applicable
+
+    // 1. Update user-specific settings
+    const updatedUser = await updateUser(currentUser.id, {
+        challengeTopics,
+        userApiKey
+    });
 
     if (updatedUser) {
-        // Re-login to update user in context
-        await login(updatedUser.email);
-        
-        console.log("General settings saved:", {
-          isDarkMode, emailNotificationsEnabled, appNotificationsEnabled,
-          gamificationNotificationsEnabled, referralNotificationsEnabled, walletEnabled, challengeTopics, userApiKey
-        });
-
-        if(currentUser.role === 'admin'){
-            Object.assign(samplePlatformSettings, { walletEnabled });
-            toast({ title: t("userSettings.toast.platformSettingsSaved.title"), description: t("userSettings.toast.platformSettingsSaved.description") });
-        }
-
-        if (currentUser.role === 'manager' && currentUser.tenantId) {
-          const tenantIndex = sampleTenants.findIndex(t => t.id === currentUser.tenantId);
-          if (tenantIndex !== -1) {
-            const updatedTenant = { ...sampleTenants[tenantIndex] };
-            updatedTenant.name = tenantNameInput;
-            if (!updatedTenant.settings) updatedTenant.settings = { allowPublicSignup: true };
-            updatedTenant.settings.customLogoUrl = tenantLogoUrlInput;
-            updatedTenant.settings.primaryColor = currentPrimaryColor;
-            updatedTenant.settings.accentColor = currentAccentColor;
-            sampleTenants[tenantIndex] = updatedTenant;
-            toast({ title: t("userSettings.toast.tenantBrandingSaved.title"), description: t("userSettings.toast.tenantBrandingSaved.description", { tenantName: tenantNameInput }) });
-          }
-        } else if (currentUser.role !== 'admin') {
-          toast({ title: t("userSettings.toast.userSettingsSaved.title"), description: t("userSettings.toast.userSettingsSaved.description") });
-        }
+        await login(updatedUser.email); // Re-login to update auth context
+        userUpdateSuccess = true;
     } else {
-        toast({ title: "Save Failed", description: "Could not save settings.", variant: "destructive" });
+        toast({ title: "Save Failed", description: "Could not save your personal settings.", variant: "destructive" });
+    }
+
+    // 2. If user is a manager, update tenant settings
+    if (currentUser.role === 'manager' && currentUser.tenantId) {
+        const tenantSettingsData: Partial<TenantSettings> = {
+            customLogoUrl: tenantLogoUrlInput,
+            primaryColor: currentPrimaryColor,
+            accentColor: currentAccentColor,
+        };
+        const updatedTenant = await updateTenant(currentUser.tenantId, { name: tenantNameInput });
+        const updatedSettings = await updateTenantSettings(currentUser.tenantId, tenantSettingsData);
+        
+        if (updatedTenant && updatedSettings) {
+            tenantUpdateSuccess = true;
+        } else {
+            tenantUpdateSuccess = false;
+            toast({ title: "Save Failed", description: "Could not save tenant branding settings.", variant: "destructive" });
+        }
+    }
+
+    // 3. Show final success message if all parts succeeded
+    if (userUpdateSuccess && tenantUpdateSuccess) {
+        toast({ title: "Settings Saved", description: "Your preferences have been successfully updated." });
     }
   };
+
 
   const handleChangePassword = (event: FormEvent) => {
     event.preventDefault();

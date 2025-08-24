@@ -93,6 +93,25 @@ export async function updateTenant(tenantId: string, updateData: Partial<Pick<Te
     }
 }
 
+/**
+ * Updates the settings for a specific tenant.
+ * @param tenantId The ID of the tenant whose settings are to be updated.
+ * @param settingsData The settings data to update.
+ * @returns The updated TenantSettings object or null if failed.
+ */
+export async function updateTenantSettings(tenantId: string, settingsData: Partial<Omit<TenantSettings, 'id' | 'tenantId'>>): Promise<TenantSettings | null> {
+    try {
+        const updatedSettings = await db.tenantSettings.update({
+            where: { tenantId: tenantId },
+            data: settingsData,
+        });
+        return updatedSettings as unknown as TenantSettings;
+    } catch (error) {
+        console.error(`[TenantAction] Error updating settings for tenant ${tenantId}:`, error);
+        return null;
+    }
+}
+
 
 /**
  * Deletes a tenant and all associated users.
