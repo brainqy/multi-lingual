@@ -224,7 +224,7 @@ export default function AdminBlogSettingsPage() {
         <CardHeader>
           <CardTitle>{t("blogSettingsAdmin.manualGenerationTitle", { default: "Manual Generation" })}</CardTitle>
           <CardDescription>
-            {t("blogSettingsAdmin.lastGeneratedPrefix", { default: "Last generated:" })} {settings.lastGenerated ? formatDistanceToNow(parseISO(settings.lastGenerated), { addSuffix: true }) : t("blogSettingsAdmin.lastGeneratedNever", { default: "Never" })}
+            {t("blogSettingsAdmin.lastGeneratedPrefix", { default: "Last generated:" })} {settings.lastGenerated ? formatDistanceToNow(new Date(settings.lastGenerated), { addSuffix: true }) : t("blogSettingsAdmin.lastGeneratedNever", { default: "Never" })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

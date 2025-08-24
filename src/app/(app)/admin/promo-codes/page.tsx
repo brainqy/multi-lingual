@@ -107,7 +107,7 @@ export default function PromoCodeManagementPage() {
     setEditingCode(code);
     reset({
         ...code,
-        expiresAt: code.expiresAt ? parseISO(code.expiresAt) : undefined,
+        expiresAt: code.expiresAt ? new Date(code.expiresAt) : undefined,
         isPlatformWide: code.tenantId === 'platform',
     });
     setIsDialogOpen(true);
@@ -204,7 +204,7 @@ export default function PromoCodeManagementPage() {
         <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
           <p><strong>{t("promoCodes.rewardLabel")}:</strong> {code.rewardValue} {t(`promoCodes.rewardTypes.${code.rewardType}`)}</p>
           <p><strong>{t("promoCodes.usageLabel")}:</strong> {code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</p>
-          <p><strong>{t("promoCodes.expiresLabel")}:</strong> {code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</p>
+          <p><strong>{t("promoCodes.expiresLabel")}:</strong> {code.expiresAt ? format(new Date(code.expiresAt), 'PP') : t("promoCodes.status.never")}</p>
         </div>
         <div className="flex justify-end gap-2 border-t pt-3">
           <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4 mr-1"/> {t("promoCodes.editButton")}</Button>
@@ -276,7 +276,7 @@ export default function PromoCodeManagementPage() {
                         </span>
                       </TableCell>
                       <TableCell>{code.timesUsed || 0} / {code.usageLimit === 0 ? '∞' : code.usageLimit}</TableCell>
-                      <TableCell>{code.expiresAt ? format(parseISO(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
+                      <TableCell>{code.expiresAt ? format(new Date(code.expiresAt), 'PP') : t("promoCodes.status.never")}</TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="outline" size="sm" onClick={() => openEditDialog(code)}><Edit3 className="h-4 w-4"/></Button>
                         <Button variant="destructive" size="sm" onClick={() => handleDelete(code.id)}><Trash2 className="h-4 w-4"/></Button>

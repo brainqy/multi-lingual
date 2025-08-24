@@ -144,8 +144,8 @@ export default function AnnouncementManagementPage() {
     setEditingAnnouncement(announcement);
     setValue('title', announcement.title);
     setValue('content', announcement.content);
-    setValue('startDate', parseISO(announcement.startDate));
-    if (announcement.endDate) setValue('endDate', parseISO(announcement.endDate));
+    setValue('startDate', new Date(announcement.startDate));
+    if (announcement.endDate) setValue('endDate', new Date(announcement.endDate));
     setValue('audience', announcement.audience);
     setValue('audienceTarget', announcement.audienceTarget || (currentUser.role === 'manager' && announcement.audience === 'Specific Tenant' ? currentUser.tenantId : ''));
     setValue('status', announcement.status);
@@ -330,8 +330,8 @@ export default function AnnouncementManagementPage() {
                       {announcement.audienceTarget && ` ${t("announcementsAdmin.audienceTargetDisplay", { default: "(Target: {target})", target: (announcement.audience === 'Specific Tenant' ? tenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget) })}`}
                       {announcement.audience === 'All Users' && ` ${t("announcementsAdmin.audiencePlatformWide", { default: "(Platform-wide)" })}`}
                     </TableCell>
-                    <TableCell>{format(parseISO(announcement.startDate), "MMM dd, yyyy")}</TableCell>
-                    <TableCell>{announcement.endDate ? format(parseISO(announcement.endDate), "MMM dd, yyyy") : t("announcementsAdmin.endDateOngoing", { default: "Ongoing" })}</TableCell>
+                    <TableCell>{format(new Date(announcement.startDate), "MMM dd, yyyy")}</TableCell>
+                    <TableCell>{announcement.endDate ? format(new Date(announcement.endDate), "MMM dd, yyyy") : t("announcementsAdmin.endDateOngoing", { default: "Ongoing" })}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" onClick={() => openEditAnnouncementDialog(announcement)} disabled={currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users'}>
                         <Edit3 className="h-4 w-4" />
