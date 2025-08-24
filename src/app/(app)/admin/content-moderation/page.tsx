@@ -15,6 +15,7 @@ import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
 import { getCommunityPosts, updateCommunityPost } from "@/lib/actions/community";
+import { Badge } from "@/components/ui/badge";
 
 export default function ContentModerationPage() {
   const { user: currentUser } = useAuth();
@@ -41,7 +42,7 @@ export default function ContentModerationPage() {
   }, [posts]);
 
   const handleApprove = async (postId: string) => {
-    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0 });
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flagReasons: [] });
     if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
         toast({ title: t("contentModeration.toast.postApproved.title", { default: "Post Approved" }), description: t("contentModeration.toast.postApproved.description", { default: "The post is now visible on the community feed." }) });
@@ -96,7 +97,7 @@ export default function ContentModerationPage() {
                   <TableHead>{t("contentModeration.table.author", { default: "Author" })}</TableHead>
                   <TableHead>{t("contentModeration.table.contentSnippet", { default: "Content Snippet" })}</TableHead>
                   <TableHead>{t("contentModeration.table.flagCount", { default: "Flag Count" })}</TableHead>
-                  <TableHead>{t("contentModeration.table.dateFlagged", { default: "Date Flagged" })}</TableHead>
+                  <TableHead>{t("contentModeration.table.reasons", { default: "Reasons" })}</TableHead>
                   <TableHead className="text-right">{t("contentModeration.table.actions", { default: "Actions" })}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -114,7 +115,13 @@ export default function ContentModerationPage() {
                     </TableCell>
                     <TableCell className="max-w-xs truncate">{post.content?.substring(0,100) || "N/A"}...</TableCell>
                     <TableCell className="text-center">{post.flagCount}</TableCell>
-                    <TableCell>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</TableCell>
+                    <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                            {post.flagReasons?.map((reason, index) => (
+                                <Badge key={index} variant="secondary">{reason}</Badge>
+                            ))}
+                        </div>
+                    </TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/community-feed#post-${post.id}`} title={t("contentModeration.viewOnFeedTitle", { default: "View Post on Feed" })}>
