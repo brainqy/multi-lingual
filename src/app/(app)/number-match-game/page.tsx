@@ -5,11 +5,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { sampleUserProfile, sampleWalletBalance } from "@/lib/sample-data";
 import { Coins, Dices, Gift, Repeat, Trophy, Loader2, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Confetti from "react-confetti";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
+import { updateWallet } from "@/lib/actions/wallet";
+import { useI18n } from "@/hooks/use-i18n";
 
 
 const GAME_COST = 100;
@@ -18,6 +20,7 @@ const WINNING_NUMBER = 777;
 const WIN_REWARD = 500;
 
 export default function NumberMatchGamePage() {
+  const { t } = useI18n();
   const [attemptsLeft, setAttemptsLeft] = useState(MAX_ATTEMPTS);
   const [generatedNumber, setGeneratedNumber] = useState<string>("___");
   const [message, setMessage] = useState("Click 'Play' to start the game!");
@@ -25,6 +28,7 @@ export default function NumberMatchGamePage() {
   const [isWinner, setIsWinner] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
+  const { user, wallet, refreshWallet } = useAuth();
   const [isRolling, setIsRolling] = useState(false);
   const [totalConsolationPrize, setTotalConsolationPrize] = useState(0);
   const [lastPrize, setLastPrize] = useState(0);
@@ -35,37 +39,26 @@ export default function NumberMatchGamePage() {
     setIsClient(true);
   }, []);
 
-  const handlePlay = () => {
-    if (isRolling || !isGameActive) {
+  const handlePlay = async () => {
+    if (isRolling || !isGameActive || !user || !wallet) {
       if (!isGameActive) {
         toast({ title: "Game Over", description: "Please reset to play again.", variant: "destructive" });
       }
       return;
     }
     
-    // Check for fee only on the first play of a session
     if (!gameStarted) {
-      if (sampleWalletBalance.coins < GAME_COST) {
+      if (wallet.coins < GAME_COST) {
         toast({ title: "Insufficient Coins", description: `You need ${GAME_COST} coins to play.`, variant: "destructive" });
         return;
       }
-
-      // Deduct cost and add transaction ONCE per game session.
-      sampleWalletBalance.coins -= GAME_COST;
-      sampleWalletBalance.transactions.unshift({
-        id: `txn-gamecost-${Date.now()}`,
-        tenantId: sampleUserProfile.tenantId,
-        userId: sampleUserProfile.id,
-        date: new Date().toISOString(),
-        description: "Number Match Game Fee",
-        amount: -GAME_COST,
-        type: 'debit',
-      });
-      setGameStarted(true); // Mark the game as started, so the fee isn't charged again
+      
+      await updateWallet(user.id, { coins: wallet.coins - GAME_COST }, "Number Match Game Fee");
+      await refreshWallet();
+      setGameStarted(true);
       toast({ title: `-${GAME_COST} Coins`, description: "Good luck!" });
     }
 
-    // Proceed with rolling logic for every attempt
     setIsRolling(true);
     setMessage("Rolling...");
     setShowPrize(false);
@@ -81,7 +74,7 @@ export default function NumberMatchGamePage() {
       }
     }, 50);
 
-    const finishRoll = () => {
+    const finishRoll = async () => {
       const newNumber = Math.floor(100 + Math.random() * 900);
       setGeneratedNumber(String(newNumber));
       const newAttemptsLeft = attemptsLeft - 1;
@@ -92,16 +85,8 @@ export default function NumberMatchGamePage() {
         setMessage(`It's 777! You won ${WIN_REWARD} coins!`);
         setIsWinner(true);
         setIsGameActive(false);
-        sampleWalletBalance.coins += WIN_REWARD;
-        sampleWalletBalance.transactions.unshift({
-            id: `txn-gamewin-${Date.now()}`,
-            tenantId: sampleUserProfile.tenantId,
-            userId: sampleUserProfile.id,
-            date: new Date().toISOString(),
-            description: "Number Match Game Jackpot!",
-            amount: WIN_REWARD,
-            type: 'credit',
-        });
+        await updateWallet(user.id, { coins: (wallet.coins - GAME_COST) + WIN_REWARD }, "Number Match Game Jackpot!");
+        await refreshWallet();
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
         const prize = Math.floor(Math.random() * (GAME_COST * 0.05)); 
@@ -118,16 +103,8 @@ export default function NumberMatchGamePage() {
           setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
           setIsGameActive(false);
           if (updatedTotalConsolation > 0) {
-            sampleWalletBalance.coins += updatedTotalConsolation;
-            sampleWalletBalance.transactions.unshift({
-              id: `txn-gameprize-total-${Date.now()}`,
-              tenantId: sampleUserProfile.tenantId,
-              userId: sampleUserProfile.id,
-              date: new Date().toISOString(),
-              description: "Number Match Game Consolation Prize (Total)",
-              amount: updatedTotalConsolation,
-              type: 'credit',
-            });
+            await updateWallet(user.id, { coins: (wallet.coins - GAME_COST) + updatedTotalConsolation }, "Number Match Game Consolation Prize (Total)");
+            await refreshWallet();
           }
         } else {
           setMessage("Not a match. Better luck next time!");
@@ -145,7 +122,7 @@ export default function NumberMatchGamePage() {
     setIsRolling(false);
     setTotalConsolationPrize(0);
     setShowPrize(false);
-    setGameStarted(false); // Reset the game started flag for the next session
+    setGameStarted(false);
   };
 
   return (
