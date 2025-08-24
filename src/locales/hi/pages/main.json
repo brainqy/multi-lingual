@@ -11,5 +11,52 @@
       "profile": "प्रोफ़ाइल",
       "logout": "लॉग आउट"
     }
+  },
+  "galleryManagement": {
+    "title": "गैलरी प्रबंधन",
+    "tenantLabel": "किरायेदार: {tenantId}",
+    "addNewButton": "नया ईवेंट जोड़ें",
+    "description": "अपने किरायेदार या पूरे प्लेटफ़ॉर्म के लिए फोटो गैलरी ईवेंट बनाएं और प्रबंधित करें।",
+    "currentEventsTitle": "वर्तमान गैलरी ईवेंट",
+    "noEventsText": "कोई गैलरी ईवेंट नहीं मिला",
+    "forYourTenant": "आपके किरायेदार के लिए",
+    "dialog": {
+      "editTitle": "गैलरी ईवेंट संपादित करें",
+      "addTitle": "नया गैलरी ईवेंट जोड़ें",
+      "eventTitleLabel": "ईवेंट का शीर्षक",
+      "eventDateLabel": "ईवेंट की तारीख",
+      "imageUrlsLabel": "छवि URL (अल्पविराम से अलग)",
+      "imageUrlsPlaceholder": "https://example.com/img1.png, https://example.com/img2.png",
+      "descriptionLabel": "विवरण (वैकल्पिक)",
+      "aiHintLabel": "छवियों के लिए AI संकेत (वैकल्पिक)",
+      "aiHintPlaceholder": "उदा., सम्मेलन, नेटवर्किंग ईवेंट",
+      "globalCheckbox": "इसे एक प्लेटफ़ॉर्म-व्यापी ईवेंट बनाएं (सभी किरायेदारों को दिखाई दे)",
+      "saveButton": "बदलाव सहेजें",
+      "addButton": "ईवेंट जोड़ें"
+    },
+    "table": {
+      "preview": "पूर्वावलोकन",
+      "title": "शीर्षक",
+      "date": "तारीख",
+      "scope": "दायरा",
+      "platformGlobal": "प्लेटफ़ॉर्म-व्यापी",
+      "tenantPrefix": "किरायेदार",
+      "noImage": "कोई छवि नहीं",
+      "actions": "कार्रवाइयाँ"
+    },
+    "toast": {
+      "updated": {
+        "title": "ईवेंट अपडेट किया गया",
+        "description": "ईवेंट '{title}' सफलतापूर्वक अपडेट किया गया है।"
+      },
+      "created": {
+        "title": "ईवेंट बनाया गया",
+        "description": "नया ईवेंट '{title}' गैलरी में जोड़ा गया है।"
+      },
+      "deleted": {
+        "title": "ईवेंट हटा दिया गया",
+        "description": "ईवेंट गैलरी से हटा दिया गया है।"
+      }
+    }
   }
 }

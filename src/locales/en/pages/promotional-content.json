@@ -1,0 +1,46 @@
+
+{
+  "promotionalContent": {
+    "title": "Promotional Content Management",
+    "description": "Manage promotional cards that appear on user dashboards. Use this to highlight new features, events, or premium offers.",
+    "createNewButton": "Create New Promotional Content",
+    "currentCardsTitle": "Current Promotional Cards",
+    "table": {
+      "title": "Title",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "dialog": {
+      "editTitle": "Edit Promotional Content",
+      "createTitle": "Create New Promotional Content",
+      "saveButton": "Save Changes"
+    },
+    "form": {
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "imageUrlLabel": "Image URL",
+      "imageAltLabel": "Image Alt Text",
+      "buttonTextLabel": "Button Text",
+      "buttonLinkLabel": "Button Link",
+      "showOnDashboardLabel": "Show on User Dashboards"
+    },
+    "toast": {
+      "updated": {
+        "title": "Content Updated",
+        "description": "The promotional card '{title}' has been updated."
+      },
+      "created": {
+        "title": "Content Created",
+        "description": "The new promotional card '{title}' has been added."
+      },
+      "deleted": {
+        "title": "Content Deleted",
+        "description": "The promotional card has been removed."
+      }
+    }
+  }
+}

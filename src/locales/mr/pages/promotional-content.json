@@ -1,0 +1,46 @@
+
+{
+  "promotionalContent": {
+    "title": "प्रचारात्मक सामग्री व्यवस्थापन",
+    "description": "वापरकर्ता डॅशबोर्डवर दिसणारी प्रचारात्मक कार्डे व्यवस्थापित करा. नवीन वैशिष्ट्ये, कार्यक्रम किंवा प्रीमियम ऑफर हायलाइट करण्यासाठी याचा वापर करा.",
+    "createNewButton": "नवीन प्रचारात्मक सामग्री तयार करा",
+    "currentCardsTitle": "सध्याची प्रचारात्मक कार्डे",
+    "table": {
+      "title": "शीर्षक",
+      "status": "स्थिती",
+      "actions": "क्रिया"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "dialog": {
+      "editTitle": "प्रचारात्मक सामग्री संपादित करा",
+      "createTitle": "नवीन प्रचारात्मक सामग्री तयार करा",
+      "saveButton": "बदल जतन करा"
+    },
+    "form": {
+      "titleLabel": "शीर्षक",
+      "descriptionLabel": "वर्णन",
+      "imageUrlLabel": "प्रतिमा URL",
+      "imageAltLabel": "प्रतिमा Alt मजकूर",
+      "buttonTextLabel": "बटण मजकूर",
+      "buttonLinkLabel": "बटण लिंक",
+      "showOnDashboardLabel": "वापरकर्ता डॅशबोर्डवर दर्शवा"
+    },
+    "toast": {
+      "updated": {
+        "title": "सामग्री अद्यतनित केली",
+        "description": "प्रचारात्मक कार्ड '{title}' अद्यतनित केले आहे."
+      },
+      "created": {
+        "title": "सामग्री तयार केली",
+        "description": "नवीन प्रचारात्मक कार्ड '{title}' जोडले आहे."
+      },
+      "deleted": {
+        "title": "सामग्री हटवली",
+        "description": "प्रचारात्मक कार्ड काढले आहे."
+      }
+    }
+  }
+}

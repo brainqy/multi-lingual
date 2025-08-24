@@ -11,5 +11,52 @@
       "profile": "प्रोफाइल",
       "logout": "लॉग आउट"
     }
+  },
+  "galleryManagement": {
+    "title": "गॅलरी व्यवस्थापन",
+    "tenantLabel": "टेन्ट: {tenantId}",
+    "addNewButton": "नवीन इव्हेंट जोडा",
+    "description": "तुमच्या टेन्टसाठी किंवा संपूर्ण प्लॅटफॉर्मसाठी फोटो गॅलरी इव्हेंट तयार करा आणि व्यवस्थापित करा.",
+    "currentEventsTitle": "सध्याचे गॅलरी इव्हेंट",
+    "noEventsText": "कोणतेही गॅलरी इव्हेंट आढळले नाहीत",
+    "forYourTenant": "तुमच्या टेन्टसाठी",
+    "dialog": {
+      "editTitle": "गॅलरी इव्हेंट संपादित करा",
+      "addTitle": "नवीन गॅलरी इव्हेंट जोडा",
+      "eventTitleLabel": "इव्हेंटचे शीर्षक",
+      "eventDateLabel": "इव्हेंटची तारीख",
+      "imageUrlsLabel": "प्रतिमा URL (स्वल्पविरामाने वेगळे केलेले)",
+      "imageUrlsPlaceholder": "https://example.com/img1.png, https://example.com/img2.png",
+      "descriptionLabel": "वर्णन (पर्यायी)",
+      "aiHintLabel": "प्रतिमांसाठी AI सूचना (पर्यायी)",
+      "aiHintPlaceholder": "उदा., परिषद, नेटवर्किंग कार्यक्रम",
+      "globalCheckbox": "याला प्लॅटफॉर्म-व्यापी कार्यक्रम बनवा (सर्व भाडेकरूंना दिसेल)",
+      "saveButton": "बदल जतन करा",
+      "addButton": "इव्हेंट जोडा"
+    },
+    "table": {
+      "preview": "पूर्वावलोकन",
+      "title": "शीर्षक",
+      "date": "तारीख",
+      "scope": "व्याप्ती",
+      "platformGlobal": "प्लॅटफॉर्म-व्यापी",
+      "tenantPrefix": "टेन्ट",
+      "noImage": "प्रतिमा नाही",
+      "actions": "क्रिया"
+    },
+    "toast": {
+      "updated": {
+        "title": "इव्हेंट अद्यतनित केला",
+        "description": "इव्हेंट '{title}' यशस्वीरित्या अद्यतनित केला आहे."
+      },
+      "created": {
+        "title": "इव्हेंट तयार केला",
+        "description": "नवीन इव्हेंट '{title}' गॅलरीत जोडला आहे."
+      },
+      "deleted": {
+        "title": "इव्हेंट हटवला",
+        "description": "इव्हेंट गॅलरीतून काढला आहे."
+      }
+    }
   }
 }
