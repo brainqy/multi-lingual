@@ -41,17 +41,21 @@ export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
  * @returns The newly created PromoCode object or null.
  */
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
+  console.log('[PromoCodeAction LOG] 1. Starting createPromoCode with data:', codeData);
   try {
+    const dataForDb = {
+      ...codeData,
+      code: codeData.code.toUpperCase(),
+      expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
+    };
+    console.log('[PromoCodeAction LOG] 2. Prepared data for DB:', dataForDb);
     const newCode = await db.promoCode.create({
-      data: {
-        ...codeData,
-        code: codeData.code.toUpperCase(),
-        expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
-      },
+      data: dataForDb,
     });
+    console.log('[PromoCodeAction LOG] 3. DB creation successful:', newCode);
     return newCode as unknown as PromoCode;
   } catch (error) {
-    console.error('[PromoCodeAction] Error creating promo code:', error);
+    console.error('[PromoCodeAction LOG] 4. Error creating promo code:', error);
     return null;
   }
 }
