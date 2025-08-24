@@ -50,6 +50,17 @@ async function main() {
 
   console.log('Seeded platform tenant:', platformTenant1)
 
+    const platformTenant2 = await prisma.tenant.upsert({
+    where: { id: 'guruji' },
+    update: {},
+    create: {
+      id: 'guruji',
+      name: 'Guruji  Platform',
+    },
+  })
+
+  console.log('Seeded platform tenant:', platformTenant2)
+
 
   // Create a default admin user and connect to the platform tenant
   const adminUser = await prisma.user.upsert({
