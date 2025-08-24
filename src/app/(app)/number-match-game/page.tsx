@@ -47,14 +47,16 @@ export default function NumberMatchGamePage() {
       return;
     }
     
+    // Only charge the fee on the very first roll of a new game.
     if (!gameStarted) {
       if (wallet.coins < GAME_COST) {
         toast({ title: "Insufficient Coins", description: `You need ${GAME_COST} coins to play.`, variant: "destructive" });
         return;
       }
       
+      // *** FIX: Deduct cost ONLY ONCE at the start ***
       await updateWallet(user.id, { coins: wallet.coins - GAME_COST }, "Number Match Game Fee");
-      await refreshWallet();
+      await refreshWallet(); // Refresh the wallet state immediately after deduction
       setGameStarted(true);
       toast({ title: `-${GAME_COST} Coins`, description: "Good luck!" });
     }
@@ -75,6 +77,14 @@ export default function NumberMatchGamePage() {
     }, 50);
 
     const finishRoll = async () => {
+      // Get the most up-to-date wallet state before calculating rewards
+      const currentWalletState = await getWallet(user.id);
+      if (!currentWalletState) {
+        toast({ title: "Error", description: "Could not retrieve wallet balance.", variant: "destructive" });
+        setIsRolling(false);
+        return;
+      }
+
       const newNumber = Math.floor(100 + Math.random() * 900);
       setGeneratedNumber(String(newNumber));
       const newAttemptsLeft = attemptsLeft - 1;
@@ -85,7 +95,8 @@ export default function NumberMatchGamePage() {
         setMessage(`It's 777! You won ${WIN_REWARD} coins!`);
         setIsWinner(true);
         setIsGameActive(false);
-        await updateWallet(user.id, { coins: (wallet.coins - GAME_COST) + WIN_REWARD }, "Number Match Game Jackpot!");
+        // *** FIX: Calculate winnings based on the *current* wallet balance ***
+        await updateWallet(user.id, { coins: currentWalletState.coins + WIN_REWARD }, "Number Match Game Jackpot!");
         await refreshWallet();
         toast({ title: "Congratulations!", description: `You won ${WIN_REWARD} coins! They have been added to your wallet.` });
       } else {
@@ -103,7 +114,8 @@ export default function NumberMatchGamePage() {
           setMessage(`Game Over! You won a total of ${updatedTotalConsolation} coins.`);
           setIsGameActive(false);
           if (updatedTotalConsolation > 0) {
-            await updateWallet(user.id, { coins: (wallet.coins - GAME_COST) + updatedTotalConsolation }, "Number Match Game Consolation Prize (Total)");
+            // *** FIX: Calculate final prize based on the *current* wallet balance ***
+            await updateWallet(user.id, { coins: currentWalletState.coins + updatedTotalConsolation }, "Number Match Game Consolation Prize (Total)");
             await refreshWallet();
           }
         } else {

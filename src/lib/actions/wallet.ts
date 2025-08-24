@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -84,7 +85,7 @@ export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 
             await getWallet(userId);
         }
 
-        const oldCoins = currentWallet.coins;
+        const oldCoins = currentWallet!.coins;
         const newCoins = update.coins ?? oldCoins;
         const amountChange = newCoins - oldCoins;
 
@@ -95,11 +96,11 @@ export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 
             },
         });
 
-        if (amountChange !== 0) {
+        if (amountChange !== 0 && description) {
              await db.walletTransaction.create({
                 data: {
-                    walletId: currentWallet.id,
-                    description: description ?? 'Wallet update',
+                    walletId: currentWallet!.id,
+                    description: description,
                     amount: amountChange,
                     type: amountChange > 0 ? 'credit' : 'debit'
                 }
