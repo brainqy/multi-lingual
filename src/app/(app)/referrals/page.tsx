@@ -1,23 +1,39 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Gift, Copy, Share2, Users, CheckCircle, LinkIcon, Clock, AlertCircle, Star, UserPlus, Award, DollarSign, Loader2 } from "lucide-react"; 
 import { useToast } from "@/hooks/use-toast";
-import { sampleReferralHistory } from "@/lib/sample-data"; 
 import type { ReferralHistoryItem, ReferralStatus } from "@/types"; 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; 
 import { format } from "date-fns"; 
 import { useAuth } from "@/hooks/use-auth";
+import { getReferralHistory } from "@/lib/actions/referrals";
 
 export default function ReferralsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
+  const [referralHistory, setReferralHistory] = useState<ReferralHistoryItem[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadHistory() {
+      if (!user) return;
+      setIsDataLoading(true);
+      const history = await getReferralHistory(user.id);
+      setReferralHistory(history);
+      setIsDataLoading(false);
+    }
+    loadHistory();
+  }, [user]);
+  
+  const referralsCount = referralHistory.length;
+  const successfulReferrals = referralHistory.filter(r => r.status === 'Reward Earned' || r.status === 'Signed Up').length;
 
   if (isLoading || !user) {
     return (
@@ -28,10 +44,6 @@ export default function ReferralsPage() {
   }
 
   const referralLink = `https://JobMatch.ai/signup?ref=${user.referralCode || 'DEFAULT123'}`;
-  const referralHistory = sampleReferralHistory.filter(r => r.referrerUserId === user.id); // Filter for current user
-
-  const referralsCount = referralHistory.length;
-  const successfulReferrals = referralHistory.filter(r => r.status === 'Reward Earned' || r.status === 'Signed Up').length;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -159,7 +171,11 @@ export default function ReferralsPage() {
           <CardDescription>{t("referrals.historyCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
-          {referralHistory.length === 0 ? (
+          {isDataLoading ? (
+            <div className="flex justify-center items-center h-24">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : referralHistory.length === 0 ? (
             <p className="text-center text-muted-foreground py-4">{t("referrals.noHistory")}</p>
           ) : (
             <>
