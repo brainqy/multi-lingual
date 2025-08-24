@@ -384,6 +384,19 @@ export interface UserProfile extends AlumniProfile {
   }>;
   sessionId?: string;
   streakFreezes?: number;
+
+  // Notification Preferences
+  emailNotificationsEnabled?: boolean;
+  appNotificationsEnabled?: boolean;
+  gamificationNotificationsEnabled?: boolean;
+  referralNotificationsEnabled?: boolean;
+  
+  // Dashboard Customization
+  dashboardWidgets?: {
+    user?: UserDashboardWidgetId[];
+    manager?: ManagerDashboardWidgetId[];
+    admin?: AdminDashboardWidgetId[];
+  };
 }
 
 export interface ResumeProfile {
@@ -1242,16 +1255,15 @@ export interface PromotionalContent {
 
 export interface PromoCode {
   id: string;
-  tenantId?: string; // Optional for platform-wide codes
+  tenantId?: string;
   code: string;
   description: string;
   rewardType: 'coins' | 'xp' | 'premium_days' | 'flash_coins' | 'streak_freeze';
   rewardValue: number;
   expiresAt?: string;
   usageLimit: number;
-  timesUsed: number;
+  timesUsed?: number;
   isActive: boolean;
-  createdAt: string;
 }
 
 export type UserDashboardWidgetId =
@@ -1263,3 +1275,29 @@ export type UserDashboardWidgetId =
   | 'recentActivities'
   | 'userBadges'
   | 'leaderboard';
+
+export type ManagerDashboardWidgetId =
+  | 'activeUsersStat'
+  | 'resumesAnalyzedStat'
+  | 'communityPostsStat'
+  | 'pendingApprovalsStat'
+  | 'tenantEngagementOverview'
+  | 'tenantManagementActions';
+
+export type AdminDashboardWidgetId =
+  | 'promotionalSpotlight'
+  | 'totalUsersStat'
+  | 'totalTenantsStat'
+  | 'resumesAnalyzedStat'
+  | 'communityPostsStat'
+  | 'platformActivityStat'
+  | 'jobApplicationsStat'
+  | 'alumniConnectionsStat'
+  | 'mockInterviewsStat'
+  | 'timeSpentStats'
+  | 'tenantActivityOverview'
+  | 'registrationTrendsChart'
+  | 'aiUsageBreakdownChart'
+  | 'contentModerationQueueSummary'
+  | 'systemAlerts'
+  | 'adminQuickActions';
