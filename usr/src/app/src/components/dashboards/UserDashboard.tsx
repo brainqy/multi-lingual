@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -609,7 +608,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
           <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><HistoryIcon className="h-5 w-5 text-primary" />{t("userDashboard.recentActivities.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.recentActivities.description")}</CardHeader>
+                <CardDescription>{t("userDashboard.recentActivities.description")}</CardDescription>
+              </CardHeader>
               <CardContent>
                 {recentUserActivities.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.recentActivities.noActivities")}</p>
