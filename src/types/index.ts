@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -238,6 +237,8 @@ export interface CommunityPost {
   bookmarkedBy?: string[];
   votedBy?: string[];
   registeredBy?: string[];
+  likes?: number;
+  likedBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -1330,3 +1331,5 @@ export interface Notification {
     createdAt: string;
 }
 
+// Schemas for evaluateDailyChallengeAnswer flow are removed from here to avoid redeclaration.
+// They are correctly placed in the `types/index.ts` file.
