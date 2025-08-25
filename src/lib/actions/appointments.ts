@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Appointment } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -10,6 +11,7 @@ import type { Appointment } from '@/types';
  * @returns A promise that resolves to an array of Appointment objects.
  */
 export async function getAppointments(userId: string): Promise<Appointment[]> {
+  logAction('Fetching appointments', { userId });
   try {
     const appointments = await db.appointment.findMany({
       where: {
@@ -24,7 +26,7 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
     });
     return appointments as unknown as Appointment[];
   } catch (error) {
-    console.error(`[AppointmentAction] Error fetching appointments for user ${userId}:`, error);
+    logError(`[AppointmentAction] Error fetching appointments for user ${userId}`, error, { userId });
     return [];
   }
 }
@@ -35,16 +37,17 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
  * @returns The newly created Appointment object or null if failed.
  */
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
+  logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
   try {
     const newAppointment = await db.appointment.create({
       data: {
         ...appointmentData,
-        dateTime: new Date(appointmentData.dateTime), // Ensure it's a Date object
+        dateTime: new Date(appointmentData.dateTime),
       },
     });
     return newAppointment as unknown as Appointment;
   } catch (error) {
-    console.error('[AppointmentAction] Error creating appointment:', error);
+    logError('[AppointmentAction] Error creating appointment', error, { requester: appointmentData.requesterUserId });
     return null;
   }
 }
@@ -57,6 +60,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
  * @returns The updated Appointment object or null if failed.
  */
 export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>): Promise<Appointment | null> {
+  logAction('Updating appointment', { appointmentId, status: updateData.status });
   try {
     const updatedAppointment = await db.appointment.update({
       where: { id: appointmentId },
@@ -67,7 +71,7 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
     });
     return updatedAppointment as unknown as Appointment;
   } catch (error) {
-    console.error(`[AppointmentAction] Error updating appointment ${appointmentId}:`, error);
+    logError(`[AppointmentAction] Error updating appointment ${appointmentId}`, error, { appointmentId });
     return null;
   }
 }

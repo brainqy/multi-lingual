@@ -19,6 +19,7 @@ import type {
   ChallengeAction,
 } from '@/types';
 import { Prisma } from '@prisma/client';
+import { logAction, logError } from '@/lib/logger';
 
 async function calculateChallengeProgress(userId: string, challenges: DailyChallenge[]): Promise<UserProfile['challengeProgress']> {
   const user = await db.user.findUnique({
@@ -66,7 +67,6 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
            case 'book_appointment':
             currentCount = user._count.appointmentsAsRequester;
             break;
-          // Add other cases here as needed
         }
         progress[task.action] = {
           action: task.action,
@@ -81,14 +81,12 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
 
 
 export async function getDashboardData(tenantId?: string | null, userId?: string | null, userRole?: 'admin' | 'manager' | 'user') {
-  console.log(`[DashboardAction] Fetching data from database for tenant: ${tenantId}, user: ${userId}`);
+  logAction('Fetching dashboard data', { tenantId, userId, userRole });
   
   const isTenantScoped = userRole === 'manager' || userRole === 'user';
   
-  // Define a base where clause for tenant-specific data
   const tenantWhereClause = isTenantScoped && tenantId ? { tenantId } : {};
 
-  // Define a where clause for content that can be platform-wide (like community posts)
   const platformContentWhereClause = isTenantScoped && tenantId 
     ? { OR: [{ tenantId }, { tenantId: 'platform' }] }
     : {};
@@ -102,14 +100,12 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const appointments = (await db.appointment.findMany({ where: tenantWhereClause })) as unknown as Appointment[];
     const activities = (await db.activity.findMany({ where: tenantWhereClause, orderBy: { timestamp: 'desc' }, take: 50 })) as unknown as Activity[];
     
-    // Global data (not tenant-specific)
     const badges = (await db.badge.findMany()) as unknown as Badge[];
     const promotions = (await db.promotionalContent.findMany()) as unknown as PromotionalContent[];
     const mockInterviews = (await db.mockInterviewSession.findMany({ where: isTenantScoped && userId ? { userId } : {}, include: { answers: true } })) as unknown as MockInterviewSession[];
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
 
-    // Dynamically calculate challenge progress for each user
     const usersWithProgress = await Promise.all(
       usersData.map(async (user) => {
         const progress = await calculateChallengeProgress(user.id, challenges);
@@ -133,8 +129,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       challenges,
     };
   } catch (error) {
-    console.error('[DashboardAction] Error fetching data from database:', error);
-    // Return empty arrays on error to prevent crashing the dashboard
+    logError('[DashboardAction] Error fetching data from database', error, { tenantId, userId });
     return {
       users: [],
       tenants: [],

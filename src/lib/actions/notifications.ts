@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Notification } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches notifications for a specific user.
@@ -10,15 +11,16 @@ import type { Notification } from '@/types';
  * @returns A promise that resolves to an array of Notification objects.
  */
 export async function getNotifications(userId: string): Promise<Notification[]> {
+  logAction('Fetching notifications', { userId });
   try {
     const notifications = await db.notification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      take: 20, // Limit to the 20 most recent notifications
+      take: 20,
     });
     return notifications as unknown as Notification[];
   } catch (error) {
-    console.error(`[NotificationAction] Error fetching notifications for user ${userId}:`, error);
+    logError(`[NotificationAction] Error fetching notifications for user ${userId}`, error, { userId });
     return [];
   }
 }
@@ -29,13 +31,14 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
  * @returns The newly created Notification object or null.
  */
 export async function createNotification(notificationData: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification | null> {
+  logAction('Creating notification', { userId: notificationData.userId, type: notificationData.type });
   try {
     const newNotification = await db.notification.create({
       data: notificationData,
     });
     return newNotification as unknown as Notification;
   } catch (error) {
-    console.error('[NotificationAction] Error creating notification:', error);
+    logError('[NotificationAction] Error creating notification', error, { userId: notificationData.userId });
     return null;
   }
 }
@@ -46,6 +49,7 @@ export async function createNotification(notificationData: Omit<Notification, 'i
  * @returns A boolean indicating success.
  */
 export async function markNotificationsAsRead(userId: string): Promise<boolean> {
+  logAction('Marking notifications as read', { userId });
   try {
     await db.notification.updateMany({
       where: {
@@ -58,7 +62,7 @@ export async function markNotificationsAsRead(userId: string): Promise<boolean> 
     });
     return true;
   } catch (error) {
-    console.error(`[NotificationAction] Error marking notifications as read for user ${userId}:`, error);
+    logError(`[NotificationAction] Error marking notifications as read for user ${userId}`, error, { userId });
     return false;
   }
 }

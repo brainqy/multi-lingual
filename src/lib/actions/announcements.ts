@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Announcement, UserProfile } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches announcements visible to the current user.
@@ -11,6 +12,7 @@ import type { Announcement, UserProfile } from '@/types';
  * @returns A promise that resolves to an array of Announcement objects.
  */
 export async function getVisibleAnnouncements(currentUser: UserProfile): Promise<Announcement[]> {
+  logAction('Fetching visible announcements', { userId: currentUser.id, tenantId: currentUser.tenantId });
   try {
     if (!currentUser) {
       return [];
@@ -47,7 +49,7 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
     });
     return announcements as unknown as Announcement[];
   } catch (error) {
-    console.error('[AnnouncementAction] Error fetching visible announcements:', error);
+    logError('[AnnouncementAction] Error fetching visible announcements', error, { userId: currentUser.id });
     return [];
   }
 }
@@ -58,10 +60,10 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
  * @returns A promise that resolves to an array of all Announcement objects for the scope.
  */
 export async function getAllAnnouncements(tenantId?: string): Promise<Announcement[]> {
+  logAction('Fetching all announcements', { tenantId });
   try {
     const whereClause: any = {};
     if (tenantId) {
-        // Managers can see their tenant's announcements and platform-wide ones
         whereClause.OR = [
             { tenantId: tenantId },
             { audience: 'All Users' } 
@@ -76,7 +78,7 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
     });
     return announcements as unknown as Announcement[];
   } catch (error) {
-    console.error('[AnnouncementAction] Error fetching all announcements:', error);
+    logError('[AnnouncementAction] Error fetching all announcements', error, { tenantId });
     return [];
   }
 }
@@ -88,13 +90,14 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @returns The newly created Announcement object or null if failed.
  */
 export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy });
   try {
     const newAnnouncement = await db.announcement.create({
       data: announcementData,
     });
     return newAnnouncement as unknown as Announcement;
   } catch (error) {
-    console.error('[AnnouncementAction] Error creating announcement:', error);
+    logError('[AnnouncementAction] Error creating announcement', error, { title: announcementData.title });
     return null;
   }
 }
@@ -106,6 +109,7 @@ export async function createAnnouncement(announcementData: Omit<Announcement, 'i
  * @returns The updated Announcement object or null if failed.
  */
 export async function updateAnnouncement(announcementId: string, updateData: Partial<Omit<Announcement, 'id'>>): Promise<Announcement | null> {
+  logAction('Updating announcement', { announcementId });
   try {
     const updatedAnnouncement = await db.announcement.update({
       where: { id: announcementId },
@@ -113,7 +117,7 @@ export async function updateAnnouncement(announcementId: string, updateData: Par
     });
     return updatedAnnouncement as unknown as Announcement;
   } catch (error) {
-    console.error(`[AnnouncementAction] Error updating announcement ${announcementId}:`, error);
+    logError(`[AnnouncementAction] Error updating announcement ${announcementId}`, error, { announcementId });
     return null;
   }
 }
@@ -124,13 +128,14 @@ export async function updateAnnouncement(announcementId: string, updateData: Par
  * @returns A boolean indicating success.
  */
 export async function deleteAnnouncement(announcementId: string): Promise<boolean> {
+  logAction('Deleting announcement', { announcementId });
   try {
     await db.announcement.delete({
       where: { id: announcementId },
     });
     return true;
   } catch (error) {
-    console.error(`[AnnouncementAction] Error deleting announcement ${announcementId}:`, error);
+    logError(`[AnnouncementAction] Error deleting announcement ${announcementId}`, error, { announcementId });
     return false;
   }
 }

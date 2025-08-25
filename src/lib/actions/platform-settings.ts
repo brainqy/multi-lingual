@@ -1,9 +1,9 @@
 
-
 'use server';
 
 import { db } from '@/lib/db';
 import type { PlatformSettings } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches the platform settings from the database.
@@ -11,11 +11,12 @@ import type { PlatformSettings } from '@/types';
  * @returns A promise that resolves to the PlatformSettings object.
  */
 export async function getPlatformSettings(): Promise<PlatformSettings> {
+  logAction('Fetching platform settings');
   try {
     let settings = await db.platformSettings.findFirst();
 
     if (!settings) {
-      console.log('[PlatformSettings] No settings found, creating default settings.');
+      logAction('[PlatformSettings] No settings found, creating default settings.');
       settings = await db.platformSettings.create({
         data: {
           platformName: "JobMatch AI",
@@ -54,7 +55,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     }
     return settings as unknown as PlatformSettings;
   } catch (error) {
-    console.error('[PlatformSettingsAction] Error fetching settings:', error);
+    logError('[PlatformSettingsAction] Error fetching settings', error);
     // Return a safe default object in case of a catastrophic error
     return {
         id: 'error-default',
@@ -99,6 +100,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
  * @returns The updated PlatformSettings object or null if failed.
  */
 export async function updatePlatformSettings(settingsData: Partial<Omit<PlatformSettings, 'id'>>): Promise<PlatformSettings | null> {
+  logAction('Updating platform settings');
   try {
     const currentSettings = await getPlatformSettings();
     const updatedSettings = await db.platformSettings.update({
@@ -107,8 +109,7 @@ export async function updatePlatformSettings(settingsData: Partial<Omit<Platform
     });
     return updatedSettings as unknown as PlatformSettings;
   } catch (error) {
-    console.error('[PlatformSettingsAction] Error updating settings:', error);
+    logError('[PlatformSettingsAction] Error updating settings', error, { settingsData });
     return null;
   }
 }
-
