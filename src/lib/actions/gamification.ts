@@ -14,6 +14,7 @@ import { getChallenges } from './challenges';
  * @returns The user profile, potentially updated with new XP.
  */
 export async function checkChallengeProgressAndAwardXP(userId: string): Promise<UserProfile | null> {
+    console.log(`[XP LOG] 1. Starting checkChallengeProgressAndAwardXP for user: ${userId}`);
     const user = await db.user.findUnique({
         where: { id: userId },
         include: {
@@ -30,22 +31,39 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
         },
     });
 
-    if (!user) return null;
+    if (!user) {
+        console.log(`[XP LOG] 2. User with ID ${userId} not found. Aborting.`);
+        return null;
+    }
+    console.log(`[XP LOG] 2. Found user: ${user.email}. Current XP: ${user.xpPoints}`);
 
     const challenges = await getChallenges();
     const flipChallenges = challenges.filter(c => c.type === 'flip');
-    if (flipChallenges.length === 0) return user as unknown as UserProfile;
+    if (flipChallenges.length === 0) {
+        console.log(`[XP LOG] 3. No flip challenges found in the database. Nothing to check. Returning user.`);
+        return user as unknown as UserProfile;
+    }
+    console.log(`[XP LOG] 3. Found ${flipChallenges.length} flip challenges to check against.`);
 
     let totalXpGained = 0;
     const completedChallengeIds = new Set(user.completedChallengeIds || []);
     let newChallengesCompleted = false;
 
+    console.log(`[XP LOG] 4. User has already completed ${completedChallengeIds.size} challenges:`, Array.from(completedChallengeIds));
+
     for (const challenge of flipChallenges) {
-        if (!challenge.tasks || completedChallengeIds.has(challenge.id)) {
-            continue; // Skip if no tasks or already completed
+        console.log(`[XP LOG] 5. Checking challenge: "${challenge.title}" (ID: ${challenge.id})`);
+        if (!challenge.tasks) {
+            console.log(`[XP LOG] 5a. Skipping challenge "${challenge.title}" because it has no tasks defined.`);
+            continue;
+        }
+        if (completedChallengeIds.has(challenge.id)) {
+            console.log(`[XP LOG] 5b. Skipping challenge "${challenge.title}" because user has already completed it.`);
+            continue;
         }
 
         let allTasksCompleted = true;
+        console.log(`[XP LOG] 6. Evaluating tasks for "${challenge.title}":`);
         for (const task of challenge.tasks) {
             let currentCount = 0;
             switch (task.action) {
@@ -68,35 +86,47 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
                     currentCount = user._count.appointmentsAsRequester;
                     break;
             }
+            console.log(`[XP LOG] 7.   - Task "${task.description}": User progress is ${currentCount} / ${task.target}.`);
 
             if (currentCount < task.target) {
                 allTasksCompleted = false;
+                console.log(`[XP LOG] 8. Task "${task.description}" is INCOMPLETE. Breaking check for this challenge.`);
                 break; // Exit early if one task is not complete
             }
+            console.log(`[XP LOG] 8a. Task "${task.description}" is COMPLETE.`);
         }
 
         if (allTasksCompleted) {
+            console.log(`[XP LOG] 9. All tasks for challenge "${challenge.title}" are complete!`);
             if (challenge.xpReward) {
                 totalXpGained += challenge.xpReward;
                 completedChallengeIds.add(challenge.id);
                 newChallengesCompleted = true;
+                console.log(`[XP LOG] 10. Awarding ${challenge.xpReward} XP. Total XP to be added: ${totalXpGained}.`);
                 await createActivity({
                     userId: user.id,
                     tenantId: user.tenantId,
                     description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
                 });
+            } else {
+                 console.log(`[XP LOG] 10a. Challenge has no xpReward defined. No points to add.`);
             }
+        } else {
+             console.log(`[XP LOG] 9a. Not all tasks were complete for "${challenge.title}". No XP awarded for this challenge.`);
         }
     }
 
     if (totalXpGained > 0 && newChallengesCompleted) {
+        console.log(`[XP LOG] 11. Total XP to add is ${totalXpGained}. Updating user in database...`);
         const updatedUser = await updateUser(userId, { 
             xpPoints: (user.xpPoints || 0) + totalXpGained,
             completedChallengeIds: Array.from(completedChallengeIds),
         });
+        console.log(`[XP LOG] 12. User update successful. New XP: ${updatedUser?.xpPoints}.`);
         return updatedUser;
     }
 
+    console.log(`[XP LOG] 13. No new challenges were completed in this check. Returning original user object.`);
     return user as unknown as UserProfile;
 }
 
@@ -112,6 +142,7 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
     const userWithTaskXP = await checkChallengeProgressAndAwardXP(userId);
     if (!userWithTaskXP) return [];
     
+    // It's crucial to refetch the user state after potential XP updates from challenges
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
@@ -320,3 +351,5 @@ export async function deleteGamificationRule(actionId: string): Promise<boolean>
     return false;
   }
 }
+
+    
