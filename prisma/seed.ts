@@ -137,6 +137,7 @@ async function main() {
       tags: ['welcome', 'community'],
       moderationStatus: 'visible',
       flagCount: 0,
+      likes: 6,
       timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
     }
   });
@@ -158,6 +159,7 @@ async function main() {
       tags: ['feedback', 'content'],
       moderationStatus: 'visible',
       flagCount: 0,
+       likes: 9,
       timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
     }
   });
@@ -178,6 +180,7 @@ async function main() {
       tags: ['event', 'networking'],
       moderationStatus: 'visible',
       flagCount: 0,
+       likes: 0,
       timestamp: new Date(),
     },
   });
@@ -340,6 +343,7 @@ async function main() {
         password: 'password123',
         role: 'user',
         tenantId: platformTenant.id,
+        status: 'active',
       },
     });
   }

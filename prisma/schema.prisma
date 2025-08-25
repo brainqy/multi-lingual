@@ -242,6 +242,8 @@ model CommunityPost {
   bookmarkedBy      String[]
   votedBy           String[]
   registeredBy      String[]
+  likes             Int
+  likedBy           String[]
 }
 
 model CommunityComment {
