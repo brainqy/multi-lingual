@@ -300,6 +300,7 @@ async function main() {
   });
   console.log('Seeded gamification rules.');
 
+  
   // Seed Notifications
   await prisma.notification.createMany({
     data: [
@@ -328,6 +329,37 @@ async function main() {
     skipDuplicates: true,
   });
   console.log('Seeded notifications.');
+
+  console.log(`Seeding finished.`)
+
+  // Seed 5 sample users for the platform tenant
+  for (let i = 1; i <= 5; i++) {
+    await prisma.user.create({
+      data: {
+        id: `sample-user-${i}`,
+        name: `Sample User ${i}`,
+        email: `sample${i}@example.com`,
+        password: 'password123',
+        role: 'user',
+        tenantId: platformTenant.id,
+        status: 'active',
+      },
+    });
+  }
+
+  // Seed 5 successful referrals for admin user
+  for (let i = 1; i <= 5; i++) {
+    await prisma.referralHistory.create({
+      data: {
+        referrerUserId: adminUser.id,
+        referredUser: { connect: { id: "sample-user-1" } },
+        status: 'Signed Up', 
+        referredEmailOrName:'admin@bhashasetu.com',
+        referralDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * i),
+      },
+    });
+  }
+  console.log('Seeded 5 successful referrals for admin user.');
 
   console.log(`Seeding finished.`)
 }

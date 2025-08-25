@@ -523,6 +523,7 @@ export interface ReferralHistoryItem {
     referralDate: string;
     status: ReferralStatus;
     rewardAmount?: number;
+    referredUserId?: string; // Optional, for frontend use
 }
 
 export interface GamificationRule {
