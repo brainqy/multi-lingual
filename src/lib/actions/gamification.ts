@@ -2,24 +2,108 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Badge, GamificationRule, UserProfile } from '@/types';
+import type { Badge, DailyChallenge, GamificationRule, UserProfile } from '@/types';
 import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from './activities';
+import { getChallenges } from './challenges';
+
+/**
+ * Checks a user's activity against active Flip Challenge tasks and awards XP if a task is completed.
+ * @param userId The ID of the user to check.
+ * @returns The user profile, potentially updated with new XP.
+ */
+export async function checkChallengeProgressAndAwardXP(userId: string): Promise<UserProfile | null> {
+    const user = await db.user.findUnique({
+        where: { id: userId },
+        include: {
+            _count: {
+                select: {
+                    resumeScanHistories: true,
+                    jobApplications: true,
+                    communityPosts: true,
+                    communityComments: true,
+                    appointmentsAsRequester: true,
+                },
+            },
+            referralHistory: true,
+        },
+    });
+
+    if (!user) return null;
+
+    const challenges = await getChallenges();
+    const flipChallenges = challenges.filter(c => c.type === 'flip');
+    if (flipChallenges.length === 0) return user;
+
+    let totalXpGained = 0;
+
+    for (const challenge of flipChallenges) {
+        if (!challenge.tasks) continue;
+
+        for (const task of challenge.tasks) {
+            let currentCount = 0;
+            switch (task.action) {
+                case 'analyze_resume':
+                    currentCount = user._count.resumeScanHistories;
+                    break;
+                case 'add_job_application':
+                    currentCount = user._count.jobApplications;
+                    break;
+                case 'community_post':
+                    currentCount = user._count.communityPosts;
+                    break;
+                case 'community_comment':
+                    currentCount = user._count.communityComments;
+                    break;
+                case 'refer':
+                    currentCount = user.referralHistory.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
+                    break;
+                case 'book_appointment':
+                    currentCount = user._count.appointmentsAsRequester;
+                    break;
+            }
+
+            // This logic is simplistic. A real app would need to track which tasks have already been rewarded
+            // to prevent awarding XP multiple times for the same task completion (e.g., on the 4th, 5th scan etc.)
+            // For this demo, we assume if the count equals the target, they just hit it.
+            if (currentCount === task.target) {
+                if (challenge.xpReward) {
+                    totalXpGained += challenge.xpReward;
+                    await createActivity({
+                        userId: user.id,
+                        tenantId: user.tenantId,
+                        description: `Task complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
+                    });
+                }
+            }
+        }
+    }
+
+    if (totalXpGained > 0) {
+        const updatedUser = await updateUser(userId, { xpPoints: (user.xpPoints || 0) + totalXpGained });
+        return updatedUser;
+    }
+
+    return user as unknown as UserProfile;
+}
+
 
 /**
  * Checks a user's profile against all available badges and awards any new ones they have earned.
- * This function uses a scalable approach to parse trigger conditions.
  * @param userId The ID of the user to check.
  * @returns A promise that resolves to an array of newly awarded badges.
  */
 export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
   try {
+    // First, check for any task completions and award XP
+    const userWithTaskXP = await checkChallengeProgressAndAwardXP(userId);
+    if (!userWithTaskXP) return [];
+    
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
-        // Include related data needed for checks
         _count: {
-          select: { resumeScans: true },
+          select: { resumeScanHistories: true },
         },
       },
     });
@@ -35,31 +119,24 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
       if (!earnedBadgeIds.has(badge.id) && badge.triggerCondition) {
         let criteriaMet = false;
         
-        // Scalable condition engine
         const [conditionKey, requiredValueStr] = badge.triggerCondition.split('_');
         const requiredValue = parseInt(requiredValueStr, 10);
 
         if (!isNaN(requiredValue)) {
             switch (conditionKey) {
-                case 'daily': // Handles daily_streak_3, daily_streak_7 etc.
+                case 'daily':
                     if ((user.dailyStreak || 0) >= requiredValue) {
                         criteriaMet = true;
                     }
                     break;
-                case 'resume': // Handles resume_scans_5, resume_scans_10 etc.
-                    if ((user._count.resumeScans || 0) >= requiredValue) {
+                case 'resume':
+                    if ((user._count.resumeScanHistories || 0) >= requiredValue) {
                         criteriaMet = true;
                     }
                     break;
-                // Add more cases here for connections, posts, etc.
-                // e.g., case 'connections': if(user.connections.length >= requiredValue) criteriaMet = true; break;
             }
         } else if (badge.triggerCondition === 'profile_completion_100') {
-            // Handle non-numeric conditions separately
-            // In a real app, profile completion would be calculated and stored or passed in.
-            // For now, we'll assume a mock value. A full implementation would require a function.
-            // const profileCompletion = calculateProfileCompletion(user); 
-            // if (profileCompletion >= 100) criteriaMet = true;
+            // Mocking profile completion for now
         }
 
         if (criteriaMet) {
@@ -76,9 +153,11 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
 
     if (newlyAwardedBadges.length > 0) {
       const totalXpReward = newlyAwardedBadges.reduce((sum, badge) => sum + (badge.xpReward || 0), 0);
+      const totalStreakFreezeReward = newlyAwardedBadges.reduce((sum, badge) => sum + (badge.streakFreezeReward || 0), 0);
       await updateUser(userId, { 
         earnedBadges: Array.from(earnedBadgeIds),
-        xpPoints: (user.xpPoints || 0) + totalXpReward
+        xpPoints: (user.xpPoints || 0) + totalXpReward,
+        streakFreezes: (user.streakFreezes || 0) + totalStreakFreezeReward,
       });
     }
 
