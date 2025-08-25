@@ -119,6 +119,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
                   onChange={(e) => onReplyTextChange(e.target.value)}
                   rows={1}
                   className="flex-1 min-h-[40px] text-sm"
+                  autoFocus
               />
               <Button size="sm" onClick={() => onCommentSubmit(comment.postId!, replyText, comment.id)} disabled={!replyText.trim()}>
                   <Send className="h-4 w-4" />
@@ -868,3 +869,5 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+
+    
