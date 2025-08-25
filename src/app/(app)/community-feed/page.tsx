@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2, Star as StarIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -81,7 +82,7 @@ const renderWithMentions = (text: string | null | undefined) => {
 const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, replyingToCommentId, replyText, onReplyTextChange, currentUser }: {
   comment: CommunityComment;
   allComments: CommunityComment[];
-  onReply: (commentId: string | null, userName: string) => void;
+  onReply: (commentId: string, userName: string) => void;
   onCommentSubmit: (postId: string, text: string, parentId: string) => void;
   level: number;
   replyingToCommentId: string | null;
@@ -127,7 +128,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
         {replies.map(reply => (
             <CommentThread 
                 key={reply.id} 
-                comment={comment} 
+                comment={reply} 
                 allComments={allComments} 
                 onReply={onReply} 
                 onCommentSubmit={onCommentSubmit} 
@@ -270,13 +271,9 @@ export default function CommunityFeedPage() {
     setEditingPost(null);
   };
 
-  const handleReply = (commentId: string | null, userName: string) => {
+  const handleReply = (commentId: string, userName: string) => {
     setReplyingToCommentId(commentId);
-    if (commentId) {
-      setReplyText(`@${userName} `);
-    } else {
-      setReplyText('');
-    }
+    setReplyText(`@${userName} `);
   };
 
   const handleCommentSubmit = async (postId: string, text: string, parentId?: string) => {
@@ -758,7 +755,7 @@ export default function CommunityFeedPage() {
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus
-                              setReplyingToCommentId(prev => prev === `post-${post.id}` ? null : `post-${post.id}`);
+                              setReplyingToCommentId(`post-${post.id}`);
                             }}>
                             <MessageIcon className="mr-1 h-3.5 w-3.5" /> Comment ({post.comments?.length || 0})
                             </Button>
