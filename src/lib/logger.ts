@@ -53,7 +53,7 @@ function writeLog(level: keyof typeof levels, message: string, meta?: Record<str
 /**
  * Logs a standard user or system action.
  * @param message A description of the action.
- * @param meta Additional data like userId, tenantId, etc.
+ * @param meta Additional data like userId, tenantId, sessionId, etc.
  */
 export function logAction(message: string, meta?: Record<string, any>) {
   writeLog('info', message, meta);

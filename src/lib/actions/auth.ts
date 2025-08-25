@@ -39,7 +39,7 @@ export async function loginUser(email: string, password?: string, tenantId?: str
       if (isPasswordMatch) {
         const sessionId = `session-${Date.now()}`;
         const updatedUser = await updateUser(user.id, { sessionId, lastLogin: new Date().toISOString() });
-        logAction('User login successful', { userId: user.id, email: user.email, tenantId: user.tenantId });
+        logAction('User login successful', { userId: user.id, email: user.email, tenantId: user.tenantId, sessionId });
         return updatedUser;
       }
     }
@@ -72,7 +72,7 @@ export async function signupUser(userData: { name: string; email: string; role: 
     const newUser = await createUser(userData);
 
     if (newUser) {
-      logAction('New user signup successful', { userId: newUser.id, email: newUser.email, tenantId: newUser.tenantId });
+      logAction('New user signup successful', { userId: newUser.id, email: newUser.email, tenantId: newUser.tenantId, sessionId: newUser.sessionId });
       return { success: true, user: newUser };
     }
 
@@ -94,8 +94,10 @@ export async function validateSession(email: string, sessionId: string): Promise
   try {
     const user = await getUserByEmail(email);
     if (user && user.sessionId === sessionId) {
+      logAction('Session validated successfully', { userId: user.id, email, sessionId });
       return user;
     }
+    logAction('Session validation failed', { email, reason: user ? 'Session ID mismatch' : 'User not found' });
     return null;
   } catch (error) {
     logError('Exception during validateSession', error, { email });
