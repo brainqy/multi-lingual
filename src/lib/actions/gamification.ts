@@ -318,5 +318,3 @@ export async function deleteGamificationRule(actionId: string): Promise<boolean>
     return false;
   }
 }
-
-    
