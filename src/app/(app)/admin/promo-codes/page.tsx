@@ -1,11 +1,11 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy, Loader2 } from "lucide-react";
+import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy, Loader2, Coins, Star, Zap, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PromoCode } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,6 +23,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createPromoCode, deletePromoCode, getPromoCodes, updatePromoCode } from "@/lib/actions/promo-codes";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MetricCard } from "@/components/dashboard/metric-card";
 
 const promoCodeSchema = z.object({
   id: z.string().optional(),
@@ -65,7 +66,7 @@ export default function PromoCodeManagementPage() {
     if (!currentUser) return;
     setIsLoading(true);
     const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
-    const codes = await getPromoCodes(tenantIdToFetch);
+    const codes = await getPromoCodes();
     setPromoCodes(codes);
     setIsLoading(false);
   }, [currentUser]);
@@ -83,6 +84,24 @@ export default function PromoCodeManagementPage() {
     resolver: zodResolver(generatorSchema),
     defaultValues: { prefix: 'ONETIME', count: 10, rewardType: 'coins', rewardValue: 10 },
   });
+
+  const stats = useMemo(() => {
+    const totalCodes = promoCodes.length;
+    const totalRedemptions = promoCodes.reduce((sum, code) => sum + (code.timesUsed || 0), 0);
+    const typeCounts = promoCodes.reduce((acc, code) => {
+      acc[code.rewardType] = (acc[code.rewardType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      totalCodes,
+      totalRedemptions,
+      coins: typeCounts['coins'] || 0,
+      xp: typeCounts['xp'] || 0,
+      flash_coins: typeCounts['flash_coins'] || 0,
+      streak_freeze: typeCounts['streak_freeze'] || 0,
+    };
+  }, [promoCodes]);
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
@@ -232,6 +251,14 @@ export default function PromoCodeManagementPage() {
       <CardDescription>
         {t("promoCodes.description")}
       </CardDescription>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <MetricCard icon={Gift} title="Total Codes" value={stats.totalCodes} />
+        <MetricCard icon={CheckCircle} title="Total Redemptions" value={stats.totalRedemptions} />
+        <MetricCard icon={Coins} title="Coin Codes" value={stats.coins} />
+        <MetricCard icon={Star} title="XP Codes" value={stats.xp} />
+        <MetricCard icon={Zap} title="Flash Coin Codes" value={stats.flash_coins} />
+      </div>
 
       <Card>
         <CardHeader>
