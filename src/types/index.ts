@@ -1284,6 +1284,7 @@ export interface PromoCode {
   usageLimit: number;
   timesUsed?: number;
   isActive: boolean;
+  expiryDays?: number;
 }
 
 export type UserDashboardWidgetId =

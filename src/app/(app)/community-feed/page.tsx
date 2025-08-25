@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost } from '@/lib/actions/community';
+import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
 
 
@@ -82,7 +82,7 @@ const renderCommentWithMentions = (text: string) => {
 const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, replyingToCommentId, replyText, onReplyTextChange, currentUser }: {
   comment: CommunityComment;
   allComments: CommunityComment[];
-  onReply: (commentId: string | null) => void;
+  onReply: (commentId: string | null, userName: string) => void;
   onCommentSubmit: (postId: string, text: string, parentId: string) => void;
   level: number;
   replyingToCommentId: string | null;
@@ -106,7 +106,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
           </div>
           <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
         </div>
-        <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id)}>Reply</Button>
+        <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id, comment.userName)}>Reply</Button>
         {replyingToCommentId === comment.id && (
            <div className="flex items-center gap-2 pt-2">
               <Avatar className="h-8 w-8">
@@ -120,7 +120,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
                   rows={1}
                   className="flex-1 min-h-[40px] text-sm"
               />
-              <Button size="sm" onClick={() => onCommentSubmit(comment.postId, replyText, comment.id)} disabled={!replyText.trim()}>
+              <Button size="sm" onClick={() => onCommentSubmit(comment.postId!, replyText, comment.id)} disabled={!replyText.trim()}>
                   <Send className="h-4 w-4" />
               </Button>
           </div>
@@ -237,7 +237,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes'> = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'likes' | 'likedBy'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
@@ -269,6 +269,15 @@ export default function CommunityFeedPage() {
     setIsPostDialogOpen(false);
     reset({ content: '', tags: '', type: 'text', imageUrl: '', pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }], attendees: 0, capacity: 0 });
     setEditingPost(null);
+  };
+
+  const handleReply = (commentId: string | null, userName: string) => {
+    setReplyingToCommentId(commentId);
+    if (commentId) {
+      setReplyText(`@${userName} `);
+    } else {
+      setReplyText('');
+    }
   };
 
   const handleCommentSubmit = async (postId: string, text: string, parentId?: string) => {
@@ -411,6 +420,16 @@ export default function CommunityFeedPage() {
     if(updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
         toast({ title: "Post Removed", description: "The post has been removed.", variant: "destructive" });
+    }
+  };
+  
+  const handleLikeClick = async (postId: string) => {
+    if (!currentUser) return;
+    const updatedPost = await toggleLikePost(postId, currentUser.id);
+    if (updatedPost) {
+      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? updatedPost : p));
+    } else {
+      toast({ title: "Error", description: "Could not update like.", variant: "destructive" });
     }
   };
 
@@ -668,7 +687,7 @@ export default function CommunityFeedPage() {
                         <p className="text-sm text-muted-foreground italic">This post has been removed by a moderator.</p>
                     ) : (
                       <>
-                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{renderCommentWithMentions(post.content)}</p>}
+                        {post.content && <p className="text-sm text-foreground whitespace-pre-line mb-3">{renderWithMentions(post.content)}</p>}
                         
                         {post.type === 'text' && post.imageUrl && (
                             <div className="mt-3 rounded-lg overflow-hidden border aspect-video relative max-h-[400px]">
@@ -735,12 +754,12 @@ export default function CommunityFeedPage() {
                   {post.moderationStatus !== 'removed' && (
                     <CardFooter className="border-t pt-3 flex flex-col items-start">
                         <div className="flex items-center justify-start space-x-1 w-full">
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs">
-                            <ThumbsUp className="mr-1 h-3.5 w-3.5" /> Like
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleLikeClick(post.id)}>
+                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({post.likes || 0})
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus
-                              setReplyingToCommentId(`post-${post.id}`);
+                              setReplyingToCommentId(prev => prev === `post-${post.id}` ? null : `post-${post.id}`);
                             }}>
                             <MessageIcon className="mr-1 h-3.5 w-3.5" /> Comment ({post.comments?.length || 0})
                             </Button>
@@ -755,7 +774,7 @@ export default function CommunityFeedPage() {
                                     <ShieldCheck className="mr-1 h-3 w-3" /> Approve
                                 </Button>
                                 )}
-                                <Button variant="destructive" size="xs" onClick={() => handleRemovePost(post.id)} className={`${post.moderationStatus === 'flagged' && (currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) ? 'ml-1' : 'ml-auto'} h-7 px-2 py-1`}>
+                                <Button variant="destructive" size="xs" onClick={() => handleRemovePost(post.id)} className={`${post.moderationStatus === 'flagged' ? 'ml-1' : 'ml-auto'} h-7 px-2 py-1`}>
                                     <Trash2 className="mr-1 h-3 w-3" /> Remove
                                 </Button>
                             </>
@@ -775,7 +794,7 @@ export default function CommunityFeedPage() {
                                     key={comment.id} 
                                     comment={comment} 
                                     allComments={post.comments!} 
-                                    onReply={setReplyingToCommentId} 
+                                    onReply={handleReply} 
                                     onCommentSubmit={handleCommentSubmit} 
                                     level={0}
                                     replyingToCommentId={replyingToCommentId}
@@ -834,7 +853,7 @@ export default function CommunityFeedPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{user.name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Star className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
+                          <StarIcon className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
                         </p>
                       </div>
                     </li>
@@ -853,3 +872,4 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+

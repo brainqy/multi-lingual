@@ -50,7 +50,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy' | 'likedBy'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'likes' | 'likedBy'>): Promise<CommunityPost | null> {
     console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
         console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
@@ -79,7 +79,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             status: postData.type === 'request' ? postData.status : undefined,
             votedBy: [],
             registeredBy: [],
-            likes: 0,
         };
         console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
@@ -292,3 +291,4 @@ export async function registerUserAction(postId: string, userId: string, type: '
     }
     return { success: false, message: 'Invalid action.' };
 }
+
