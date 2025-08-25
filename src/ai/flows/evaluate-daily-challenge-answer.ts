@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Evaluates a user's answer to a daily interview challenge question.
@@ -10,8 +9,14 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { EvaluateDailyChallengeAnswerInputSchema, EvaluateDailyChallengeAnswerOutputSchema, type EvaluateDailyChallengeAnswerInput, type EvaluateDailyChallengeAnswerOutput } from '@/types';
+import { EvaluateDailyChallengeAnswerInputSchema, EvaluateDailyChallengeAnswerOutputSchema, type EvaluateDailyChallengeAnswerInput } from '@/types';
 
+
+export type EvaluateDailyChallengeAnswerOutput = {
+  isCorrect: boolean;
+  score: number;
+  feedback: string;
+};
 
 export async function evaluateDailyChallengeAnswer(
   input: EvaluateDailyChallengeAnswerInput

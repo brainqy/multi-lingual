@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '@prisma/client';
 
 
@@ -342,7 +340,6 @@ async function main() {
         password: 'password123',
         role: 'user',
         tenantId: platformTenant.id,
-        status: 'active',
       },
     });
   }
@@ -360,6 +357,46 @@ async function main() {
     });
   }
   console.log('Seeded 5 successful referrals for admin user.');
+
+  // Seed 3 resume scan histories for sample users
+  for (let i = 1; i <= 3; i++) {
+    await prisma.resumeScanHistory.create({
+      data: {
+        id: `scan-${i}`,
+        tenantId: platformTenant.id,
+        userId: `sample-user-${i}`,
+        resumeId: `resume-${i}`,
+        resumeName: `Sample Resume ${i}`,
+        jobTitle: `Job Title ${i}`,
+        companyName: `Company ${i}`,
+        resumeTextSnapshot: `This is a snapshot of resume ${i}.`,
+        jobDescriptionText: `Job description for job ${i}.`,
+        scanDate: new Date(Date.now() - 86400000 * i),
+        matchScore: 80 + i,
+        bookmarked: i % 2 === 0,
+      }
+    });
+  }
+
+  // Seed 3 resume scan histories for admin user
+  for (let i = 1; i <= 3; i++) {
+    await prisma.resumeScanHistory.create({
+      data: {
+        id: `admin-scan-${i}`,
+        tenantId: platformTenant.id,
+        userId: adminUser.id,
+        resumeId: `admin-resume-${i}`,
+        resumeName: `Admin Resume ${i}`,
+        jobTitle: `Admin Job Title ${i}`,
+        companyName: `Admin Company ${i}`,
+        resumeTextSnapshot: `This is a snapshot of admin resume ${i}.`,
+        jobDescriptionText: `Job description for admin job ${i}.`,
+        scanDate: new Date(Date.now() - 86400000 * i),
+        matchScore: 90 + i,
+        bookmarked: i % 2 === 1,
+      }
+    });
+  }
 
   console.log(`Seeding finished.`)
 }
