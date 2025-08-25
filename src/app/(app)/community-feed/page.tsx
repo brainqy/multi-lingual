@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2, Star as StarIcon } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -237,7 +237,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'likes' | 'likedBy' | 'flaggedBy'> = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
@@ -395,7 +395,7 @@ export default function CommunityFeedPage() {
   };
 
   const handleApprovePost = async (postId: string) => {
-    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flaggedBy: [], flagReasons: [] });
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flagReasons: [] });
     if(updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
         toast({ title: "Post Approved", description: "The post is now visible." });
@@ -745,7 +745,7 @@ export default function CommunityFeedPage() {
                     <CardFooter className="border-t pt-3 flex flex-col items-start">
                         <div className="flex items-center justify-start space-x-1 w-full">
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleLikeClick(post.id)}>
-                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({post.likes || 0})
+                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.votedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({(post.votedBy || []).length})
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus
@@ -774,15 +774,10 @@ export default function CommunityFeedPage() {
                                   variant="ghost"
                                   size="xs"
                                   onClick={() => handleFlagPost(post.id)}
-                                  className={cn(
-                                    "ml-auto h-7 px-2 py-1",
-                                    post.flaggedBy?.includes(currentUser.id)
-                                      ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                                      : "text-yellow-600 hover:text-yellow-700"
-                                  )}
+                                  className="text-yellow-600 hover:text-yellow-700 ml-auto h-7 px-2 py-1"
                                 >
                                   <Flag className="mr-1 h-3 w-3" />
-                                  {post.flaggedBy?.includes(currentUser.id) ? "Flagged" : "Flag"}
+                                  Flag
                                 </Button>
                             )
                             )}
@@ -854,7 +849,7 @@ export default function CommunityFeedPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{user.name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <StarIcon className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
+                          <Star className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
                         </p>
                       </div>
                     </li>

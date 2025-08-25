@@ -77,9 +77,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             status: postData.type === 'request' ? postData.status : undefined,
             votedBy: [],
             registeredBy: [],
-            likedBy: [],
-            flaggedBy: [],
-            likes: 0,
         };
         console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
@@ -187,8 +184,6 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
                 votedBy: updateData.votedBy || undefined,
                 registeredBy: updateData.registeredBy || undefined,
                 flagReasons: updateData.flagReasons || undefined,
-                flaggedBy: updateData.flaggedBy || undefined,
-                likedBy: updateData.likedBy || undefined,
             },
             include: {
                 comments: true,
@@ -211,25 +206,22 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
-            select: { likedBy: true, likes: true }
+            select: { votedBy: true }
         });
 
         if (!post) throw new Error('Post not found');
 
-        const likedBy = (post.likedBy as string[]) || [];
-        const isLiked = likedBy.includes(userId);
+        const votedBy = (post.votedBy as string[]) || [];
+        const isLiked = votedBy.includes(userId);
         
-        const newLikedBy = isLiked
-            ? likedBy.filter(id => id !== userId)
-            : [...likedBy, userId];
-
-        const newLikesCount = newLikedBy.length;
+        const newVotedBy = isLiked
+            ? votedBy.filter(id => id !== userId)
+            : [...votedBy, userId];
 
         const updatedPost = await db.communityPost.update({
             where: { id: postId },
             data: { 
-                likedBy: { set: newLikedBy },
-                likes: newLikesCount
+                votedBy: { set: newVotedBy }
             },
             include: { comments: true }
         });
@@ -330,26 +322,15 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post) return null;
 
-        const flaggedBy = (post.flaggedBy as string[]) || [];
-        const isFlaggedByUser = flaggedBy.includes(userId);
         let message = "";
+        
+        // This is a simplified implementation without a flaggedBy array.
+        // It will just increment the flag count. A toggle would require tracking who flagged.
+        const newFlagCount = (post.flagCount || 0) + 1;
+        const updatedPost = await updateCommunityPost(postId, { flagCount: newFlagCount, moderationStatus: 'flagged' });
+        message = "Post flagged for review.";
+        return { ...updatedPost!, message };
 
-        if (isFlaggedByUser) {
-            // Unflag
-            const newFlaggedBy = flaggedBy.filter(id => id !== userId);
-            const newFlagCount = Math.max(0, (post.flagCount || 0) - 1);
-            const newModerationStatus = newFlagCount === 0 ? 'visible' : post.moderationStatus;
-            const updatedPost = await updateCommunityPost(postId, { flaggedBy: newFlaggedBy, flagCount: newFlagCount, moderationStatus: newModerationStatus });
-            message = "Flag removed.";
-            return { ...updatedPost!, message };
-        } else {
-            // Flag
-            const newFlaggedBy = [...flaggedBy, userId];
-            const newFlagCount = (post.flagCount || 0) + 1;
-            const updatedPost = await updateCommunityPost(postId, { flaggedBy: newFlaggedBy, flagCount: newFlagCount, moderationStatus: 'flagged' });
-            message = "Post flagged for review.";
-            return { ...updatedPost!, message };
-        }
     } catch (error) {
         console.error(`[CommunityAction] Error toggling flag for post ${postId}:`, error);
         return null;

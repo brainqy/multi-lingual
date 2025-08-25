@@ -1,3 +1,4 @@
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -236,7 +237,6 @@ export interface CommunityPost {
   bookmarkedBy?: string[];
   votedBy?: string[];
   registeredBy?: string[];
-  flaggedBy?: string[];
 }
 
 export interface FeatureRequest {
