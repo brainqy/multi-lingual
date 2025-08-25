@@ -79,7 +79,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             status: postData.type === 'request' ? postData.status : undefined,
             votedBy: [],
             registeredBy: [],
-            likedBy: [],
             likes: 0,
         };
         console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
