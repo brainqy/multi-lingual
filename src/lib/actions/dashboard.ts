@@ -30,7 +30,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
           jobApplications: true,
           communityPosts: true,
           communityComments: true,
-          appointmentsRequester: true,
+          appointmentsAsRequester: true,
         },
       },
       referrals: true,
@@ -64,7 +64,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
             currentCount = user.referrals.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
             break;
            case 'book_appointment':
-            currentCount = user._count.appointmentsRequester;
+            currentCount = user._count.appointmentsAsRequester;
             break;
           // Add other cases here as needed
         }
