@@ -7,7 +7,7 @@ import { updateUser } from '@/lib/data-services/users';
 import { getWallet, updateWallet } from './wallet';
 import { checkAndAwardBadges } from './gamification';
 //import from node modules instead of @prisma/client to avoid TS errors
-import { PrismaClient } from '../../../generated/prisma';
+import { Prisma } from '@prisma/client';
 import { createActivity } from '@/lib/actions/activities';
 
 /**
@@ -17,7 +17,7 @@ import { createActivity } from '@/lib/actions/activities';
  */
 export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
   try {
-    const whereClause: PrismaClient.PromoCodeWhereInput = {}; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const whereClause: Prisma.PromoCodeWhereInput = {}; // eslint-disable-line @typescript-eslint/no-unused-vars
     if (tenantId) {
       whereClause.OR = [
         { tenantId: tenantId },

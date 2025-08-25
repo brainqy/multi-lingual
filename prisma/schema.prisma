@@ -99,6 +99,7 @@ model User {
   
   // Dashboard Customization
   dashboardWidgets Json?
+  completedChallengeIds String[] @default([])
 }
 
 model Tenant {
@@ -241,10 +242,10 @@ model CommunityPost {
   comments          CommunityComment[]
   bookmarkedBy      String[]
   votedBy           String[]
-  registeredBy      String[]?
+  registeredBy      String[]
   likes             Int
-  likedBy           String[]?
-  flaggedBy         String[]?
+  likedBy           String[]
+  flaggedBy         String[]
 }
 
 model CommunityComment {

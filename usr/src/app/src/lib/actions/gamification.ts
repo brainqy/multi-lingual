@@ -4,8 +4,6 @@
 import { db } from '@/lib/db';
 import type { Badge, GamificationRule, UserProfile } from '@/types';
 import { updateUser } from '@/lib/data-services/users';
-import { createActivity } from './activities';
-import { getChallenges } from './challenges';
 import { logAction, logError } from '@/lib/logger';
 
 /**
@@ -91,7 +89,6 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
         logAction('Awarding XP for completed flip challenges', { userId, totalXpGained });
         const updatedUser = await updateUser(userId, { 
             xpPoints: (user.xpPoints || 0) + totalXpGained,
-            completedChallengeIds: Array.from(completedChallengeIds),
         });
         return updatedUser;
     }

@@ -1328,7 +1328,3 @@ export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
 export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
-
-```
-
-This change adds the `completedChallengeIds` field to the `UserProfile` type, which will allow the application to properly track and reward users for completing challenges.
