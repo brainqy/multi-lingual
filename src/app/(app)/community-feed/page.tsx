@@ -237,7 +237,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy'> = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'likes' | 'likedBy' | 'flaggedBy'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
@@ -395,7 +395,7 @@ export default function CommunityFeedPage() {
   };
 
   const handleApprovePost = async (postId: string) => {
-    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flaggedBy: [] });
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flaggedBy: [], flagReasons: [] });
     if(updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
         toast({ title: "Post Approved", description: "The post is now visible." });
@@ -745,7 +745,7 @@ export default function CommunityFeedPage() {
                     <CardFooter className="border-t pt-3 flex flex-col items-start">
                         <div className="flex items-center justify-start space-x-1 w-full">
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleLikeClick(post.id)}>
-                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.votedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({post.votedBy?.length || 0})
+                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({post.likes || 0})
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus

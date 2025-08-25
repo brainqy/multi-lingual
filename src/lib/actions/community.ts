@@ -50,7 +50,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy'>): Promise<CommunityPost | null> {
     console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
         console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
@@ -64,7 +64,6 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             tags: postData.tags || [],
             moderationStatus: postData.moderationStatus,
             flagCount: 0,
-            flaggedBy: [],
             flagReasons: [],
             timestamp: new Date(),
             imageUrl: postData.type === 'text' && postData.imageUrl ? postData.imageUrl : undefined,
@@ -78,6 +77,9 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             status: postData.type === 'request' ? postData.status : undefined,
             votedBy: [],
             registeredBy: [],
+            likedBy: [],
+            flaggedBy: [],
+            likes: 0,
         };
         console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
@@ -186,6 +188,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
                 registeredBy: updateData.registeredBy || undefined,
                 flagReasons: updateData.flagReasons || undefined,
                 flaggedBy: updateData.flaggedBy || undefined,
+                likedBy: updateData.likedBy || undefined,
             },
             include: {
                 comments: true,
@@ -208,21 +211,26 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
-            select: { votedBy: true }
+            select: { likedBy: true, likes: true }
         });
 
         if (!post) throw new Error('Post not found');
 
-        const votedBy = (post.votedBy as string[]) || [];
-        const isLiked = votedBy.includes(userId);
+        const likedBy = (post.likedBy as string[]) || [];
+        const isLiked = likedBy.includes(userId);
         
-        const newVotedBy = isLiked
-            ? votedBy.filter(id => id !== userId)
-            : [...votedBy, userId];
+        const newLikedBy = isLiked
+            ? likedBy.filter(id => id !== userId)
+            : [...likedBy, userId];
+
+        const newLikesCount = newLikedBy.length;
 
         const updatedPost = await db.communityPost.update({
             where: { id: postId },
-            data: { votedBy: { set: newVotedBy } },
+            data: { 
+                likedBy: { set: newLikedBy },
+                likes: newLikesCount
+            },
             include: { comments: true }
         });
 
