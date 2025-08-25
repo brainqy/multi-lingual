@@ -65,7 +65,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'likes' | 'likedBy'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy'>): Promise<CommunityPost | null> {
     console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
         console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
@@ -239,9 +239,6 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
         if (isLiked) {
             // User is unliking the post
             updateData = {
-                likes: {
-                    decrement: 1,
-                },
                 votedBy: {
                     set: votedBy.filter(id => id !== userId),
                 },
@@ -249,9 +246,6 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
         } else {
             // User is liking the post
             updateData = {
-                likes: {
-                    increment: 1,
-                },
                 votedBy: {
                     push: userId,
                 },

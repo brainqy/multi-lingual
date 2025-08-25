@@ -238,7 +238,6 @@ export interface CommunityPost {
   bookmarkedBy?: string[];
   votedBy?: string[];
   registeredBy?: string[];
-  likes?: number;
 }
 
 export interface FeatureRequest {
