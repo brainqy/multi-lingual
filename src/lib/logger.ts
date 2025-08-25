@@ -3,6 +3,9 @@
 // be replaced with a more robust logging service like Winston, Pino, or a
 // cloud provider's logging solution (e.g., Google Cloud Logging).
 
+import fs from 'fs';
+import path from 'path';
+
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info'; // 'info', 'warn', 'error', 'debug'
 
 const levels = {
@@ -19,29 +22,31 @@ function writeLog(level: keyof typeof levels, message: string, meta?: Record<str
     return;
   }
   
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date();
   const logEntry = {
-    timestamp,
+    timestamp: timestamp.toISOString(),
     level: level.toUpperCase(),
     message,
     ...meta,
   };
+
+  const logMessage = JSON.stringify(logEntry) + '\n';
   
-  // In a real app, this would write to a file, a logging service, etc.
-  // For this environment, we'll just use console.log/error/warn.
-  switch (level) {
-    case 'error':
-      console.error(JSON.stringify(logEntry, null, 2));
-      break;
-    case 'warn':
-      console.warn(JSON.stringify(logEntry, null, 2));
-      break;
-    case 'info':
-      console.log(JSON.stringify(logEntry, null, 2));
-      break;
-    case 'debug':
-      console.debug(JSON.stringify(logEntry, null, 2));
-      break;
+  try {
+    const logDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir);
+    }
+    
+    const dateString = timestamp.toISOString().split('T')[0]; // YYYY-MM-DD
+    const logFilePath = path.join(logDir, `${dateString}.log`);
+    
+    fs.appendFileSync(logFilePath, logMessage);
+
+  } catch (error) {
+    console.error("Failed to write to log file:", error);
+    // Fallback to console if file logging fails
+    console.error(logMessage);
   }
 }
 
