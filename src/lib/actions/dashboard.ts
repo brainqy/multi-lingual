@@ -33,7 +33,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
           appointmentsAsRequester: true,
         },
       },
-      referrals: true,
+      referralHistory: true,
     },
   });
 
@@ -61,7 +61,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
             currentCount = user._count.communityComments;
             break;
           case 'refer':
-            currentCount = user.referrals.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
+            currentCount = user.referralHistory.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
             break;
            case 'book_appointment':
             currentCount = user._count.appointmentsAsRequester;
