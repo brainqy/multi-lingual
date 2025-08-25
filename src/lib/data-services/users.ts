@@ -107,7 +107,6 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         isDistinguished: false,
         streakFreezes: 1, // Start with one free pass
         referralCode: referralCode,
-        completedChallengeIds: [],
     };
     
     log(`[DataService] Creating user in real DB: ${data.email}`);
