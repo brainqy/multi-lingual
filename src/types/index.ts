@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -398,6 +399,7 @@ export interface UserProfile extends AlumniProfile {
     current: number;
     target: number;
   }>;
+  completedChallengeIds?: string[];
   sessionId?: string;
   streakFreezes?: number;
 
@@ -911,6 +913,7 @@ export interface PlatformSettings {
   aiResumeWriterEnabled: boolean;
   coverLetterGeneratorEnabled: boolean;
   mockInterviewEnabled: boolean;
+  aiMockInterviewCost: number;
   referralsEnabled: boolean;
   affiliateProgramEnabled: boolean;
   alumniConnectEnabled: boolean;
@@ -1312,3 +1315,20 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
+export const EvaluateDailyChallengeAnswerInputSchema = z.object({
+  question: z.string().describe('The challenge question that was asked.'),
+  answer: z.string().describe('The user\'s submitted answer.'),
+  solution: z.string().optional().describe('The ideal solution or key points for reference.'),
+});
+export type EvaluateDailyChallengeAnswerInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
+
+export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
+  isCorrect: z.boolean().describe('Whether the answer is fundamentally correct.'),
+  score: z.number().min(0).max(100).describe('A score from 0-100 evaluating the answer.'),
+  feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
+});
+export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
+
+```
+
+This change adds the `completedChallengeIds` field to the `UserProfile` type, which will allow the application to properly track and reward users for completing challenges.
