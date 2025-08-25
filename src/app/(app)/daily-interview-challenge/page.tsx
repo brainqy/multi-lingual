@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -7,14 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2, Trophy, Send } from 'lucide-react';
 import type { DailyChallenge, UserProfile, InterviewQuestionCategory } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { createActivity } from "@/lib/actions/activities";
 import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from "@/components/ui/score-circle";
-import { getChallenges } from "@/lib/actions/challenges";
 import { getDashboardData } from "@/lib/actions/dashboard";
 
 export default function DailyInterviewChallengePage() {
@@ -34,15 +34,13 @@ export default function DailyInterviewChallengePage() {
   const fetchChallengesAndProgress = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    const [challenges, dashboardData] = await Promise.all([
-        getChallenges(),
-        getDashboardData(user.tenantId, user.id, user.role)
-    ]);
+    const dashboardData = await getDashboardData(user.tenantId, user.id, user.role);
     
     // The dashboard data now contains the dynamically calculated challenge progress
     const userWithProgress = dashboardData.users.find(u => u.id === user.id);
     setCurrentUserProfile(userWithProgress || user);
     
+    const challenges = dashboardData.challenges;
     setAllChallenges(challenges);
     
     const standard = challenges.filter(c => c.type === 'standard');
@@ -251,3 +249,5 @@ export default function DailyInterviewChallengePage() {
     </div>
   );
 }
+
+    
