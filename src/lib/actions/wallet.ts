@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Wallet, WalletTransaction } from '@/types';
 import { Prisma } from '@prisma/client';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches a user's wallet, creating one if it doesn't exist.
@@ -11,6 +12,7 @@ import { Prisma } from '@prisma/client';
  * @returns The user's Wallet object or null on error.
  */
 export async function getWallet(userId: string): Promise<Wallet | null> {
+  logAction('Fetching wallet', { userId });
   try {
     let wallet = await db.wallet.findUnique({
       where: { userId },
@@ -25,7 +27,7 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
     });
 
     if (!wallet) {
-      // Create a wallet for the user if it doesn't exist
+      logAction('Wallet not found, creating new one', { userId });
       const newWallet = await db.wallet.create({
         data: {
           userId,
@@ -65,7 +67,7 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
     
     return wallet as unknown as Wallet;
   } catch (error) {
-    console.error(`[WalletAction] Error fetching wallet for user ${userId}:`, error);
+    logError(`[WalletAction] Error fetching wallet for user ${userId}`, error, { userId });
     return null;
   }
 }
@@ -78,6 +80,7 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
  * @returns The updated Wallet object or null on error.
  */
 export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 'coins' | 'flashCoins'>>, description?: string): Promise<void> {
+    logAction('Updating wallet', { userId, description });
     try {
         const currentWallet = await db.wallet.findUnique({ where: { userId } });
         if (!currentWallet) {
@@ -108,6 +111,6 @@ export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 
         }
 
     } catch (error) {
-        console.error(`[WalletAction] Error updating wallet for user ${userId}:`, error);
+        logError(`[WalletAction] Error updating wallet for user ${userId}`, error, { userId });
     }
 }

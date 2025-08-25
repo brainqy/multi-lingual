@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { MockInterviewSession } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all quizzes created by a specific user.
@@ -11,6 +12,7 @@ import type { MockInterviewSession } from '@/types';
  * @returns A promise that resolves to an array of MockInterviewSession objects.
  */
 export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSession[]> {
+  logAction('Fetching created quizzes', { userId });
   try {
     const quizzes = await db.mockInterviewSession.findMany({
       where: {
@@ -28,7 +30,7 @@ export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSe
     });
     return quizzes as unknown as MockInterviewSession[];
   } catch (error) {
-    console.error(`[QuizzesAction] Error fetching quizzes for user ${userId}:`, error);
+    logError(`[QuizzesAction] Error fetching quizzes for user ${userId}`, error, { userId });
     return [];
   }
 }

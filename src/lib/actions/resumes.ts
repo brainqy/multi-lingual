@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { ResumeProfile, ResumeScanHistoryItem } from '@/types';
 import { checkAndAwardBadges } from './gamification';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all resume profiles for a specific user.
@@ -11,6 +12,7 @@ import { checkAndAwardBadges } from './gamification';
  * @returns A promise that resolves to an array of ResumeProfile objects.
  */
 export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]> {
+  logAction('Fetching resume profiles', { userId });
   try {
     const resumes = await db.resumeProfile.findMany({
       where: { userId },
@@ -20,7 +22,7 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
     });
     return resumes as unknown as ResumeProfile[];
   } catch (error) {
-    console.error(`[ResumeAction] Error fetching resume profiles for user ${userId}:`, error);
+    logError(`[ResumeAction] Error fetching resume profiles for user ${userId}`, error, { userId });
     return [];
   }
 }
@@ -31,13 +33,14 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
  * @returns The newly created ResumeProfile object or null if failed.
  */
 export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'>): Promise<ResumeProfile | null> {
+  logAction('Creating resume profile', { userId: resumeData.userId, name: resumeData.name });
   try {
     const newResume = await db.resumeProfile.create({
       data: resumeData,
     });
     return newResume as unknown as ResumeProfile;
   } catch (error) {
-    console.error('[ResumeAction] Error creating resume profile:', error);
+    logError('[ResumeAction] Error creating resume profile', error, { userId: resumeData.userId });
     return null;
   }
 }
@@ -49,6 +52,7 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
  * @returns The updated ResumeProfile object or null if failed.
  */
 export async function updateResumeProfile(resumeId: string, resumeData: Partial<Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt'>>): Promise<ResumeProfile | null> {
+    logAction('Updating resume profile', { resumeId });
     try {
         const updatedResume = await db.resumeProfile.update({
             where: { id: resumeId },
@@ -56,7 +60,7 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
         });
         return updatedResume as unknown as ResumeProfile;
     } catch (error) {
-        console.error(`[ResumeAction] Error updating resume profile ${resumeId}:`, error);
+        logError(`[ResumeAction] Error updating resume profile ${resumeId}`, error, { resumeId });
         return null;
     }
 }
@@ -68,13 +72,14 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
  * @returns A boolean indicating success.
  */
 export async function deleteResumeProfile(resumeId: string): Promise<boolean> {
+  logAction('Deleting resume profile', { resumeId });
   try {
     await db.resumeProfile.delete({
       where: { id: resumeId },
     });
     return true;
   } catch (error) {
-    console.error(`[ResumeAction] Error deleting resume profile ${resumeId}:`, error);
+    logError(`[ResumeAction] Error deleting resume profile ${resumeId}`, error, { resumeId });
     return false;
   }
 }
@@ -85,6 +90,7 @@ export async function deleteResumeProfile(resumeId: string): Promise<boolean> {
  * @returns A promise that resolves to an array of ResumeScanHistoryItem objects.
  */
 export async function getScanHistory(userId: string): Promise<ResumeScanHistoryItem[]> {
+  logAction('Fetching scan history', { userId });
   try {
     const history = await db.resumeScanHistory.findMany({
       where: { userId },
@@ -94,7 +100,7 @@ export async function getScanHistory(userId: string): Promise<ResumeScanHistoryI
     });
     return history as unknown as ResumeScanHistoryItem[];
   } catch (error) {
-    console.error(`[ResumeAction] Error fetching scan history for user ${userId}:`, error);
+    logError(`[ResumeAction] Error fetching scan history for user ${userId}`, error, { userId });
     return [];
   }
 }
@@ -105,6 +111,7 @@ export async function getScanHistory(userId: string): Promise<ResumeScanHistoryI
  * @returns The newly created ResumeScanHistoryItem object or null if failed.
  */
 export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'>): Promise<ResumeScanHistoryItem | null> {
+  logAction('Creating scan history entry', { userId: scanData.userId, jobTitle: scanData.jobTitle });
   try {
     const newScan = await db.resumeScanHistory.create({
       data: scanData,
@@ -115,7 +122,7 @@ export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'i
     
     return newScan as unknown as ResumeScanHistoryItem;
   } catch (error) {
-    console.error('[ResumeAction] Error creating scan history:', error);
+    logError('[ResumeAction] Error creating scan history', error, { userId: scanData.userId });
     return null;
   }
 }
@@ -127,6 +134,7 @@ export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'i
  * @returns The updated ResumeScanHistoryItem or null if failed.
  */
 export async function updateScanHistory(scanId: string, updateData: Partial<Omit<ResumeScanHistoryItem, 'id'>>): Promise<ResumeScanHistoryItem | null> {
+    logAction('Updating scan history', { scanId });
     try {
         const updatedScan = await db.resumeScanHistory.update({
             where: { id: scanId },
@@ -134,7 +142,7 @@ export async function updateScanHistory(scanId: string, updateData: Partial<Omit
         });
         return updatedScan as unknown as ResumeScanHistoryItem;
     } catch (error) {
-        console.error(`[ResumeAction] Error updating scan history ${scanId}:`, error);
+        logError(`[ResumeAction] Error updating scan history ${scanId}`, error, { scanId });
         return null;
     }
 }
@@ -146,13 +154,14 @@ export async function updateScanHistory(scanId: string, updateData: Partial<Omit
  * @returns A boolean indicating success.
  */
 export async function deleteScanHistory(scanId: string): Promise<boolean> {
+  logAction('Deleting scan history', { scanId });
   try {
     await db.resumeScanHistory.delete({
       where: { id: scanId },
     });
     return true;
   } catch (error) {
-    console.error(`[ResumeAction] Error deleting scan history ${scanId}:`, error);
+    logError(`[ResumeAction] Error deleting scan history ${scanId}`, error, { scanId });
     return false;
   }
 }

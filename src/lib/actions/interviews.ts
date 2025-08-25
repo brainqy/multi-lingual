@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { MockInterviewSession } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Creates a new mock interview session in the database.
@@ -10,6 +11,7 @@ import type { MockInterviewSession } from '@/types';
  * @returns The newly created MockInterviewSession object or null if failed.
  */
 export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'>): Promise<MockInterviewSession | null> {
+  logAction('Creating mock interview session', { userId: sessionData.userId, topic: sessionData.topic });
   try {
     const newSession = await db.mockInterviewSession.create({
       data: {
@@ -23,7 +25,7 @@ export async function createMockInterviewSession(sessionData: Omit<MockInterview
     });
     return newSession as unknown as MockInterviewSession;
   } catch (error) {
-    console.error('[InterviewsAction] Error creating mock interview session:', error);
+    logError('[InterviewsAction] Error creating mock interview session', error, { userId: sessionData.userId });
     return null;
   }
 }
@@ -34,6 +36,7 @@ export async function createMockInterviewSession(sessionData: Omit<MockInterview
  * @returns A promise that resolves to an array of MockInterviewSession objects.
  */
 export async function getMockInterviewSessions(userId: string): Promise<MockInterviewSession[]> {
+    logAction('Fetching mock interview sessions', { userId });
     try {
         const sessions = await db.mockInterviewSession.findMany({
             where: { userId },
@@ -42,7 +45,7 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
         });
         return sessions as unknown as MockInterviewSession[];
     } catch (error) {
-        console.error(`[InterviewsAction] Error fetching sessions for user ${userId}:`, error);
+        logError(`[InterviewsAction] Error fetching sessions for user ${userId}`, error, { userId });
         return [];
     }
 }
@@ -54,6 +57,7 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
  * @returns The updated MockInterviewSession or null.
  */
 export async function updateMockInterviewSession(sessionId: string, updateData: Partial<Omit<MockInterviewSession, 'id'>>): Promise<MockInterviewSession | null> {
+    logAction('Updating mock interview session', { sessionId });
     try {
         const updatedSession = await db.mockInterviewSession.update({
             where: { id: sessionId },
@@ -68,7 +72,7 @@ export async function updateMockInterviewSession(sessionId: string, updateData: 
         });
         return updatedSession as unknown as MockInterviewSession;
     } catch (error) {
-        console.error(`[InterviewsAction] Error updating session ${sessionId}:`, error);
+        logError(`[InterviewsAction] Error updating session ${sessionId}`, error, { sessionId });
         return null;
     }
 }

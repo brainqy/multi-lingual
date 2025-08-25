@@ -2,14 +2,16 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { InterviewQuestion, UserProfile } from '@/types';
+import type { InterviewQuestion } from '@/types';
 import { Prisma } from '@prisma/client';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all interview questions from the database.
  * @returns A promise that resolves to an array of InterviewQuestion objects.
  */
 export async function getInterviewQuestions(): Promise<InterviewQuestion[]> {
+  logAction('Fetching interview questions');
   try {
     const questions = await db.interviewQuestion.findMany({
       orderBy: {
@@ -18,7 +20,7 @@ export async function getInterviewQuestions(): Promise<InterviewQuestion[]> {
     });
     return questions as unknown as InterviewQuestion[];
   } catch (error) {
-    console.error('[QuestionAction] Error fetching interview questions:', error);
+    logError('[QuestionAction] Error fetching interview questions', error);
     return [];
   }
 }
@@ -29,6 +31,7 @@ export async function getInterviewQuestions(): Promise<InterviewQuestion[]> {
  * @returns The newly created InterviewQuestion object or null if failed.
  */
 export async function createInterviewQuestion(questionData: Omit<InterviewQuestion, 'id'>): Promise<InterviewQuestion | null> {
+  logAction('Creating interview question', { text: questionData.questionText.substring(0, 50) });
   try {
     const newQuestion = await db.interviewQuestion.create({
       data: {
@@ -43,7 +46,7 @@ export async function createInterviewQuestion(questionData: Omit<InterviewQuesti
     });
     return newQuestion as unknown as InterviewQuestion;
   } catch (error) {
-    console.error('[QuestionAction] Error creating interview question:', error);
+    logError('[QuestionAction] Error creating interview question', error, { questionText: questionData.questionText });
     return null;
   }
 }
@@ -55,6 +58,7 @@ export async function createInterviewQuestion(questionData: Omit<InterviewQuesti
  * @returns The updated InterviewQuestion object or null if failed.
  */
 export async function updateInterviewQuestion(questionId: string, updateData: Partial<Omit<InterviewQuestion, 'id'>>): Promise<InterviewQuestion | null> {
+  logAction('Updating interview question', { questionId });
   try {
     const updatedQuestion = await db.interviewQuestion.update({
       where: { id: questionId },
@@ -66,7 +70,7 @@ export async function updateInterviewQuestion(questionId: string, updateData: Pa
     });
     return updatedQuestion as unknown as InterviewQuestion;
   } catch (error) {
-    console.error(`[QuestionAction] Error updating interview question ${questionId}:`, error);
+    logError(`[QuestionAction] Error updating interview question ${questionId}`, error, { questionId });
     return null;
   }
 }
@@ -77,13 +81,14 @@ export async function updateInterviewQuestion(questionId: string, updateData: Pa
  * @returns A boolean indicating success.
  */
 export async function deleteInterviewQuestion(questionId: string): Promise<boolean> {
+  logAction('Deleting interview question', { questionId });
   try {
     await db.interviewQuestion.delete({
       where: { id: questionId },
     });
     return true;
   } catch (error) {
-    console.error(`[QuestionAction] Error deleting interview question ${questionId}:`, error);
+    logError(`[QuestionAction] Error deleting interview question ${questionId}`, error, { questionId });
     return false;
   }
 }
@@ -95,6 +100,7 @@ export async function deleteInterviewQuestion(questionId: string): Promise<boole
  * @returns The updated InterviewQuestion or null on failure.
  */
 export async function toggleBookmarkQuestion(questionId: string, userId: string): Promise<InterviewQuestion | null> {
+    logAction('Toggling bookmark on question', { questionId, userId });
     try {
         const question = await db.interviewQuestion.findUnique({ where: { id: questionId } });
         if (!question) return null;
@@ -113,7 +119,7 @@ export async function toggleBookmarkQuestion(questionId: string, userId: string)
         return updatedQuestion as unknown as InterviewQuestion;
 
     } catch (error) {
-        console.error(`[QuestionAction] Error toggling bookmark for question ${questionId}:`, error);
+        logError(`[QuestionAction] Error toggling bookmark for question ${questionId}`, error, { questionId, userId });
         return null;
     }
 }
