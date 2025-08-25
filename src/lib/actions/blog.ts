@@ -4,12 +4,14 @@
 import { db } from '@/lib/db';
 import type { BlogPost, BlogGenerationSettings } from '@/types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all blog posts from the database.
  * @returns A promise that resolves to an array of BlogPost objects.
  */
 export async function getBlogPosts(): Promise<BlogPost[]> {
+  logAction('Fetching all blog posts');
   try {
     const posts = await db.blogPost.findMany({
       orderBy: { date: 'desc' },
@@ -17,7 +19,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     });
     return posts as unknown as BlogPost[];
   } catch (error) {
-    console.error('[BlogAction] Error fetching blog posts:', error);
+    logError('[BlogAction] Error fetching blog posts', error);
     return [];
   }
 }
@@ -28,6 +30,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
  * @returns The BlogPost object or null.
  */
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  logAction('Fetching blog post by slug', { slug });
   try {
     const post = await db.blogPost.findUnique({
       where: { slug },
@@ -41,7 +44,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     });
     return post as unknown as BlogPost | null;
   } catch (error) {
-    console.error(`[BlogAction] Error fetching blog post by slug ${slug}:`, error);
+    logError(`[BlogAction] Error fetching blog post by slug ${slug}`, error, { slug });
     return null;
   }
 }
@@ -53,6 +56,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
  * @returns The newly created BlogPost object or null.
  */
 export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' | 'bookmarkedBy'>): Promise<BlogPost | null> {
+  logAction('Creating blog post', { title: postData.title });
   try {
     let slug = postData.slug;
     const existingPost = await db.blogPost.findUnique({
@@ -75,7 +79,7 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
     });
     return newPost as unknown as BlogPost;
   } catch (error) {
-    console.error('[BlogAction] Error creating blog post:', error);
+    logError('[BlogAction] Error creating blog post', error, { title: postData.title });
     if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           console.error('This is a unique constraint violation, likely on the slug.');
@@ -90,6 +94,7 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'comments' 
  * @returns The settings object or a default if none exists.
  */
 export async function getBlogGenerationSettings(): Promise<BlogGenerationSettings> {
+  logAction('Fetching blog generation settings');
   try {
     let settings = await db.blogGenerationSettings.findFirst();
     if (!settings) {
@@ -104,7 +109,7 @@ export async function getBlogGenerationSettings(): Promise<BlogGenerationSetting
     }
     return settings as unknown as BlogGenerationSettings;
   } catch (error) {
-    console.error('[BlogAction] Error fetching blog settings:', error);
+    logError('[BlogAction] Error fetching blog settings', error);
     // Return a safe default in case of error
     return {
       id: 'default',
@@ -121,6 +126,7 @@ export async function getBlogGenerationSettings(): Promise<BlogGenerationSetting
  * @returns The updated settings object or null.
  */
 export async function updateBlogGenerationSettings(settingsData: Partial<Omit<BlogGenerationSettings, 'id'>>): Promise<BlogGenerationSettings | null> {
+  logAction('Updating blog generation settings', { settingsData });
   try {
     const currentSettings = await getBlogGenerationSettings();
     const updatedSettings = await db.blogGenerationSettings.update({
@@ -132,7 +138,7 @@ export async function updateBlogGenerationSettings(settingsData: Partial<Omit<Bl
     });
     return updatedSettings as unknown as BlogGenerationSettings;
   } catch (error) {
-    console.error('[BlogAction] Error updating blog settings:', error);
+    logError('[BlogAction] Error updating blog settings', error, { settingsData });
     return null;
   }
 }

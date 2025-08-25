@@ -3,12 +3,14 @@
 
 import { db } from '@/lib/db';
 import type { DailyChallenge } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all daily challenges from the database.
  * @returns A promise that resolves to an array of DailyChallenge objects.
  */
 export async function getChallenges(): Promise<DailyChallenge[]> {
+  logAction('Fetching challenges');
   try {
     const challenges = await db.dailyChallenge.findMany({
       orderBy: {
@@ -17,7 +19,7 @@ export async function getChallenges(): Promise<DailyChallenge[]> {
     });
     return challenges as unknown as DailyChallenge[];
   } catch (error) {
-    console.error('[ChallengeAction] Error fetching challenges:', error);
+    logError('[ChallengeAction] Error fetching challenges', error);
     return [];
   }
 }

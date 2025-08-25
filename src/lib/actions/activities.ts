@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Activity } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all activities, optionally scoped by user.
@@ -10,6 +11,7 @@ import type { Activity } from '@/types';
  * @returns A promise that resolves to an array of Activity objects.
  */
 export async function getActivities(userId?: string): Promise<Activity[]> {
+  logAction('Fetching activities', { userId });
   try {
     const whereClause: any = {};
     if (userId) {
@@ -22,7 +24,7 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
     });
     return activities as unknown as Activity[];
   } catch (error) {
-    console.error('[ActivityAction] Error fetching activities:', error);
+    logError('[ActivityAction] Error fetching activities', error, { userId });
     return [];
   }
 }
@@ -33,13 +35,14 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  * @returns The newly created Activity object or null.
  */
 export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
+    logAction('Creating activity', { userId: activityData.userId, description: activityData.description });
     try {
         const newActivity = await db.activity.create({
             data: activityData,
         });
         return newActivity as unknown as Activity;
     } catch (error) {
-        console.error('[ActivityAction] Error creating activity:', error);
+        logError('[ActivityAction] Error creating activity', error, { userId: activityData.userId });
         return null;
     }
 }

@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all affiliates, optionally scoped by tenant for managers.
@@ -10,6 +11,7 @@ import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from
  * @returns A promise that resolves to an array of Affiliate objects.
  */
 export async function getAffiliates(tenantId?: string): Promise<Affiliate[]> {
+  logAction('Fetching affiliates', { tenantId });
   try {
     const whereClause: any = {};
     if (tenantId) {
@@ -21,7 +23,7 @@ export async function getAffiliates(tenantId?: string): Promise<Affiliate[]> {
     });
     return affiliates as unknown as Affiliate[];
   } catch (error) {
-    console.error('[AffiliateAction] Error fetching affiliates:', error);
+    logError('[AffiliateAction] Error fetching affiliates', error, { tenantId });
     return [];
   }
 }
@@ -32,13 +34,14 @@ export async function getAffiliates(tenantId?: string): Promise<Affiliate[]> {
  * @returns The Affiliate object or null if not found.
  */
 export async function getAffiliateByUserId(userId: string): Promise<Affiliate | null> {
+    logAction('Fetching affiliate by user ID', { userId });
     try {
         const affiliate = await db.affiliate.findUnique({
             where: { userId },
         });
         return affiliate as unknown as Affiliate | null;
     } catch (error) {
-        console.error(`[AffiliateAction] Error fetching affiliate for user ${userId}:`, error);
+        logError(`[AffiliateAction] Error fetching affiliate for user ${userId}`, error, { userId });
         return null;
     }
 }
@@ -49,13 +52,14 @@ export async function getAffiliateByUserId(userId: string): Promise<Affiliate | 
  * @returns The newly created Affiliate object or null.
  */
 export async function createAffiliate(affiliateData: Omit<Affiliate, 'id' | 'totalEarned' | 'createdAt' | 'updatedAt'>): Promise<Affiliate | null> {
+    logAction('Creating affiliate', { userId: affiliateData.userId });
     try {
         const newAffiliate = await db.affiliate.create({
             data: affiliateData,
         });
         return newAffiliate as unknown as Affiliate;
     } catch (error) {
-        console.error('[AffiliateAction] Error creating affiliate:', error);
+        logError('[AffiliateAction] Error creating affiliate', error, { userId: affiliateData.userId });
         return null;
     }
 }
@@ -67,6 +71,7 @@ export async function createAffiliate(affiliateData: Omit<Affiliate, 'id' | 'tot
  * @returns The updated Affiliate object or null.
  */
 export async function updateAffiliateStatus(affiliateId: string, status: AffiliateStatus): Promise<Affiliate | null> {
+    logAction('Updating affiliate status', { affiliateId, status });
     try {
         const updatedAffiliate = await db.affiliate.update({
             where: { id: affiliateId },
@@ -74,7 +79,7 @@ export async function updateAffiliateStatus(affiliateId: string, status: Affilia
         });
         return updatedAffiliate as unknown as Affiliate;
     } catch (error) {
-        console.error(`[AffiliateAction] Error updating affiliate status for ${affiliateId}:`, error);
+        logError(`[AffiliateAction] Error updating affiliate status for ${affiliateId}`, error, { affiliateId, status });
         return null;
     }
 }
@@ -85,6 +90,7 @@ export async function updateAffiliateStatus(affiliateId: string, status: Affilia
  * @returns A promise resolving to an array of AffiliateSignup objects.
  */
 export async function getAffiliateSignups(affiliateId: string): Promise<AffiliateSignup[]> {
+    logAction('Fetching affiliate signups', { affiliateId });
     try {
         const signups = await db.affiliateSignup.findMany({
             where: { affiliateId },
@@ -92,7 +98,7 @@ export async function getAffiliateSignups(affiliateId: string): Promise<Affiliat
         });
         return signups as unknown as AffiliateSignup[];
     } catch (error) {
-        console.error(`[AffiliateAction] Error fetching signups for affiliate ${affiliateId}:`, error);
+        logError(`[AffiliateAction] Error fetching signups for affiliate ${affiliateId}`, error, { affiliateId });
         return [];
     }
 }
@@ -104,6 +110,7 @@ export async function getAffiliateSignups(affiliateId: string): Promise<Affiliat
  * @returns A promise resolving to an array of AffiliateClick objects.
  */
 export async function getAffiliateClicks(affiliateId: string): Promise<AffiliateClick[]> {
+    logAction('Fetching affiliate clicks', { affiliateId });
     try {
         const clicks = await db.affiliateClick.findMany({
             where: { affiliateId },
@@ -111,7 +118,7 @@ export async function getAffiliateClicks(affiliateId: string): Promise<Affiliate
         });
         return clicks as unknown as AffiliateClick[];
     } catch (error) {
-        console.error(`[AffiliateAction] Error fetching clicks for affiliate ${affiliateId}:`, error);
+        logError(`[AffiliateAction] Error fetching clicks for affiliate ${affiliateId}`, error, { affiliateId });
         return [];
     }
 }
