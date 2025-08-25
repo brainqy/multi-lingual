@@ -49,7 +49,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'likes' | 'votedBy' | 'registeredBy' | 'likedBy'>): Promise<CommunityPost | null> {
     console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
     try {
         console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
@@ -63,6 +63,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             tags: postData.tags || [],
             moderationStatus: postData.moderationStatus,
             flagCount: postData.flagCount,
+            flagReasons: [],
             timestamp: new Date(),
             
             // Type-specific fields are only added if they are relevant to the post type
@@ -77,6 +78,8 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             status: postData.type === 'request' ? postData.status : undefined,
             votedBy: [],
             registeredBy: [],
+            likedBy: [],
+            likes: 0,
         };
         console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
@@ -185,6 +188,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
                 tags: updateData.tags ? updateData.tags : undefined,
                 votedBy: updateData.votedBy || undefined,
                 registeredBy: updateData.registeredBy || undefined,
+                flagReasons: updateData.flagReasons || undefined,
             },
             include: {
                 comments: true,
@@ -198,6 +202,64 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
 }
 
 /**
+ * Toggles a like on a community post for a user.
+ * @param postId The ID of the post to like/unlike.
+ * @param userId The ID of the user performing the action.
+ * @returns The updated CommunityPost object or null on failure.
+ */
+export async function toggleLikePost(postId: string, userId: string): Promise<CommunityPost | null> {
+    try {
+        const post = await db.communityPost.findUnique({
+            where: { id: postId },
+            select: { likedBy: true }
+        });
+
+        if (!post) {
+            throw new Error('Post not found');
+        }
+
+        const likedBy = (post.likedBy as string[]) || [];
+        const isLiked = likedBy.includes(userId);
+        
+        let updateData;
+        if (isLiked) {
+            // User is unliking the post
+            updateData = {
+                likes: {
+                    decrement: 1,
+                },
+                likedBy: {
+                    set: likedBy.filter(id => id !== userId),
+                },
+            };
+        } else {
+            // User is liking the post
+            updateData = {
+                likes: {
+                    increment: 1,
+                },
+                likedBy: {
+                    push: userId,
+                },
+            };
+        }
+
+        const updatedPost = await db.communityPost.update({
+            where: { id: postId },
+            data: updateData,
+            include: { comments: true }
+        });
+
+        return updatedPost as unknown as CommunityPost;
+
+    } catch (error) {
+        console.error(`[CommunityAction] Error toggling like for post ${postId}:`, error);
+        return null;
+    }
+}
+
+
+/**
  * Registers a vote for a poll or event for a user, ensuring only one vote/registration per user.
  * @param postId The ID of the post (poll/event).
  * @param userId The ID of the user voting/registering.
@@ -208,21 +270,23 @@ export async function registerUserAction(postId: string, userId: string, type: '
     const post = await db.communityPost.findUnique({ where: { id: postId } });
     if (!post) return { success: false, message: 'Post not found.' };
     if (type === 'vote') {
-        if (post.votedBy.includes(userId)) {
+        const votedBy = (post.votedBy as string[]) || [];
+        if (votedBy.includes(userId)) {
             return { success: false, message: 'You have already voted in this poll.' };
         }
         await db.communityPost.update({
             where: { id: postId },
-            data: { votedBy: [...post.votedBy, userId] }
+            data: { votedBy: [...votedBy, userId] }
         });
         return { success: true, message: 'Vote registered.' };
     } else if (type === 'register') {
-        if (post.registeredBy.includes(userId)) {
+        const registeredBy = (post.registeredBy as string[]) || [];
+        if (registeredBy.includes(userId)) {
             return { success: false, message: 'You have already registered for this event.' };
         }
         await db.communityPost.update({
             where: { id: postId },
-            data: { registeredBy: [...post.registeredBy, userId] }
+            data: { registeredBy: [...registeredBy, userId] }
         });
         return { success: true, message: 'Registration successful.' };
     }

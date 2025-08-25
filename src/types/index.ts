@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -959,7 +960,6 @@ export interface AtsFormattingIssue {
   recommendation: string;
 }
 
-// Schemas for evaluateDailyChallengeAnswer flow
 export const EvaluateDailyChallengeAnswerInputSchema = z.object({
   question: z.string().describe("The interview question that was asked."),
   answer: z.string().describe("The user's answer to the question."),
