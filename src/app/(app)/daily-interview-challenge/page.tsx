@@ -1,13 +1,12 @@
-
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2, Trophy, Send } from 'lucide-react';
-import type { DailyChallenge, UserProfile } from '@/types';
+import type { DailyChallenge, UserProfile, InterviewQuestionCategory } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +15,7 @@ import { createActivity } from "@/lib/actions/activities";
 import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from "@/components/ui/score-circle";
 import { getChallenges } from "@/lib/actions/challenges";
+import { getDashboardData } from "@/lib/actions/dashboard";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
@@ -29,13 +29,22 @@ export default function DailyInterviewChallengePage() {
   const [userAnswer, setUserAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<EvaluateDailyChallengeAnswerOutput | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(user);
 
-  const fetchChallenges = useCallback(async () => {
+  const fetchChallengesAndProgress = useCallback(async () => {
+    if (!user) return;
     setIsLoading(true);
-    const challenges = await getChallenges();
+    const [challenges, dashboardData] = await Promise.all([
+        getChallenges(),
+        getDashboardData(user.tenantId, user.id, user.role)
+    ]);
+    
+    // The dashboard data now contains the dynamically calculated challenge progress
+    const userWithProgress = dashboardData.users.find(u => u.id === user.id);
+    setCurrentUserProfile(userWithProgress || user);
+    
     setAllChallenges(challenges);
     
-    // Set initial random challenges
     const standard = challenges.filter(c => c.type === 'standard');
     const flip = challenges.filter(c => c.type === 'flip');
     if (standard.length > 0) {
@@ -46,13 +55,11 @@ export default function DailyInterviewChallengePage() {
     }
     
     setIsLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
-      fetchChallenges();
-    }
-  }, [user, fetchChallenges]);
+    fetchChallengesAndProgress();
+  }, [fetchChallengesAndProgress]);
 
   const handleRefreshChallenge = () => {
     const allStandardChallenges = allChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
@@ -223,7 +230,7 @@ export default function DailyInterviewChallengePage() {
     );
   };
 
-  if (isLoading || !user) {
+  if (isLoading || !currentUserProfile) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -239,7 +246,7 @@ export default function DailyInterviewChallengePage() {
         </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {standardChallenge && renderStandardChallenge(standardChallenge)}
-        {flipChallenge && renderFlipChallenge(flipChallenge, user)}
+        {flipChallenge && renderFlipChallenge(flipChallenge, currentUserProfile)}
       </div>
     </div>
   );

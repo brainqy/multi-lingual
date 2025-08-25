@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -16,8 +15,69 @@ import type {
   Activity,
   Badge,
   DailyChallenge,
+  ChallengeAction,
 } from '@/types';
 import { Prisma } from '@prisma/client';
+
+async function calculateChallengeProgress(userId: string, challenges: DailyChallenge[]): Promise<UserProfile['challengeProgress']> {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: {
+      _count: {
+        select: {
+          resumeScans: true,
+          jobApplications: true,
+          communityPosts: true,
+          communityComments: true,
+          appointmentsRequester: true,
+        },
+      },
+      referrals: true,
+    },
+  });
+
+  if (!user) return {};
+
+  const progress: UserProfile['challengeProgress'] = {};
+
+  const flipChallenges = challenges.filter(c => c.type === 'flip');
+
+  for (const challenge of flipChallenges) {
+    if (challenge.tasks) {
+      for (const task of challenge.tasks) {
+        let currentCount = 0;
+        switch (task.action) {
+          case 'analyze_resume':
+            currentCount = user._count.resumeScans;
+            break;
+          case 'add_job_application':
+            currentCount = user._count.jobApplications;
+            break;
+          case 'community_post':
+            currentCount = user._count.communityPosts;
+            break;
+          case 'community_comment':
+            currentCount = user._count.communityComments;
+            break;
+          case 'refer':
+            currentCount = user.referrals.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
+            break;
+           case 'book_appointment':
+            currentCount = user._count.appointmentsRequester;
+            break;
+          // Add other cases here as needed
+        }
+        progress[task.action] = {
+          action: task.action,
+          current: currentCount,
+          target: task.target,
+        };
+      }
+    }
+  }
+  return progress;
+}
+
 
 export async function getDashboardData(tenantId?: string | null, userId?: string | null, userRole?: 'admin' | 'manager' | 'user') {
   console.log(`[DashboardAction] Fetching data from database for tenant: ${tenantId}, user: ${userId}`);
@@ -33,8 +93,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     : {};
 
   try {
-    const users = (await db.user.findMany({ where: tenantWhereClause })) as unknown as UserProfile[];
-    // Admins see all tenants, managers see their own.
+    const usersData = (await db.user.findMany({ where: tenantWhereClause })) as unknown as UserProfile[];
     const tenants = (await db.tenant.findMany({ where: tenantId && userRole === 'manager' ? { id: tenantId } : {}, include: { settings: true } })) as unknown as Tenant[];
     const resumeScans = (await db.resumeScanHistory.findMany({ where: tenantWhereClause })) as unknown as ResumeScanHistoryItem[];
     const communityPosts = (await db.communityPost.findMany({ where: platformContentWhereClause, include: { comments: true } })) as unknown as CommunityPost[];
@@ -49,8 +108,16 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
 
+    // Dynamically calculate challenge progress for each user
+    const usersWithProgress = await Promise.all(
+      usersData.map(async (user) => {
+        const progress = await calculateChallengeProgress(user.id, challenges);
+        return { ...user, challengeProgress: progress };
+      })
+    );
+
     return {
-      users,
+      users: usersWithProgress,
       tenants,
       resumeScans,
       communityPosts,
@@ -59,7 +126,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       activities,
       badges,
       promotions,
-      alumni: users as AlumniProfile[],
+      alumni: usersWithProgress as AlumniProfile[],
       mockInterviews,
       systemAlerts,
       challenges,
