@@ -239,7 +239,6 @@ export interface CommunityPost {
   votedBy?: string[];
   registeredBy?: string[];
   likes?: number;
-  likedBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -1284,7 +1283,6 @@ export interface PromoCode {
   usageLimit: number;
   timesUsed?: number;
   isActive: boolean;
-  expiryDays?: number;
 }
 
 export type UserDashboardWidgetId =
@@ -1333,3 +1331,5 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
+
+```

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -6,6 +5,22 @@ import { Prisma } from '@prisma/client';
 import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { createNotification } from './notifications';
+
+/**
+ * Helper function to render text with @mentions
+ * This is a server-side helper if needed, but the primary one is now in the client component.
+ */
+const renderWithMentions = (text: string | null | undefined) => {
+  if (!text) return null;
+  const parts = text.split(/(@[\w\s]+)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('@')) {
+      return { type: 'mention', content: part };
+    }
+    return { type: 'text', content: part };
+  });
+};
+
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -210,15 +225,15 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
-            select: { likedBy: true }
+            select: { votedBy: true }
         });
 
         if (!post) {
             throw new Error('Post not found');
         }
 
-        const likedBy = (post.likedBy as string[]) || [];
-        const isLiked = likedBy.includes(userId);
+        const votedBy = (post.votedBy as string[]) || [];
+        const isLiked = votedBy.includes(userId);
         
         let updateData;
         if (isLiked) {
@@ -227,8 +242,8 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
                 likes: {
                     decrement: 1,
                 },
-                likedBy: {
-                    set: likedBy.filter(id => id !== userId),
+                votedBy: {
+                    set: votedBy.filter(id => id !== userId),
                 },
             };
         } else {
@@ -237,7 +252,7 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
                 likes: {
                     increment: 1,
                 },
-                likedBy: {
+                votedBy: {
                     push: userId,
                 },
             };
@@ -291,4 +306,3 @@ export async function registerUserAction(postId: string, userId: string, type: '
     }
     return { success: false, message: 'Invalid action.' };
 }
-
