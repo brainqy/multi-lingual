@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
-import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost } from '@/lib/actions/community';
+import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost, togglePollVote, toggleEventRegistration, toggleFlagPost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
 
 
@@ -67,7 +67,6 @@ const postSchema = z.object({
 
 type PostFormData = z.infer<typeof postSchema>;
 
-// Helper function to render text with @mentions
 const renderWithMentions = (text: string | null | undefined) => {
   if (!text) return null;
   const parts = text.split(/(@[\w\s]+)/g);
@@ -309,19 +308,15 @@ export default function CommunityFeedPage() {
       toast({ title: "Error", description: "Failed to add comment.", variant: "destructive" });
     }
   };
-
+  
   const handleVote = async (postId: string, optionIndex: number) => {
-    const postToUpdate = posts.find(p => p.id === postId);
-    if (postToUpdate?.type === 'poll' && postToUpdate.pollOptions) {
-        const newPollOptions = [...postToUpdate.pollOptions];
-        if (newPollOptions[optionIndex]) {
-            newPollOptions[optionIndex] = { ...newPollOptions[optionIndex], votes: (newPollOptions[optionIndex].votes || 0) + 1 };
-            const updatedPost = await updateCommunityPost(postId, { pollOptions: newPollOptions });
-            if (updatedPost) {
-              setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
-              toast({ title: "Vote Recorded", description: "Your vote has been cast." });
-            }
-        }
+    if (!currentUser) return;
+    const updatedPost = await togglePollVote(postId, optionIndex, currentUser.id);
+    if (updatedPost) {
+      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      toast({ title: updatedPost.message });
+    } else {
+      toast({ title: "Error", description: "Could not process vote.", variant: "destructive" });
     }
   };
 
@@ -349,27 +344,21 @@ export default function CommunityFeedPage() {
           costInCoins: 0,
       };
       
-      // This part would ideally be a server action createAppointment
-      // For now, we simulate by just showing a toast
       toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
     }
   };
   
-  const handleRegisterForEvent = async (postId: string, eventTitle?: string) => {
-    const postToUpdate = posts.find(p => p.id === postId);
-    if (!postToUpdate || postToUpdate.type !== 'event') return;
-
-    if (postToUpdate.capacity !== undefined && postToUpdate.capacity > 0 && (postToUpdate.attendees || 0) >= postToUpdate.capacity) {
-      toast({ title: "Registration Failed", description: `Cannot register for "${eventTitle || 'the event'}". It is full.`, variant: "destructive"});
-      return;
-    }
-    
-    const updatedPost = await updateCommunityPost(postId, { attendees: (postToUpdate.attendees || 0) + 1 });
+  const handleRegisterForEvent = async (postId: string) => {
+    if (!currentUser) return;
+    const updatedPost = await toggleEventRegistration(postId, currentUser.id);
     if (updatedPost) {
       setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
-      toast({ title: "Registered for Event!", description: `You've successfully registered for "${eventTitle || 'the event'}".`});
+      toast({ title: updatedPost.message });
+    } else {
+      toast({ title: "Error", description: "Could not process registration.", variant: "destructive" });
     }
   };
+
 
   const openNewPostDialog = () => {
     setEditingPost(null);
@@ -395,17 +384,18 @@ export default function CommunityFeedPage() {
   };
   
   const handleFlagPost = async (postId: string) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) return;
-    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'flagged', flagCount: (post.flagCount || 0) + 1 });
-    if(updatedPost) {
+    if (!currentUser) return;
+    const updatedPost = await toggleFlagPost(postId, currentUser.id, "Inappropriate");
+    if (updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
-        toast({ title: "Post Flagged", description: "The post has been flagged for review." });
+        toast({ title: updatedPost.message });
+    } else {
+        toast({ title: "Error", description: "Failed to update flag status.", variant: "destructive" });
     }
   };
 
   const handleApprovePost = async (postId: string) => {
-    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0 });
+    const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flaggedBy: [] });
     if(updatedPost) {
         setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
         toast({ title: "Post Approved", description: "The post is now visible." });
@@ -693,15 +683,18 @@ export default function CommunityFeedPage() {
                         )}
 
                         {post.type === 'poll' && post.pollOptions && (
-                            <div className='mt-2'>
-                                {post.pollOptions?.map((option, index) => (
-                                <div key={index} className="flex items-center space-x-2 mb-1 group cursor-pointer p-1.5 rounded hover:bg-primary/10" onClick={() => handleVote(post.id, index)}>
-                                    <div className={cn("h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0", "border-primary group-hover:border-primary/70")}>
-                                    </div>
-                                    <Label htmlFor={`poll-option-${post.id}-${index}`} className="text-sm text-foreground cursor-pointer">{option.option} ({option.votes})</Label>
-                                </div>
-                                ))}
-                            </div>
+                          <div className="mt-2 space-y-2">
+                            {post.pollOptions.map((option, index) => (
+                              <Button
+                                key={index}
+                                variant={post.votedBy?.includes(`${currentUser.id}-${index}`) ? 'default' : 'outline'}
+                                className="w-full justify-start"
+                                onClick={() => handleVote(post.id, index)}
+                              >
+                                {option.option} ({option.votes})
+                              </Button>
+                            ))}
+                          </div>
                         )}
                         {post.type === 'event' && (
                           <div className="border rounded-md p-3 space-y-1 bg-secondary/30 mt-2">
@@ -718,8 +711,8 @@ export default function CommunityFeedPage() {
                               <p className="text-xs text-muted-foreground flex items-center gap-1"><UsersIcon className="h-3 w-3" /> Unlimited spots</p>
                              )}
                             {post.eventDate && dateIsFuture(new Date(post.eventDate)) && ((post.attendees || 0) < (post.capacity || Infinity) || post.capacity === 0) && (
-                              <Button variant="outline" size="sm" className="mt-2 text-primary border-primary hover:bg-primary/10" onClick={() => handleRegisterForEvent(post.id, post.eventTitle)}>
-                                <Ticket className="mr-1 h-4 w-4"/> Register Now
+                               <Button variant="outline" size="sm" className={cn("mt-2", post.registeredBy?.includes(currentUser.id) ? "bg-primary/20" : "text-primary border-primary hover:bg-primary/10")} onClick={() => handleRegisterForEvent(post.id)}>
+                                <Ticket className="mr-1 h-4 w-4"/> {post.registeredBy?.includes(currentUser.id) ? "Unregister" : "Register Now"}
                               </Button>
                             )}
                              {post.eventDate && dateIsFuture(new Date(post.eventDate)) && (post.attendees || 0) >= (post.capacity || 0) && post.capacity !== 0 && (
@@ -777,8 +770,19 @@ export default function CommunityFeedPage() {
                             </>
                             ) : (
                             post.userId !== currentUser.id && (
-                                <Button variant="ghost" size="xs" onClick={() => handleFlagPost(post.id)} className="text-yellow-600 hover:text-yellow-700 ml-auto h-7 px-2 py-1">
-                                    <Flag className="mr-1 h-3 w-3" /> Flag
+                                <Button
+                                  variant="ghost"
+                                  size="xs"
+                                  onClick={() => handleFlagPost(post.id)}
+                                  className={cn(
+                                    "ml-auto h-7 px-2 py-1",
+                                    post.flaggedBy?.includes(currentUser.id)
+                                      ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                                      : "text-yellow-600 hover:text-yellow-700"
+                                  )}
+                                >
+                                  <Flag className="mr-1 h-3 w-3" />
+                                  {post.flaggedBy?.includes(currentUser.id) ? "Flagged" : "Flag"}
                                 </Button>
                             )
                             )}
@@ -869,5 +873,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-
-    

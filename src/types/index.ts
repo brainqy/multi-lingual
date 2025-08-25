@@ -1,5 +1,3 @@
-
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -238,6 +236,7 @@ export interface CommunityPost {
   bookmarkedBy?: string[];
   votedBy?: string[];
   registeredBy?: string[];
+  flaggedBy?: string[];
 }
 
 export interface FeatureRequest {
@@ -401,7 +400,6 @@ export interface UserProfile extends AlumniProfile {
   }>;
   sessionId?: string;
   streakFreezes?: number;
-  completedChallengeIds?: string[];
 
   // Notification Preferences
   emailNotificationsEnabled?: boolean;
@@ -522,7 +520,6 @@ export interface ReferralHistoryItem {
     referralDate: string;
     status: ReferralStatus;
     rewardAmount?: number;
-    referredUserId?: string; // Optional, for frontend use
 }
 
 export interface GamificationRule {
@@ -685,23 +682,22 @@ export interface InterviewQuestionUserRating {
   rating: number; // 1-5
 }
 
-export interface DailyChallenge {
+export type DailyChallenge = {
   id: string;
   type: 'standard' | 'flip';
-  date?: string;
+  date: string;
   title: string;
   description: string;
-  difficulty?: "Easy" | "Medium" | "Hard";
-  category?: InterviewQuestionCategory;
-  solution?: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: InterviewQuestionCategory;
+  solution: string;
   xpReward?: number;
   tasks?: {
     description: string;
-    action: ChallengeAction;
+    action: "refer" | "attend_interview" | "take_interview" | "analyze_resume" | "post_job" | "power_edit_resume" | "create_quiz" | "book_appointment";
     target: number;
   }[];
 }
-
 
 export interface InterviewQuestion {
   id: string;
@@ -716,6 +712,7 @@ export interface InterviewQuestion {
   difficulty?: InterviewQuestionDifficulty;
   rating?: number;
   ratingsCount?: number;
+  userRatings?: InterviewQuestionUserRating[];
   userComments?: InterviewQuestionUserComment[];
   createdBy?: string;
   approved?: boolean;
@@ -914,7 +911,6 @@ export interface PlatformSettings {
   aiResumeWriterEnabled: boolean;
   coverLetterGeneratorEnabled: boolean;
   mockInterviewEnabled: boolean;
-  aiMockInterviewCost: number;
   referralsEnabled: boolean;
   affiliateProgramEnabled: boolean;
   alumniConnectEnabled: boolean;
@@ -959,20 +955,6 @@ export interface AtsFormattingIssue {
   issue: string;
   recommendation: string;
 }
-
-export const EvaluateDailyChallengeAnswerInputSchema = z.object({
-  question: z.string().describe("The interview question that was asked."),
-  answer: z.string().describe("The user's answer to the question."),
-  solution: z.string().optional().describe("The ideal solution or key points for a correct answer."),
-});
-export type EvaluateDailyChallengeAnswerInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
-
-export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
-  feedback: z.string().describe("Constructive feedback on the user's answer, explaining what was good and what could be improved."),
-  score: z.number().min(0).max(100).describe("A numerical score (0-100) evaluating the quality of the answer."),
-  isCorrect: z.boolean().describe("A boolean indicating if the answer is fundamentally correct."),
-});
-export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
 
 export const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
   resumeText: z.string().describe('The text content of the resume.'),
