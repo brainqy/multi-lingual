@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -25,7 +26,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
     include: {
       _count: {
         select: {
-          resumeScans: true,
+          resumeScanHistories: true,
           jobApplications: true,
           communityPosts: true,
           communityComments: true,
@@ -48,7 +49,7 @@ async function calculateChallengeProgress(userId: string, challenges: DailyChall
         let currentCount = 0;
         switch (task.action) {
           case 'analyze_resume':
-            currentCount = user._count.resumeScans;
+            currentCount = user._count.resumeScanHistories;
             break;
           case 'add_job_application':
             currentCount = user._count.jobApplications;
