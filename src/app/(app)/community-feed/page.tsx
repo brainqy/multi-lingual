@@ -68,9 +68,9 @@ const postSchema = z.object({
 type PostFormData = z.infer<typeof postSchema>;
 
 // Helper function to render text with @mentions
-const renderCommentWithMentions = (text: string) => {
+const renderWithMentions = (text: string | null | undefined) => {
   if (!text) return null;
-  const parts = text.split(/(@\w+)/g);
+  const parts = text.split(/(@[\w\s]+)/g);
   return parts.map((part, i) => {
     if (part.startsWith('@')) {
       return <strong key={i} className="text-primary font-semibold">{part}</strong>;
@@ -104,7 +104,7 @@ const CommentThread = ({ comment, allComments, onReply, onCommentSubmit, level, 
             <p className="text-xs font-semibold text-foreground">{comment.userName}</p>
             <p className="text-[10px] text-muted-foreground/80">{formatDistanceToNow(new Date(comment.timestamp), { addSuffix: true })}</p>
           </div>
-          <p className="text-sm mt-0.5">{renderCommentWithMentions(comment.comment)}</p>
+          <p className="text-sm mt-0.5">{renderWithMentions(comment.comment)}</p>
         </div>
         <Button variant="link" size="xs" className="text-xs text-muted-foreground p-0 h-auto mt-0.5" onClick={() => onReply(comment.id, comment.userName)}>Reply</Button>
         {replyingToCommentId === comment.id && (
@@ -872,4 +872,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-
