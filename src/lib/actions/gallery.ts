@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { GalleryEvent, UserProfile } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all gallery events for an admin/manager view.
@@ -10,6 +11,7 @@ import type { GalleryEvent, UserProfile } from '@/types';
  * @returns A promise that resolves to an array of GalleryEvent objects.
  */
 export async function getAllGalleryEvents(tenantId?: string): Promise<GalleryEvent[]> {
+  logAction('Fetching all gallery events', { tenantId });
   try {
     const whereClause: any = {};
     if (tenantId) {
@@ -21,7 +23,7 @@ export async function getAllGalleryEvents(tenantId?: string): Promise<GalleryEve
     });
     return events as unknown as GalleryEvent[];
   } catch (error) {
-    console.error('[GalleryAction] Error fetching all events:', error);
+    logError('[GalleryAction] Error fetching all events', error, { tenantId });
     return [];
   }
 }
@@ -33,6 +35,7 @@ export async function getAllGalleryEvents(tenantId?: string): Promise<GalleryEve
  * @returns A promise that resolves to an array of GalleryEvent objects.
  */
 export async function getVisibleGalleryEvents(currentUser: UserProfile): Promise<GalleryEvent[]> {
+  logAction('Fetching visible gallery events', { userId: currentUser.id });
   try {
     if (!currentUser) return [];
     
@@ -52,7 +55,7 @@ export async function getVisibleGalleryEvents(currentUser: UserProfile): Promise
 
     return events as unknown as GalleryEvent[];
   } catch (error) {
-    console.error('[GalleryAction] Error fetching visible events:', error);
+    logError('[GalleryAction] Error fetching visible events', error, { userId: currentUser.id });
     return [];
   }
 }
@@ -63,6 +66,7 @@ export async function getVisibleGalleryEvents(currentUser: UserProfile): Promise
  * @returns The newly created GalleryEvent object or null.
  */
 export async function createGalleryEvent(eventData: Omit<GalleryEvent, 'id'>): Promise<GalleryEvent | null> {
+  logAction('Creating gallery event', { title: eventData.title, createdBy: eventData.createdByUserId });
   try {
     const newEvent = await db.galleryEvent.create({
       data: {
@@ -74,7 +78,7 @@ export async function createGalleryEvent(eventData: Omit<GalleryEvent, 'id'>): P
     });
     return newEvent as unknown as GalleryEvent;
   } catch (error) {
-    console.error('[GalleryAction] Error creating event:', error);
+    logError('[GalleryAction] Error creating event', error, { title: eventData.title });
     return null;
   }
 }
@@ -86,6 +90,7 @@ export async function createGalleryEvent(eventData: Omit<GalleryEvent, 'id'>): P
  * @returns The updated GalleryEvent object or null.
  */
 export async function updateGalleryEvent(eventId: string, updateData: Partial<Omit<GalleryEvent, 'id'>>): Promise<GalleryEvent | null> {
+  logAction('Updating gallery event', { eventId });
   try {
     const updatedEvent = await db.galleryEvent.update({
       where: { id: eventId },
@@ -96,7 +101,7 @@ export async function updateGalleryEvent(eventId: string, updateData: Partial<Om
     });
     return updatedEvent as unknown as GalleryEvent;
   } catch (error) {
-    console.error(`[GalleryAction] Error updating event ${eventId}:`, error);
+    logError(`[GalleryAction] Error updating event ${eventId}`, error, { eventId });
     return null;
   }
 }
@@ -107,13 +112,14 @@ export async function updateGalleryEvent(eventId: string, updateData: Partial<Om
  * @returns A boolean indicating success.
  */
 export async function deleteGalleryEvent(eventId: string): Promise<boolean> {
+  logAction('Deleting gallery event', { eventId });
   try {
     await db.galleryEvent.delete({
       where: { id: eventId },
     });
     return true;
   } catch (error) {
-    console.error(`[GalleryAction] Error deleting event ${eventId}:`, error);
+    logError(`[GalleryAction] Error deleting event ${eventId}`, error, { eventId });
     return false;
   }
 }
