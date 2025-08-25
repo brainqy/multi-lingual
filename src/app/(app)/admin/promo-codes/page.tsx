@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy, Loader2, Coins, Star, Zap, ShieldCheck } from "lucide-react";
+import { Gift, PlusCircle, Edit3, Trash2, Wand2, Copy, Loader2, Coins, Star, Zap, ShieldCheck, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PromoCode } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isPast } from "date-fns";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -88,18 +88,33 @@ export default function PromoCodeManagementPage() {
   const stats = useMemo(() => {
     const totalCodes = promoCodes.length;
     const totalRedemptions = promoCodes.reduce((sum, code) => sum + (code.timesUsed || 0), 0);
-    const typeCounts = promoCodes.reduce((acc, code) => {
-      acc[code.rewardType] = (acc[code.rewardType] || 0) + 1;
+    
+    const isAvailable = (code: PromoCode) => {
+      return code.isActive &&
+             (!code.expiresAt || !isPast(new Date(code.expiresAt))) &&
+             (code.usageLimit === 0 || (code.timesUsed || 0) < code.usageLimit);
+    };
+
+    const typeStats = promoCodes.reduce((acc, code) => {
+      const type = code.rewardType;
+      if (!acc[type]) {
+        acc[type] = { total: 0, available: 0 };
+      }
+      acc[type].total += 1;
+      if (isAvailable(code)) {
+        acc[type].available += 1;
+      }
       return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<string, { total: number, available: number }>);
 
     return {
       totalCodes,
       totalRedemptions,
-      coins: typeCounts['coins'] || 0,
-      xp: typeCounts['xp'] || 0,
-      flash_coins: typeCounts['flash_coins'] || 0,
-      streak_freeze: typeCounts['streak_freeze'] || 0,
+      coins: typeStats['coins'] || { total: 0, available: 0 },
+      xp: typeStats['xp'] || { total: 0, available: 0 },
+      flash_coins: typeStats['flash_coins'] || { total: 0, available: 0 },
+      streak_freeze: typeStats['streak_freeze'] || { total: 0, available: 0 },
+      premium_days: typeStats['premium_days'] || { total: 0, available: 0 },
     };
   }, [promoCodes]);
 
@@ -252,12 +267,13 @@ export default function PromoCodeManagementPage() {
         {t("promoCodes.description")}
       </CardDescription>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricCard icon={Gift} title="Total Codes" value={stats.totalCodes} />
         <MetricCard icon={CheckCircle} title="Total Redemptions" value={stats.totalRedemptions} />
-        <MetricCard icon={Coins} title="Coin Codes" value={stats.coins} />
-        <MetricCard icon={Star} title="XP Codes" value={stats.xp} />
-        <MetricCard icon={Zap} title="Flash Coin Codes" value={stats.flash_coins} />
+        <MetricCard icon={Coins} title="Coin Codes" value={`${stats.coins.available} / ${stats.coins.total}`} description="Available / Total" />
+        <MetricCard icon={Star} title="XP Codes" value={`${stats.xp.available} / ${stats.xp.total}`} description="Available / Total"/>
+        <MetricCard icon={Zap} title="Flash Coin Codes" value={`${stats.flash_coins.available} / ${stats.flash_coins.total}`} description="Available / Total"/>
+        <MetricCard icon={ShieldCheck} title="Streak Freeze Codes" value={`${stats.streak_freeze.available} / ${stats.streak_freeze.total}`} description="Available / Total"/>
       </div>
 
       <Card>
@@ -456,3 +472,4 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
+
