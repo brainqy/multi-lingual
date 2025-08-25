@@ -403,6 +403,7 @@ export interface UserProfile extends AlumniProfile {
   }>;
   sessionId?: string;
   streakFreezes?: number;
+  completedChallengeIds?: string[];
 
   // Notification Preferences
   emailNotificationsEnabled?: boolean;
@@ -717,7 +718,6 @@ export interface InterviewQuestion {
   difficulty?: InterviewQuestionDifficulty;
   rating?: number;
   ratingsCount?: number;
-  userRatings?: InterviewQuestionUserRating[];
   userComments?: InterviewQuestionUserComment[];
   createdBy?: string;
   approved?: boolean;
@@ -1332,4 +1332,3 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
-

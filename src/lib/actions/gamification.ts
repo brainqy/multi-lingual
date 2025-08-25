@@ -8,7 +8,8 @@ import { createActivity } from './activities';
 import { getChallenges } from './challenges';
 
 /**
- * Checks a user's activity against active Flip Challenge tasks and awards XP if a task is completed.
+ * Checks a user's activity against active Flip Challenge tasks. If all tasks for a challenge
+ * are complete and haven't been rewarded yet, it awards the XP for that challenge.
  * @param userId The ID of the user to check.
  * @returns The user profile, potentially updated with new XP.
  */
@@ -33,13 +34,18 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
 
     const challenges = await getChallenges();
     const flipChallenges = challenges.filter(c => c.type === 'flip');
-    if (flipChallenges.length === 0) return user;
+    if (flipChallenges.length === 0) return user as unknown as UserProfile;
 
     let totalXpGained = 0;
+    const completedChallengeIds = new Set(user.completedChallengeIds || []);
+    let newChallengesCompleted = false;
 
     for (const challenge of flipChallenges) {
-        if (!challenge.tasks) continue;
+        if (!challenge.tasks || completedChallengeIds.has(challenge.id)) {
+            continue; // Skip if no tasks or already completed
+        }
 
+        let allTasksCompleted = true;
         for (const task of challenge.tasks) {
             let currentCount = 0;
             switch (task.action) {
@@ -63,24 +69,31 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
                     break;
             }
 
-            // This logic is simplistic. A real app would need to track which tasks have already been rewarded
-            // to prevent awarding XP multiple times for the same task completion (e.g., on the 4th, 5th scan etc.)
-            // For this demo, we assume if the count equals the target, they just hit it.
-            if (currentCount === task.target) {
-                if (challenge.xpReward) {
-                    totalXpGained += challenge.xpReward;
-                    await createActivity({
-                        userId: user.id,
-                        tenantId: user.tenantId,
-                        description: `Task complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
-                    });
-                }
+            if (currentCount < task.target) {
+                allTasksCompleted = false;
+                break; // Exit early if one task is not complete
+            }
+        }
+
+        if (allTasksCompleted) {
+            if (challenge.xpReward) {
+                totalXpGained += challenge.xpReward;
+                completedChallengeIds.add(challenge.id);
+                newChallengesCompleted = true;
+                await createActivity({
+                    userId: user.id,
+                    tenantId: user.tenantId,
+                    description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
+                });
             }
         }
     }
 
-    if (totalXpGained > 0) {
-        const updatedUser = await updateUser(userId, { xpPoints: (user.xpPoints || 0) + totalXpGained });
+    if (totalXpGained > 0 && newChallengesCompleted) {
+        const updatedUser = await updateUser(userId, { 
+            xpPoints: (user.xpPoints || 0) + totalXpGained,
+            completedChallengeIds: Array.from(completedChallengeIds),
+        });
         return updatedUser;
     }
 
