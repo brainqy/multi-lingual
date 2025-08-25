@@ -241,9 +241,10 @@ model CommunityPost {
   comments          CommunityComment[]
   bookmarkedBy      String[]
   votedBy           String[]
-  registeredBy      String[]
+  registeredBy      String[]?
   likes             Int
-  likedBy           String[]
+  likedBy           String[]?
+  flaggedBy         String[]?
 }
 
 model CommunityComment {
