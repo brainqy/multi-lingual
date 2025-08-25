@@ -16,11 +16,13 @@ import { createActivity } from "@/lib/actions/activities";
 import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from "@/components/ui/score-circle";
 import { getDashboardData } from "@/lib/actions/dashboard";
+import { useRouter } from "next/navigation";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const { user, login } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   
   const [allChallenges, setAllChallenges] = useState<DailyChallenge[]>([]);
@@ -222,7 +224,7 @@ export default function DailyInterviewChallengePage() {
             </div>
         </CardContent>
         <CardFooter className="flex justify-end mt-auto border-t pt-4">
-          <Button onClick={() => toast({ title: "Keep Going!", description: "Complete tasks across the platform to earn XP."})}>{t("dailyChallenge.completeTasksButton")}</Button>
+          <Button onClick={() => router.push('/dashboard')}>{t("dailyChallenge.completeTasksButton")}</Button>
         </CardFooter>
     </Card>
     );
@@ -249,5 +251,3 @@ export default function DailyInterviewChallengePage() {
     </div>
   );
 }
-
-    
