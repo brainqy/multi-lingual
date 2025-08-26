@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type React from 'react';
@@ -27,7 +28,7 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
   // Ensure weeklyActivity is always an array of 7
   const displayActivity = userProfile.weeklyActivity && userProfile.weeklyActivity.length === 7 
     ? userProfile.weeklyActivity 
-    : Array(7).fill(false);
+    : Array(7).fill(0);
   
   const adjustedDayLabels = [...Array(7)].map((_, i) => {
     const dayOffset = (todayIndex - (6 - i) + 7) % 7;
@@ -110,7 +111,7 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
                 <strong>Daily Streak:</strong> Your streak increases by one for every consecutive day you log in.
               </p>
               <p>
-                <strong>Weekly Activity:</strong> The flames show your login activity for the last 7 days, with today on the right.
+                <strong>Weekly Activity:</strong> The flames show your login activity for the last 7 days, with today on the right. A shield indicates a day saved by a Free Pass.
               </p>
               <p>
                 <strong>Free Pass (Streak Freeze):</strong> If you miss a day, a Free Pass will be used automatically to protect your streak. You can earn more through special achievements!

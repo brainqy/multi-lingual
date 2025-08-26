@@ -1,4 +1,5 @@
 
+
 import { PrismaClient } from '@prisma/client';
 
 
@@ -71,7 +72,7 @@ async function main() {
       longestStreak: 5,
       lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
       streakFreezes: 1,
-      weeklyActivity: [true, true, true, true, true, false, false],
+      weeklyActivity: [1, 1, 1, 1, 1, 0, 0],
     },
     create: {
       email: 'admin@bhashasetu.com',
@@ -83,7 +84,7 @@ async function main() {
       longestStreak: 5,
       lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
       streakFreezes: 1,
-      weeklyActivity: [true, true, true, true, true, false, false], // Logged in 5 days, missed yesterday
+      weeklyActivity: [1, 1, 1, 1, 1, 0, 0], // Logged in 5 days, missed yesterday
     },
   })
 

@@ -238,6 +238,8 @@ export interface CommunityPost {
   bookmarkedBy?: string[];
   votedBy?: string[];
   registeredBy?: string[];
+  likedBy?: string[];
+  likes?: number;
 }
 
 export interface FeatureRequest {
@@ -385,7 +387,7 @@ export interface UserProfile extends AlumniProfile {
   dailyStreak?: number;
   longestStreak?: number;
   totalActiveDays?: number;
-  weeklyActivity?: boolean[];
+  weeklyActivity?: number[];
   referralCode?: string;
   earnedBadges?: string[];
   affiliateCode?: string;
@@ -459,6 +461,7 @@ export type WalletTransaction = {
   description: string;
   amount: number;
   type: 'credit' | 'debit';
+  currency: 'coins' | 'xp';
 };
 
 export type Wallet = {
@@ -684,19 +687,19 @@ export interface InterviewQuestionUserRating {
   rating: number; // 1-5
 }
 
-export type DailyChallenge = {
+export interface DailyChallenge {
   id: string;
   type: 'standard' | 'flip';
-  date: string;
+  date?: string;
   title: string;
   description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  category: InterviewQuestionCategory;
-  solution: string;
+  difficulty?: "Easy" | "Medium" | "Hard";
+  category?: InterviewQuestionCategory;
+  solution?: string;
   xpReward?: number;
   tasks?: {
     description: string;
-    action: "refer" | "attend_interview" | "take_interview" | "analyze_resume" | "post_job" | "power_edit_resume" | "create_quiz" | "book_appointment";
+    action: ChallengeAction;
     target: number;
   }[];
 }
