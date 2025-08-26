@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type React from 'react';
@@ -35,8 +34,8 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
     return t(`dailyStreakPopup.dayLabels.${dayLabelsKeys[dayOffset]}` as any, { defaultValue: dayLabelsKeys[dayOffset]});
   });
 
-  const getActivityIcon = (activityStatus: number | boolean) => {
-    if (activityStatus === 1 || activityStatus === true) { // Active
+  const getActivityIcon = (activityStatus: number) => {
+    if (activityStatus === 1) { // Active
       return <Flame className="h-5 w-5 text-white" />;
     }
     if (activityStatus === 2) { // Saved by freeze
@@ -80,7 +79,7 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
                 )}
                 <div className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center border-2",
-                  activityStatus === 1 || activityStatus === true ? "bg-pink-500 border-pink-400" :
+                  activityStatus === 1 ? "bg-pink-500 border-pink-400" :
                   activityStatus === 2 ? "bg-cyan-500 border-cyan-400" :
                   "bg-gray-600 border-gray-500"
                 )}>
@@ -129,3 +128,5 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
     </Dialog>
   );
 }
+
+    
