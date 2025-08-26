@@ -38,7 +38,17 @@ export default function ContentModerationPage() {
   }, [fetchPosts]);
 
   const flaggedPosts = useMemo(() => {
-    return posts.filter(post => post.moderationStatus === 'flagged');
+    return posts
+      .filter(post => post.moderationStatus === 'flagged')
+      .sort((a, b) => {
+        // Sort by flagCount descending (higher count first)
+        const flagCountDiff = (b.flagCount || 0) - (a.flagCount || 0);
+        if (flagCountDiff !== 0) {
+          return flagCountDiff;
+        }
+        // If flag counts are equal, sort by timestamp descending (most recent first)
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
   }, [posts]);
 
   const handleApprove = async (postId: string) => {
