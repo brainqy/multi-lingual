@@ -8,6 +8,7 @@ import { getWallet, updateWallet, addXp } from './wallet';
 import { checkAndAwardBadges } from './gamification';
 //import from node modules instead of @prisma/client to avoid TS errors
 import { Prisma } from '@prisma/client';
+import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from '@/lib/actions/activities';
 
 /**
