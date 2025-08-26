@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { Wallet, WalletTransaction } from '@/types';
 import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
+import { updateUser } from '@/lib/data-services/users';
 
 /**
  * Fetches a user's wallet, creating one if it doesn't exist.
@@ -42,7 +43,8 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
             description: "Initial account bonus",
             amount: 100,
             type: 'credit',
-            date: new Date(), // Add the missing date field
+            currency: 'coins',
+            date: new Date(),
         }
       });
 
@@ -73,10 +75,10 @@ export async function getWallet(userId: string): Promise<Wallet | null> {
 }
 
 /**
- * Updates a user's wallet balance and creates a transaction record.
+ * Updates a user's wallet balance and creates a transaction record for coins.
  * @param userId The ID of the user.
- * @param data The data to update (e.g., new coin balance).
- * @param transactionDescription A description of the transaction.
+ * @param update The data to update (e.g., new coin balance).
+ * @param description A description of the transaction.
  * @returns The updated Wallet object or null on error.
  */
 export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 'coins' | 'flashCoins'>>, description?: string): Promise<void> {
@@ -84,33 +86,80 @@ export async function updateWallet(userId: string, update: Partial<Pick<Wallet, 
     try {
         const currentWallet = await db.wallet.findUnique({ where: { userId } });
         if (!currentWallet) {
-            // If for some reason the wallet doesn't exist, create it
-            await getWallet(userId);
+            await getWallet(userId); // Creates a wallet if it doesn't exist
+            // Re-run the update after creation
+            await updateWallet(userId, update, description);
+            return;
         }
 
-        const oldCoins = currentWallet!.coins;
+        const oldCoins = currentWallet.coins;
         const newCoins = update.coins ?? oldCoins;
         const amountChange = newCoins - oldCoins;
 
         await db.wallet.update({
             where: { userId },
             data: {
-                coins: update.coins
+                coins: update.coins,
+                flashCoins: update.flashCoins ? update.flashCoins as any : undefined,
             },
         });
 
         if (amountChange !== 0 && description) {
              await db.walletTransaction.create({
                 data: {
-                    walletId: currentWallet!.id,
+                    walletId: currentWallet.id,
                     description: description,
                     amount: amountChange,
-                    type: amountChange > 0 ? 'credit' : 'debit'
+                    type: amountChange > 0 ? 'credit' : 'debit',
+                    currency: 'coins',
                 }
             });
         }
-
     } catch (error) {
         logError(`[WalletAction] Error updating wallet for user ${userId}`, error, { userId });
+    }
+}
+
+
+/**
+ * Adds XP to a user's profile and records a transaction in their wallet history.
+ * @param userId The ID of the user.
+ * @param xpToAdd The amount of XP to add.
+ * @param description A description of why the XP was awarded.
+ * @returns The updated UserProfile or null on error.
+ */
+export async function addXp(userId: string, xpToAdd: number, description: string): Promise<UserProfile | null> {
+    logAction('Adding XP to user', { userId, xpToAdd, description });
+    if (xpToAdd <= 0) return null;
+
+    try {
+        const user = await db.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            logError('[WalletAction] User not found for adding XP', {}, { userId });
+            return null;
+        }
+
+        const wallet = await getWallet(userId);
+        if (!wallet) {
+             logError('[WalletAction] Wallet not found for adding XP transaction', {}, { userId });
+             return null;
+        }
+
+        const updatedUser = await updateUser(userId, { xpPoints: (user.xpPoints || 0) + xpToAdd });
+
+        await db.walletTransaction.create({
+            data: {
+                walletId: wallet.id,
+                description: description,
+                amount: xpToAdd,
+                type: 'credit',
+                currency: 'xp'
+            }
+        });
+
+        return updatedUser;
+    } catch (error) {
+        logError(`[WalletAction] Error adding XP for user ${userId}`, error, { userId });
+        return null;
     }
 }

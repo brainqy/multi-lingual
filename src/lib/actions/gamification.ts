@@ -7,6 +7,7 @@ import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from './activities';
 import { getChallenges } from './challenges';
 import { logAction, logError } from '@/lib/logger';
+import { addXp } from './wallet';
 
 /**
  * Checks a user's activity against active Flip Challenge tasks. If all tasks for a challenge
@@ -46,6 +47,7 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
     let totalXpGained = 0;
     const completedChallengeIds = new Set(user.completedChallengeIds || []);
     let newChallengesCompleted = false;
+    let finalUpdatedUser: UserProfile | null = user as unknown as UserProfile;
 
     for (const challenge of flipChallenges) {
         if (!challenge.tasks || completedChallengeIds.has(challenge.id)) {
@@ -71,28 +73,28 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
 
         if (allTasksCompleted) {
             if (challenge.xpReward) {
-                totalXpGained += challenge.xpReward;
-                completedChallengeIds.add(challenge.id);
-                newChallengesCompleted = true;
-                await createActivity({
-                    userId: user.id,
-                    tenantId: user.tenantId,
-                    description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
-                });
+                const updatedUserWithXp = await addXp(userId, challenge.xpReward, `Flip Challenge: ${challenge.title}`);
+                if (updatedUserWithXp) {
+                    finalUpdatedUser = updatedUserWithXp;
+                    completedChallengeIds.add(challenge.id);
+                    newChallengesCompleted = true;
+                    await createActivity({
+                        userId: user.id,
+                        tenantId: user.tenantId,
+                        description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
+                    });
+                }
             }
         }
     }
 
-    if (totalXpGained > 0 && newChallengesCompleted) {
-        logAction('Awarding XP for completed flip challenges', { userId, totalXpGained });
-       
-        const updatedUser = await updateUser(userId, { 
-            xpPoints: (user.xpPoints || 0) + totalXpGained,
-        });
-        return updatedUser;
+    if (newChallengesCompleted) {
+        const finalUserWithCompletion = await updateUser(userId, { completedChallengeIds: Array.from(completedChallengeIds) });
+        return finalUserWithCompletion || finalUpdatedUser;
     }
 
-    return user as unknown as UserProfile;
+
+    return finalUpdatedUser;
 }
 
 
@@ -157,9 +159,13 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
       logAction('Awarding new badges', { userId, count: newlyAwardedBadges.length, badges: newlyAwardedBadges.map(b => b.name) });
       const totalXpReward = newlyAwardedBadges.reduce((sum, badge) => sum + (badge.xpReward || 0), 0);
       const totalStreakFreezeReward = newlyAwardedBadges.reduce((sum, badge) => sum + (badge.streakFreezeReward || 0), 0);
+
+      if(totalXpReward > 0) {
+        await addXp(userId, totalXpReward, "XP reward from new badges");
+      }
+      
       await updateUser(userId, { 
         earnedBadges: Array.from(earnedBadgeIds),
-        xpPoints: (user.xpPoints || 0) + totalXpReward,
         streakFreezes: (user.streakFreezes || 0) + totalStreakFreezeReward,
       });
     }

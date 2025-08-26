@@ -1,10 +1,10 @@
+
 'use server';
 
 import { db } from '../db';
 import type { PromoCode } from '@/types';
 import { isPast, parseISO, addDays } from 'date-fns';
-import { updateUser } from '@/lib/data-services/users';
-import { getWallet, updateWallet } from './wallet';
+import { getWallet, updateWallet, addXp } from './wallet';
 import { checkAndAwardBadges } from './gamification';
 //import from node modules instead of @prisma/client to avoid TS errors
 import { Prisma } from '@prisma/client';
@@ -126,7 +126,6 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
             return { success: false, message: 'This promo code is not valid for your account.' };
         }
 
-        // Check if the user has already redeemed this specific code
         const existingRedemption = await db.userPromoCodeRedemption.findUnique({
             where: {
                 userId_promoCodeId: {
@@ -146,7 +145,6 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                 data: { timesUsed: { increment: 1 } },
             });
 
-            // Create a record of this redemption
             await prisma.userPromoCodeRedemption.create({
                 data: {
                     userId: userId,
@@ -165,7 +163,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
                     break;
                 case 'flash_coins':
-                    const expiryDays = promoCode.expiryDays || 30; // Use promoCode.expiryDays if set, else default to 30
+                    const expiryDays = 30;
                     const newFlashCoin = {
                         id: `fc-${Date.now()}`,
                         amount: promoCode.rewardValue,
@@ -176,7 +174,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateWallet(userId, { flashCoins: updatedFlashCoins }, rewardDescription);
                     break;
                 case 'xp':
-                    await updateUser(userId, { xpPoints: (user.xpPoints || 0) + promoCode.rewardValue });
+                    await addXp(userId, promoCode.rewardValue, rewardDescription);
                     break;
                 case 'streak_freeze':
                     await updateUser(userId, { streakFreezes: (user.streakFreezes || 0) + promoCode.rewardValue });

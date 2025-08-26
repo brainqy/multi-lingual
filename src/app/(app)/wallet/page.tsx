@@ -4,7 +4,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History, Loader2 } from "lucide-react";
+import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History, Loader2, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import type { Wallet } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { redeemPromoCode } from "../../../../usr/src/app/src/lib/actions/promo-codes";
+import { redeemPromoCode } from "@/lib/actions/promo-codes";
 
 export default function WalletPage() {
   const { t } = useI18n();
@@ -31,7 +31,6 @@ export default function WalletPage() {
   const handleRedeemCode = async () => {
     if (!promoCodeInput.trim() || !user) return;
     setIsRedeeming(true);
-    console.log(" redeeming code...")
     const result = await redeemPromoCode(promoCodeInput, user.id);
 
     if (result.success) {
@@ -156,17 +155,16 @@ export default function WalletPage() {
                         <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
                         <TableCell>{txn.description}</TableCell>
                         <TableCell
-                          className={`text-right font-medium ${
-                            txn.type === "credit" ? "text-green-600" : "text-red-600"
-                          }`}
+                          className={cn("text-right font-medium",
+                            txn.currency === 'coins' && (txn.type === "credit" ? "text-green-600" : "text-red-600"),
+                            txn.currency === 'xp' && "text-yellow-500"
+                          )}
                         >
                           <span className="inline-flex items-center gap-1">
-                            {txn.type === "credit" ? (
-                              <ArrowUpCircle className="h-4 w-4" />
-                            ) : (
-                              <ArrowDownCircle className="h-4 w-4" />
-                            )}
-                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t("wallet.coins")}
+                            {txn.currency === 'coins' ? (
+                                txn.type === "credit" ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />
+                            ) : <Star className="h-4 w-4" />}
+                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t(`wallet.${txn.currency || 'coins'}`)}
                           </span>
                         </TableCell>
                       </TableRow>
