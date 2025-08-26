@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import type { InterviewQuestionCategory, InterviewQuestionDifficulty } from '@/types';
+import { AIError } from '@/lib/exceptions';
 
 // Re-importing or ensuring these types are available if they are defined in '@/types'
 const ALL_CATEGORIES_ZOD = z.enum(['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR']);
@@ -88,8 +89,7 @@ const generateLiveInterviewQuestionsFlow = ai.defineFlow(
   async (input) => {
     const { output } = await prompt(input);
     if (!output || !output.suggestedQuestions) {
-      // Consider a more graceful fallback or specific error
-      throw new Error("AI failed to generate live interview questions.");
+      throw new AIError("AI failed to generate live interview questions.");
     }
     // Ensure the AI respects the count, sometimes it might generate more/less
     output.suggestedQuestions = output.suggestedQuestions.slice(0, input.count || 3);

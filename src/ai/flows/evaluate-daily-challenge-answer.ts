@@ -10,6 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { EvaluateDailyChallengeAnswerInputSchema, EvaluateDailyChallengeAnswerOutputSchema, type EvaluateDailyChallengeAnswerInput } from '@/types';
+import { AIError } from '@/lib/exceptions';
 
 
 export type EvaluateDailyChallengeAnswerOutput = {
@@ -64,7 +65,7 @@ const evaluateDailyChallengeAnswerFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to evaluate the daily challenge answer.");
+        throw new AIError("AI failed to evaluate the daily challenge answer.");
     }
     return output;
   }

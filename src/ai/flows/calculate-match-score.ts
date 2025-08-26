@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError, InvalidInputError } from '@/lib/exceptions';
 
 const CalculateMatchScoreInputSchema = z.object({
   resumeText: z.string().describe('The text content of the resume.'),
@@ -59,7 +60,13 @@ const calculateMatchScoreFlow = ai.defineFlow(
     outputSchema: CalculateMatchScoreOutputSchema,
   },
   async input => {
+    if (!input.resumeText?.trim() || !input.jobDescription?.trim()) {
+      throw new InvalidInputError("Resume text or Job Description cannot be empty.");
+    }
     const {output} = await calculateMatchScorePrompt(input);
-    return output!;
+    if (!output) {
+      throw new AIError("The AI failed to calculate a match score.");
+    }
+    return output;
   }
 );

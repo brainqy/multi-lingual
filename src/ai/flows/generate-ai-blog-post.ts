@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
 
 const GenerateAiBlogPostInputSchema = z.object({
   topic: z.string().describe('The main topic or theme for the blog post.'),
@@ -69,7 +70,7 @@ const generateAiBlogPostFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to generate a blog post.");
+        throw new AIError("AI failed to generate a blog post.");
     }
     // Ensure excerpt is within typical limits, if AI generates too long.
     if (output.excerpt.length > 220) {

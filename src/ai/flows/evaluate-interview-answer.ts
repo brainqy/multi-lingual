@@ -11,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type { EvaluateInterviewAnswerInput, EvaluateInterviewAnswerOutput } from '@/types';
+import { AIError } from '@/lib/exceptions';
 
 const EvaluateInterviewAnswerInputSchema = z.object({
   questionText: z.string().describe("The interview question that was asked."),
@@ -81,7 +82,7 @@ const evaluateInterviewAnswerFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to evaluate the interview answer.");
+        throw new AIError("AI failed to evaluate the interview answer.");
     }
     return output;
   }

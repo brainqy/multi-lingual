@@ -2,10 +2,11 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Wallet, WalletTransaction } from '@/types';
+import type { Wallet, WalletTransaction, UserProfile } from '@/types';
 import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
 import { updateUser } from '@/lib/data-services/users';
+import { NotFoundError } from '../exceptions';
 
 /**
  * Fetches a user's wallet, creating one if it doesn't exist.
@@ -135,14 +136,12 @@ export async function addXp(userId: string, xpToAdd: number, description: string
     try {
         const user = await db.user.findUnique({ where: { id: userId } });
         if (!user) {
-            logError('[WalletAction] User not found for adding XP', {}, { userId });
-            return null;
+            throw new NotFoundError('User', userId);
         }
 
         const wallet = await getWallet(userId);
         if (!wallet) {
-             logError('[WalletAction] Wallet not found for adding XP transaction', {}, { userId });
-             return null;
+             throw new NotFoundError('Wallet for user', userId);
         }
 
         const updatedUser = await updateUser(userId, { xpPoints: (user.xpPoints || 0) + xpToAdd });

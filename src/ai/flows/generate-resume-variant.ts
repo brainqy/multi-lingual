@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
 
 const GenerateResumeVariantInputSchema = z.object({
   baseResumeText: z.string().describe('The original resume text to be adapted.'),
@@ -74,7 +75,7 @@ const generateResumeVariantFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to generate a resume variant.");
+        throw new AIError("AI failed to generate a resume variant.");
     }
     return output;
   }

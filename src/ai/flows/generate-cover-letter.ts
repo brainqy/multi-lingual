@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
 
 const GenerateCoverLetterInputSchema = z.object({
   userProfileText: z.string().describe('A summary of the user\'s profile, including key skills, experience, and bio.'),
@@ -74,7 +75,7 @@ const generateCoverLetterFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
      if (!output) {
-        throw new Error("AI failed to generate a cover letter.");
+        throw new AIError("AI failed to generate a cover letter.");
     }
     return output;
   }

@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
 
 const SuggestDynamicSkillsInputSchema = z.object({
   currentSkills: z.array(z.string()).describe("A list of the user's current skills."),
@@ -73,7 +74,7 @@ const suggestDynamicSkillsFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
      if (!output) {
-        throw new Error("AI failed to generate skill suggestions.");
+        throw new AIError("AI failed to generate skill suggestions.");
     }
     return output;
   }
