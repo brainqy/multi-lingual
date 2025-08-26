@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, startOfDay } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 
@@ -47,9 +47,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
   
   const handleStreakAndBadges = async (userToUpdate: UserProfile): Promise<UserProfile> => {
-      const today = new Date();
-      const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
-      const daysSinceLastLogin = differenceInCalendarDays(today, lastLogin);
+      const today = startOfDay(new Date());
+      const lastLoginDate = userToUpdate.lastLogin ? startOfDay(new Date(userToUpdate.lastLogin)) : new Date(0);
+      const daysSinceLastLogin = differenceInCalendarDays(today, lastLoginDate);
+      
+      console.log(`[STREAK LOG] AuthProvider: Checking streak. Today: ${today.toISOString()}, Last Login: ${lastLoginDate.toISOString()}, Days Since: ${daysSinceLastLogin}`);
       
       let updatedUserData: Partial<UserProfile> = {};
 
@@ -69,14 +71,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         let weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
         console.log(`[STREAK LOG] AuthProvider: Initial weekly activity array: [${weeklyActivity.join(', ')}]`);
-
+        
         const daysToShift = Math.min(daysSinceLastLogin, 7);
         console.log(`[STREAK LOG] AuthProvider: Shifting weekly activity by ${daysToShift} days.`);
 
         const shiftedActivity = [...weeklyActivity.slice(daysToShift), ...Array(daysToShift).fill(0)];
         console.log(`[STREAK LOG] AuthProvider: Shifted weekly activity array: [${shiftedActivity.join(', ')}]`);
         weeklyActivity = shiftedActivity;
-
+        
         if (daysSinceLastLogin === 1) {
             console.log("[STREAK LOG] AuthProvider: Missed 0 days (consecutive login). Incrementing streak.");
             newStreak++;
@@ -85,14 +87,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log(`[STREAK LOG] AuthProvider: Missed ${daysSinceLastLogin - 1} day(s). Checking for freezes.`);
             if (newStreakFreezes > 0) {
                 console.log(`[STREAK LOG] AuthProvider: Freeze found (${newStreakFreezes}). Using one to save the streak.`);
-                newStreakFreezes--; // Use a freeze
+                newStreakFreezes--;
                 console.log(`[STREAK LOG] AuthProvider: New freeze count: ${newStreakFreezes}.`);
                 toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
 
                 console.log(`[STREAK LOG] AuthProvider: Marking ${daysSinceLastLogin - 1} missed days as saved (value 2).`);
-                // This loop correctly marks all missed days (up to 6) as 'saved'
                 for (let i = 1; i < daysToShift; i++) {
-                    const activityIndex = 6 - i; // Index from the right (6 is today)
+                    const activityIndex = 6 - i;
                     if(activityIndex >= 0) {
                         console.log(`[STREAK LOG] AuthProvider: Marking index ${activityIndex} (representing ${i} day(s) ago) as saved.`);
                         weeklyActivity[activityIndex] = 2; // '2' represents a saved day
@@ -100,7 +101,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
             } else {
                 console.log("[STREAK LOG] AuthProvider: No freezes available. Resetting streak.");
-                newStreak = 1; // Reset streak
+                newStreak = 1;
                 console.log(`[STREAK LOG] AuthProvider: New streak is now ${newStreak}.`);
             }
         }
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             dailyStreak: newStreak, 
             longestStreak: newLongestStreak,
             streakFreezes: newStreakFreezes,
-            lastLogin: today.toISOString(),
+            lastLogin: new Date().toISOString(),
             weeklyActivity: weeklyActivity
         };
         console.log("[STREAK LOG] AuthProvider: Final updatedUserData object:", updatedUserData);
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
       
-      console.log("[STREAK LOG] AuthProvider: No updates to streak logic were needed. Returning original user.");
+      console.log("[STREAK LOG] AuthProvider: No updates to streak logic were needed (logged in on same day). Returning original user.");
       return userToUpdate;
   };
 
