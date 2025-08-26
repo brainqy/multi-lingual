@@ -36,16 +36,16 @@ console.log("[STREAK LOG] AuthProvider: Defining handleStreakAndBadges function.
 const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setStreakPopupOpen: (isOpen: boolean) => void): Promise<UserProfile> => {
       console.log("[STREAK LOG] AuthProvider: 1. Entering handleStreakAndBadges function.");
       
-      const weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
-      console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array from user:", weeklyActivity);
+      const numericWeeklyActivity = (userToUpdate.weeklyActivity || Array(7).fill(0)).map(val => val === true ? 1 : val === false ? 0 : val);
+      console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array converted to numbers:", numericWeeklyActivity);
       
-      const lastActiveDayIndex = weeklyActivity.slice(0, 6).lastIndexOf(true);
+      const lastActiveDayIndex = numericWeeklyActivity.slice(0, 6).lastIndexOf(1);
       console.log("[STREAK LOG] AuthProvider: 3. Last active day index (before today) is:", lastActiveDayIndex);
 
       const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex;
       console.log("[STREAK LOG] AuthProvider: 4. Calculated days since last login based on array:", daysSinceLastLogin);
       
-      const hasLoggedInToday = weeklyActivity[6] === true;
+      const hasLoggedInToday = numericWeeklyActivity[6] === 1;
       console.log("[STREAK LOG] AuthProvider: 5. Has user already logged in today?", hasLoggedInToday);
 
       if (daysSinceLastLogin > 0 && !hasLoggedInToday) {
@@ -63,7 +63,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           const daysToShift = Math.min(daysSinceLastLogin, 7);
           console.log("[STREAK LOG] AuthProvider: 11. Shifting weekly activity by", daysToShift, "days.");
           
-          const recentActivity = weeklyActivity.slice(daysToShift);
+          const recentActivity = numericWeeklyActivity.slice(daysToShift);
           const shiftedActivity = [...Array(daysToShift).fill(0), ...recentActivity];
           console.log("[STREAK LOG] AuthProvider: 12. Shifted weekly activity array:", shiftedActivity);
 
@@ -153,7 +153,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           }
       }
       
-      console.log("[STREAK LOG] AuthProvider: 40. No updates to streak logic were needed (logged in on same day or no missed days). Returning original user.");
+      console.log("[STREAK LOG] AuthProvider: 40. No updates to streak logic were needed (logged in on same day). Returning original user.");
       return userToUpdate;
   };
 
