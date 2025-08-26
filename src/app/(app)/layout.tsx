@@ -7,12 +7,13 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import FloatingMessenger from '@/components/features/FloatingMessenger';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { addRecentPage, getLabelForPath } from '@/lib/recent-pages';
 import AnnouncementBanner from '@/components/features/AnnouncementBanner';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
-import { headers } from 'next/headers';
+import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import type { PlatformSettings } from '@/types';
 
 export default function AppLayout({
   children,
@@ -22,6 +23,17 @@ export default function AppLayout({
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const platformSettings = await getPlatformSettings();
+      setSettings(platformSettings);
+      setIsSettingsLoading(false);
+    }
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     if (pathname) {
@@ -55,14 +67,26 @@ export default function AppLayout({
     }
 
   }, [isLoading, isAuthenticated, router, user, logout]);
+  
+  useEffect(() => {
+    if (settings?.maintenanceMode && user?.role !== 'admin' && pathname !== '/maintenance') {
+      router.replace('/maintenance');
+    }
+  }, [settings, user, pathname, router]);
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading || isSettingsLoading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
+  
+  if (settings?.maintenanceMode && user?.role !== 'admin') {
+    // This will show a blank screen during the redirect to /maintenance, which is fine
+    return null;
+  }
+
 
   return (
     <SidebarProvider defaultOpen>
