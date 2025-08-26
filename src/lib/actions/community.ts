@@ -254,20 +254,34 @@ export async function togglePollVote(postId: string, optionIndex: number, userId
         const pollOptions = post.pollOptions as { option: string; votes: number }[];
         const userVoteKey = `${userId}-${optionIndex}`;
         const votedBy = (post.votedBy as string[]) || [];
-        const hasVotedForThisOption = votedBy.includes(userVoteKey);
+        const alreadyVotedForThisOption = votedBy.includes(userVoteKey);
+        
+        const previousVote = votedBy.find(vote => vote.startsWith(`${userId}-`));
 
-        if (hasVotedForThisOption) {
-            // Retract vote
+        if (alreadyVotedForThisOption) {
+            // User is retracting their vote from this option
             pollOptions[optionIndex].votes = Math.max(0, (pollOptions[optionIndex].votes || 0) - 1);
             const newVotedBy = votedBy.filter(v => v !== userVoteKey);
             const updatedPost = await updateCommunityPost(postId, { pollOptions, votedBy: newVotedBy });
             return { ...updatedPost!, message: "Vote retracted." };
         } else {
-            // Add vote
+            // User is casting a new vote
+            if (previousVote) {
+                // User is changing their vote
+                const previousVoteIndex = parseInt(previousVote.split('-')[1], 10);
+                if (!isNaN(previousVoteIndex) && pollOptions[previousVoteIndex]) {
+                    pollOptions[previousVoteIndex].votes = Math.max(0, (pollOptions[previousVoteIndex].votes || 0) - 1);
+                }
+            }
+            
+            // Add the new vote
             pollOptions[optionIndex].votes = (pollOptions[optionIndex].votes || 0) + 1;
-            const newVotedBy = [...votedBy, userVoteKey];
+            
+            // Remove any previous vote and add the new one
+            const newVotedBy = [...votedBy.filter(v => !v.startsWith(`${userId}-`)), userVoteKey];
+
             const updatedPost = await updateCommunityPost(postId, { pollOptions, votedBy: newVotedBy });
-             return { ...updatedPost!, message: "Vote cast successfully." };
+            return { ...updatedPost!, message: "Vote cast successfully." };
         }
     } catch (error) {
         console.error(`[CommunityAction] Error toggling poll vote for post ${postId}:`, error);
@@ -332,7 +346,7 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
 
         const newFlaggedBy = [...flaggedBy, userId];
         const newFlagCount = (post.flagCount || 0) + 1;
-        const newFlagReasons = [...(post.flagReasons || []), reason];
+        const newFlagReasons = [...((post.flagReasons as string[]) || []), reason];
         
         const updatedPost = await updateCommunityPost(postId, { 
             flaggedBy: newFlaggedBy,
@@ -348,3 +362,5 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         return null;
     }
 }
+
+    
