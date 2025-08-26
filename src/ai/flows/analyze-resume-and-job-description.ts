@@ -11,18 +11,19 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { AnalyzeResumeAndJobDescriptionInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionOutput } from '@/types';
+import { AIError, InvalidInputError } from '@/lib/exceptions';
 
 
 export async function analyzeResumeAndJobDescription(
   input: z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
   if (!input.resumeText?.trim() || !input.jobDescriptionText?.trim()) {
-    throw new Error("Resume text or Job Description text cannot be empty.");
+    throw new InvalidInputError("Resume text or Job Description text cannot be empty.");
   }
   
   const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
   if (!output) {
-      throw new Error("AI analysis did not return any parsable output.");
+      throw new AIError("AI analysis did not return any parsable output.");
   }
   return output;
 }
