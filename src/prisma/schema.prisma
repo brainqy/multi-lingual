@@ -60,7 +60,7 @@ model User {
   dailyStreak                Int?
   longestStreak              Int?
   totalActiveDays            Int?
-  weeklyActivity             Boolean[]
+  weeklyActivity             Int[]
   referralCode               String?   @unique
   earnedBadges               String[]
   interviewCredits           Int?

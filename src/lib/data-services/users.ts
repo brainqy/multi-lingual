@@ -101,7 +101,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         dailyStreak: 0,
         longestStreak: 0,
         totalActiveDays: 0,
-        weeklyActivity: Array(7).fill(false),
+        weeklyActivity: Array(7).fill(0),
         earnedBadges: [],
         interviewCredits: 5,
         isDistinguished: false,
