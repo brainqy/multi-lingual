@@ -29,6 +29,16 @@ const nextConfig: NextConfig = {
         config.devServer.webSocketURL = 'ws://localhost:9002/ws';
       }
     }
+    
+    // This is to suppress the 'require.extensions' warning from handlebars
+    config.module.rules.push({
+      test: /handlebars/,
+      loader: 'null-loader',
+    });
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      handlebars: 'handlebars/dist/handlebars.js',
+    };
     return config;
   },
   devIndicators: {

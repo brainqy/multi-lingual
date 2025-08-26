@@ -85,9 +85,9 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
 
     if (totalXpGained > 0 && newChallengesCompleted) {
         logAction('Awarding XP for completed flip challenges', { userId, totalXpGained });
+       
         const updatedUser = await updateUser(userId, { 
             xpPoints: (user.xpPoints || 0) + totalXpGained,
-            completedChallengeIds: Array.from(completedChallengeIds),
         });
         return updatedUser;
     }
