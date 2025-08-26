@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client';
 
 
@@ -65,24 +66,35 @@ async function main() {
   // Create a default admin user and connect to the platform tenant
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@bhashasetu.com' },
-    update: {},
+    update: {
+      dailyStreak: 5,
+      longestStreak: 5,
+      lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
+      streakFreezes: 1,
+      weeklyActivity: [true, true, true, true, true, false, false],
+    },
     create: {
       email: 'admin@bhashasetu.com',
       name: 'Admin User',
       password: 'password123',
       role: 'admin',
       tenantId: platformTenant.id,
+      dailyStreak: 5,
+      longestStreak: 5,
+      lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
+      streakFreezes: 1,
+      weeklyActivity: [true, true, true, true, true, false, false], // Logged in 5 days, missed yesterday
     },
   })
 
   console.log('Seeded admin user:', adminUser)
 
     const adminUser2 = await prisma.user.upsert({
-    where: { email: 'admin@bhashasetu.com' },
+    where: { email: 'admin2@bhashasetu.com' },
     update: {},
     create: {
       email: 'admin2@bhashasetu.com',
-      name: 'Admin User',
+      name: 'Admin User 2',
       password: 'password123',
       role: 'admin',
       tenantId: platformTenant.id,
@@ -335,8 +347,10 @@ async function main() {
 
   // Seed 5 sample users for the platform tenant
   for (let i = 1; i <= 5; i++) {
-    await prisma.user.create({
-      data: {
+    await prisma.user.upsert({
+      where: { id: `sample-user-${i}` },
+      update: {},
+      create: {
         id: `sample-user-${i}`,
         name: `Sample User ${i}`,
         email: `sample${i}@example.com`,
@@ -353,7 +367,7 @@ async function main() {
     await prisma.referralHistory.create({
       data: {
         referrerUserId: adminUser.id,
-        referredUser: { connect: { id: "sample-user-1" } },
+        referredUser: { connect: { id: `sample-user-${i}` } },
         status: 'Signed Up', 
         referredEmailOrName:'admin@bhashasetu.com',
         referralDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * i),
@@ -364,8 +378,10 @@ async function main() {
 
   // Seed 3 resume scan histories for sample users
   for (let i = 1; i <= 3; i++) {
-    await prisma.resumeScanHistory.create({
-      data: {
+    await prisma.resumeScanHistory.upsert({
+      where: { id: `scan-${i}` },
+      update: {},
+      create: {
         id: `scan-${i}`,
         tenantId: platformTenant.id,
         userId: `sample-user-${i}`,
@@ -384,8 +400,10 @@ async function main() {
 
   // Seed 3 resume scan histories for admin user
   for (let i = 1; i <= 3; i++) {
-    await prisma.resumeScanHistory.create({
-      data: {
+    await prisma.resumeScanHistory.upsert({
+      where: { id: `admin-scan-${i}` },
+      update: {},
+      create: {
         id: `admin-scan-${i}`,
         tenantId: platformTenant.id,
         userId: adminUser.id,
@@ -415,3 +433,5 @@ main()
     process.exit(1)
   })
 
+
+    
