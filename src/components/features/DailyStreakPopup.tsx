@@ -24,7 +24,10 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
 
   const todayIndex = new Date().getDay(); // 0 for Sunday, 6 for Saturday
 
-  const displayActivity = userProfile.weeklyActivity || Array(7).fill(0);
+  // Ensure weeklyActivity is always an array of 7
+  const displayActivity = userProfile.weeklyActivity && userProfile.weeklyActivity.length === 7 
+    ? userProfile.weeklyActivity 
+    : Array(7).fill(false);
   
   const adjustedDayLabels = [...Array(7)].map((_, i) => {
     const dayOffset = (todayIndex - (6 - i) + 7) % 7;
