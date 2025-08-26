@@ -791,7 +791,7 @@ export default function CommunityFeedPage() {
                     <CardFooter className="border-t pt-3 flex flex-col items-start">
                         <div className="flex items-center justify-start space-x-1 w-full">
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleLikeClick(post.id)}>
-                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({(post.likes || 0)})
+                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({post.likes || 0})
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus
@@ -914,5 +914,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-
-```
