@@ -207,22 +207,23 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
-            select: { votedBy: true }
+            select: { likedBy: true, likes: true }
         });
 
         if (!post) throw new Error('Post not found');
 
-        const votedBy = (post.votedBy as string[]) || [];
-        const isLiked = votedBy.includes(userId);
+        const likedBy = (post.likedBy as string[]) || [];
+        const isLiked = likedBy.includes(userId);
         
-        const newVotedBy = isLiked
-            ? votedBy.filter(id => id !== userId)
-            : [...votedBy, userId];
+        const newLikedBy = isLiked
+            ? likedBy.filter(id => id !== userId)
+            : [...likedBy, userId];
 
         const updatedPost = await db.communityPost.update({
             where: { id: postId },
             data: { 
-                votedBy: { set: newVotedBy }
+                likedBy: { set: newLikedBy },
+                likes: { set: newLikedBy.length }
             },
             include: { comments: true }
         });
@@ -323,14 +324,14 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post) return null;
 
-        let message = "";
-        
-        // This is a simplified implementation without a flaggedBy array.
-        // It will just increment the flag count. A toggle would require tracking who flagged.
         const newFlagCount = (post.flagCount || 0) + 1;
-        const updatedPost = await updateCommunityPost(postId, { flagCount: newFlagCount, moderationStatus: 'flagged' });
-        message = "Post flagged for review.";
-        return { ...updatedPost!, message };
+        // This action now correctly sets the status to 'flagged' for moderation.
+        const updatedPost = await updateCommunityPost(postId, { 
+            flagCount: newFlagCount, 
+            moderationStatus: 'flagged' 
+        });
+        
+        return { ...updatedPost!, message: "Post flagged for review." };
 
     } catch (error) {
         console.error(`[CommunityAction] Error toggling flag for post ${postId}:`, error);

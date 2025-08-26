@@ -422,18 +422,25 @@ export default function CommunityFeedPage() {
 
   const filteredPosts = useMemo(() => {
     if (!currentUser) return [];
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
+    
     return posts.filter(post => {
+      // Tenant visibility
       const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
 
-      const isVisibleForModeration = post.moderationStatus !== 'removed' || currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId);
-      if (!isVisibleForModeration) return false;
+      // Moderation visibility
+      const isRemoved = post.moderationStatus === 'removed';
+      const isFlagged = post.moderationStatus === 'flagged';
 
+      if (isRemoved && !isAdminOrManager) return false;
+      if (isFlagged && !isAdminOrManager) return false;
+
+      // Filter logic
       if (filter === 'all') return true;
       if (filter === 'my_posts') return post.userId === currentUser.id;
       if (filter === 'flagged') {
-          if(currentUser.role === 'admin') return post.moderationStatus === 'flagged';
-          if(currentUser.role === 'manager') return post.moderationStatus === 'flagged' && post.tenantId === currentUser.tenantId;
+          if(isAdminOrManager) return post.moderationStatus === 'flagged';
           return false;
       }
       return post.type === filter;
@@ -745,7 +752,7 @@ export default function CommunityFeedPage() {
                     <CardFooter className="border-t pt-3 flex flex-col items-start">
                         <div className="flex items-center justify-start space-x-1 w-full">
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleLikeClick(post.id)}>
-                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.votedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({(post.votedBy || []).length})
+                                <ThumbsUp className={cn("mr-1 h-3.5 w-3.5", post.likedBy?.includes(currentUser.id) && "fill-current text-primary")} /> Like ({(post.likes || 0)})
                             </Button>
                             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => {
                               setTopLevelCommentTexts(prev => ({...prev, [post.id]: ''})); // Clear on focus
@@ -849,7 +856,7 @@ export default function CommunityFeedPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{user.name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Star className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
+                          <StarIcon className="h-3 w-3 text-yellow-500"/> {user.xpPoints || 0} XP
                         </p>
                       </div>
                     </li>
