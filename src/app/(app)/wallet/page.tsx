@@ -10,7 +10,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isPast, parseISO, formatDistanceToNowStrict } from "date-fns";
-import type { Wallet } from "@/types";
+import type { Wallet, WalletTransaction } from "@/types";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,6 +26,16 @@ export default function WalletPage() {
   const totalFlashCoins = useMemo(() => {
     if (!wallet || !wallet.flashCoins) return 0;
     return wallet.flashCoins.filter(fc => !isPast(new Date(fc.expiresAt))).reduce((sum, fc) => sum + fc.amount, 0);
+  }, [wallet]);
+
+  const coinTransactions = useMemo(() => {
+    if (!wallet) return [];
+    return wallet.transactions.filter(txn => txn.currency === 'coins');
+  }, [wallet]);
+
+  const xpTransactions = useMemo(() => {
+    if (!wallet) return [];
+    return wallet.transactions.filter(txn => txn.currency === 'xp');
   }, [wallet]);
 
   const handleRedeemCode = async () => {
@@ -47,7 +57,7 @@ export default function WalletPage() {
       return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
   }
   
-  if (!wallet) {
+  if (!wallet || !user) {
       return <p>Could not load wallet information.</p>;
   }
 
@@ -70,7 +80,7 @@ export default function WalletPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -84,6 +94,23 @@ export default function WalletPage() {
                     </p>
                     <CardDescription className="mt-1">
                         {t("wallet.usageHint")}
+                    </CardDescription>
+                </CardContent>
+            </Card>
+            
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Star className="h-6 w-6 text-yellow-500" />
+                        XP Balance
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-5xl font-bold text-yellow-500">
+                        {user.xpPoints || 0} <span className="text-2xl text-muted-foreground">XP</span>
+                    </p>
+                    <CardDescription className="mt-1">
+                        Earn points by engaging with the platform.
                     </CardDescription>
                 </CardContent>
             </Card>
@@ -124,19 +151,20 @@ export default function WalletPage() {
         </CardContent>
       </Card>
       
-      <Tabs defaultValue="transactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="transactions">Transaction History</TabsTrigger>
+      <Tabs defaultValue="coin_transactions" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="coin_transactions">Coin Transactions</TabsTrigger>
+          <TabsTrigger value="xp_history">XP History</TabsTrigger>
           <TabsTrigger value="flash_coins">Flash Coin History</TabsTrigger>
         </TabsList>
-        <TabsContent value="transactions">
+        <TabsContent value="coin_transactions">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.transactionHistory")}</CardTitle>
+              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />Coin Transaction History</CardTitle>
               <CardDescription>{t("wallet.recentActivity")}</CardDescription>
             </CardHeader>
             <CardContent>
-              {wallet.transactions.length === 0 ? (
+              {coinTransactions.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">
                   {t("wallet.noTransactions")}
                 </p>
@@ -150,21 +178,57 @@ export default function WalletPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {wallet.transactions.map((txn) => (
+                    {coinTransactions.map((txn) => (
                       <TableRow key={txn.id}>
                         <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
                         <TableCell>{txn.description}</TableCell>
                         <TableCell
                           className={cn("text-right font-medium",
-                            txn.currency === 'coins' && (txn.type === "credit" ? "text-green-600" : "text-red-600"),
-                            txn.currency === 'xp' && "text-yellow-500"
+                            txn.type === "credit" ? "text-green-600" : "text-red-600"
                           )}
                         >
                           <span className="inline-flex items-center gap-1">
-                            {txn.currency === 'coins' ? (
-                                txn.type === "credit" ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />
-                            ) : <Star className="h-4 w-4" />}
-                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t(`wallet.${txn.currency || 'coins'}`)}
+                            {txn.type === "credit" ? <ArrowUpCircle className="h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />}
+                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} {t(`wallet.coins`)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="xp_history">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />XP History</CardTitle>
+              <CardDescription>Your recent XP earnings.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {xpTransactions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No XP transactions yet.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {xpTransactions.map((txn) => (
+                      <TableRow key={txn.id}>
+                        <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{txn.description}</TableCell>
+                        <TableCell className="text-right font-medium text-yellow-500">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-4 w-4" />
+                            {txn.amount > 0 ? `+${txn.amount}` : txn.amount} XP
                           </span>
                         </TableCell>
                       </TableRow>
@@ -176,7 +240,7 @@ export default function WalletPage() {
           </Card>
         </TabsContent>
         <TabsContent value="flash_coins">
-           {wallet.flashCoins && wallet.flashCoins.length > 0 && (
+           {wallet.flashCoins && wallet.flashCoins.length > 0 ? (
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -211,6 +275,15 @@ export default function WalletPage() {
                         ))}
                     </ul>
                 </CardContent>
+            </Card>
+           ) : (
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />Flash Coin History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-muted-foreground py-4">You have no flash coin history.</p>
+              </CardContent>
             </Card>
            )}
         </TabsContent>
