@@ -128,5 +128,3 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
     </Dialog>
   );
 }
-
-    
