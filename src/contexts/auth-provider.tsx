@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
-import { differenceInCalendarDays, subDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 
@@ -60,9 +60,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           let newStreakFreezes = userToUpdate.streakFreezes || 0;
           let weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
 
-          // Shift weekly activity
+          // Shift weekly activity array based on number of days missed
           if (daysSinceLastLogin > 0) {
-              weeklyActivity = [...weeklyActivity.slice(daysSinceLastLogin), ...Array(Math.min(daysSinceLastLogin, 7)).fill(0)];
+              const daysToShift = Math.min(daysSinceLastLogin, 7);
+              weeklyActivity = [...weeklyActivity.slice(daysToShift), ...Array(daysToShift).fill(0)];
           }
 
           if (daysSinceLastLogin === 1) {
@@ -72,8 +73,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   newStreakFreezes--; // Use a freeze
                   toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
                   // Mark the missed days as saved in weekly activity
-                  for (let i = 1; i < Math.min(daysSinceLastLogin, 7); i++) {
-                    const activityIndex = 6 - i;
+                  // Corrected loop starts from i = 0 to include the first missed day.
+                  for (let i = 0; i < Math.min(daysSinceLastLogin - 1, 6); i++) {
+                    const activityIndex = 5 - i; // Index from right (6 is today, 5 is yesterday)
                     if(activityIndex >= 0) {
                         weeklyActivity[activityIndex] = 2; // '2' represents a saved day
                     }
@@ -249,5 +251,3 @@ export function AuthProvider({ children }: AuthProviderProps) {
     </AuthContext.Provider>
   );
 }
-
-    
