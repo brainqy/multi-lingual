@@ -10,7 +10,8 @@ import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
-import { startOfDay, differenceInCalendarDays } from 'date-fns';
+import { createActivity } from '@/lib/actions/activities';
+import { differenceInCalendarDays } from 'date-fns';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -37,7 +38,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
       console.log("[STREAK LOG] AuthProvider: 1. Entering handleStreakAndBadges function.");
       
       const numericWeeklyActivity = (userToUpdate.weeklyActivity || Array(7).fill(0)).map(val => val === true ? 1 : val === false ? 0 : val);
-      console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array converted to numbers:", numericWeeklyActivity);
+      console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array from user:", numericWeeklyActivity);
       
       const lastActiveDayIndex = numericWeeklyActivity.slice(0, 6).lastIndexOf(1);
       console.log("[STREAK LOG] AuthProvider: 3. Last active day index (before today) is:", lastActiveDayIndex);
@@ -78,7 +79,12 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
                   newStreakFreezes--; 
                   console.log("[STREAK LOG] AuthProvider: 17. Decremented streak freezes to:", newStreakFreezes);
                   toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
-                  console.log("[STREAK LOG] AuthProvider: 18. Displayed 'Streak Saved' toast.");
+                  await createActivity({
+                      userId: userToUpdate.id,
+                      tenantId: userToUpdate.tenantId,
+                      description: `Used a streak freeze to protect a ${newStreak}-day streak.`
+                  });
+                  console.log("[STREAK LOG] AuthProvider: 18. Displayed 'Streak Saved' toast and created activity log.");
                   
                   console.log("[STREAK LOG] AuthProvider: 19. Marking missed days as saved in activity array.");
                   for (let i = 1; i < daysToShift; i++) {

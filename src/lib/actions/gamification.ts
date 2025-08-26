@@ -151,6 +151,13 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
             tenantId: user.tenantId,
             description: `Earned a new badge: "${badge.name}"!`
           });
+          if (badge.streakFreezeReward && badge.streakFreezeReward > 0) {
+            await createActivity({
+              userId: user.id,
+              tenantId: user.tenantId,
+              description: `Earned ${badge.streakFreezeReward} streak freeze(s) from the "${badge.name}" badge.`,
+            });
+          }
         }
       }
     }
