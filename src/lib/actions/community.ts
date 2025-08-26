@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client';
 import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { createNotification } from './notifications';
+import { AppError } from '../exceptions';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -108,7 +109,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
 export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' | 'timestamp' | 'replies'>): Promise<CommunityComment | null> {
   try {
     if (!commentData.postId && !commentData.blogPostId) {
-      throw new Error("Comment must be associated with either a postId or a blogPostId.");
+      throw new AppError("Comment must be associated with either a postId or a blogPostId.");
     }
 
     const newComment = await db.communityComment.create({
@@ -210,7 +211,7 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
             select: { likedBy: true, likes: true }
         });
 
-        if (!post) throw new Error('Post not found');
+        if (!post) throw new AppError('Post not found');
 
         const likedBy = (post.likedBy as string[]) || [];
         const isLiked = likedBy.includes(userId);

@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { BlogPost, BlogGenerationSettings } from '@/types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { logAction, logError } from '@/lib/logger';
+import { AppError } from '../exceptions';
 
 /**
  * Fetches all blog posts from the database.
