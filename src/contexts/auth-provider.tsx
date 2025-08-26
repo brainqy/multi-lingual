@@ -48,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   
   const handleStreakAndBadges = async (userToUpdate: UserProfile): Promise<UserProfile> => {
       const today = startOfDay(new Date());
-      const lastLoginDate = userToUpdate.lastLogin ? startOfDay(new Date(userToUpdate.lastLogin)) : new Date(0);
+      const lastLoginDate = userToUpdate.lastLogin ? startOfDay(new Date(userToUpdate.lastLogin)) : startOfDay(new Date(0));
       const daysSinceLastLogin = differenceInCalendarDays(today, lastLoginDate);
       
       console.log(`[STREAK LOG] AuthProvider: Checking streak. Today: ${today.toISOString()}, Last Login: ${lastLoginDate.toISOString()}, Days Since: ${daysSinceLastLogin}`);
