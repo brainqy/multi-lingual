@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
 import { useI18n } from "@/hooks/use-i18n";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
@@ -26,6 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost, togglePollVote, toggleEventRegistration, toggleFlagPost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 
 const postSchema = z.object({
@@ -159,7 +160,11 @@ export default function CommunityFeedPage() {
   const [topLevelCommentTexts, setTopLevelCommentTexts] = useState<Record<string, string>>({});
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-
+  
+  const [isFlaggingDialogOpen, setIsFlaggingDialogOpen] = useState(false);
+  const [postToFlag, setPostToFlag] = useState<CommunityPost | null>(null);
+  const [flagReason, setFlagReason] = useState<string | null>(null);
+  const flagReasons = ["Spam", "Inappropriate Content", "Harassment", "Misinformation", "Other"];
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<PostFormData>({
     resolver: zodResolver(postSchema),
@@ -383,15 +388,27 @@ export default function CommunityFeedPage() {
     setIsPostDialogOpen(true);
   };
   
-  const handleFlagPost = async (postId: string) => {
-    if (!currentUser) return;
-    const updatedPost = await toggleFlagPost(postId, currentUser.id, "Inappropriate");
+  const openFlagDialog = (post: CommunityPost) => {
+    setPostToFlag(post);
+    setFlagReason(null);
+    setIsFlaggingDialogOpen(true);
+  };
+
+  const handleConfirmFlagPost = async () => {
+    if (!postToFlag || !currentUser || !flagReason) {
+      toast({ title: "Error", description: "Please select a reason for flagging.", variant: "destructive"});
+      return;
+    }
+
+    const updatedPost = await toggleFlagPost(postToFlag.id, currentUser.id, flagReason);
     if (updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postToFlag.id ? updatedPost : p));
         toast({ title: updatedPost.message });
     } else {
         toast({ title: "Error", description: "Failed to update flag status.", variant: "destructive" });
     }
+    setIsFlaggingDialogOpen(false);
+    setPostToFlag(null);
   };
 
   const handleApprovePost = async (postId: string) => {
@@ -425,18 +442,15 @@ export default function CommunityFeedPage() {
     const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
     
     return posts.filter(post => {
-      // Tenant visibility
       const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
 
-      // Moderation visibility
       const isRemoved = post.moderationStatus === 'removed';
-      const isFlagged = post.moderationStatus === 'flagged';
+      const isFlagged = post.moderationStatus === 'flagged' && (post.flagCount || 0) >= 5;
 
       if (isRemoved && !isAdminOrManager) return false;
       if (isFlagged && !isAdminOrManager) return false;
 
-      // Filter logic
       if (filter === 'all') return true;
       if (filter === 'my_posts') return post.userId === currentUser.id;
       if (filter === 'flagged') {
@@ -604,6 +618,31 @@ export default function CommunityFeedPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      
+       <Dialog open={isFlaggingDialogOpen} onOpenChange={setIsFlaggingDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Post</DialogTitle>
+            <DialogUIDescription>
+              Please select a reason for flagging this post. This helps our moderators review it quickly.
+            </DialogUIDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup value={flagReason || ""} onValueChange={setFlagReason}>
+              {flagReasons.map(reason => (
+                <div key={reason} className="flex items-center space-x-2">
+                  <RadioGroupItem value={reason} id={`reason-${reason}`} />
+                  <Label htmlFor={`reason-${reason}`}>{reason}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleConfirmFlagPost} disabled={!flagReason} variant="destructive">Submit Report</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -780,7 +819,7 @@ export default function CommunityFeedPage() {
                                 <Button
                                   variant="ghost"
                                   size="xs"
-                                  onClick={() => handleFlagPost(post.id)}
+                                  onClick={() => openFlagDialog(post)}
                                   className="text-yellow-600 hover:text-yellow-700 ml-auto h-7 px-2 py-1"
                                 >
                                   <Flag className="mr-1 h-3 w-3" />
@@ -875,3 +914,5 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+
+```
