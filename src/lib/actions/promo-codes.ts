@@ -164,7 +164,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
                     break;
                 case 'flash_coins':
-                    const expiryDays = 30;
+                    const expiryDays = 7;
                     const newFlashCoin = {
                         id: `fc-${Date.now()}`,
                         amount: promoCode.rewardValue,

@@ -99,7 +99,7 @@ model User {
   dailyStreak         Int?      @default(0)
   longestStreak       Int?      @default(0)
   totalActiveDays     Int?      @default(0)
-  weeklyActivity      Boolean[]
+  weeklyActivity      Int[]
   earnedBadges        String[]
   challengeTopics     String[]
   challengeProgress   Json?
