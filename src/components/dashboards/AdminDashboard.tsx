@@ -11,7 +11,7 @@ import {
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Tenant, UserProfile, SystemAlert } from "@/types"; 
+import type { Tenant, UserProfile, SystemAlert, CommunityPost } from "@/types"; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
@@ -24,6 +24,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { useI18n } from "@/hooks/use-i18n";
 import { Skeleton } from "../ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminDashboardProps {
   user: UserProfile; 
@@ -137,7 +138,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       setIsLoading(true);
       const data = await getDashboardData();
       setDashboardData(data);
-      setAlerts(data.systemAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+      setAlerts(data.systemAlerts.sort((a: SystemAlert, b: SystemAlert) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
       setIsLoading(false);
     }
     loadData();
@@ -170,6 +171,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
     };
   }, [dashboardData, usagePeriod]);
+
+  const moderationReasonStats = useMemo(() => {
+    if (!dashboardData) return [];
+    const stats = new Map<string, number>();
+    const flaggedPosts = dashboardData.communityPosts.filter((p: CommunityPost) => p.moderationStatus === 'flagged');
+    flaggedPosts.forEach((post: CommunityPost) => {
+        post.flagReasons?.forEach(reason => {
+            stats.set(reason, (stats.get(reason) || 0) + 1);
+        });
+    });
+    return Array.from(stats.entries()).sort((a, b) => b[1] - a[1]);
+  }, [dashboardData]);
 
   const currentTenantActivityData = useMemo(() => {
     if (!dashboardData) return [];
@@ -462,19 +475,41 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         )}
         
         {visibleWidgetIds.has('contentModerationQueueSummary') && (
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive"/>{t("adminDashboard.charts.contentModeration.title")}</CardTitle>
-              <CardDescription>{t("adminDashboard.charts.contentModeration.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center text-center py-8">
-               <div className="text-4xl font-bold text-destructive">{platformStats.flaggedPostsCount}</div>
-               <p className="text-muted-foreground mt-1 mb-4">{t("adminDashboard.charts.contentModeration.flaggedPosts")}</p>
-               <Button asChild>
-                   <Link href="/admin/content-moderation">{t("adminDashboard.charts.contentModeration.reviewButton")}</Link>
-               </Button>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive"/>{t("adminDashboard.charts.contentModeration.title")}</CardTitle>
+                <CardDescription>{t("adminDashboard.charts.contentModeration.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center text-center py-8">
+                <div className="text-4xl font-bold text-destructive">{platformStats.flaggedPostsCount}</div>
+                <p className="text-muted-foreground mt-1 mb-4">{t("adminDashboard.charts.contentModeration.flaggedPosts")}</p>
+                <Button asChild>
+                    <Link href="/admin/content-moderation">{t("adminDashboard.charts.contentModeration.reviewButton")}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+             <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Info className="h-5 w-5 text-primary"/>Flagging Reason Stats</CardTitle>
+                    <CardDescription>Breakdown of reasons for flagged posts.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {moderationReasonStats.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">No data to display.</p>
+                    ) : (
+                        <ul className="space-y-3">
+                            {moderationReasonStats.map(([reason, count]) => (
+                                <li key={reason} className="flex justify-between items-center text-sm">
+                                    <span className="font-medium text-foreground">{reason}</span>
+                                    <Badge variant="secondary">{count}</Badge>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </CardContent>
+            </Card>
+          </div>
         )}
 
         {visibleWidgetIds.has('systemAlerts') && (
