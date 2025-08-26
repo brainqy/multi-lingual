@@ -39,13 +39,13 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
       const weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
       console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array from user:", weeklyActivity);
       
-      const lastActiveDayIndex = weeklyActivity.slice(0, 6).lastIndexOf(1);
+      const lastActiveDayIndex = weeklyActivity.slice(0, 6).lastIndexOf(true);
       console.log("[STREAK LOG] AuthProvider: 3. Last active day index (before today) is:", lastActiveDayIndex);
 
       const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex;
       console.log("[STREAK LOG] AuthProvider: 4. Calculated days since last login based on array:", daysSinceLastLogin);
       
-      const hasLoggedInToday = weeklyActivity[6] === 1;
+      const hasLoggedInToday = weeklyActivity[6] === true;
       console.log("[STREAK LOG] AuthProvider: 5. Has user already logged in today?", hasLoggedInToday);
 
       if (daysSinceLastLogin > 0 && !hasLoggedInToday) {
@@ -59,14 +59,13 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           console.log("[STREAK LOG] AuthProvider: 9. Initial longest streak:", newLongestStreak);
           let newStreakFreezes = userToUpdate.streakFreezes || 0;
           console.log("[STREAK LOG] AuthProvider: 10. Initial streak freezes:", newStreakFreezes);
-
+          
           const daysToShift = Math.min(daysSinceLastLogin, 7);
           console.log("[STREAK LOG] AuthProvider: 11. Shifting weekly activity by", daysToShift, "days.");
           
-          // CORRECTED SHIFT LOGIC
-          const recentActivity = weeklyActivity.slice(0, 7 - daysToShift);
+          const recentActivity = weeklyActivity.slice(daysToShift);
           const shiftedActivity = [...Array(daysToShift).fill(0), ...recentActivity];
-          console.log("[STREAK LOG] AuthProvider: 12. Correctly shifted weekly activity array:", shiftedActivity);
+          console.log("[STREAK LOG] AuthProvider: 12. Shifted weekly activity array:", shiftedActivity);
 
           if (daysSinceLastLogin === 1) {
               console.log("[STREAK LOG] AuthProvider: 13. Logged in consecutively (1 day since last login).");
@@ -125,7 +124,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
               dailyStreak: newStreak, 
               longestStreak: newLongestStreak,
               streakFreezes: newStreakFreezes,
-              lastLogin: startOfDay(new Date()).toISOString(),
+              lastLogin: new Date().toISOString(),
               weeklyActivity: shiftedActivity
           };
           console.log("[STREAK LOG] AuthProvider: 32. Final updatedUserData object:", updatedUserData);
