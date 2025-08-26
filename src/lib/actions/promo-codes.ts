@@ -10,6 +10,7 @@ import { checkAndAwardBadges } from './gamification';
 import { Prisma } from '@prisma/client';
 import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from '@/lib/actions/activities';
+import { NotFoundError } from '../exceptions';
 
 /**
  * Fetches all promo codes, scoped by tenant for managers.
@@ -156,7 +157,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
             const rewardDescription = `Redeemed promo code: ${promoCode.code}`;
             const wallet = await getWallet(userId);
             if (!wallet) {
-              throw new Error(`Wallet not found for user ${userId}.`);
+              throw new NotFoundError("Wallet for user", userId);
             }
 
             switch (promoCode.rewardType) {
@@ -198,6 +199,9 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
 
     } catch (error) {
         console.error(`[PromoCodeAction] Error in the redeem process for code ${code}:`, error);
+        if (error instanceof NotFoundError) {
+          return { success: false, message: "Could not find your wallet to apply rewards. Please try again."};
+        }
         return { success: false, message: 'An unexpected error occurred.' };
     }
 }
