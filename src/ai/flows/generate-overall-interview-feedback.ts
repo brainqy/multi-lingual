@@ -11,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type { GenerateOverallInterviewFeedbackInput, GenerateOverallInterviewFeedbackOutput } from '@/types';
+import { AIError } from '@/lib/exceptions';
 
 const EvaluatedAnswerSchema = z.object({
     questionText: z.string(),
@@ -91,7 +92,7 @@ const generateOverallInterviewFeedbackFlow = ai.defineFlow(
     }
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to generate overall interview feedback.");
+        throw new AIError("AI failed to generate overall interview feedback.");
     }
     return output;
   }

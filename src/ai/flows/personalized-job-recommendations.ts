@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
 
 const JobOpeningSchema = z.object({
   id: z.string().describe('Unique identifier for the job opening.'),
@@ -92,7 +93,7 @@ const personalizedJobRecommendationsFlow = ai.defineFlow(
     }
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to generate job recommendations.");
+        throw new AIError("AI failed to generate job recommendations.");
     }
     // Ensure the recommended jobs actually exist in the input list (simple check)
     const validRecommendedJobs = output.recommendedJobs.filter(recommendedJob =>
