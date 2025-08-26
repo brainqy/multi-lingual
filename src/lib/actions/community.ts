@@ -184,7 +184,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
                 tags: updateData.tags ? updateData.tags : undefined,
                 votedBy: updateData.votedBy || undefined,
                 registeredBy: updateData.registeredBy || undefined,
-                flagReasons: updateData.flagReasons || undefined,
+                flagReasons: updateData.flagReasons ? { set: updateData.flagReasons } : undefined,
             },
             include: {
                 comments: true,
@@ -324,10 +324,19 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post) return null;
 
+        const flaggedBy = (post.flaggedBy as string[]) || [];
+        if (flaggedBy.includes(userId)) {
+            return { ...post, message: "You have already flagged this post." } as any;
+        }
+
+        const newFlaggedBy = [...flaggedBy, userId];
         const newFlagCount = (post.flagCount || 0) + 1;
-        // This action now correctly sets the status to 'flagged' for moderation.
+        const newFlagReasons = [...(post.flagReasons || []), reason];
+        
         const updatedPost = await updateCommunityPost(postId, { 
+            flaggedBy: newFlaggedBy,
             flagCount: newFlagCount, 
+            flagReasons: newFlagReasons,
             moderationStatus: 'flagged' 
         });
         
