@@ -131,8 +131,6 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
               weeklyActivity: shiftedActivity
           };
           console.log("[STREAK LOG] AuthProvider: 33. Final updatedUserData object:", updatedUserData);
-      } else {
-          console.log("[STREAK LOG] AuthProvider: 34. Already logged in today. No streak change.");
       }
       
       if (Object.keys(updatedUserData).length > 0) {
@@ -152,6 +150,9 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
             const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
             console.log("[STREAK LOG] AuthProvider: 39. Returning final user state.");
             return finalUser || updatedUser;
+        } else {
+           console.log("[STREAK LOG] AuthProvider: 39b. Update user failed, returning original user.");
+           return userToUpdate;
         }
       }
       
