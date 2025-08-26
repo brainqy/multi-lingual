@@ -24,12 +24,22 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
 
   const todayIndex = new Date().getDay(); // 0 for Sunday, 6 for Saturday
 
-  const displayActivity = userProfile.weeklyActivity || Array(7).fill(false);
+  const displayActivity = userProfile.weeklyActivity || Array(7).fill(0);
   
   const adjustedDayLabels = [...Array(7)].map((_, i) => {
     const dayOffset = (todayIndex - (6 - i) + 7) % 7;
     return t(`dailyStreakPopup.dayLabels.${dayLabelsKeys[dayOffset]}` as any, { defaultValue: dayLabelsKeys[dayOffset]});
   });
+
+  const getActivityIcon = (activityStatus: number | boolean) => {
+    if (activityStatus === 1 || activityStatus === true) { // Active
+      return <Flame className="h-5 w-5 text-white" />;
+    }
+    if (activityStatus === 2) { // Saved by freeze
+      return <ShieldCheck className="h-5 w-5 text-white" />;
+    }
+    return null; // Inactive
+  };
 
 
   return (
@@ -55,7 +65,7 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
           </div>
 
           <div className="flex justify-center items-end space-x-2 mb-6">
-            {displayActivity.map((isActive, index) => (
+            {displayActivity.map((activityStatus, index) => (
               <div key={index} className="flex flex-col items-center relative">
                 {index === 6 && ( 
                   <div className="absolute -top-3 w-0 h-0 
@@ -66,9 +76,11 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
                 )}
                 <div className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center border-2",
-                  isActive ? "bg-pink-500 border-pink-400" : "bg-gray-600 border-gray-500"
+                  activityStatus === 1 || activityStatus === true ? "bg-pink-500 border-pink-400" :
+                  activityStatus === 2 ? "bg-cyan-500 border-cyan-400" :
+                  "bg-gray-600 border-gray-500"
                 )}>
-                  {isActive && <Flame className="h-5 w-5 text-white" />}
+                  {getActivityIcon(activityStatus)}
                 </div>
                 <span className="mt-1 text-xs text-gray-300">{adjustedDayLabels[index]}</span>
               </div>

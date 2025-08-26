@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, subDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 
@@ -22,6 +22,8 @@ interface AuthContextType {
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
+  isStreakPopupOpen: boolean;
+  setStreakPopupOpen: (isOpen: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStreakPopupOpen, setStreakPopupOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
@@ -51,9 +54,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       let updatedUserData: Partial<UserProfile> = {};
 
       if (daysSinceLastLogin > 0) { // Only update if it's a new day
+          setStreakPopupOpen(true); // Show popup on new day login
           let newStreak = userToUpdate.dailyStreak || 0;
           let newLongestStreak = userToUpdate.longestStreak || 0;
           let newStreakFreezes = userToUpdate.streakFreezes || 0;
+          let weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
+
+          // Shift weekly activity
+          if (daysSinceLastLogin > 0) {
+              weeklyActivity = [...weeklyActivity.slice(daysSinceLastLogin), ...Array(Math.min(daysSinceLastLogin, 7)).fill(0)];
+          }
 
           if (daysSinceLastLogin === 1) {
               newStreak++;
@@ -61,15 +71,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
               if (newStreakFreezes > 0) {
                   newStreakFreezes--; // Use a freeze
                   toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
+                  // Mark the missed days as saved in weekly activity
+                  for (let i = 1; i < Math.min(daysSinceLastLogin, 7); i++) {
+                    const activityIndex = 6 - i;
+                    if(activityIndex >= 0) {
+                        weeklyActivity[activityIndex] = 2; // '2' represents a saved day
+                    }
+                  }
               } else {
                   newStreak = 1; // Reset streak
               }
           }
+
+          weeklyActivity[6] = 1; // Mark today as active ('1')
+
           if (newStreak > newLongestStreak) {
               newLongestStreak = newStreak;
           }
-
-          // ** NEW: Award streak freeze for milestones **
+          
           const STREAK_MILESTONES = [7, 14, 30];
           if (STREAK_MILESTONES.includes(newStreak)) {
             newStreakFreezes++;
@@ -84,14 +103,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
               dailyStreak: newStreak, 
               longestStreak: newLongestStreak,
               streakFreezes: newStreakFreezes,
-              lastLogin: today.toISOString() 
+              lastLogin: today.toISOString(),
+              weeklyActivity: weeklyActivity
           };
       }
       
       if (Object.keys(updatedUserData).length > 0) {
         const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
         if(updatedUser) {
-            // After streak is updated, check for new badges
             const newBadges = await checkAndAwardBadges(updatedUser.id);
             newBadges.forEach(badge => {
                 toast({
@@ -99,13 +118,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     description: `You've earned the "${badge.name}" badge.`,
                 });
             });
-            // Re-fetch the user to get the latest badge and XP info
             const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
             return finalUser || updatedUser;
         }
       }
       
-      return userToUpdate; // Return original user if no updates were made
+      return userToUpdate;
   };
 
 
@@ -113,7 +131,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     setWallet(null);
     localStorage.removeItem('bhashaSetuUser');
-    // Don't redirect if already on a public or auth page
     if (!pathname.startsWith('/auth') && pathname !== '/') {
       router.push('/auth/login');
     }
@@ -227,7 +244,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
       {children}
     </AuthContext.Provider>
   );
