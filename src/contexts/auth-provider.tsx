@@ -131,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             dailyStreak: newStreak, 
             longestStreak: newLongestStreak,
             streakFreezes: newStreakFreezes,
-            lastLogin: new Date().toISOString(),
+            lastLogin: today.toISOString(),
             weeklyActivity: weeklyActivity
         };
         console.log("[STREAK LOG] AuthProvider: Final updatedUserData object:", updatedUserData);
