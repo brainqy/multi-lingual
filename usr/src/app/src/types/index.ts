@@ -368,7 +368,7 @@ export interface UserProfile extends AlumniProfile {
   dailyStreak?: number;
   longestStreak?: number;
   totalActiveDays?: number;
-  weeklyActivity?: boolean[];
+  weeklyActivity?: number[];
   referralCode?: string;
   earnedBadges?: string[];
   affiliateCode?: string;
