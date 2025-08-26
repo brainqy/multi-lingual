@@ -61,10 +61,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           let weeklyActivity = [...(userToUpdate.weeklyActivity || Array(7).fill(0))];
 
           // Shift weekly activity array based on number of days missed
-          if (daysSinceLastLogin > 0) {
-              const daysToShift = Math.min(daysSinceLastLogin, 7);
-              weeklyActivity = [...weeklyActivity.slice(daysToShift), ...Array(daysToShift).fill(0)];
-          }
+          const daysToShift = Math.min(daysSinceLastLogin, 7);
+          weeklyActivity = [...weeklyActivity.slice(daysToShift), ...Array(daysToShift).fill(0)];
 
           if (daysSinceLastLogin === 1) {
               newStreak++;
@@ -73,9 +71,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   newStreakFreezes--; // Use a freeze
                   toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
                   // Mark the missed days as saved in weekly activity
-                  // Corrected loop starts from i = 0 to include the first missed day.
-                  for (let i = 0; i < Math.min(daysSinceLastLogin - 1, 6); i++) {
-                    const activityIndex = 5 - i; // Index from right (6 is today, 5 is yesterday)
+                  // This loop should cover all missed days that fit in the 7-day view.
+                  for (let i = 1; i < daysToShift; i++) {
+                    const activityIndex = 6 - i; // Index from right (6 is today, 5 is yesterday, etc.)
                     if(activityIndex >= 0) {
                         weeklyActivity[activityIndex] = 2; // '2' represents a saved day
                     }
