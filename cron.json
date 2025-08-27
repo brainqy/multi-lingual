@@ -1,8 +1,14 @@
 
 {
-    "schedule": "0 0 * * *",
+    "schedule": "0 5 * * *",
     "handler": {
         "type": "https",
-        "url": "/api/cron/delete-old-items"
+        "url": "/api/cron/daily"
+    },
+    "retryConfig": {
+        "retryCount": 3,
+        "maxRetryDuration": "10m",
+        "minBackoffDuration": "1m",
+        "maxBackoffDuration": "5m"
     }
 }
