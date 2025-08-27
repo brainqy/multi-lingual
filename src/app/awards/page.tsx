@@ -147,9 +147,9 @@ export default function AwardsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {awards.map(award => {
                 const now = new Date();
-                const isNominating = award.status === 'Nominating' && isWithinInterval(now, { start: parseISO(award.nominationStartDate), end: parseISO(award.nominationEndDate) });
-                const isVoting = award.status === 'Voting' && isWithinInterval(now, { start: parseISO(award.votingStartDate), end: parseISO(award.votingEndDate) });
-                const isCompleted = award.status === 'Completed' || (award.votingEndDate && isPast(parseISO(award.votingEndDate)));
+                const isNominating = award.status === 'Nominating' && isWithinInterval(now, { start: new Date(award.nominationStartDate), end: new Date(award.nominationEndDate) });
+                const isVoting = award.status === 'Voting' && isWithinInterval(now, { start: new Date(award.votingStartDate), end: new Date(award.votingEndDate) });
+                const isCompleted = award.status === 'Completed' || (award.votingEndDate && isPast(new Date(award.votingEndDate)));
                 
                 if (isCompleted && award.winner) {
                   return (
@@ -180,8 +180,8 @@ export default function AwardsPage() {
                       <CardDescription>{award.description}</CardDescription>
                     </CardHeader>
                     <CardContent className="flex-grow">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1"><CalendarDays className="h-4 w-4"/> Nomination: {format(parseISO(award.nominationStartDate), 'MMM d')} - {format(parseISO(award.nominationEndDate), 'MMM d')}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1"><CalendarDays className="h-4 w-4"/> Voting: {format(parseISO(award.votingStartDate), 'MMM d')} - {format(parseISO(award.votingEndDate), 'MMM d, yyyy')}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1"><CalendarDays className="h-4 w-4"/> Nomination: {format(new Date(award.nominationStartDate), 'MMM d')} - {format(new Date(award.nominationEndDate), 'MMM d')}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1"><CalendarDays className="h-4 w-4"/> Voting: {format(new Date(award.votingStartDate), 'MMM d')} - {format(new Date(award.votingEndDate), 'MMM d, yyyy')}</p>
                     </CardContent>
                     <CardFooter>
                       {isNominating && <Button onClick={() => openNominationDialog(award)} className="w-full"><UserPlus className="mr-2 h-4 w-4" /> Submit Nomination</Button>}
