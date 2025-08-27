@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -230,7 +229,7 @@ export interface CommunityPost {
   attendees?: number;
   capacity?: number;
   assignedTo?: string;
-  status?: 'open' | 'in progress' | 'completed';
+  status: 'open' | 'in progress' | 'completed';
   moderationStatus: CommunityPostModerationStatus;
   flagCount: number;
   flagReasons?: string[];
@@ -586,6 +585,7 @@ export interface SurveyResponse {
   surveyName?: string;
   responseDate: string;
   data: Record<string, any>;
+  tenantId: string;
 }
 
 export type AffiliateStatus = 'pending' | 'approved' | 'rejected';
@@ -1336,19 +1336,19 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
-export const EvaluateDailyChallengeAnswerInputSchema = z.object({
+export const EvaluateDailyChallengeInputSchema = z.object({
   question: z.string().describe('The challenge question that was asked.'),
   answer: z.string().describe('The user\'s submitted answer.'),
   solution: z.string().optional().describe('The ideal solution or key points for reference.'),
 });
-export type EvaluateDailyChallengeAnswerInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
+export type EvaluateDailyChallengeInput = z.infer<typeof EvaluateDailyChallengeInputSchema>;
 
-export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
+export const EvaluateDailyChallengeOutputSchema = z.object({
   isCorrect: z.boolean().describe('Whether the answer is fundamentally correct.'),
   score: z.number().min(0).max(100).describe('A score from 0-100 evaluating the answer.'),
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
-export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
+export type EvaluateDailyChallengeOutput = z.infer<typeof EvaluateDailyChallengeOutputSchema>;
 
 export interface SoftDeletedItem {
     id: string;
@@ -1400,3 +1400,4 @@ export type Vote = {
     voter: UserProfile;
     createdAt: string;
 }
+

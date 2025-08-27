@@ -29,6 +29,7 @@ import WelcomeTourDialog from "@/components/features/WelcomeTourDialog";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { getTenants, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
+import { updatePlatformSettings as updatePlatformSettingsAction } from "@/lib/actions/platform-settings";
 
 export default function SettingsPage() {
   const { t } = useI18n();
@@ -38,11 +39,16 @@ export default function SettingsPage() {
   const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Notification States
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
   const [appNotificationsEnabled, setAppNotificationsEnabled] = useState(true);
   const [gamificationNotificationsEnabled, setGamificationNotificationsEnabled] = useState(true);
   const [referralNotificationsEnabled, setReferralNotificationsEnabled] = useState(true);
+
+  // Admin Platform Feature State
   const [walletEnabled, setWalletEnabled] = useState(platformSettings.walletEnabled);
+
   const [userApiKey, setUserApiKey] = useState("");
   const [tenantNameInput, setTenantNameInput] = useState("");
   const [tenantLogoUrlInput, setTenantLogoUrlInput] = useState("");
@@ -67,6 +73,11 @@ export default function SettingsPage() {
     if (currentUser) {
       setChallengeTopics(currentUser.challengeTopics || []);
       setUserApiKey(currentUser.userApiKey || "");
+      // Set notification states from user profile
+      setEmailNotificationsEnabled(currentUser.emailNotificationsEnabled ?? true);
+      setAppNotificationsEnabled(currentUser.appNotificationsEnabled ?? true);
+      setGamificationNotificationsEnabled(currentUser.gamificationNotificationsEnabled ?? true);
+      setReferralNotificationsEnabled(currentUser.referralNotificationsEnabled ?? true);
     }
   }, [currentUser]);
 
@@ -132,16 +143,21 @@ export default function SettingsPage() {
     if (!currentUser) return;
 
     let userUpdateSuccess = false;
-    let tenantUpdateSuccess = true; // Default to true if not applicable
+    let tenantUpdateSuccess = true;
+    let platformUpdateSuccess = true;
 
     // 1. Update user-specific settings
     const updatedUser = await updateUser(currentUser.id, {
         challengeTopics,
-        userApiKey
+        userApiKey,
+        emailNotificationsEnabled,
+        appNotificationsEnabled,
+        gamificationNotificationsEnabled,
+        referralNotificationsEnabled
     });
 
     if (updatedUser) {
-        await login(updatedUser.email); // Re-login to update auth context
+        await login(updatedUser.email);
         userUpdateSuccess = true;
     } else {
         toast({ title: "Save Failed", description: "Could not save your personal settings.", variant: "destructive" });
@@ -157,17 +173,26 @@ export default function SettingsPage() {
         const updatedTenant = await updateTenant(currentUser.tenantId, { name: tenantNameInput });
         const updatedSettings = await updateTenantSettings(currentUser.tenantId, tenantSettingsData);
         
-        if (updatedTenant && updatedSettings) {
-            tenantUpdateSuccess = true;
-        } else {
-            tenantUpdateSuccess = false;
-            toast({ title: "Save Failed", description: "Could not save tenant branding settings.", variant: "destructive" });
-        }
+        if (!updatedTenant || !updatedSettings) tenantUpdateSuccess = false;
+    }
+    
+    // 3. If user is an admin, update platform settings
+    if (currentUser.role === 'admin') {
+      const platformSettingsData: Partial<PlatformSettings> = {
+        walletEnabled: walletEnabled,
+      };
+      const updatedPlatformSettings = await updatePlatformSettingsAction(platformSettingsData);
+      if (updatedPlatformSettings) {
+        setPlatformSettings(updatedPlatformSettings);
+      } else {
+        platformUpdateSuccess = false;
+      }
     }
 
-    // 3. Show final success message if all parts succeeded
-    if (userUpdateSuccess && tenantUpdateSuccess) {
+    if (userUpdateSuccess && tenantUpdateSuccess && platformUpdateSuccess) {
         toast({ title: "Settings Saved", description: "Your preferences have been successfully updated." });
+    } else {
+        toast({ title: "Partial Save", description: "Some settings could not be saved. Please try again.", variant: "destructive" });
     }
   };
 
@@ -309,7 +334,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5 text-primary"/>{t("userSettings.notificationsCardTitle")}</CardTitle>
@@ -375,10 +399,7 @@ export default function SettingsPage() {
               <Switch
                 id="wallet-enable-platform"
                 checked={walletEnabled}
-                onCheckedChange={(checked) => {
-                    setWalletEnabled(checked);
-                    setPlatformSettings(prev => ({...prev, walletEnabled: checked}));
-                }}
+                onCheckedChange={setWalletEnabled}
               />
             </div>
           </CardContent>
