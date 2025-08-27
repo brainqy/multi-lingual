@@ -440,6 +440,27 @@ export default function CommunityFeedPage() {
       toast({ title: "Error", description: "Could not update like.", variant: "destructive" });
     }
   };
+  
+  const handleShare = (post: CommunityPost) => {
+    const postUrl = `${window.location.origin}/community-feed#post-${post.id}`;
+    const shareText = `Check out this post by ${post.userName} on JobMatch AI: "${post.content?.substring(0, 100)}..."`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: `Post by ${post.userName}`,
+            text: shareText,
+            url: postUrl,
+        })
+        .then(() => console.log('Successful share'))
+        .catch((error) => console.log('Error sharing', error));
+    } else {
+        navigator.clipboard.writeText(postUrl).then(() => {
+            toast({ title: "Link Copied", description: "Post link copied to clipboard!" });
+        }).catch(err => {
+            toast({ title: "Copy Failed", description: "Could not copy link.", variant: "destructive" });
+        });
+    }
+  };
 
   const filteredPosts = useMemo(() => {
     if (!currentUser) return [];
@@ -803,8 +824,8 @@ export default function CommunityFeedPage() {
                             }}>
                             <MessageIcon className="mr-1 h-3.5 w-3.5" /> Comment ({post.comments?.length || 0})
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs">
-                            <Share2 className="mr-1 h-3.5 w-3.5" /> Share
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary text-xs" onClick={() => handleShare(post)}>
+                                <Share2 className="mr-1 h-3.5 w-3.5" /> Share
                             </Button>
 
                             {(currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) ? (
@@ -918,3 +939,4 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+
