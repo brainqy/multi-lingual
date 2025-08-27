@@ -96,6 +96,12 @@ model User {
   nominationsReceived     Nomination[]              @relation("NomineeRelation")
   votesCast               Vote[]                    @relation("VoterRelation")
   awardsWon               Award[]                   @relation("WinnerRelation")
+
+  // Notification Preferences
+  emailNotificationsEnabled    Boolean? @default(true)
+  appNotificationsEnabled      Boolean? @default(true)
+  gamificationNotificationsEnabled Boolean? @default(true)
+  referralNotificationsEnabled Boolean? @default(true)
 }
 
 model Tenant {
