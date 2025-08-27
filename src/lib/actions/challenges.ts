@@ -6,6 +6,7 @@ import type { DailyChallenge, UserProfile, ChallengeAction } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { differenceInDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
+import { Prisma } from '@prisma/client';
 
 /**
  * Fetches all daily challenges from the database.
@@ -72,7 +73,12 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
     logAction('Generating new flip challenge for user', { userId });
     const completedTaskIds = user?.completedFlipTaskIds || [];
     const allFlipChallenges = await db.dailyChallenge.findMany({
-      where: { type: 'flip', tasks: { some: {} } },
+      where: { 
+        type: 'flip',
+        tasks: {
+          not: Prisma.JsonNull, // Correctly check that the tasks field is not null
+        }
+      },
     });
     
     const allTasks = allFlipChallenges.flatMap(challenge =>
