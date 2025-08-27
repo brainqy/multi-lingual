@@ -2,24 +2,24 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Award as AwardIcon, Loader2, CalendarDays } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, Award as AwardIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Award, AwardCategory } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getAwardCategories, createAwardCategory, updateAwardCategory, deleteAwardCategory, getAwards, createAward, updateAward, deleteAward } from "@/lib/actions/awards";
 import { useAuth } from "@/hooks/use-auth";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
+import { Badge } from "@/components/ui/badge";
 
 const awardCategorySchema = z.object({
   id: z.string().optional(),
@@ -210,4 +210,3 @@ export default function AwardsManagementPage() {
     </div>
   );
 }
-```

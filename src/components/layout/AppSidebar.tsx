@@ -53,6 +53,7 @@ const utilityItems = [
 ];
 
 const gamificationItems = [
+  { href: "/awards", labelKey: "sideMenu.awards", icon: Trophy },
   { href: "/daily-interview-challenge", labelKey: "sideMenu.dailyChallenge", icon: PuzzleIcon },
   { href: "/kbc-game", labelKey: "sideMenu.kbcGame", icon: Trophy },
   { href: "/number-match-game", labelKey: "sideMenu.numberMatchGame", icon: Dices },
@@ -243,4 +244,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-```

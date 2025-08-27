@@ -2,8 +2,9 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Award, AwardCategory } from '@/types';
+import type { Award, AwardCategory, Nomination, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { createNotification } from './notifications';
 
 // Award Category Actions
 export async function getAwardCategories(): Promise<AwardCategory[]> {
@@ -42,11 +43,9 @@ export async function updateAwardCategory(id: string, data: Partial<Omit<AwardCa
 export async function deleteAwardCategory(id: string): Promise<boolean> {
   logAction('Deleting award category', { id });
   try {
-    // Ensure no awards are using this category first
     const awardsUsingCategory = await db.award.count({ where: { categoryId: id } });
     if (awardsUsingCategory > 0) {
       logError(`[AwardsAction] Attempted to delete category in use`, {}, { id });
-      // You might want to throw an error here to be caught by a try-catch in the UI for a better message
       return false; 
     }
     await db.awardCategory.delete({ where: { id } });
@@ -62,7 +61,10 @@ export async function deleteAwardCategory(id: string): Promise<boolean> {
 export async function getAwards(): Promise<Award[]> {
   logAction('Fetching awards');
   try {
-    const awards = await db.award.findMany({ orderBy: { title: 'asc' } });
+    const awards = await db.award.findMany({ 
+        orderBy: { title: 'asc' },
+        include: { nominations: { include: { nominee: true, nominator: true } } }
+    });
     return awards as unknown as Award[];
   } catch (error) {
     logError('[AwardsAction] Error fetching awards', error);
@@ -70,7 +72,7 @@ export async function getAwards(): Promise<Award[]> {
   }
 }
 
-export async function createAward(data: Omit<Award, 'id'>): Promise<Award | null> {
+export async function createAward(data: Omit<Award, 'id' | 'nominations'>): Promise<Award | null> {
   logAction('Creating award', { title: data.title });
   try {
     const newAward = await db.award.create({ data: data as any });
@@ -81,7 +83,7 @@ export async function createAward(data: Omit<Award, 'id'>): Promise<Award | null
   }
 }
 
-export async function updateAward(id: string, data: Partial<Omit<Award, 'id'>>): Promise<Award | null> {
+export async function updateAward(id: string, data: Partial<Omit<Award, 'id' | 'nominations'>>): Promise<Award | null> {
   logAction('Updating award', { id });
   try {
     const updatedAward = await db.award.update({ where: { id }, data: data as any });
@@ -95,12 +97,90 @@ export async function updateAward(id: string, data: Partial<Omit<Award, 'id'>>):
 export async function deleteAward(id: string): Promise<boolean> {
   logAction('Deleting award', { id });
   try {
-    // In a real app, you'd also delete related nominations and votes in a transaction.
-    await db.award.delete({ where: { id } });
+    await db.$transaction([
+      db.nomination.deleteMany({ where: { awardId: id } }),
+      db.award.delete({ where: { id } }),
+    ]);
     return true;
   } catch (error) {
     logError(`[AwardsAction] Error deleting award ${id}`, error, { id });
     return false;
   }
 }
-```
+
+// Nomination Actions
+export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt'>): Promise<Nomination | null> {
+    logAction('Creating nomination', { awardId: data.awardId, nomineeId: data.nomineeId });
+    try {
+        const award = await db.award.findUnique({ where: { id: data.awardId } });
+        if (!award || award.status !== 'Nominating') {
+            throw new Error("Nominations are not currently open for this award.");
+        }
+        
+        const now = new Date();
+        if (now < award.nominationStartDate || now > award.nominationEndDate) {
+            throw new Error("Nomination period is not active.");
+        }
+        
+        const existingNomination = await db.nomination.findFirst({
+            where: {
+                awardId: data.awardId,
+                nomineeId: data.nomineeId,
+                nominatorId: data.nominatorId
+            }
+        });
+        if(existingNomination) {
+            throw new Error("You have already nominated this person for this award.");
+        }
+
+        const newNomination = await db.nomination.create({ data });
+        
+        const nominee = await db.user.findUnique({ where: { id: data.nomineeId }});
+        
+        if (nominee && nominee.id !== data.nominatorId) {
+             await createNotification({
+                userId: data.nomineeId,
+                type: 'system',
+                content: `You have been nominated for the "${award.title}" award!`,
+                link: '/awards',
+                isRead: false
+            });
+        }
+
+        return newNomination as unknown as Nomination;
+    } catch (error) {
+        logError('[AwardsAction] Error creating nomination', error, { awardId: data.awardId });
+        // Re-throw the specific error message to be caught by the UI
+        if (error instanceof Error) {
+            throw error;
+        }
+        return null;
+    }
+}
+
+export async function getActiveAwardsForNomination(): Promise<(Award & { category: AwardCategory })[]> {
+    logAction('Fetching active awards for nomination');
+    try {
+        const now = new Date();
+        const awards = await db.award.findMany({
+            where: {
+                status: 'Nominating',
+                nominationStartDate: { lte: now },
+                nominationEndDate: { gte: now },
+            },
+            include: {
+                category: true,
+                nominations: {
+                    include: {
+                        nominee: { select: { id: true, name: true, profilePictureUrl: true } }
+                    }
+                }
+            },
+            orderBy: { category: { name: 'asc' } }
+        });
+        return awards as unknown as (Award & { category: AwardCategory })[];
+    } catch (error) {
+        logError('[AwardsAction] Error fetching active awards', error);
+        return [];
+    }
+}

@@ -30,6 +30,7 @@
     "dailyChallenge": "Daily Challenge",
     "kbcGame": "KBC Quiz Game",
     "numberMatchGame": "Number Match Game",
+    "awards": "Awards & Recognition",
     "adminDashboard": "Admin Dashboard",
     "tenantManagement": "Tenant Management",
     "tenantOnboarding": "Tenant Onboarding",
@@ -88,4 +89,3 @@
     "dayLabels": { "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa" }
   }
 }
-```
