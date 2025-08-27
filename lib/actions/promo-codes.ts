@@ -1,15 +1,16 @@
 
 'use server';
 
-import { db } from '../db';
+
 import type { PromoCode } from '@/types';
 import { isPast, parseISO, addDays } from 'date-fns';
-import { getWallet, updateWallet, addXp } from './wallet';
-import { checkAndAwardBadges } from './gamification';
+import { getWallet, updateWallet, addXp } from '@/lib/actions/wallet';
 //import from node modules instead of @prisma/client to avoid TS errors
 import { Prisma } from '@prisma/client';
 import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from '@/lib/actions/activities';
+import { checkAndAwardBadges } from '@/lib/actions/gamification';
+import { db } from '@/lib/db';
 
 /**
  * Fetches all promo codes, scoped by tenant for managers.
