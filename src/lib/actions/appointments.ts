@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { Appointment } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
+import { getDashboardData } from './dashboard';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -40,6 +41,13 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
   logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
   try {
+    const dashboardData = await getDashboardData(appointmentData.tenantId, appointmentData.requesterUserId, 'user');
+    const requesterUser = dashboardData.users.find(u => u.id === appointmentData.requesterUserId);
+
+    if (!requesterUser) {
+        throw new Error(`Requester user with ID ${appointmentData.requesterUserId} not found.`);
+    }
+
     const newAppointment = await db.appointment.create({
       data: {
         ...appointmentData,
@@ -51,7 +59,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
     await createNotification({
         userId: newAppointment.alumniUserId,
         type: 'event',
-        content: `You have a new appointment request from ${newAppointment.withUser} for "${newAppointment.title}".`,
+        content: `You have a new appointment request from ${requesterUser.name} for "${newAppointment.title}".`,
         link: '/appointments',
         isRead: false,
     });
