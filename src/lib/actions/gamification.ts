@@ -97,7 +97,12 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
     }
 
     if (newChallengesCompleted) {
-        const finalUserWithCompletion = await updateUser(userId, { completedChallengeIds: Array.from(completedChallengeIds) });
+        // Clear the completed challenge and mark it as done
+        const finalUserWithCompletion = await updateUser(userId, { 
+            completedChallengeIds: Array.from(completedChallengeIds),
+            currentFlipChallenge: null, // Clear the challenge so a new one can be assigned
+            flipChallengeAssignedAt: null,
+        });
         return finalUserWithCompletion || finalUpdatedUser;
     }
 

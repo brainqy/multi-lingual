@@ -334,6 +334,23 @@ export type ChallengeAction =
   | "add_job_application"
   | "daily_challenge_complete";
   
+export interface DailyChallenge {
+  id: string;
+  type: 'standard' | 'flip';
+  date?: string;
+  title: string;
+  description: string;
+  difficulty?: "Easy" | "Medium" | "Hard";
+  category?: InterviewQuestionCategory;
+  solution?: string;
+  xpReward?: number;
+  tasks?: {
+    description: string;
+    action: ChallengeAction;
+    target: number;
+  }[];
+}
+
 export interface UserProfile extends AlumniProfile {
   id: string;
   tenantId: string;
@@ -406,6 +423,8 @@ export interface UserProfile extends AlumniProfile {
   completedFlipTaskIds?: string[];
   sessionId?: string;
   streakFreezes?: number;
+  currentFlipChallenge?: DailyChallenge;
+  flipChallengeAssignedAt?: string;
 
   // Notification Preferences
   emailNotificationsEnabled?: boolean;
@@ -687,23 +706,6 @@ export interface InterviewQuestionUserComment {
 export interface InterviewQuestionUserRating {
   userId: string;
   rating: number; // 1-5
-}
-
-export interface DailyChallenge {
-  id: string;
-  type: 'standard' | 'flip';
-  date?: string;
-  title: string;
-  description: string;
-  difficulty?: "Easy" | "Medium" | "Hard";
-  category?: InterviewQuestionCategory;
-  solution?: string;
-  xpReward?: number;
-  tasks?: {
-    description: string;
-    action: ChallengeAction;
-    target: number;
-  }[];
 }
 
 export interface InterviewQuestion {
@@ -1332,3 +1334,4 @@ export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
 export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
+
