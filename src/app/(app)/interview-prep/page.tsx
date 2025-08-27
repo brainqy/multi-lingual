@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type React from 'react';
@@ -23,8 +22,9 @@ import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
 import { getUserByEmail } from '@/lib/data-services/users';
-import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import { useSettings } from '@/contexts/settings-provider';
 import { updateWallet } from '@/lib/actions/wallet';
+import AccessDeniedMessage from '@/components/ui/AccessDeniedMessage';
 
 const logger = {
   log: (message: string, ...args: any[]) => console.log(`[InterviewPrepPage] ${message}`, ...args),
@@ -39,11 +39,11 @@ export default function InterviewPracticeHubPage() {
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
-  const [platformSettings, setPlatformSettings] = useState<PlatformSettings | null>(null);
-
+  
   const router = useRouter();
   const { toast } = useToast();
   const { user: currentUser, wallet, refreshWallet } = useAuth();
+  const { settings } = useSettings();
   
   const fetchQuestions = useCallback(async () => {
     setIsLoadingQuestions(true);
@@ -55,10 +55,9 @@ export default function InterviewPracticeHubPage() {
   useEffect(() => {
     if (currentUser) {
       const loadData = async () => {
-        const [appointments, quizzes, settings] = await Promise.all([
+        const [appointments, quizzes] = await Promise.all([
           getAppointments(currentUser.id),
           getCreatedQuizzes(currentUser.id),
-          getPlatformSettings()
         ]);
 
         const userPracticeSessions = appointments
@@ -76,7 +75,6 @@ export default function InterviewPracticeHubPage() {
           })) as PracticeSession[];
         setPracticeSessions(userPracticeSessions);
         setCreatedQuizzes(quizzes);
-        setPlatformSettings(settings);
       };
       loadData();
       fetchQuestions();
@@ -89,9 +87,9 @@ export default function InterviewPracticeHubPage() {
 
   const handleSessionBooked = async (newSessionConfig: PracticeSessionConfig) => {
     logger.log('1. handleSessionBooked triggered with config:', newSessionConfig);
-    if (!currentUser || !wallet) {
-        logger.log('2. No current user or wallet. Aborting and showing toast.');
-        toast({ title: "Error", description: "You must be logged in and wallet must be available.", variant: "destructive" });
+    if (!currentUser || !wallet || !settings) {
+        logger.log('2. No current user, wallet, or settings. Aborting and showing toast.');
+        toast({ title: "Error", description: "You must be logged in and settings must be available.", variant: "destructive" });
         return;
     }
     logger.log('3. Current user found:', currentUser.id);
@@ -99,7 +97,7 @@ export default function InterviewPracticeHubPage() {
     if (newSessionConfig.type === "ai") {
         logger.log('4. Session type is "ai". Preparing to create a mock interview session.');
         
-        const cost = platformSettings?.aiMockInterviewCost ?? 25;
+        const cost = settings.aiMockInterviewCost ?? 25;
         if (wallet.coins < cost) {
           toast({
             title: "Insufficient Coins",
@@ -268,6 +266,10 @@ export default function InterviewPracticeHubPage() {
     }
   };
 
+  if (!settings?.mockInterviewEnabled) {
+    return <AccessDeniedMessage title="Feature Disabled" message="The Interview Prep Hub is currently disabled by the platform administrator." />;
+  }
+
   if (!currentUser) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -334,4 +336,3 @@ export default function InterviewPracticeHubPage() {
     </div>
   );
 }
-
