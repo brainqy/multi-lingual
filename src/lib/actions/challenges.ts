@@ -35,7 +35,7 @@ export async function getChallenges(): Promise<DailyChallenge[]> {
  * @returns A promise that resolves to a DailyChallenge object or null.
  */
 export async function getDynamicFlipChallenge(userId: string): Promise<DailyChallenge | null> {
-  logAction('Fetching dynamic flip challenge', { userId });
+  logAction('[FlipChallenge] Start: Fetching dynamic flip challenge', { userId });
   try {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -57,42 +57,56 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
       },
     });
 
-    if (!user) return null;
+    if (!user) {
+        logError('[FlipChallenge] User not found', {}, { userId });
+        return null;
+    }
+    logAction('[FlipChallenge] Step: User data fetched successfully', { userId });
+
 
     // Check for existing, recent challenge
     if (user.currentFlipChallenge && user.flipChallengeAssignedAt) {
+      logAction('[FlipChallenge] Step: User has an existing challenge. Checking its age.', { userId });
       const assignedDate = new Date(user.flipChallengeAssignedAt);
       const daysSinceAssigned = differenceInDays(new Date(), assignedDate);
       if (daysSinceAssigned < 7) {
-        logAction('Returning existing flip challenge', { userId, assignedDaysAgo: daysSinceAssigned });
+        logAction('[FlipChallenge] End: Returning existing recent flip challenge', { userId, assignedDaysAgo: daysSinceAssigned });
         return user.currentFlipChallenge as unknown as DailyChallenge;
       }
+       logAction('[FlipChallenge] Step: Existing challenge is older than 7 days. Proceeding to generate a new one.', { userId, daysSinceAssigned });
+    } else {
+        logAction('[FlipChallenge] Step: No existing challenge found for user. Proceeding to generate a new one.', { userId });
     }
 
     // Generate a new challenge if none exists or the old one is expired
-    logAction('Generating new flip challenge for user', { userId });
+    logAction('[FlipChallenge] Step: Generating new flip challenge for user', { userId });
     const completedTaskIds = user?.completedFlipTaskIds || [];
+    logAction('[FlipChallenge] Step: Fetching all possible flip challenges from DB', { userId });
     const allFlipChallenges = await db.dailyChallenge.findMany({
       where: { 
         type: 'flip',
         tasks: {
-          not: Prisma.JsonNull, // Correctly check that the tasks field is not null
+          not: Prisma.JsonNull,
         }
       },
     });
+    logAction('[FlipChallenge] Step: Found total flip challenges in DB', { count: allFlipChallenges.length });
     
     const allTasks = allFlipChallenges.flatMap(challenge =>
       (challenge.tasks as any[]).map(task => ({ ...task, parentChallengeId: challenge.id, xpReward: challenge.xpReward }))
     );
     const uncompletedTasks = allTasks.filter(task => !completedTaskIds.includes(task.action));
+    logAction('[FlipChallenge] Step: Calculated uncompleted tasks for user', { userId, uncompletedCount: uncompletedTasks.length, totalTasks: allTasks.length });
+
 
     if (uncompletedTasks.length < 2) {
-      logAction('Not enough uncompleted tasks to generate a flip challenge', { userId });
+      logAction('[FlipChallenge] End: Not enough uncompleted tasks to generate a flip challenge', { userId });
       return null;
     }
     
     const shuffledTasks = uncompletedTasks.sort(() => 0.5 - Math.random());
     const selectedTasks = shuffledTasks.slice(0, 2);
+    logAction('[FlipChallenge] Step: Randomly selected tasks for the new challenge', { userId, tasks: selectedTasks.map(t => t.action) });
     const combinedXp = selectedTasks.reduce((sum, task) => sum + (task.xpReward || 0), 0) / 2;
 
     const dynamicChallenge: DailyChallenge = {
@@ -107,8 +121,10 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
         target: task.target,
       })),
     };
+    logAction('[FlipChallenge] Step: New dynamic challenge object created', { userId, challenge: dynamicChallenge });
     
     // Capture baseline progress for the new tasks
+    logAction('[FlipChallenge] Step: Capturing baseline progress for new tasks', { userId });
     const progressStart: Record<string, number> = {};
     for (const task of dynamicChallenge.tasks!) {
         switch (task.action) {
@@ -120,19 +136,21 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
           case 'book_appointment': progressStart[task.action] = user._count.appointmentsAsRequester; break;
         }
     }
+    logAction('[FlipChallenge] Step: Baseline progress captured', { userId, progressStart });
 
     // Save the new challenge and baseline progress to the user's profile
+    logAction('[FlipChallenge] Step: Saving new challenge to user profile in DB', { userId });
     await updateUser(userId, {
       currentFlipChallenge: dynamicChallenge as any,
       flipChallengeAssignedAt: new Date().toISOString(),
       flipChallengeProgressStart: progressStart as any,
     });
     
-    logAction('Assigned new flip challenge to user', { userId, challengeId: dynamicChallenge.id, progressStart });
+    logAction('[FlipChallenge] End: Assigned new flip challenge to user', { userId, challengeId: dynamicChallenge.id, progressStart });
     return dynamicChallenge;
 
   } catch (error) {
-    logError('[ChallengeAction] Error fetching dynamic flip challenge', error, { userId });
+    logError('[FlipChallenge] End: Error fetching dynamic flip challenge', error, { userId });
     return null;
   }
 }
