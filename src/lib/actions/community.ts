@@ -125,14 +125,27 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
       },
     });
 
-    if (commentData.postId) {
-        // Find the original post to notify its author
-        const originalPost = await db.communityPost.findUnique({
-            where: { id: commentData.postId },
-            include: { comments: true }
-        });
+    const notifiedUserIds = new Set<string>([commentData.userId]);
 
-        if (originalPost && originalPost.userId !== commentData.userId) {
+    // 1. Notify author of parent comment if this is a reply
+    if (commentData.parentId) {
+      const parentComment = await db.communityComment.findUnique({ where: { id: commentData.parentId } });
+      if (parentComment && !notifiedUserIds.has(parentComment.userId)) {
+        await createNotification({
+          userId: parentComment.userId,
+          type: 'mention',
+          content: `${commentData.userName} replied to your comment.`,
+          link: `/community-feed#comment-${newComment.id}`,
+          isRead: false,
+        });
+        notifiedUserIds.add(parentComment.userId);
+      }
+    }
+
+    // 2. Notify author of the main post
+    if (commentData.postId) {
+        const originalPost = await db.communityPost.findUnique({ where: { id: commentData.postId } });
+        if (originalPost && !notifiedUserIds.has(originalPost.userId)) {
             await createNotification({
                 userId: originalPost.userId,
                 type: 'system',
@@ -140,32 +153,33 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
                 link: `/community-feed#post-${originalPost.id}`,
                 isRead: false,
             });
+            notifiedUserIds.add(originalPost.userId);
         }
+    }
+    
+    // 3. Handle @mentions in the comment text
+    const mentionRegex = /@(\w+)/g;
+    const mentions = [...commentData.comment.matchAll(mentionRegex)].map(match => match[1]);
 
-        // Handle @mentions
-        const mentionRegex = /@([\w\s]+)/g;
-        const mentions = [...commentData.comment.matchAll(mentionRegex)].map(match => match[1].trim());
+    if (mentions.length > 0) {
+        const mentionedUsers = await db.user.findMany({
+            where: { name: { in: mentions, mode: 'insensitive' } },
+        });
 
-        if (mentions.length > 0) {
-            const mentionedUsers = await db.user.findMany({
-                where: {
-                    name: { in: mentions, mode: 'insensitive' },
-                },
-            });
-
-            for (const mentionedUser of mentionedUsers) {
-                if (mentionedUser.id !== commentData.userId) {
-                    await createNotification({
-                        userId: mentionedUser.id,
-                        type: 'mention',
-                        content: `${commentData.userName} mentioned you in a comment.`,
-                        link: `/community-feed#comment-${newComment.id}`,
-                        isRead: false,
-                    });
-                }
+        for (const mentionedUser of mentionedUsers) {
+            if (!notifiedUserIds.has(mentionedUser.id)) {
+                await createNotification({
+                    userId: mentionedUser.id,
+                    type: 'mention',
+                    content: `${commentData.userName} mentioned you in a comment.`,
+                    link: `/community-feed#comment-${newComment.id}`,
+                    isRead: false,
+                });
+                notifiedUserIds.add(mentionedUser.id);
             }
         }
     }
+
 
     await checkAndAwardBadges(commentData.userId);
 

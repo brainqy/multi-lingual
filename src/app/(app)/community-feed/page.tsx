@@ -70,7 +70,8 @@ type PostFormData = z.infer<typeof postSchema>;
 
 const renderWithMentions = (text: string | null | undefined) => {
   if (!text) return null;
-  const parts = text.split(/(@[\w\s]+)/g);
+  // Match @ followed by non-space characters
+  const parts = text.split(/(@\w+)/g);
   return parts.map((part, i) => {
     if (part.startsWith('@')) {
       return <strong key={i} className="text-primary font-semibold">{part}</strong>;
@@ -174,6 +175,9 @@ export default function CommunityFeedPage() {
       type: 'text',
       imageUrl: '',
       pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }],
+      eventDate: z.string().optional(),
+      eventLocation: z.string().optional(),
+      eventTitle: z.string().optional(),
       attendees: 0,
       capacity: 0,
     }
@@ -226,11 +230,11 @@ export default function CommunityFeedPage() {
         type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
         pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-        eventDate: data.type === 'event' ? data.eventDate : undefined,
-        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+        eventDate: data.eventDate,
+        eventLocation: data.eventLocation,
+        eventTitle: data.eventTitle,
+        attendees: data.attendees || 0,
+        capacity: data.capacity || 0,
       };
 
       const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
@@ -251,11 +255,11 @@ export default function CommunityFeedPage() {
         type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
         pollOptions: data.type === 'poll' ? pollOptionsFinal : undefined,
-        eventDate: data.type === 'event' ? data.eventDate : undefined,
-        eventLocation: data.type === 'event' ? data.eventLocation : undefined,
-        eventTitle: data.type === 'event' ? data.eventTitle : undefined,
-        attendees: data.type === 'event' ? (data.attendees || 0) : undefined,
-        capacity: data.type === 'event' ? (data.capacity || 0) : undefined,
+        eventDate: data.eventDate,
+        eventLocation: data.eventLocation,
+        eventTitle: data.eventTitle,
+        attendees: data.attendees || 0,
+        capacity: data.capacity || 0,
         tags: data.tags?.split(',').map(tag => tag.trim()).filter(tag => tag) || [],
         moderationStatus: 'visible' as const,
         flagCount: 0,
