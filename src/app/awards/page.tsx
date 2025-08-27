@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Award as AwardIcon, UserPlus, Send, Loader2, CalendarDays, ThumbsUp, Crown } from "lucide-react";
-import { format, isWithinInterval, parseISO } from 'date-fns';
+import { format, isPast, isWithinInterval, parseISO } from 'date-fns';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
