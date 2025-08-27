@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -230,7 +229,7 @@ export interface CommunityPost {
   attendees?: number;
   capacity?: number;
   assignedTo?: string;
-  status?: 'open' | 'assigned' | 'completed' | 'in progress';
+  status?: 'open' | 'in progress' | 'completed';
   moderationStatus: CommunityPostModerationStatus;
   flagCount: number;
   flagReasons?: string[];
@@ -467,6 +466,7 @@ export type Appointment = {
   costInCoins?: number;
   withUser: string;
   reminderDate?: string;
+  isAssignedByAdmin?: boolean; // New field
 };
 
 export interface FlashCoinBatch {
@@ -1335,4 +1335,3 @@ export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
 export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
-
