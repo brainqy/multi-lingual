@@ -9,59 +9,34 @@ async function main() {
   console.log(`Start seeding ...`)
 
   // Create default languages
-  const english = await prisma.language.upsert({
-    where: { code: 'en' },
-    update: {},
-    create: { code: 'en', name: 'English' },
-  })
-
-  const marathi = await prisma.language.upsert({
-    where: { code: 'mr' },
-    update: {},
-    create: { code: 'mr', name: 'Marathi' },
-  })
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'mr', name: 'Marathi' },
+    { code: 'hi', name: 'Hindi' },
+  ];
+  for (const lang of languages) {
+    await prisma.language.upsert({
+      where: { code: lang.code },
+      update: {},
+      create: lang,
+    });
+  }
+  console.log('Seeded languages:', languages.map(l => l.name).join(', '));
   
-  const hindi = await prisma.language.upsert({
-    where: { code: 'hi' },
-    update: {},
-    create: { code: 'hi', name: 'Hindi' },
-  })
-
-  console.log('Seeded languages:', { english, marathi, hindi })
-
-  // Create a default Platform tenant for the admin user
-  const platformTenant = await prisma.tenant.upsert({
-    where: { id: 'platform' },
-    update: {},
-    create: {
-      id: 'platform',
-      name: 'Bhasha Setu Platform',
-    },
-  })
-
-  console.log('Seeded platform tenant:', platformTenant)
-
-    const platformTenant1 = await prisma.tenant.upsert({
-    where: { id: 'brainqy' },
-    update: {},
-    create: {
-      id: 'brainqy',
-      name: 'Bhasha Setu Platform',
-    },
-  })
-
-  console.log('Seeded platform tenant:', platformTenant1)
-
-    const platformTenant2 = await prisma.tenant.upsert({
-    where: { id: 'guruji' },
-    update: {},
-    create: {
-      id: 'guruji',
-      name: 'Guruji  Platform',
-    },
-  })
-
-  console.log('Seeded platform tenant:', platformTenant2)
+  // Create default Tenants
+  const tenants = [
+    { id: 'platform', name: 'Bhasha Setu Platform' },
+    { id: 'brainqy', name: 'Bhasha Setu Platform' },
+    { id: 'guruji', name: 'Guruji Platform' },
+  ];
+  for (const tenant of tenants) {
+     await prisma.tenant.upsert({
+      where: { id: tenant.id },
+      update: {},
+      create: tenant,
+    });
+  }
+  console.log('Seeded tenants:', tenants.map(t => t.name).join(', '));
 
 
   // Create a default admin user and connect to the platform tenant
@@ -79,7 +54,7 @@ async function main() {
       name: 'Admin User',
       password: 'password123',
       role: 'admin',
-      tenantId: platformTenant.id,
+      tenantId: 'platform',
       dailyStreak: 5,
       longestStreak: 5,
       lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
@@ -98,7 +73,7 @@ async function main() {
       name: 'Admin User 2',
       password: 'password123',
       role: 'admin',
-      tenantId: platformTenant.id,
+      tenantId: 'platform',
     },
   })
 
@@ -357,7 +332,7 @@ async function main() {
         email: `sample${i}@example.com`,
         password: 'password123',
         role: 'user',
-        tenantId: platformTenant.id,
+        tenantId: 'platform',
         status: 'active',
       },
     });
@@ -384,7 +359,7 @@ async function main() {
       update: {},
       create: {
         id: `scan-${i}`,
-        tenantId: platformTenant.id,
+        tenantId: 'platform',
         userId: `sample-user-${i}`,
         resumeId: `resume-${i}`,
         resumeName: `Sample Resume ${i}`,
@@ -406,7 +381,7 @@ async function main() {
       update: {},
       create: {
         id: `admin-scan-${i}`,
-        tenantId: platformTenant.id,
+        tenantId: 'platform',
         userId: adminUser.id,
         resumeId: `admin-resume-${i}`,
         resumeName: `Admin Resume ${i}`,

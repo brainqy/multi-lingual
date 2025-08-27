@@ -7,6 +7,7 @@ import type { CommunityPost, CommunityComment } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { createNotification } from './notifications';
 import { AppError } from '../exceptions';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
@@ -15,6 +16,7 @@ import { AppError } from '../exceptions';
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
 export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
+  logAction('Fetching community posts', { tenantId, currentUserId });
   try {
     const whereClause: Prisma.CommunityPostWhereInput = tenantId
       ? {
@@ -41,7 +43,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
     });
     return posts as unknown as CommunityPost[];
   } catch (error) {
-    console.error('[CommunityAction] Error fetching posts:', error);
+    logError('[CommunityAction] Error fetching posts', error, { tenantId });
     return [];
   }
 }
@@ -52,9 +54,8 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @returns The newly created CommunityPost object or null if failed.
  */
 export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy'>): Promise<CommunityPost | null> {
-    console.log("[CommunityAction LOG] 1. createCommunityPost action initiated with data:", postData);
+    logAction('Creating community post', { userId: postData.userId, type: postData.type });
     try {
-        console.log("[CommunityAction LOG] 2. Preparing data for database insertion.");
         const dataForDb: Prisma.CommunityPostCreateInput = {
             tenantId: postData.tenantId,
             userId: postData.userId,
@@ -80,22 +81,16 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             registeredBy: [],
             likes: 0,
         };
-        console.log("[CommunityAction LOG] 3. Data ready for database:", dataForDb);
         
-        console.log("[CommunityAction LOG] 4. Calling db.communityPost.create...");
         const newPost = await db.communityPost.create({
             data: dataForDb,
         });
-        console.log("[CommunityAction LOG] 5. Database create operation successful. Result:", newPost);
 
-        console.log("[CommunityAction LOG] 6. Triggering badge check for user:", postData.userId);
         await checkAndAwardBadges(postData.userId);
-        console.log("[CommunityAction LOG] 7. Badge check complete.");
 
-        console.log("[CommunityAction LOG] 8. Returning new post from function.");
         return newPost as unknown as CommunityPost;
     } catch (error) {
-        console.error('[CommunityAction LOG] 9. Error during post creation:', error);
+        logError('[CommunityAction] Error during post creation', error, { userId: postData.userId });
         return null;
     }
 }
@@ -107,6 +102,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
  * @returns The newly created CommunityComment object or null if failed.
  */
 export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' | 'timestamp' | 'replies'>): Promise<CommunityComment | null> {
+  logAction('Adding comment', { userId: commentData.userId, postId: commentData.postId, blogPostId: commentData.blogPostId });
   try {
     if (!commentData.postId && !commentData.blogPostId) {
       throw new AppError("Comment must be associated with either a postId or a blogPostId.");
@@ -185,7 +181,7 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
 
     return newComment as unknown as CommunityComment;
   } catch (error) {
-    console.error('[CommunityAction] Error adding comment:', error);
+    logError('[CommunityAction] Error adding comment', error, { userId: commentData.userId });
     return null;
   }
 }
@@ -197,6 +193,7 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
  * @returns The updated CommunityPost object or null if failed.
  */
 export async function updateCommunityPost(postId: string, updateData: Partial<Omit<CommunityPost, 'id'>>): Promise<CommunityPost | null> {
+    logAction('Updating community post', { postId, updateData: Object.keys(updateData) });
     try {
         const postToUpdate = await db.communityPost.findUnique({ where: { id: postId } });
         if (!postToUpdate) return null;
@@ -233,7 +230,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
 
         return updatedPost as unknown as CommunityPost;
     } catch (error) {
-        console.error(`[CommunityAction] Error updating post ${postId}:`, error);
+        logError(`[CommunityAction] Error updating post ${postId}`, error, { postId });
         return null;
     }
 }
@@ -245,6 +242,7 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
  * @returns The updated CommunityPost object or null on failure.
  */
 export async function toggleLikePost(postId: string, userId: string): Promise<CommunityPost | null> {
+    logAction('Toggling like on post', { postId, userId });
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
@@ -285,7 +283,7 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
         return updatedPost as unknown as CommunityPost;
 
     } catch (error) {
-        console.error(`[CommunityAction] Error toggling like for post ${postId}:`, error);
+        logError(`[CommunityAction] Error toggling like for post ${postId}`, error, { postId, userId });
         return null;
     }
 }
@@ -298,6 +296,7 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
  * @returns The updated post or a message on failure.
  */
 export async function togglePollVote(postId: string, optionIndex: number, userId: string): Promise<CommunityPost & { message: string } | null> {
+    logAction('Toggling poll vote', { postId, userId, optionIndex });
     try {
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post || post.type !== 'poll' || !post.pollOptions || !Array.isArray(post.pollOptions)) {
@@ -337,7 +336,7 @@ export async function togglePollVote(postId: string, optionIndex: number, userId
             return { ...updatedPost!, message: "Vote cast successfully." };
         }
     } catch (error) {
-        console.error(`[CommunityAction] Error toggling poll vote for post ${postId}:`, error);
+        logError(`[CommunityAction] Error toggling poll vote for post ${postId}`, error, { postId, userId });
         return null;
     }
 }
@@ -350,6 +349,7 @@ export async function togglePollVote(postId: string, optionIndex: number, userId
  * @returns The updated post or a message on failure.
  */
 export async function toggleEventRegistration(postId: string, userId: string): Promise<CommunityPost & { message: string } | null> {
+    logAction('Toggling event registration', { postId, userId });
     try {
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post || post.type !== 'event') return null;
@@ -374,7 +374,7 @@ export async function toggleEventRegistration(postId: string, userId: string): P
             return { ...updatedPost!, message: "Successfully registered for the event!" };
         }
     } catch (error) {
-        console.error(`[CommunityAction] Error toggling event registration for post ${postId}:`, error);
+        logError(`[CommunityAction] Error toggling event registration for post ${postId}`, error, { postId, userId });
         return null;
     }
 }
@@ -388,6 +388,7 @@ export async function toggleEventRegistration(postId: string, userId: string): P
  * @returns The updated post or a message on failure.
  */
 export async function toggleFlagPost(postId: string, userId: string, reason: string): Promise<CommunityPost & { message: string } | null> {
+    logAction('Toggling flag on post', { postId, userId, reason });
     try {
         const post = await db.communityPost.findUnique({ where: { id: postId } });
         if (!post) return null;
@@ -411,7 +412,7 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         return { ...updatedPost!, message: "Post flagged for review." };
 
     } catch (error) {
-        console.error(`[CommunityAction] Error toggling flag for post ${postId}:`, error);
+        logError(`[CommunityAction] Error toggling flag for post ${postId}`, error, { postId, userId });
         return null;
     }
 }
