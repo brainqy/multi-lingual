@@ -3,6 +3,7 @@
 
 import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 
 const log = console.log;
 
@@ -138,12 +139,21 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
 export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
   log(`[DataService] Updating user: ${userId}`);
   
-  const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+  const { dashboardWidgets, ...restOfData } = data;
+  const cleanData = Object.fromEntries(Object.entries(restOfData).filter(([_, v]) => v !== undefined));
+
+  const dataForDb: Prisma.UserUpdateInput = {
+    ...cleanData,
+  };
+
+  if (dashboardWidgets) {
+    dataForDb.dashboardWidgets = dashboardWidgets as Prisma.JsonObject;
+  }
 
  try {
     const user = await db.user.update({
         where: { id: userId },
-        data: cleanData as any,
+        data: dataForDb as any,
     });
     return user as unknown as UserProfile | null;
   } catch (error) {
