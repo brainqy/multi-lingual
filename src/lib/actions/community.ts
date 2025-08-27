@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -36,9 +37,10 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
           },
         },
       },
-      orderBy: {
-        timestamp: 'desc',
-      },
+      orderBy: [
+        { isPinned: 'desc' },
+        { timestamp: 'desc' }
+      ],
       take: 50,
     });
     return posts as unknown as CommunityPost[];
@@ -53,7 +55,7 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'>): Promise<CommunityPost | null> {
     logAction('Creating community post', { userId: postData.userId, type: postData.type });
     try {
         const dataForDb: Prisma.CommunityPostCreateInput = {
@@ -80,6 +82,7 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
             votedBy: [],
             registeredBy: [],
             likes: 0,
+            isPinned: false,
         };
         
         const newPost = await db.communityPost.create({

@@ -241,6 +241,7 @@ export interface CommunityPost {
   likedBy?: string[];
   likes?: number;
   flaggedBy?: string[];
+  isPinned?: boolean;
 }
 
 export interface FeatureRequest {
@@ -269,6 +270,7 @@ export interface GalleryEvent {
   approved?: boolean;
   createdByUserId?: string;
   attendeeUserIds?: string[];
+  deletedAt?: string | null;
 }
 
 export interface JobOpening {
@@ -448,6 +450,7 @@ export interface ResumeProfile {
   name: string;
   resumeText: string;
   lastAnalyzed?: string;
+  deletedAt?: string | null;
 }
 
 export const AppointmentStatuses = ['Pending', 'Confirmed', 'Cancelled', 'Completed'] as const;
@@ -628,6 +631,7 @@ export interface ResumeTemplate {
   headerFontSize?: string; // e.g., '1.5rem'
   textAlign?: 'left' | 'center' | 'right';
   layout?: 'one-column' | 'two-column';
+  deletedAt?: string | null;
 }
 
 export interface TourStep {
@@ -960,6 +964,7 @@ export interface Announcement {
   updatedAt: string;
   createdBy: string;
   tenantId?: string;
+  deletedAt?: string | null;
 }
 
 export interface AtsFormattingIssue {
@@ -1275,6 +1280,7 @@ export interface PromoCode {
   usageLimit: number;
   timesUsed?: number;
   isActive: boolean;
+  deletedAt?: string | null;
 }
 
 export type UserDashboardWidgetId =
@@ -1337,4 +1343,10 @@ export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
 });
 export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
 
+export interface SoftDeletedItem {
+    id: string;
+    name: string;
+    type: 'User' | 'PromoCode' | 'Announcement' | 'GalleryEvent' | 'ResumeTemplate';
+    deletedAt: Date;
+}
     
