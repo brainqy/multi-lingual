@@ -187,10 +187,17 @@ async function main() {
   console.log('Seeded gallery events.');
 
   // Promo Code
-  await prisma.promoCode.create({
-    data: {
-      tenantId: 'platform', code: 'WELCOME100', description: '100 bonus coins for new users',
-      rewardType: 'coins', rewardValue: 100, usageLimit: 50, isActive: true,
+  await prisma.promoCode.upsert({
+    where: { code: 'WELCOME100' },
+    update: {},
+    create: {
+      tenantId: 'platform',
+      code: 'WELCOME100',
+      description: '100 bonus coins for new users',
+      rewardType: 'coins',
+      rewardValue: 100,
+      usageLimit: 50,
+      isActive: true,
     }
   });
   console.log('Seeded promo codes.');
@@ -237,3 +244,5 @@ main()
 
 
       
+
+    
