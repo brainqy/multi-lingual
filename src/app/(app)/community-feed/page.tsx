@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2 } from "lucide-react";
+import { MessageSquare, PlusCircle, ThumbsUp, MessageCircle as MessageIcon, Share2, Send, Filter, Edit3, Calendar, MapPin, Flag, ShieldCheck, Trash2, User as UserIcon, TrendingUp, Star, Ticket, Users as UsersIcon, CheckCircle as CheckCircleIcon, XCircle as XCircleIcon, Brain as BrainIcon, ListChecks, Mic, Video, Settings2, Puzzle, Lightbulb, Code as CodeIcon, Eye, ImageIcon as ImageIconLucide, Sparkles as SparklesIcon, Loader2, Pin } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { CommunityPost, CommunityComment, UserProfile, AppointmentStatus, Appointment } from "@/types";
 import { formatDistanceToNow, parseISO, isFuture as dateIsFuture } from 'date-fns';
@@ -246,7 +246,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy'> = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
         tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
@@ -459,6 +459,17 @@ export default function CommunityFeedPage() {
         }).catch(err => {
             toast({ title: "Copy Failed", description: "Could not copy link.", variant: "destructive" });
         });
+    }
+  };
+
+  const handleTogglePin = async (post: CommunityPost) => {
+    const updatedPost = await updateCommunityPost(post.id, { isPinned: !post.isPinned });
+    if (updatedPost) {
+      // Re-fetch to get correct sorting
+      await fetchData(); 
+      toast({ title: `Post ${updatedPost.isPinned ? 'Pinned' : 'Unpinned'}`, description: `The post is now ${updatedPost.isPinned ? 'pinned to the top' : 'no longer pinned'}.` });
+    } else {
+      toast({ title: "Error", description: "Could not update pin status.", variant: "destructive" });
     }
   };
 
@@ -707,7 +718,7 @@ export default function CommunityFeedPage() {
           ) : (
             <div className="space-y-6">
               {filteredPosts.map(post => (
-                <Card key={post.id} id={`post-${post.id}`} className={`shadow-md ${post.moderationStatus === 'flagged' ? 'border-yellow-500 border-2' : post.moderationStatus === 'removed' ? 'opacity-50 bg-secondary' : ''}`}>
+                <Card key={post.id} id={`post-${post.id}`} className={`shadow-md ${post.isPinned ? 'border-primary border-2' : ''} ${post.moderationStatus === 'flagged' ? 'border-yellow-500 border-2' : post.moderationStatus === 'removed' ? 'opacity-50 bg-secondary' : ''}`}>
                   <CardHeader className="flex flex-row items-start space-x-3 pb-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={post.userAvatar} alt={post.userName} data-ai-hint="person face"/>
@@ -716,6 +727,7 @@ export default function CommunityFeedPage() {
                     <div className="flex-1">
                       <p className="font-semibold text-foreground">{post.userName}</p>
                       <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
+                        {post.isPinned && <Pin className="h-3 w-3 text-primary" />}
                         <span>{formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}</span>
                         {post.type === 'poll' && (
                           <Badge variant="outline" className="border-blue-500 text-blue-500">Poll</Badge>
@@ -830,12 +842,15 @@ export default function CommunityFeedPage() {
 
                             {(currentUser.role === 'admin' || (currentUser.role === 'manager' && post.tenantId === currentUser.tenantId)) ? (
                             <>
+                                <Button variant="ghost" size="xs" onClick={() => handleTogglePin(post)} className="text-muted-foreground hover:text-primary ml-auto h-7 px-2 py-1">
+                                    <Pin className={cn("mr-1 h-3 w-3", post.isPinned && "fill-current text-primary")} /> {post.isPinned ? "Unpin" : "Pin"}
+                                </Button>
                                 {post.moderationStatus === 'flagged' && (
-                                <Button variant="outline" size="xs" onClick={() => handleApprovePost(post.id)} className="text-green-600 border-green-500 hover:bg-green-50 ml-auto h-7 px-2 py-1">
+                                <Button variant="outline" size="xs" onClick={() => handleApprovePost(post.id)} className="text-green-600 border-green-500 hover:bg-green-50 h-7 px-2 py-1">
                                     <ShieldCheck className="mr-1 h-3 w-3" /> Approve
                                 </Button>
                                 )}
-                                <Button variant="destructive" size="xs" onClick={() => handleRemovePost(post.id)} className={`${post.moderationStatus === 'flagged' ? 'ml-1' : 'ml-auto'} h-7 px-2 py-1`}>
+                                <Button variant="destructive" size="xs" onClick={() => handleRemovePost(post.id)} className="h-7 px-2 py-1">
                                     <Trash2 className="mr-1 h-3 w-3" /> Remove
                                 </Button>
                             </>
@@ -861,7 +876,7 @@ export default function CommunityFeedPage() {
                                     key={comment.id} 
                                     comment={comment} 
                                     allComments={post.comments!} 
-                                    onReply={handleReply} 
+                                    onReply={onReply} 
                                     onCommentSubmit={handleCommentSubmit} 
                                     level={0}
                                     replyingToCommentId={replyingToCommentId}
