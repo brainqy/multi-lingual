@@ -36,70 +36,76 @@ interface AuthProviderProps {
 const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setStreakPopupOpen: (isOpen: boolean) => void): Promise<UserProfile> => {
       const today = new Date();
       const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
-      const daysSinceLastLogin = differenceInCalendarDays(today, lastLogin);
       
-      let updatedUserData: Partial<UserProfile> = {};
-      let needsDBUpdate = false;
+      // We still need this to know if we should run the logic at all.
+      const isNewDay = differenceInCalendarDays(today, lastLogin) > 0;
 
-      // Ensure weeklyActivity is a valid array of 7 numbers
+      if (!isNewDay) {
+        return userToUpdate;
+      }
+
+      let updatedUserData: Partial<UserProfile> = {};
+      let needsDBUpdate = true;
+      setStreakPopupOpen(true);
+
       let weeklyActivity = (Array.isArray(userToUpdate.weeklyActivity) && userToUpdate.weeklyActivity.length === 7)
-        ? userToUpdate.weeklyActivity.map(v => (v === true ? 1 : v === false ? 0 : v || 0))
+        ? [...userToUpdate.weeklyActivity]
         : [0, 0, 0, 0, 0, 0, 0];
 
-      if (daysSinceLastLogin > 0) { // Only run logic on a new calendar day
-          needsDBUpdate = true;
-          setStreakPopupOpen(true);
-          let newStreak = userToUpdate.dailyStreak || 0;
-          let newLongestStreak = userToUpdate.longestStreak || 0;
-          let newStreakFreezes = userToUpdate.streakFreezes || 0;
+      // Find the index of the last activity (1 for login, 2 for freeze) before today.
+      const lastActiveDayIndex = weeklyActivity.slice(0, 6).findLastIndex(day => day === 1 || day === 2);
+      
+      // Calculate days missed. If no activity in the last 6 days, it's 7 or more.
+      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex -1;
 
-          // Shift the weekly activity array
-          const daysToShift = Math.min(daysSinceLastLogin, 7);
-          const shiftedActivity = [...Array(daysToShift).fill(0), ...weeklyActivity.slice(0, 7 - daysToShift)];
+      let newStreak = userToUpdate.dailyStreak || 0;
+      let newLongestStreak = userToUpdate.longestStreak || 0;
+      let newStreakFreezes = userToUpdate.streakFreezes || 0;
+      
+      // Shift the array for the new day
+      weeklyActivity.shift();
+      weeklyActivity.push(1); // Mark today as active
 
-          if (daysSinceLastLogin === 1) {
-              newStreak++;
-          } else if (daysSinceLastLogin > 1) { 
-              if (newStreakFreezes > 0) {
-                  newStreakFreezes--; 
-                  toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
-                  await createActivity({ userId: userToUpdate.id, tenantId: userToUpdate.tenantId, description: `Used a streak freeze to protect a ${newStreak}-day streak.`});
-                  
-                  // Mark the missed day(s) as saved by freeze
-                  for (let i = 1; i < daysToShift; i++) {
-                      const activityIndex = 6 - i;
-                      if (activityIndex >= 0) {
-                          shiftedActivity[activityIndex] = 2; // 2 represents 'saved by freeze'
-                      }
+      if (daysSinceLastLogin === 0) { // Logged in yesterday
+          newStreak++;
+      } else if (daysSinceLastLogin > 0) { // Missed one or more days
+          if (newStreakFreezes > 0) {
+              newStreakFreezes--; 
+              toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
+              await createActivity({ userId: userToUpdate.id, tenantId: userToUpdate.tenantId, description: `Used a streak freeze to protect a ${newStreak}-day streak.`});
+              
+              // Mark the missed day(s) as saved by freeze
+              for (let i = 1; i <= daysSinceLastLogin; i++) {
+                  const activityIndex = 6 - i;
+                  if (activityIndex >= 0) {
+                      weeklyActivity[activityIndex] = 2; // 2 represents 'saved by freeze'
                   }
-              } else {
-                  newStreak = 1; // Reset streak
               }
+          } else {
+              newStreak = 1; // Reset streak
           }
-
-          shiftedActivity[6] = 1; // Mark today as active
-          
-          if (newStreak > newLongestStreak) {
-              newLongestStreak = newStreak;
-          }
-          
-          const STREAK_MILESTONES = [7, 14, 30];
-          if (STREAK_MILESTONES.includes(newStreak)) {
-            newStreakFreezes++;
-            toast({
-              title: "Streak Milestone Achieved!",
-              description: `You've reached a ${newStreak}-day streak and earned a Free Pass!`
-            });
-          }
-          
-          updatedUserData = { 
-              dailyStreak: newStreak, 
-              longestStreak: newLongestStreak,
-              streakFreezes: newStreakFreezes,
-              lastLogin: today.toISOString(),
-              weeklyActivity: shiftedActivity
-          };
       }
+      
+      if (newStreak > newLongestStreak) {
+          newLongestStreak = newStreak;
+      }
+      
+      const STREAK_MILESTONES = [7, 14, 30];
+      if (STREAK_MILESTONES.includes(newStreak)) {
+        newStreakFreezes++;
+        toast({
+          title: "Streak Milestone Achieved!",
+          description: `You've reached a ${newStreak}-day streak and earned a Free Pass!`
+        });
+      }
+      
+      updatedUserData = { 
+          dailyStreak: newStreak, 
+          longestStreak: newLongestStreak,
+          streakFreezes: newStreakFreezes,
+          lastLogin: today.toISOString(),
+          weeklyActivity: weeklyActivity
+      };
       
       if (needsDBUpdate) {
           const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
