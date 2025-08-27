@@ -425,6 +425,7 @@ export interface UserProfile extends AlumniProfile {
   streakFreezes?: number;
   currentFlipChallenge?: DailyChallenge;
   flipChallengeAssignedAt?: string;
+  flipChallengeProgressStart?: Record<string, number>;
 
   // Notification Preferences
   emailNotificationsEnabled?: boolean;

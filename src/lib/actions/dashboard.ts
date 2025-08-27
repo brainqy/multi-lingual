@@ -21,60 +21,46 @@ import type {
 import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
 
-async function calculateChallengeProgress(userId: string, challenges: DailyChallenge[]): Promise<UserProfile['challengeProgress']> {
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    include: {
-      _count: {
-        select: {
-          resumeScanHistories: true,
-          jobApplications: true,
-          communityPosts: true,
-          communityComments: true,
-          appointmentsAsRequester: true,
-        },
-      },
-      referralHistory: true,
-    },
-  });
-
-  if (!user) return {};
-
+async function calculateChallengeProgress(user: UserProfile, challenges: DailyChallenge[]): Promise<UserProfile['challengeProgress']> {
+  if (!user || !user.currentFlipChallenge || !user.currentFlipChallenge.tasks) {
+    return {};
+  }
+  
   const progress: UserProfile['challengeProgress'] = {};
+  const progressStart = user.flipChallengeProgressStart as Record<string, number> | null;
 
-  const flipChallenges = challenges.filter(c => c.type === 'flip');
-
-  for (const challenge of flipChallenges) {
-    if (challenge.tasks) {
-      for (const task of challenge.tasks) {
-        let currentCount = 0;
-        switch (task.action) {
-          case 'analyze_resume':
-            currentCount = user._count.resumeScanHistories;
-            break;
-          case 'add_job_application':
-            currentCount = user._count.jobApplications;
-            break;
-          case 'community_post':
-            currentCount = user._count.communityPosts;
-            break;
-          case 'community_comment':
-            currentCount = user._count.communityComments;
-            break;
-          case 'refer':
-            currentCount = user.referralHistory.filter(r => r.status === 'Signed Up' || r.status === 'Reward Earned').length;
-            break;
-           case 'book_appointment':
-            currentCount = user._count.appointmentsAsRequester;
-            break;
-        }
-        progress[task.action] = {
-          action: task.action,
-          current: currentCount,
-          target: task.target,
-        };
-      }
+  for (const task of user.currentFlipChallenge.tasks) {
+    const baseline = progressStart?.[task.action] ?? 0;
+    let currentTotal = 0;
+    
+    // Fetch current totals for relevant actions. This is less efficient than a single large query
+    // but necessary for this demonstration structure.
+    switch (task.action) {
+      case 'analyze_resume':
+        currentTotal = await db.resumeScanHistory.count({ where: { userId: user.id } });
+        break;
+      case 'add_job_application':
+        currentTotal = await db.jobApplication.count({ where: { userId: user.id } });
+        break;
+      case 'community_post':
+        currentTotal = await db.communityPost.count({ where: { userId: user.id } });
+        break;
+      case 'community_comment':
+        currentTotal = await db.communityComment.count({ where: { userId: user.id } });
+        break;
+      case 'refer':
+        currentTotal = await db.referralHistory.count({ where: { referrerUserId: user.id, status: { in: ['Signed Up', 'Reward Earned'] } } });
+        break;
+       case 'book_appointment':
+        currentTotal = await db.appointment.count({ where: { requesterUserId: user.id } });
+        break;
     }
+    
+    progress[task.action] = {
+      action: task.action,
+      current: Math.max(0, currentTotal - baseline), // Progress is the difference from baseline
+      target: task.target,
+    };
   }
   return progress;
 }
@@ -108,7 +94,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
 
     const usersWithProgress = await Promise.all(
       usersData.map(async (user) => {
-        const progress = await calculateChallengeProgress(user.id, challenges);
+        const progress = await calculateChallengeProgress(user, challenges);
         return { ...user, challengeProgress: progress };
       })
     );
