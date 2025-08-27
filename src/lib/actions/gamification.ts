@@ -8,6 +8,7 @@ import { createActivity } from './activities';
 import { getChallenges } from './challenges';
 import { logAction, logError } from '@/lib/logger';
 import { addXp } from './wallet';
+import { createNotification } from './notifications';
 
 /**
  * Checks a user's activity against active Flip Challenge tasks. If all tasks for a challenge
@@ -82,6 +83,13 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
                         userId: user.id,
                         tenantId: user.tenantId,
                         description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
+                    });
+                    await createNotification({
+                        userId: user.id,
+                        type: 'system',
+                        content: `Challenge Complete! You earned ${challenge.xpReward} XP for "${challenge.title}".`,
+                        link: '/daily-interview-challenge',
+                        isRead: false,
                     });
                 }
             }
@@ -158,6 +166,13 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
               description: `Earned ${badge.streakFreezeReward} streak freeze(s) from the "${badge.name}" badge.`,
             });
           }
+          await createNotification({
+              userId: user.id,
+              type: 'system',
+              content: `Badge Unlocked! You've earned the "${badge.name}" badge.`,
+              link: '/gamification',
+              isRead: false,
+          });
         }
       }
     }

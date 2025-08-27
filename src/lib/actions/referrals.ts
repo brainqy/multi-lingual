@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { ReferralHistoryItem } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { createNotification } from './notifications';
 
 /**
  * Fetches the referral history for a specific user.
@@ -21,5 +22,37 @@ export async function getReferralHistory(userId: string): Promise<ReferralHistor
   } catch (error) {
     logError(`[ReferralAction] Error fetching referral history for user ${userId}`, error, { userId });
     return [];
+  }
+}
+
+/**
+ * Creates a referral history item and notifies the referrer.
+ * This would typically be called during the signup process if a referral code is used.
+ * @param referrerUserId The user who made the referral.
+ * @param referredUserId The new user who signed up.
+ * @param referredEmailOrName The name or email of the new user.
+ */
+export async function createReferral(referrerUserId: string, referredUserId: string, referredEmailOrName: string) {
+  logAction('Creating referral record', { referrerUserId, referredUserId });
+  try {
+    await db.referralHistory.create({
+      data: {
+        referrerUserId,
+        referredUserId,
+        referredEmailOrName,
+        status: 'Signed Up',
+        referralDate: new Date(),
+      },
+    });
+
+    await createNotification({
+      userId: referrerUserId,
+      type: 'system',
+      content: `Success! ${referredEmailOrName} has signed up using your referral code.`,
+      link: '/referrals',
+      isRead: false,
+    });
+  } catch (error) {
+    logError('[ReferralAction] Error creating referral', error, { referrerUserId });
   }
 }

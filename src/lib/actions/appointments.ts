@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Appointment } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { createNotification } from './notifications';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -45,6 +46,16 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
         dateTime: new Date(appointmentData.dateTime),
       },
     });
+
+    // Notify the user being invited
+    await createNotification({
+        userId: newAppointment.alumniUserId,
+        type: 'event',
+        content: `You have a new appointment request from ${newAppointment.withUser} for "${newAppointment.title}".`,
+        link: '/appointments',
+        isRead: false,
+    });
+
     return newAppointment as unknown as Appointment;
   } catch (error) {
     logError('[AppointmentAction] Error creating appointment', error, { requester: appointmentData.requesterUserId });
@@ -69,6 +80,27 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
         dateTime: updateData.dateTime ? new Date(updateData.dateTime) : undefined,
       },
     });
+
+    // Send notifications based on status change
+    if (updateData.status === 'Confirmed') {
+        await createNotification({
+            userId: updatedAppointment.requesterUserId,
+            type: 'event',
+            content: `Your appointment with ${updatedAppointment.withUser} for "${updatedAppointment.title}" has been confirmed.`,
+            link: '/appointments',
+            isRead: false,
+        });
+    } else if (updateData.status === 'Cancelled') {
+        const userToNotify = updatedAppointment.requesterUserId; // Assuming the one who didn't cancel gets notified
+        await createNotification({
+            userId: userToNotify,
+            type: 'system',
+            content: `Your appointment with ${updatedAppointment.withUser} for "${updatedAppointment.title}" has been cancelled.`,
+            link: '/appointments',
+            isRead: false,
+        });
+    }
+
     return updatedAppointment as unknown as Appointment;
   } catch (error) {
     logError(`[AppointmentAction] Error updating appointment ${appointmentId}`, error, { appointmentId });

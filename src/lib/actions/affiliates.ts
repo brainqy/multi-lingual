@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { createNotification } from './notifications';
 
 /**
  * Fetches all affiliates, optionally scoped by tenant for managers.
@@ -77,6 +78,18 @@ export async function updateAffiliateStatus(affiliateId: string, status: Affilia
             where: { id: affiliateId },
             data: { status },
         });
+
+        // Notify user on approval
+        if (status === 'approved') {
+            await createNotification({
+                userId: updatedAffiliate.userId,
+                type: 'system',
+                content: "Congratulations! Your affiliate application has been approved. You can now start earning.",
+                link: '/affiliates',
+                isRead: false
+            });
+        }
+
         return updatedAffiliate as unknown as Affiliate;
     } catch (error) {
         logError(`[AffiliateAction] Error updating affiliate status for ${affiliateId}`, error, { affiliateId, status });

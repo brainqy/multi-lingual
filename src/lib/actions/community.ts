@@ -125,17 +125,31 @@ export async function addCommentToPost(commentData: Omit<CommunityComment, 'id' 
       },
     });
 
-    if (commentData.comment && commentData.postId) {
+    if (commentData.postId) {
+        // Find the original post to notify its author
+        const originalPost = await db.communityPost.findUnique({
+            where: { id: commentData.postId },
+            include: { comments: true }
+        });
+
+        if (originalPost && originalPost.userId !== commentData.userId) {
+            await createNotification({
+                userId: originalPost.userId,
+                type: 'system',
+                content: `${commentData.userName} commented on your post: "${originalPost.content?.substring(0, 30)}..."`,
+                link: `/community-feed#post-${originalPost.id}`,
+                isRead: false,
+            });
+        }
+
+        // Handle @mentions
         const mentionRegex = /@([\w\s]+)/g;
         const mentions = [...commentData.comment.matchAll(mentionRegex)].map(match => match[1].trim());
 
         if (mentions.length > 0) {
             const mentionedUsers = await db.user.findMany({
                 where: {
-                    name: {
-                        in: mentions,
-                        mode: 'insensitive',
-                    },
+                    name: { in: mentions, mode: 'insensitive' },
                 },
             });
 
@@ -191,6 +205,18 @@ export async function updateCommunityPost(postId: string, updateData: Partial<Om
                 comments: true,
             }
         });
+
+        // Notify user if their flagged post was approved
+        if (postToUpdate.moderationStatus === 'flagged' && updatedPost.moderationStatus === 'visible') {
+            await createNotification({
+                userId: postToUpdate.userId,
+                type: 'system',
+                content: `Your post "${postToUpdate.content?.substring(0, 30)}..." has been approved by a moderator and is now visible.`,
+                link: `/community-feed#post-${postId}`,
+                isRead: false
+            });
+        }
+
         return updatedPost as unknown as CommunityPost;
     } catch (error) {
         console.error(`[CommunityAction] Error updating post ${postId}:`, error);
@@ -208,7 +234,7 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
     try {
         const post = await db.communityPost.findUnique({
             where: { id: postId },
-            select: { likedBy: true, likes: true }
+            select: { likedBy: true, likes: true, userId: true, content: true }
         });
 
         if (!post) throw new AppError('Post not found');
@@ -219,15 +245,28 @@ export async function toggleLikePost(postId: string, userId: string): Promise<Co
         const newLikedBy = isLiked
             ? likedBy.filter(id => id !== userId)
             : [...likedBy, userId];
+        
+        const newLikesCount = newLikedBy.length;
 
         const updatedPost = await db.communityPost.update({
             where: { id: postId },
             data: { 
                 likedBy: { set: newLikedBy },
-                likes: { set: newLikedBy.length }
+                likes: newLikesCount
             },
             include: { comments: true }
         });
+        
+        // Notify on reaching 10 likes, but only on the like action, not unlike
+        if (!isLiked && newLikesCount === 10 && post.userId !== userId) {
+            await createNotification({
+                userId: post.userId,
+                type: 'system',
+                content: `Your post "${post.content?.substring(0, 30)}..." is popular! It has reached 10 likes.`,
+                link: `/community-feed#post-${postId}`,
+                isRead: false
+            });
+        }
 
         return updatedPost as unknown as CommunityPost;
 
@@ -362,5 +401,3 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         return null;
     }
 }
-
-    
