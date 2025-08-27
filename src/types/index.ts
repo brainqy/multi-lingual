@@ -423,11 +423,11 @@ export interface UserProfile extends AlumniProfile {
   }>;
   completedChallengeIds?: string[];
   completedFlipTaskIds?: string[];
-  sessionId?: string;
-  streakFreezes?: number;
   currentFlipChallenge?: DailyChallenge;
   flipChallengeAssignedAt?: string;
   flipChallengeProgressStart?: Record<string, number>;
+  sessionId?: string;
+  streakFreezes?: number;
 
   // Notification Preferences
   emailNotificationsEnabled?: boolean;
@@ -1400,4 +1400,3 @@ export type Vote = {
     voter: UserProfile;
     createdAt: string;
 }
-
