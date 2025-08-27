@@ -53,7 +53,8 @@
     "adminPanel": "Admin Panel",
     "managerPanel": "Manager Panel",
     "tenant": "Tenant",
-    "templateDesigner": "Template Designer"
+    "templateDesigner": "Template Designer",
+    "trash": "Trash"
   },
   "appHeader": {
     "notifications": "Notifications",
