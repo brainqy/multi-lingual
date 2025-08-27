@@ -1,408 +1,200 @@
 
-
 import { PrismaClient } from '@prisma/client';
-
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log(`Start seeding ...`)
 
-  // Create default languages
+  // --- CLEANUP ---
+  // In a real dev environment, you might want to clean up old data first.
+  // For this demo, upsert and createMany handle most cases.
+  // We'll clean relations manually where needed.
+  await prisma.nomination.deleteMany({});
+  await prisma.award.deleteMany({});
+  await prisma.awardCategory.deleteMany({});
+  
+  // --- CORE DATA ---
+
+  // Languages
   const languages = [
     { code: 'en', name: 'English' },
     { code: 'mr', name: 'Marathi' },
     { code: 'hi', name: 'Hindi' },
   ];
   for (const lang of languages) {
-    await prisma.language.upsert({
-      where: { code: lang.code },
-      update: {},
-      create: lang,
-    });
+    await prisma.language.upsert({ where: { code: lang.code }, update: {}, create: lang });
   }
-  console.log('Seeded languages:', languages.map(l => l.name).join(', '));
-  
-  // Create default Tenants
+  console.log('Seeded languages.');
+
+  // Tenants
   const tenants = [
     { id: 'platform', name: 'Bhasha Setu Platform' },
-    { id: 'brainqy', name: 'Bhasha Setu Platform' },
-    { id: 'guruji', name: 'Guruji Platform' },
+    { id: 'brainqy', name: 'Brainqy University' },
+    { id: 'guruji', name: 'Guruji Foundation' },
   ];
   for (const tenant of tenants) {
-     await prisma.tenant.upsert({
-      where: { id: tenant.id },
-      update: {},
-      create: tenant,
-    });
+     await prisma.tenant.upsert({ where: { id: tenant.id }, update: {}, create: tenant });
   }
-  console.log('Seeded tenants:', tenants.map(t => t.name).join(', '));
+  console.log('Seeded tenants.');
 
+  // --- USERS ---
 
-  // Create a default admin user and connect to the platform tenant
+  // Admin User
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@bhashasetu.com' },
     update: {
-      dailyStreak: 5,
-      longestStreak: 5,
-      lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
-      streakFreezes: 1,
-      weeklyActivity: [1, 1, 1, 1, 1, 0, 0],
+      dailyStreak: 5, longestStreak: 5, lastLogin: new Date(Date.now() - 86400000 * 2), streakFreezes: 2,
+      weeklyActivity: [1, 1, 1, 1, 1, 0, 0], xpPoints: 1250, isDistinguished: true,
     },
     create: {
-      email: 'admin@bhashasetu.com',
-      name: 'Admin User',
-      password: 'password123',
-      role: 'admin',
-      tenantId: 'platform',
-      dailyStreak: 5,
-      longestStreak: 5,
-      lastLogin: new Date(Date.now() - 86400000 * 2), // 2 days ago
-      streakFreezes: 1,
-      weeklyActivity: [1, 1, 1, 1, 1, 0, 0], // Logged in 5 days, missed yesterday
+      email: 'admin@bhashasetu.com', name: 'Admin User', password: 'password123', role: 'admin',
+      tenantId: 'platform', dailyStreak: 5, longestStreak: 5, lastLogin: new Date(Date.now() - 86400000 * 2),
+      streakFreezes: 2, weeklyActivity: [1, 1, 1, 1, 1, 0, 0], xpPoints: 1250, isDistinguished: true,
+      bio: 'Platform administrator overseeing operations and community management.',
+      skills: ['Platform Management', 'User Support', 'Content Moderation'],
+      referralCode: 'ADMINPRO',
     },
-  })
+  });
+  console.log('Seeded admin user.');
 
-  console.log('Seeded admin user:', adminUser)
+  // Sample Users
+  const sampleUsersData = [
+    { id: 'sample-user-1', name: 'Alice Wonderland', email: 'alice@example.com', tenantId: 'brainqy', xpPoints: 850, isDistinguished: true, currentJobTitle: 'AI Researcher', company: 'OpenAI' },
+    { id: 'sample-user-2', name: 'Bob Builder', email: 'bob@example.com', tenantId: 'brainqy', xpPoints: 620, currentJobTitle: 'Lead Engineer', company: 'Google' },
+    { id: 'sample-user-3', name: 'Charlie Chocolate', email: 'charlie@example.com', tenantId: 'brainqy', xpPoints: 710, currentJobTitle: 'Product Manager', company: 'Microsoft' },
+    { id: 'sample-user-4', name: 'Diana Prince', email: 'diana@example.com', tenantId: 'guruji', xpPoints: 950, isDistinguished: true, currentJobTitle: 'UX Lead', company: 'Apple' },
+    { id: 'sample-user-5', name: 'Ethan Hunt', email: 'ethan@example.com', tenantId: 'guruji', xpPoints: 450, currentJobTitle: 'DevOps Specialist', company: 'Amazon' },
+  ];
+  
+  const userPromises = sampleUsersData.map(userData => 
+    prisma.user.upsert({
+      where: { id: userData.id },
+      update: { xpPoints: userData.xpPoints, isDistinguished: userData.isDistinguished, currentJobTitle: userData.currentJobTitle, company: userData.company },
+      create: {
+        ...userData, password: 'password123', role: 'user', status: 'active',
+        bio: `${userData.name} is a skilled professional at ${userData.company}.`,
+        skills: ['Teamwork', 'Communication'], referralCode: `${userData.name.split(' ')[0].toUpperCase()}123`
+      },
+    })
+  );
+  const createdUsers = await Promise.all(userPromises);
+  console.log('Seeded sample users.');
 
-    const adminUser2 = await prisma.user.upsert({
-    where: { email: 'admin2@bhashasetu.com' },
-    update: {},
-    create: {
-      email: 'admin2@bhashasetu.com',
-      name: 'Admin User 2',
-      password: 'password123',
-      role: 'admin',
-      tenantId: 'platform',
-    },
-  })
+  const [alice, bob, charlie, diana, ethan] = createdUsers;
 
-  console.log('Seeded admin user:', adminUser2)
+  // --- AWARDS AND RECOGNITION ---
 
-  // Seed Promotional Content
+  const techCategory = await prisma.awardCategory.create({ data: { name: 'Technical Excellence', description: 'Recognizing outstanding technical achievements.' } });
+  const communityCategory = await prisma.awardCategory.create({ data: { name: 'Community Impact', description: 'Celebrating contributions to our community.' } });
+
+  const innovatorAward = await prisma.award.create({
+    data: {
+      title: 'Innovator of the Year', description: 'For the alumnus who has developed a groundbreaking product or technology.', categoryId: techCategory.id,
+      status: 'Completed', winnerId: alice.id,
+      nominationStartDate: new Date('2024-01-01'), nominationEndDate: new Date('2024-01-15'),
+      votingStartDate: new Date('2024-01-16'), votingEndDate: new Date('2024-01-31'),
+    }
+  });
+
+  const mentorAward = await prisma.award.create({
+    data: {
+      title: 'Mentor of the Year', description: 'For an alumnus who has shown exceptional dedication to mentoring.', categoryId: communityCategory.id,
+      status: 'Voting',
+      nominationStartDate: new Date(Date.now() - 86400000 * 20), nominationEndDate: new Date(Date.now() - 86400000 * 5),
+      votingStartDate: new Date(Date.now() - 86400000 * 4), votingEndDate: new Date(Date.now() + 86400000 * 10),
+    }
+  });
+
+  const risingStarAward = await prisma.award.create({
+    data: {
+      title: 'Rising Star Award', description: 'For a recent graduate making significant strides in their field.', categoryId: techCategory.id,
+      status: 'Nominating',
+      nominationStartDate: new Date(), nominationEndDate: new Date(Date.now() + 86400000 * 15),
+      votingStartDate: new Date(Date.now() + 86400000 * 16), votingEndDate: new Date(Date.now() + 86400000 * 30),
+    }
+  });
+  console.log('Seeded Awards.');
+
+  // Nominations for the Mentor Award
+  const nomination1 = await prisma.nomination.create({ data: { awardId: mentorAward.id, nomineeId: diana.id, nominatorId: adminUser.id, justification: 'Diana has mentored 5 students this year, leading to 3 internships.' } });
+  const nomination2 = await prisma.nomination.create({ data: { awardId: mentorAward.id, nomineeId: bob.id, nominatorId: alice.id, justification: 'Bob is always available to help and has provided invaluable guidance on system design.' } });
+  
+  // Votes for the Mentor Award (mock)
+  await prisma.vote.createMany({
+    data: [
+      { nominationId: nomination1.id, voterId: alice.id }, { nominationId: nomination1.id, voterId: charlie.id },
+      { nominationId: nomination2.id, voterId: ethan.id },
+    ]
+  });
+  console.log('Seeded Nominations and Votes.');
+
+
+  // --- OTHER FEATURES ---
+
+  // Promotional Content
   await prisma.promotionalContent.createMany({
     data: [
-      {
-        isActive: true,
-        title: 'Unlock Premium Features!',
-        description: 'Upgrade your JobMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
-        imageUrl: 'https://placehold.co/300x200.png',
-        imageAlt: 'Retro motel sign against a blue sky',
-        imageHint: 'motel sign',
-        buttonText: 'Learn More',
-        buttonLink: '#',
-        gradientFrom: 'from-primary/80',
-        gradientVia: 'via-primary',
-        gradientTo: 'to-accent/80',
-      },
-      {
-        isActive: true,
-        title: 'New Feature: AI Mock Interview!',
-        description: 'Practice for your next big interview with our new AI-powered mock interview tool. Get instant feedback and improve your skills.',
-        imageUrl: 'https://placehold.co/300x200.png',
-        imageAlt: 'Person in a video call interview',
-        imageHint: 'interview video call',
-        buttonText: 'Try it Now',
-        buttonLink: '/ai-mock-interview',
-        gradientFrom: 'from-blue-500',
-        gradientVia: 'via-cyan-500',
-        gradientTo: 'to-teal-500',
-      }
-    ],
-    skipDuplicates: true,
+      { isActive: true, title: 'Unlock Premium Features!', description: 'Upgrade your experience with advanced analytics, unlimited resume scans, and priority support.', imageUrl: 'https://placehold.co/300x200/008080/FFFFFF?text=Premium', imageAlt: 'Premium features', imageHint: 'premium upgrade', buttonText: 'Learn More', buttonLink: '#', gradientFrom: 'from-primary/80', gradientVia: 'via-primary', gradientTo: 'to-accent/80' },
+      { isActive: true, title: 'New: AI Mock Interview!', description: 'Practice for your next big interview with our new AI-powered mock interview tool.', imageUrl: 'https://placehold.co/300x200/3498db/FFFFFF?text=AI+Interview', imageAlt: 'AI Interview', imageHint: 'interview video', buttonText: 'Try it Now', buttonLink: '/ai-mock-interview', gradientFrom: 'from-blue-500', gradientVia: 'via-cyan-500', gradientTo: 'to-teal-500' },
+    ], skipDuplicates: true
   });
-  console.log('Seeded promotional content.')
-  
-    // Seed Community Posts
+  console.log('Seeded promotional content.');
+
+  // Community Posts
   const post1 = await prisma.communityPost.create({
     data: {
-      tenantId: 'platform',
-      userId: adminUser.id,
-      userName: adminUser.name,
-      userAvatar: 'https://avatar.vercel.sh/admin.png',
-      content: 'Welcome to the new community feed! Share your thoughts, ask questions, and connect with fellow alumni.',
-      type: 'text',
-      tags: ['welcome', 'community'],
-      moderationStatus: 'visible',
-      flagCount: 0,
-      likes: 6,
-      timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
+      tenantId: 'platform', userId: adminUser.id, userName: adminUser.name, userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'Welcome to the community feed! Share your thoughts and connect with fellow alumni.', type: 'text',
+      tags: ['welcome', 'community'], moderationStatus: 'visible', flagCount: 0, likes: 6,
+      timestamp: new Date(Date.now() - 86400000 * 2), isPinned: true, // Pinned post example
     }
   });
 
-  const post2 = await prisma.communityPost.create({
-    data: {
-      tenantId: 'platform',
-      userId: adminUser.id,
-      userName: adminUser.name,
-      userAvatar: 'https://avatar.vercel.sh/admin.png',
-      content: 'What type of content would you like to see more of?',
-      type: 'poll',
-      pollOptions: [
-        { option: 'Career Advice Articles', votes: 15 },
-        { option: 'Alumni Success Stories', votes: 25 },
-        { option: 'Industry Trend Reports', votes: 8 },
-        { option: 'Live Q&A Sessions', votes: 12 },
-      ],
-      tags: ['feedback', 'content'],
-      moderationStatus: 'visible',
-      flagCount: 0,
-       likes: 9,
-      timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
-    }
-  });
+  await prisma.communityComment.create({ data: { postId: post1.id, userId: alice.id, userName: alice.name, comment: 'Excited to be here!', timestamp: new Date() } });
+  console.log('Seeded community posts.');
+
+  // System Alerts, Badges, Gamification Rules, etc. (mostly static definitions)
+  await prisma.systemAlert.createMany({ data: [{ type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog' }], skipDuplicates: true });
+  await prisma.badge.createMany({ data: [{ id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' }, { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3', streakFreezeReward: 1 }], skipDuplicates: true });
+  await prisma.gamificationRule.createMany({ data: [{ actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 }, { actionId: 'community_post', description: 'Create a post', xpPoints: 15 }], skipDuplicates: true });
+  await prisma.notification.createMany({ data: [{ userId: adminUser.id, type: 'system', content: 'Welcome to the platform!', link: `/profile`, isRead: true }], skipDuplicates: true });
+  console.log('Seeded system definitions (Alerts, Badges, etc.).');
   
-  const post3 = await prisma.communityPost.create({
+  // Job Applications for Alice
+  await prisma.jobApplication.create({
     data: {
-      tenantId: 'platform',
-      userId: adminUser.id,
-      userName: adminUser.name,
-      userAvatar: 'https://avatar.vercel.sh/admin.png',
-      type: 'event',
-      eventTitle: 'Alumni Virtual Networking Night',
-      eventDate: new Date(Date.now() + 86400000 * 7).toISOString(), // A week from now
-      eventLocation: 'Zoom (Link will be shared with attendees)',
-      content: 'Join us for a fun and informal virtual networking event. A great chance to reconnect with old friends and make new connections in your field. All alumni are welcome!',
-      capacity: 100,
-      attendees: 23,
-      tags: ['event', 'networking'],
-      moderationStatus: 'visible',
-      flagCount: 0,
-       likes: 0,
-      timestamp: new Date(),
-    },
-  });
-
-  console.log('Seeded community posts.')
-
-  // Seed Comments
-  const comment1 = await prisma.communityComment.create({
-    data: {
-      postId: post1.id,
-      userId: adminUser.id,
-      userName: 'Alice Wonderland',
-      userAvatar: 'https://avatar.vercel.sh/alice.png',
-      comment: 'This is great! Looking forward to connecting with everyone.',
-      timestamp: new Date(Date.now() - 86400000 * 1.9),
+      userId: alice.id, tenantId: 'brainqy', companyName: 'Google', jobTitle: 'AI Researcher',
+      status: 'Interviewing', dateApplied: new Date(Date.now() - 86400000 * 10),
+      interviews: {
+        create: [{ date: new Date(Date.now() + 86400000 * 5), type: 'Technical', interviewer: 'Dr. Smith' }]
+      }
     }
   });
+  await prisma.jobApplication.create({ data: { userId: alice.id, tenantId: 'brainqy', companyName: 'Microsoft', jobTitle: 'Software Engineer', status: 'Applied', dateApplied: new Date(Date.now() - 86400000 * 5) }});
+  console.log('Seeded job applications.');
 
-  await prisma.communityComment.create({
+  // Gallery Event
+  await prisma.galleryEvent.create({
     data: {
-      postId: post1.id,
-      userId: adminUser.id,
-      userName: 'Bob The Builder',
-      userAvatar: 'https://avatar.vercel.sh/bob.png',
-      comment: 'Replying to Alice: Me too! Great initiative.',
-      parentId: comment1.id,
-      timestamp: new Date(Date.now() - 86400000 * 1.8),
+      tenantId: 'brainqy', title: 'Alumni Meetup 2024', date: new Date('2024-03-15'),
+      imageUrls: ['https://placehold.co/600x400/008080/FFFFFF?text=Meetup+1'],
+      description: 'A great day of networking and reconnecting.', approved: true, createdByUserId: adminUser.id,
+      attendeeUserIds: [alice.id, bob.id, charlie.id]
     }
   });
-  
-  await prisma.communityComment.create({
+  console.log('Seeded gallery events.');
+
+  // Promo Code
+  await prisma.promoCode.create({
     data: {
-      postId: post2.id,
-      userId: adminUser.id,
-      userName: 'Charlie Brown',
-      userAvatar: 'https://avatar.vercel.sh/charlie.png',
-      comment: 'Voted for success stories! So inspiring.',
-      timestamp: new Date(Date.now() - 86400000 * 0.9),
+      tenantId: 'platform', code: 'WELCOME100', description: '100 bonus coins for new users',
+      rewardType: 'coins', rewardValue: 100, usageLimit: 50, isActive: true,
     }
   });
+  console.log('Seeded promo codes.');
 
-  console.log('Seeded community comments.')
-
-  // Seed System Alerts
-  await prisma.systemAlert.createMany({
-    data: [
-      { type: 'error', title: 'Database Connection Issue', message: 'Failed to connect to the primary database. Services might be affected.', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
-      { type: 'warning', title: 'High CPU Usage Detected', message: 'CPU usage on server EU-WEST-1A has exceeded 85%.', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
-      { type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog/platform-update-v2-5-1' },
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded system alerts.');
-
-  // Seed Daily Challenges
-  await prisma.dailyChallenge.createMany({
-    data: [
-      {
-        id: "flip-challenge-1",
-        type: 'flip',
-        title: "Platform Power User",
-        description: "A pool of tasks related to general platform usage.",
-        xpReward: 100, // XP per task
-        tasks: [
-          { description: "Refer 5 colleagues to the platform.", action: "refer", target: 5 },
-          { description: "Analyze your resume against 3 different job descriptions.", action: "analyze_resume", target: 3 },
-          { description: "Add 5 applications to your Job Tracker.", action: "add_job_application", target: 5 },
-          { description: "Make 5 posts in the Community Feed.", action: "community_post", target: 5 },
-          { description: "Comment on 10 community posts.", action: "community_comment", target: 10 },
-          { description: "Successfully book an appointment with an alumni.", action: "book_appointment", target: 1 },
-          { description: "Complete the daily standard challenge.", action: "daily_challenge_complete", target: 1 },
-          { description: "Generate a cover letter using the AI tool.", action: "generate_cover_letter", target: 1 }
-        ]
-      },
-      {
-        id: "challenge-1",
-        type: 'standard',
-        date: new Date("2023-10-27"),
-        title: "Reverse a String",
-        description: "Write a function that reverses a given string.",
-        difficulty: "Easy",
-        category: "Coding",
-        solution: "A common approach is to use `str.split('').reverse().join('')` in JavaScript, or to use a two-pointer technique swapping characters from the start and end of the string.",
-      },
-      {
-        id: "challenge-2",
-        type: 'standard',
-        date: new Date("2023-10-28"),
-        title: "Find the Missing Number",
-        description: "Given an array containing n distinct numbers taken from 0, 1, 2, ..., n, find the one that is missing from the array.",
-        difficulty: "Medium",
-        category: "Coding",
-        solution: "Calculate the expected sum of the sequence using the formula n*(n+1)/2. The missing number is the difference between the expected sum and the actual sum of the array elements.",
-      }
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded daily challenges.');
-
-  // Seed Badges
-  await prisma.badge.createMany({
-    data: [
-      { id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' },
-      { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3', streakFreezeReward: 1 },
-      { id: 'networker', name: 'Networker', description: 'Made 10+ alumni connections.', icon: 'Users', xpReward: 75, triggerCondition: 'connections_10' },
-      { id: 'analyzer-ace', name: 'Analyzer Ace', description: 'Analyzed 5+ resumes.', icon: 'Zap', xpReward: 50, triggerCondition: 'resume_scans_5' },
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded badges.');
-
-  // Seed Gamification Rules
-  await prisma.gamificationRule.createMany({
-    data: [
-      { actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 },
-      { actionId: 'community_post', description: 'Create a new post in the community', xpPoints: 15 },
-      { actionId: 'community_comment', description: 'Comment on a community post', xpPoints: 5 },
-      { actionId: 'analyze_resume', description: 'Analyze a resume with the AI tool', xpPoints: 20 },
-      { actionId: 'add_job_application', description: 'Add a new application to the job tracker', xpPoints: 10 },
-      { actionId: 'successful_referral', description: 'Successfully refer a new user', xpPoints: 50 },
-      { actionId: 'daily_challenge_complete', description: 'Complete the daily interview challenge', xpPoints: 25 },
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded gamification rules.');
-
-  
-  // Seed Notifications
-  await prisma.notification.createMany({
-    data: [
-      {
-        userId: adminUser.id,
-        type: 'mention',
-        content: 'You were mentioned in a post!',
-        link: `/community-feed#comment-1`,
-        isRead: false,
-      },
-      {
-        userId: adminUser.id,
-        type: 'event',
-        content: 'You have an upcoming event: Alumni Virtual Networking Night.',
-        link: `/community-feed#post-${post3.id}`,
-        isRead: false,
-      },
-      {
-        userId: adminUser.id,
-        type: 'system',
-        content: 'Welcome to the platform! Your account has been created.',
-        link: `/profile`,
-        isRead: true,
-      },
-    ],
-    skipDuplicates: true,
-  });
-  console.log('Seeded notifications.');
-
-  console.log(`Seeding finished.`)
-
-  // Seed 5 sample users for the platform tenant
-  for (let i = 1; i <= 5; i++) {
-    await prisma.user.upsert({
-      where: { id: `sample-user-${i}` },
-      update: {},
-      create: {
-        id: `sample-user-${i}`,
-        name: `Sample User ${i}`,
-        email: `sample${i}@example.com`,
-        password: 'password123',
-        role: 'user',
-        tenantId: 'platform',
-        status: 'active',
-      },
-    });
-  }
-
-  // Seed 5 successful referrals for admin user
-  for (let i = 1; i <= 5; i++) {
-    await prisma.referralHistory.create({
-      data: {
-        referrerUserId: adminUser.id,
-        referredUser: { connect: { id: `sample-user-${i}` } },
-        status: 'Signed Up', 
-        referredEmailOrName:'admin@bhashasetu.com',
-        referralDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * i),
-      },
-    });
-  }
-  console.log('Seeded 5 successful referrals for admin user.');
-
-  // Seed 3 resume scan histories for sample users
-  for (let i = 1; i <= 3; i++) {
-    await prisma.resumeScanHistory.upsert({
-      where: { id: `scan-${i}` },
-      update: {},
-      create: {
-        id: `scan-${i}`,
-        tenantId: 'platform',
-        userId: `sample-user-${i}`,
-        resumeId: `resume-${i}`,
-        resumeName: `Sample Resume ${i}`,
-        jobTitle: `Job Title ${i}`,
-        companyName: `Company ${i}`,
-        resumeTextSnapshot: `This is a snapshot of resume ${i}.`,
-        jobDescriptionText: `Job description for job ${i}.`,
-        scanDate: new Date(Date.now() - 86400000 * i),
-        matchScore: 80 + i,
-        bookmarked: i % 2 === 0,
-      }
-    });
-  }
-
-  // Seed 3 resume scan histories for admin user
-  for (let i = 1; i <= 3; i++) {
-    await prisma.resumeScanHistory.upsert({
-      where: { id: `admin-scan-${i}` },
-      update: {},
-      create: {
-        id: `admin-scan-${i}`,
-        tenantId: 'platform',
-        userId: adminUser.id,
-        resumeId: `admin-resume-${i}`,
-        resumeName: `Admin Resume ${i}`,
-        jobTitle: `Admin Job Title ${i}`,
-        companyName: `Admin Company ${i}`,
-        resumeTextSnapshot: `This is a snapshot of admin resume ${i}.`,
-        jobDescriptionText: `Job description for admin job ${i}.`,
-        scanDate: new Date(Date.now() - 86400000 * i),
-        matchScore: 90 + i,
-        bookmarked: i % 2 === 1,
-      }
-    });
-  }
-
-  console.log(`Seeding finished.`)
+  console.log(`Seeding finished.`);
 }
 
 main()
@@ -414,9 +206,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-
-    
-
-    
-
