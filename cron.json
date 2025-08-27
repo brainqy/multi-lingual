@@ -1,0 +1,8 @@
+
+{
+    "schedule": "0 0 * * *",
+    "handler": {
+        "type": "https",
+        "url": "/api/cron/delete-old-items"
+    }
+}
