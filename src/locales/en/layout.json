@@ -42,6 +42,7 @@
     "galleryMgt": "Gallery Mgt",
     "blogSettings": "Blog Settings",
     "promoCodeMgt": "Promo Codes",
+    "awardsMgt": "Awards Management",
     "promotionalContentMgt": "Promo Content",
     "platformSettings": "Platform Settings",
     "databases": "Databases",
@@ -87,3 +88,4 @@
     "dayLabels": { "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa" }
   }
 }
+```

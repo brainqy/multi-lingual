@@ -2,7 +2,7 @@
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
-import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices } from "lucide-react";
+import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices, Award as AwardIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { samplePlatformSettings } from "@/lib/sample-data";
@@ -71,7 +71,8 @@ const adminItems = [
    { href: "/admin/tenant-onboarding", labelKey: "sideMenu.tenantOnboarding", icon: Layers3 },
    { href: "/admin/user-management", labelKey: "sideMenu.userManagement", icon: UserCog },
    { href: "/admin/gamification-rules", labelKey: "sideMenu.gamificationRules", icon: ListChecks },
-   { href: "/admin/promo-codes", labelKey: "sideMenu.promoCodeMgt", icon: Gift }, // It's here
+   { href: "/admin/promo-codes", labelKey: "sideMenu.promoCodeMgt", icon: Gift },
+   { href: "/admin/awards", labelKey: "sideMenu.awardsMgt", icon: AwardIcon },
    { href: "/admin/content-moderation", labelKey: "sideMenu.contentModeration", icon: ShieldAlert },
    { href: "/admin/announcements", labelKey: "sideMenu.announcementsMgt", icon: Megaphone },
    { href: "/admin/messenger-management", labelKey: "sideMenu.messengerMgt", icon: BotMessageSquare },
@@ -242,3 +243,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+```
