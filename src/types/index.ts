@@ -403,6 +403,7 @@ export interface UserProfile extends AlumniProfile {
     target: number;
   }>;
   completedChallengeIds?: string[];
+  completedFlipTaskIds?: string[];
   sessionId?: string;
   streakFreezes?: number;
 
@@ -718,7 +719,6 @@ export interface InterviewQuestion {
   difficulty?: InterviewQuestionDifficulty;
   rating?: number;
   ratingsCount?: number;
-  userRatings?: InterviewQuestionUserRating[];
   userComments?: InterviewQuestionUserComment[];
   createdBy?: string;
   approved?: boolean;

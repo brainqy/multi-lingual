@@ -14,9 +14,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { createActivity } from "@/lib/actions/activities";
 import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
-import ScoreCircle from "@/components/ui/score-circle";
+import ScoreCircle from '@/components/ui/score-circle';
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
+import { getDynamicFlipChallenge } from "@/lib/actions/challenges";
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
@@ -36,7 +37,10 @@ export default function DailyInterviewChallengePage() {
   const fetchChallengesAndProgress = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    const dashboardData = await getDashboardData(user.tenantId, user.id, user.role);
+    const [dashboardData, dynamicFlipChallenge] = await Promise.all([
+      getDashboardData(user.tenantId, user.id, user.role),
+      getDynamicFlipChallenge(user.id),
+    ]);
     
     // The dashboard data now contains the dynamically calculated challenge progress
     const userWithProgress = dashboardData.users.find(u => u.id === user.id);
@@ -44,14 +48,11 @@ export default function DailyInterviewChallengePage() {
     
     const challenges = dashboardData.challenges;
     setAllChallenges(challenges);
+    setFlipChallenge(dynamicFlipChallenge || undefined);
     
     const standard = challenges.filter(c => c.type === 'standard');
-    const flip = challenges.filter(c => c.type === 'flip');
     if (standard.length > 0) {
         setStandardChallenge(standard[Math.floor(Math.random() * standard.length)]);
-    }
-    if (flip.length > 0) {
-        setFlipChallenge(flip[Math.floor(Math.random() * flip.length)]);
     }
     
     setIsLoading(false);
@@ -61,16 +62,17 @@ export default function DailyInterviewChallengePage() {
     fetchChallengesAndProgress();
   }, [fetchChallengesAndProgress]);
 
-  const handleRefreshChallenge = () => {
+  const handleRefreshChallenge = async () => {
+    if (!user) return;
+    // Fetch a new standard challenge from the existing client-side list
     const allStandardChallenges = allChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
     if (allStandardChallenges.length > 0) {
       setStandardChallenge(allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)]);
     }
     
-    const allFlipChallenges = allChallenges.filter(c => c.type === 'flip' && c.id !== flipChallenge?.id);
-     if (allFlipChallenges.length > 0) {
-      setFlipChallenge(allFlipChallenges[Math.floor(Math.random() * allFlipChallenges.length)]);
-    }
+    // Fetch a new dynamic flip challenge from the server
+    const newFlipChallenge = await getDynamicFlipChallenge(user.id);
+    setFlipChallenge(newFlipChallenge || undefined);
     
     setUserAnswer('');
     setFeedback(null);

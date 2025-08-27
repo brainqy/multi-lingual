@@ -230,11 +230,17 @@ async function main() {
         id: "flip-challenge-1",
         type: 'flip',
         title: "Platform Power User",
-        description: "Complete the following tasks to prove your mastery of the platform and earn a massive XP boost!",
-        xpReward: 1000,
+        description: "A pool of tasks related to general platform usage.",
+        xpReward: 100, // XP per task
         tasks: [
           { description: "Refer 5 colleagues to the platform.", action: "refer", target: 5 },
           { description: "Analyze your resume against 3 different job descriptions.", action: "analyze_resume", target: 3 },
+          { description: "Add 5 applications to your Job Tracker.", action: "add_job_application", target: 5 },
+          { description: "Make 5 posts in the Community Feed.", action: "community_post", target: 5 },
+          { description: "Comment on 10 community posts.", action: "community_comment", target: 10 },
+          { description: "Successfully book an appointment with an alumni.", action: "book_appointment", target: 1 },
+          { description: "Complete the daily standard challenge.", action: "daily_challenge_complete", target: 1 },
+          { description: "Generate a cover letter using the AI tool.", action: "generate_cover_letter", target: 1 }
         ]
       },
       {
@@ -413,3 +419,4 @@ main()
     
 
     
+
