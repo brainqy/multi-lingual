@@ -790,6 +790,13 @@ export interface MockInterviewSession {
   difficulty?: 'Easy' | 'Medium' | 'Hard';
   questionCategories?: InterviewQuestionCategory[];
   recordingReferences?: RecordingReference[];
+  interviewerScores?: InterviewerScore[];
+  finalScore?: {
+    achievedScore: number;
+    totalPossibleScore: number;
+    percentage: number;
+    reportNotes?: string;
+  };
 }
 
 
@@ -987,7 +994,7 @@ const SearchabilityDetailsSchema = z.object({
   hasAddress: z.boolean().optional().describe("Resume contains a physical address (city, state is sufficient)."),
   jobTitleMatchesJD: z.boolean().optional().describe("Job title in resume aligns with or is found in the job description."),
   hasWorkExperienceSection: z.boolean().optional().describe("A distinct work experience section was identified."),
-  hasEducationSection: z.boolean().optional().describe("A distinct education section was identified."),
+  hasEducationSection: z.boolean().optional().describe("Resume contains a distinct education section."),
   hasProfessionalSummary: z.boolean().optional().describe("Resume contains a professional summary or objective statement."),
   keywordDensityFeedback: z.string().optional().describe("Feedback on keyword density and relevance to the job description."),
 });
@@ -1350,3 +1357,47 @@ export interface SoftDeletedItem {
     deletedAt: Date;
 }
     
+export type AwardCategory = {
+    id: string;
+    name: string;
+    description?: string;
+}
+
+export type Award = {
+    id: string;
+    title: string;
+    description: string;
+    categoryId: string;
+    category: AwardCategory;
+    nominationStartDate: string;
+    nominationEndDate: string;
+    votingStartDate: string;
+    votingEndDate: string;
+    status: 'Draft' | 'Nominating' | 'Voting' | 'Completed';
+    winnerId?: string;
+    winner?: UserProfile;
+    nominations?: Nomination[];
+}
+
+export type Nomination = {
+    id: string;
+    awardId: string;
+    award: Award;
+    nomineeId: string;
+    nominee: UserProfile;
+    nominatorId: string;
+    nominator: UserProfile;
+    justification: string;
+    createdAt: string;
+    votes?: Vote[];
+}
+
+export type Vote = {
+    id: string;
+    nominationId: string;
+    nomination: Nomination;
+    voterId: string;
+    voter: UserProfile;
+    createdAt: string;
+}
+

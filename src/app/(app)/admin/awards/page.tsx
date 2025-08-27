@@ -2,24 +2,25 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit3, Trash2, Award as AwardIcon, Loader2 } from "lucide-react";
+import { PlusCircle, Edit3, Trash2, Award as AwardIcon, Loader2, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Award, AwardCategory } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { DatePicker } from "@/components/ui/date-picker";
-import { getAwardCategories, createAwardCategory, updateAwardCategory, deleteAwardCategory, getAwards, createAward, updateAward, deleteAward } from "@/lib/actions/awards";
+import { getAwardCategories, createAwardCategory, updateAwardCategory, deleteAwardCategory, getAwards, createAward, updateAward, deleteAward, tallyVotesAndDeclareWinner } from "@/lib/actions/awards";
 import { useAuth } from "@/hooks/use-auth";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { Badge } from "@/components/ui/badge";
+import { isPast, parseISO } from 'date-fns';
 
 const awardCategorySchema = z.object({
   id: z.string().optional(),
@@ -105,6 +106,16 @@ export default function AwardsManagementPage() {
     if (result) { fetchData(); toast({ title: editingAward ? "Award Updated" : "Award Created" }); }
     setIsAwardDialogOpen(false);
   };
+  
+  const handleTallyVotes = async (awardId: string) => {
+    const result = await tallyVotesAndDeclareWinner(awardId);
+    if (result.success && result.award) {
+        toast({ title: "Winner Declared!", description: `${result.award.winner?.name} has won the "${result.award.title}" award.` });
+        fetchData(); // Refresh data to show winner
+    } else {
+        toast({ title: "Tally Failed", description: result.error || "Could not determine a winner.", variant: "destructive"});
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -155,19 +166,28 @@ export default function AwardsManagementPage() {
         <CardContent>
         {isLoading ? <Loader2 className="animate-spin" /> : (
             <Table>
-              <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Status</TableHead><TableHead>Winner</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
-                {awards.map(award => (
-                  <TableRow key={award.id}>
-                    <TableCell className="font-medium">{award.title}</TableCell>
-                    <TableCell>{categories.find(c => c.id === award.categoryId)?.name || 'N/A'}</TableCell>
-                    <TableCell><Badge>{award.status}</Badge></TableCell>
-                    <TableCell className="text-right space-x-2">
-                       <Button variant="outline" size="sm" onClick={() => openEditAwardDialog(award)}><Edit3 className="h-4 w-4" /></Button>
-                      <Button variant="destructive" size="sm" onClick={() => onDeleteAward(award.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {awards.map(award => {
+                  const votingEnded = award.votingEndDate ? isPast(parseISO(award.votingEndDate)) : false;
+                  return (
+                    <TableRow key={award.id}>
+                      <TableCell className="font-medium">{award.title}</TableCell>
+                      <TableCell>{categories.find(c => c.id === award.categoryId)?.name || 'N/A'}</TableCell>
+                      <TableCell><Badge>{award.status}</Badge></TableCell>
+                      <TableCell>{award.winner ? award.winner.name : 'N/A'}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                         {votingEnded && !award.winnerId && award.status === 'Completed' && (
+                            <Button variant="outline" size="sm" onClick={() => handleTallyVotes(award.id)}>
+                                <Crown className="h-4 w-4 mr-1"/> Tally Votes
+                            </Button>
+                         )}
+                         <Button variant="outline" size="sm" onClick={() => openEditAwardDialog(award)}><Edit3 className="h-4 w-4" /></Button>
+                        <Button variant="destructive" size="sm" onClick={() => onDeleteAward(award.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
