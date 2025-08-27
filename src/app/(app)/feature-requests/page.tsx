@@ -245,7 +245,7 @@ export default function FeatureRequestsPage() {
                   </div>
                 <CardTitle className="text-lg line-clamp-2" title={request.title}>{request.title}</CardTitle>
                 <CardDescription className="text-xs">
-                  {t("featureRequests.suggestedBy", { name: request.userName })} • {formatDistanceToNow(parseISO(request.timestamp), { addSuffix: true })}
+                  {t("featureRequests.suggestedBy", { name: request.userName })} • {formatDistanceToNow((request.timestamp), { addSuffix: true })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
