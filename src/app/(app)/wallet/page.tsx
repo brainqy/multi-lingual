@@ -1,11 +1,10 @@
 
-
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History, Loader2, Star } from "lucide-react";
+import { WalletCards, Coins, PlusCircle, ArrowDownCircle, ArrowUpCircle, Gift, Info, History, Loader2, Star, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { redeemPromoCode } from "@/lib/actions/promo-codes";
+import { purchaseStreakFreeze } from "@/lib/actions/wallet";
 
 export default function WalletPage() {
   const { t } = useI18n();
@@ -23,6 +23,7 @@ export default function WalletPage() {
   const { toast } = useToast();
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isBuying, setIsBuying] = useState(false);
 
   const totalFlashCoins = useMemo(() => {
     if (!wallet || !wallet.flashCoins) return 0;
@@ -52,6 +53,19 @@ export default function WalletPage() {
     }
     setPromoCodeInput('');
     setIsRedeeming(false);
+  };
+  
+  const handleBuyStreakFreeze = async () => {
+    if (!user) return;
+    setIsBuying(true);
+    const result = await purchaseStreakFreeze(user.id);
+    if (result.success) {
+        toast({ title: "Purchase Successful!", description: result.message });
+        await refreshWallet();
+    } else {
+        toast({ title: "Purchase Failed", description: result.message, variant: "destructive"});
+    }
+    setIsBuying(false);
   };
 
   if (isAuthLoading) {
@@ -133,24 +147,44 @@ export default function WalletPage() {
                 </CardContent>
             </Card>
       </div>
-      
-      <Card className="shadow-lg">
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>Redeem a Promo Code</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div className="flex flex-col sm:flex-row items-end gap-2">
-                <div className="flex-grow w-full">
-                    <Label htmlFor="promo-code-input">Enter Code</Label>
-                    <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
-                </div>
-                <Button onClick={handleRedeemCode} disabled={isRedeeming} className="w-full sm:w-auto">
-                    {isRedeeming && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                    Redeem
-                </Button>
-            </div>
-        </CardContent>
-      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Card className="shadow-lg">
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>Redeem a Promo Code</CardTitle>
+          </CardHeader>
+          <CardContent>
+              <div className="flex flex-col sm:flex-row items-end gap-2">
+                  <div className="flex-grow w-full">
+                      <Label htmlFor="promo-code-input">Enter Code</Label>
+                      <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
+                  </div>
+                  <Button onClick={handleRedeemCode} disabled={isRedeeming} className="w-full sm:w-auto">
+                      {isRedeeming && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                      Redeem
+                  </Button>
+              </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg">
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Streak Freeze Store</CardTitle>
+          </CardHeader>
+          <CardContent>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <div className="text-center sm:text-left">
+                      <p className="font-medium">You have: <span className="text-2xl font-bold text-primary">{user.streakFreezes || 0}</span> Streak Freezes</p>
+                      <p className="text-xs text-muted-foreground">Protects your daily streak if you miss a day.</p>
+                  </div>
+                  <Button onClick={handleBuyStreakFreeze} disabled={isBuying || (wallet?.coins ?? 0) < 500} className="w-full sm:w-auto mt-2 sm:mt-0">
+                      {isBuying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                      Buy 1 for 500 <Coins className="ml-1 h-4 w-4"/>
+                  </Button>
+              </div>
+          </CardContent>
+        </Card>
+      </div>
       
       <Tabs defaultValue="coin_transactions" className="w-full">
         <TabsList className="grid w-full grid-cols-3">

@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -8,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
 import { updateUser } from '@/lib/data-services/users';
 import { NotFoundError } from '../exceptions';
+import { createActivity } from './activities';
 
 /**
  * Fetches a user's wallet, creating one if it doesn't exist.
@@ -162,4 +162,69 @@ export async function addXp(userId: string, xpToAdd: number, description: string
         logError(`[WalletAction] Error adding XP for user ${userId}`, error, { userId });
         return null;
     }
+}
+
+/**
+ * Purchases a streak freeze for a user using their coins.
+ * @param userId The ID of the user making the purchase.
+ * @returns A success or error object.
+ */
+export async function purchaseStreakFreeze(userId: string): Promise<{ success: boolean; message: string }> {
+  logAction('Purchasing streak freeze', { userId });
+  const COST = 500;
+
+  try {
+    const user = await db.user.findUnique({ where: { id: userId } });
+    const wallet = await getWallet(userId);
+
+    if (!user || !wallet) {
+      throw new NotFoundError("User or wallet", userId);
+    }
+
+    if (wallet.coins < COST) {
+      return { success: false, message: "Insufficient coins." };
+    }
+
+    // Perform the transaction
+    await db.$transaction(async (prisma) => {
+      // 1. Deduct coins
+      await prisma.wallet.update({
+        where: { userId },
+        data: { coins: { decrement: COST } },
+      });
+
+      // 2. Add streak freeze
+      await prisma.user.update({
+        where: { id: userId },
+        data: { streakFreezes: { increment: 1 } },
+      });
+
+      // 3. Log the transaction
+      await prisma.walletTransaction.create({
+        data: {
+          walletId: wallet.id,
+          description: "Purchased 1 Streak Freeze",
+          amount: -COST,
+          type: 'debit',
+          currency: 'coins',
+        },
+      });
+    });
+    
+    await createActivity({
+        userId: user.id,
+        tenantId: user.tenantId,
+        description: `Purchased a streak freeze for ${COST} coins.`
+    });
+
+    logAction('Streak freeze purchased successfully', { userId });
+    return { success: true, message: "Successfully purchased 1 Streak Freeze!" };
+
+  } catch (error) {
+    logError(`[WalletAction] Error purchasing streak freeze for user ${userId}`, error, { userId });
+    if (error instanceof NotFoundError) {
+      return { success: false, message: "Could not find user or wallet." };
+    }
+    return { success: false, message: "An unexpected error occurred." };
+  }
 }
