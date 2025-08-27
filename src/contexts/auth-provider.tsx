@@ -37,7 +37,6 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
       const today = new Date();
       const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
       
-      // We still need this to know if we should run the logic at all.
       const isNewDay = differenceInCalendarDays(today, lastLogin) > 0;
 
       if (!isNewDay) {
@@ -45,33 +44,32 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
       }
 
       let updatedUserData: Partial<UserProfile> = {};
-      let needsDBUpdate = true;
       setStreakPopupOpen(true);
 
       let weeklyActivity = (Array.isArray(userToUpdate.weeklyActivity) && userToUpdate.weeklyActivity.length === 7)
         ? [...userToUpdate.weeklyActivity]
         : [0, 0, 0, 0, 0, 0, 0];
 
+      // Shift activity for the new day, today is initially marked as 0
+      weeklyActivity.shift();
+      weeklyActivity.push(0);
+
       // Find the index of the last activity (1 for login, 2 for freeze) before today.
       const lastActiveDayIndex = weeklyActivity.slice(0, 6).findLastIndex(day => day === 1 || day === 2);
       
-      // Calculate days missed. If no activity in the last 6 days, it's 7 or more.
-      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex -1;
+      // Calculate days missed since the last activity.
+      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex - 1;
 
       let newStreak = userToUpdate.dailyStreak || 0;
       let newLongestStreak = userToUpdate.longestStreak || 0;
       let newStreakFreezes = userToUpdate.streakFreezes || 0;
       
-      // Shift the array for the new day
-      weeklyActivity.shift();
-      weeklyActivity.push(1); // Mark today as active
-
       if (daysSinceLastLogin === 0) { // Logged in yesterday
           newStreak++;
       } else if (daysSinceLastLogin > 0) { // Missed one or more days
-          if (newStreakFreezes > 0) {
-              newStreakFreezes--; 
-              toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
+          if (newStreakFreezes >= daysSinceLastLogin) {
+              newStreakFreezes -= daysSinceLastLogin; 
+              toast({ title: "Streak Saved!", description: `You used ${daysSinceLastLogin} free pass(es) to protect your ${newStreak}-day streak.` });
               await createActivity({ userId: userToUpdate.id, tenantId: userToUpdate.tenantId, description: `Used a streak freeze to protect a ${newStreak}-day streak.`});
               
               // Mark the missed day(s) as saved by freeze
@@ -81,11 +79,16 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
                       weeklyActivity[activityIndex] = 2; // 2 represents 'saved by freeze'
                   }
               }
+              newStreak++; // Continue the streak
           } else {
               newStreak = 1; // Reset streak
           }
+      } else { // First login or logged in today already (isNewDay should prevent this)
+          newStreak = 1;
       }
       
+      weeklyActivity[6] = 1; // Mark today as active
+
       if (newStreak > newLongestStreak) {
           newLongestStreak = newStreak;
       }
@@ -107,24 +110,20 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           weeklyActivity: weeklyActivity
       };
       
-      if (needsDBUpdate) {
-          const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
-          if(updatedUser) {
-              const newBadges = await checkAndAwardBadges(updatedUser.id);
-              newBadges.forEach(badge => {
-                  toast({
-                      title: "Badge Unlocked!",
-                      description: `You've earned the "${badge.name}" badge.`,
-                  });
+      const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
+      if(updatedUser) {
+          const newBadges = await checkAndAwardBadges(updatedUser.id);
+          newBadges.forEach(badge => {
+              toast({
+                  title: "Badge Unlocked!",
+                  description: `You've earned the "${badge.name}" badge.`,
               });
-              const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
-              return finalUser || updatedUser;
-          } else {
-             return userToUpdate;
-          }
+          });
+          const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
+          return finalUser || updatedUser;
+      } else {
+          return userToUpdate;
       }
-      
-      return userToUpdate;
   };
 
 export function AuthProvider({ children }: AuthProviderProps) {
