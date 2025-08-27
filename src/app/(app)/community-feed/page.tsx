@@ -876,7 +876,7 @@ export default function CommunityFeedPage() {
                                     key={comment.id} 
                                     comment={comment} 
                                     allComments={post.comments!} 
-                                    onReply={onReply} 
+                                    onReply={handleReply} 
                                     onCommentSubmit={handleCommentSubmit} 
                                     level={0}
                                     replyingToCommentId={replyingToCommentId}
@@ -954,4 +954,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-
