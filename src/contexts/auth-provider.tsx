@@ -33,133 +33,91 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-console.log("[STREAK LOG] AuthProvider: Defining handleStreakAndBadges function.");
 const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setStreakPopupOpen: (isOpen: boolean) => void): Promise<UserProfile> => {
-      console.log("[STREAK LOG] AuthProvider: 1. Entering handleStreakAndBadges function.");
+      const today = new Date();
+      const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
+      const daysSinceLastLogin = differenceInCalendarDays(today, lastLogin);
       
-      const numericWeeklyActivity = (userToUpdate.weeklyActivity || Array(7).fill(0)).map(val => val === true ? 1 : val === false ? 0 : val);
-      console.log("[STREAK LOG] AuthProvider: 2. Initial weekly activity array from user:", numericWeeklyActivity);
-      
-      const lastActiveDayIndex = numericWeeklyActivity.slice(0, 6).lastIndexOf(1);
-      console.log("[STREAK LOG] AuthProvider: 3. Last active day index (before today) is:", lastActiveDayIndex);
+      let updatedUserData: Partial<UserProfile> = {};
+      let needsDBUpdate = false;
 
-      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex;
-      console.log("[STREAK LOG] AuthProvider: 4. Calculated days since last login based on array:", daysSinceLastLogin);
-      
-      const hasLoggedInToday = numericWeeklyActivity[6] === 1;
-      console.log("[STREAK LOG] AuthProvider: 5. Has user already logged in today?", hasLoggedInToday);
+      // Ensure weeklyActivity is a valid array of 7 numbers
+      let weeklyActivity = (Array.isArray(userToUpdate.weeklyActivity) && userToUpdate.weeklyActivity.length === 7)
+        ? userToUpdate.weeklyActivity.map(v => (v === true ? 1 : v === false ? 0 : v || 0))
+        : [0, 0, 0, 0, 0, 0, 0];
 
-      if (daysSinceLastLogin > 0 && !hasLoggedInToday) {
-          console.log("[STREAK LOG] AuthProvider: 6. Detected login on a new day. Days since last login:", daysSinceLastLogin);
+      if (daysSinceLastLogin > 0) { // Only run logic on a new calendar day
+          needsDBUpdate = true;
           setStreakPopupOpen(true);
-          console.log("[STREAK LOG] AuthProvider: 7. Streak popup triggered.");
-
           let newStreak = userToUpdate.dailyStreak || 0;
-          console.log("[STREAK LOG] AuthProvider: 8. Initial streak:", newStreak);
           let newLongestStreak = userToUpdate.longestStreak || 0;
-          console.log("[STREAK LOG] AuthProvider: 9. Initial longest streak:", newLongestStreak);
           let newStreakFreezes = userToUpdate.streakFreezes || 0;
-          console.log("[STREAK LOG] AuthProvider: 10. Initial streak freezes:", newStreakFreezes);
-          
+
+          // Shift the weekly activity array
           const daysToShift = Math.min(daysSinceLastLogin, 7);
-          console.log("[STREAK LOG] AuthProvider: 11. Shifting weekly activity by", daysToShift, "days.");
-          
-          const recentActivity = numericWeeklyActivity.slice(daysToShift);
-          const shiftedActivity = [...Array(daysToShift).fill(0), ...recentActivity];
-          console.log("[STREAK LOG] AuthProvider: 12. Shifted weekly activity array:", shiftedActivity);
+          const shiftedActivity = [...Array(daysToShift).fill(0), ...weeklyActivity.slice(0, 7 - daysToShift)];
 
           if (daysSinceLastLogin === 1) {
-              console.log("[STREAK LOG] AuthProvider: 13. Logged in consecutively (1 day since last login).");
               newStreak++;
-              console.log("[STREAK LOG] AuthProvider: 14. Incremented streak to:", newStreak);
           } else if (daysSinceLastLogin > 1) { 
-              console.log("[STREAK LOG] AuthProvider: 15. Missed more than one day. Days missed:", daysSinceLastLogin);
               if (newStreakFreezes > 0) {
-                  console.log("[STREAK LOG] AuthProvider: 16. Streak freezes available. Using one.");
                   newStreakFreezes--; 
-                  console.log("[STREAK LOG] AuthProvider: 17. Decremented streak freezes to:", newStreakFreezes);
                   toast({ title: "Streak Saved!", description: `You used a free pass to protect your ${newStreak}-day streak.` });
-                  await createActivity({
-                      userId: userToUpdate.id,
-                      tenantId: userToUpdate.tenantId,
-                      description: `Used a streak freeze to protect a ${newStreak}-day streak.`
-                  });
-                  console.log("[STREAK LOG] AuthProvider: 18. Displayed 'Streak Saved' toast and created activity log.");
+                  await createActivity({ userId: userToUpdate.id, tenantId: userToUpdate.tenantId, description: `Used a streak freeze to protect a ${newStreak}-day streak.`});
                   
-                  console.log("[STREAK LOG] AuthProvider: 19. Marking missed days as saved in activity array.");
+                  // Mark the missed day(s) as saved by freeze
                   for (let i = 1; i < daysToShift; i++) {
-                    const activityIndex = 6 - i;
-                    console.log("[STREAK LOG] AuthProvider: 20. Loop", i, "- Marking index", activityIndex, "as saved (value 2).");
-                    if(activityIndex >= 0) {
-                        shiftedActivity[activityIndex] = 2;
-                    }
+                      const activityIndex = 6 - i;
+                      if (activityIndex >= 0) {
+                          shiftedActivity[activityIndex] = 2; // 2 represents 'saved by freeze'
+                      }
                   }
-
               } else {
-                  console.log("[STREAK LOG] AuthProvider: 21. No streak freezes available.");
                   newStreak = 1; // Reset streak
-                  console.log("[STREAK LOG] AuthProvider: 22. Reset streak to 1.");
               }
           }
 
-          shiftedActivity[6] = 1;
-          console.log("[STREAK LOG] AuthProvider: 23. Marking today as active (index 6, value 1).");
-          console.log("[STREAK LOG] AuthProvider: 24. Final weekly activity for update:", shiftedActivity);
-
+          shiftedActivity[6] = 1; // Mark today as active
+          
           if (newStreak > newLongestStreak) {
-              console.log("[STREAK LOG] AuthProvider: 25. New streak is greater than longest streak.");
               newLongestStreak = newStreak;
-              console.log("[STREAK LOG] AuthProvider: 26. Updated longest streak to:", newLongestStreak);
           }
           
           const STREAK_MILESTONES = [7, 14, 30];
-          console.log("[STREAK LOG] AuthProvider: 27. Checking for streak milestones. Current streak:", newStreak);
           if (STREAK_MILESTONES.includes(newStreak)) {
-            console.log("[STREAK LOG] AuthProvider: 28. Milestone reached!");
             newStreakFreezes++;
-            console.log("[STREAK LOG] AuthProvider: 29. Incremented streak freezes to:", newStreakFreezes);
             toast({
               title: "Streak Milestone Achieved!",
               description: `You've reached a ${newStreak}-day streak and earned a Free Pass!`
             });
-            console.log("[STREAK LOG] AuthProvider: 30. Displayed 'Milestone' toast.");
           }
           
-          console.log("[STREAK LOG] AuthProvider: 31. Assembling final user data for update.");
-          const updatedUserData: Partial<UserProfile> = { 
+          updatedUserData = { 
               dailyStreak: newStreak, 
               longestStreak: newLongestStreak,
               streakFreezes: newStreakFreezes,
-              lastLogin: new Date().toISOString(),
+              lastLogin: today.toISOString(),
               weeklyActivity: shiftedActivity
           };
-          console.log("[STREAK LOG] AuthProvider: 32. Final updatedUserData object:", updatedUserData);
-          
-          console.log("[STREAK LOG] AuthProvider: 33. Changes detected, calling updateUser with new data:", userToUpdate.id, updatedUserData);
+      }
+      
+      if (needsDBUpdate) {
           const updatedUser = await updateUser(userToUpdate.id, updatedUserData);
-          console.log("[STREAK LOG] AuthProvider: 34. updateUser returned:", updatedUser);
-
           if(updatedUser) {
-              console.log("[STREAK LOG] AuthProvider: 35. User updated in DB. Checking for badges.");
               const newBadges = await checkAndAwardBadges(updatedUser.id);
-              console.log("[STREAK LOG] AuthProvider: 36. Badge check complete. New badges found:", newBadges.length);
               newBadges.forEach(badge => {
                   toast({
                       title: "Badge Unlocked!",
                       description: `You've earned the "${badge.name}" badge.`,
                   });
               });
-              console.log("[STREAK LOG] AuthProvider: 37. Re-validating session to get final user state.");
               const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
-              console.log("[STREAK LOG] AuthProvider: 38. Returning final user state from handleStreakAndBadges.");
               return finalUser || updatedUser;
           } else {
-             console.log("[STREAK LOG] AuthProvider: 39. Update user failed, returning original user from handleStreakAndBadges.");
              return userToUpdate;
           }
       }
       
-      console.log("[STREAK LOG] AuthProvider: 40. No updates to streak logic were needed (logged in on same day). Returning original user.");
       return userToUpdate;
   };
 

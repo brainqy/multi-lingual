@@ -25,13 +25,14 @@ export default function DailyStreakPopup({ isOpen, onClose, userProfile }: Daily
   const todayIndex = new Date().getDay(); // 0 for Sunday, 6 for Saturday
 
   // Ensure weeklyActivity is always an array of 7
-  const displayActivity = userProfile.weeklyActivity && userProfile.weeklyActivity.length === 7 
-    ? userProfile.weeklyActivity 
-    : Array(7).fill(0);
+  const displayActivity = (Array.isArray(userProfile.weeklyActivity) && userProfile.weeklyActivity.length === 7)
+    ? userProfile.weeklyActivity
+    : [0, 0, 0, 0, 0, 0, 0];
   
+  // Create labels for the last 7 days ending with today
   const adjustedDayLabels = [...Array(7)].map((_, i) => {
-    const dayOffset = (todayIndex - (6 - i) + 7) % 7;
-    return t(`dailyStreakPopup.dayLabels.${dayLabelsKeys[dayOffset]}` as any, { defaultValue: dayLabelsKeys[dayOffset]});
+    const dayIndex = (todayIndex - (6 - i) + 7) % 7;
+    return t(`dailyStreakPopup.dayLabels.${dayLabelsKeys[dayIndex]}` as any, { defaultValue: dayLabelsKeys[dayIndex]});
   });
 
   const getActivityIcon = (activityStatus: number) => {
