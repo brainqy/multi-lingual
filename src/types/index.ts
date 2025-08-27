@@ -240,6 +240,7 @@ export interface CommunityPost {
   registeredBy?: string[];
   likedBy?: string[];
   likes?: number;
+  flaggedBy?: string[];
 }
 
 export interface FeatureRequest {
