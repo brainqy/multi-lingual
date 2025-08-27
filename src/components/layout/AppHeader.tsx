@@ -117,11 +117,17 @@ export function AppHeader() {
                       <p className="text-sm text-muted-foreground text-center p-4">You have no notifications.</p>
                     ) : (
                       notifications.map(notification => (
-                        <Link href={notification.link || '#'} key={notification.id} passHref legacyBehavior>
-                           <a className={`block p-3 hover:bg-secondary ${!notification.isRead ? 'bg-primary/5' : ''}`} onClick={() => setIsNotificationPopoverOpen(false)}>
+                        <Link href={notification.link || '#'} key={notification.id} passHref>
+                          <div
+                            className={`block p-3 hover:bg-secondary ${!notification.isRead ? 'bg-primary/5' : ''} cursor-pointer`}
+                            onClick={() => {
+                              setIsNotificationPopoverOpen(false);
+                              router.push(notification.link || '#');
+                            }}
+                          >
                             <p className="text-sm">{notification.content}</p>
                             <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}</p>
-                          </a>
+                          </div>
                         </Link>
                       ))
                     )}
