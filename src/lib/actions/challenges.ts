@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { DailyChallenge, UserProfile, ChallengeAction } from '@/types';
+import type { DailyChallenge, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { differenceInDays } from 'date-fns';
 import { updateUser } from '@/lib/data-services/users';
@@ -32,12 +32,13 @@ export async function getChallenges(): Promise<DailyChallenge[]> {
  * If the user has an active challenge assigned less than 7 days ago, it returns that.
  * Otherwise, it generates a new one, saves it to the user's profile, and returns it.
  * @param userId The ID of the user.
+ * @param forceRefresh If true, will generate a new challenge even if a recent one exists.
  * @returns A promise that resolves to a DailyChallenge object or null.
  */
-export async function getDynamicFlipChallenge(userId: string): Promise<DailyChallenge | null> {
-  logAction('[FlipChallenge] Start: Fetching dynamic flip challenge', { userId });
+export async function getDynamicFlipChallenge(userId: string, forceRefresh = false): Promise<DailyChallenge | null> {
+  logAction('[FlipChallenge] Start: Fetching dynamic flip challenge', { userId, forceRefresh });
   try {
-    const user = await db.user.findUnique({
+    let user = await db.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -63,6 +64,19 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
     }
     logAction('[FlipChallenge] Step: User data fetched successfully', { userId });
 
+    // If forcing a refresh, clear the old challenge first
+    if (forceRefresh && user.currentFlipChallenge) {
+        logAction('[FlipChallenge] Step: Force refresh requested. Clearing existing challenge.', { userId });
+        await updateUser(userId, {
+            currentFlipChallenge: null,
+            flipChallengeAssignedAt: null,
+            flipChallengeProgressStart: null,
+        });
+        // Nullify user's challenge data to proceed with new generation
+        user.currentFlipChallenge = null;
+        user.flipChallengeAssignedAt = null;
+    }
+
 
     // Check for existing, recent challenge
     if (user.currentFlipChallenge && user.flipChallengeAssignedAt) {
@@ -80,7 +94,6 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
 
     // Generate a new challenge if none exists or the old one is expired
     logAction('[FlipChallenge] Step: Generating new flip challenge for user', { userId });
-    const completedTaskIds = user?.completedFlipTaskIds || [];
     logAction('[FlipChallenge] Step: Fetching all possible flip challenges from DB', { userId });
     const allFlipChallenges = await db.dailyChallenge.findMany({
       where: { 
@@ -92,19 +105,19 @@ export async function getDynamicFlipChallenge(userId: string): Promise<DailyChal
     });
     logAction('[FlipChallenge] Step: Found total flip challenges in DB', { count: allFlipChallenges.length });
     
+    // The logic to filter out completed tasks is removed to make them repeatable
     const allTasks = allFlipChallenges.flatMap(challenge =>
       (challenge.tasks as any[]).map(task => ({ ...task, parentChallengeId: challenge.id, xpReward: challenge.xpReward }))
     );
-    const uncompletedTasks = allTasks.filter(task => !completedTaskIds.includes(task.action));
-    logAction('[FlipChallenge] Step: Calculated uncompleted tasks for user', { userId, uncompletedCount: uncompletedTasks.length, totalTasks: allTasks.length });
+    logAction('[FlipChallenge] Step: Using all repeatable tasks for user', { userId, totalTasks: allTasks.length });
 
 
-    if (uncompletedTasks.length < 2) {
-      logAction('[FlipChallenge] End: Not enough uncompleted tasks to generate a flip challenge', { userId });
+    if (allTasks.length < 2) {
+      logAction('[FlipChallenge] End: Not enough tasks in the database to generate a flip challenge', { userId });
       return null;
     }
     
-    const shuffledTasks = uncompletedTasks.sort(() => 0.5 - Math.random());
+    const shuffledTasks = allTasks.sort(() => 0.5 - Math.random());
     const selectedTasks = shuffledTasks.slice(0, 2);
     logAction('[FlipChallenge] Step: Randomly selected tasks for the new challenge', { userId, tasks: selectedTasks.map(t => t.action) });
     const combinedXp = selectedTasks.reduce((sum, task) => sum + (task.xpReward || 0), 0) / 2;

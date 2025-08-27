@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, CheckCircle, Diamond, ChevronsRight, Repeat, Lightbulb, Zap, Loader2, Trophy, Send } from 'lucide-react';
+import { Award, CheckCircle, Repeat, Lightbulb, Zap, Loader2, Trophy, Send, Clock } from 'lucide-react';
 import type { DailyChallenge, UserProfile, InterviewQuestionCategory } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
@@ -18,6 +18,42 @@ import ScoreCircle from '@/components/ui/score-circle';
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
 import { getDynamicFlipChallenge } from "@/lib/actions/challenges";
+import { intervalToDuration, isFuture } from 'date-fns';
+
+const CountdownTimer = ({ expiryDate }: { expiryDate: Date }) => {
+  const [timeLeft, setTimeLeft] = useState<Duration | null>(null);
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date();
+      if (isFuture(expiryDate)) {
+        setTimeLeft(intervalToDuration({ start: now, end: expiryDate }));
+      } else {
+        setTimeLeft(null);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000 * 60); // Update every minute
+    return () => clearInterval(interval);
+  }, [expiryDate]);
+
+  if (!timeLeft) {
+    return <span className="text-xs text-muted-foreground">Expired</span>;
+  }
+
+  return (
+    <div className="flex items-center gap-1 text-xs font-medium text-primary">
+      <Clock className="h-3 w-3" />
+      <span>
+        {timeLeft.days ? `${timeLeft.days}d ` : ''}
+        {timeLeft.hours ? `${timeLeft.hours}h ` : ''}
+        left
+      </span>
+    </div>
+  );
+};
+
 
 export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
@@ -42,7 +78,6 @@ export default function DailyInterviewChallengePage() {
       getDynamicFlipChallenge(user.id),
     ]);
     
-    // The dashboard data now contains the dynamically calculated challenge progress
     const userWithProgress = dashboardData.users.find(u => u.id === user.id);
     setCurrentUserProfile(userWithProgress || user);
     
@@ -64,14 +99,13 @@ export default function DailyInterviewChallengePage() {
 
   const handleRefreshChallenge = async () => {
     if (!user) return;
-    // Fetch a new standard challenge from the existing client-side list
+    
     const allStandardChallenges = allChallenges.filter(c => c.type === 'standard' && c.id !== standardChallenge?.id);
     if (allStandardChallenges.length > 0) {
       setStandardChallenge(allStandardChallenges[Math.floor(Math.random() * allStandardChallenges.length)]);
     }
     
-    // Fetch a new dynamic flip challenge from the server
-    const newFlipChallenge = await getDynamicFlipChallenge(user.id);
+    const newFlipChallenge = await getDynamicFlipChallenge(user.id, true);
     setFlipChallenge(newFlipChallenge || undefined);
     
     setUserAnswer('');
@@ -189,6 +223,9 @@ export default function DailyInterviewChallengePage() {
   );
   
   const renderFlipChallenge = (challenge: DailyChallenge, currentUser: UserProfile) => {
+    const expiryDate = new Date(currentUser.flipChallengeAssignedAt || 0);
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    
     return (
     <Card className="shadow-lg bg-primary/5 border-primary/20 h-full flex flex-col">
        <CardHeader>
@@ -202,7 +239,10 @@ export default function DailyInterviewChallengePage() {
           <CardDescription>{challenge.description}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-            <h4 className="font-semibold mb-2 text-foreground">Your Tasks:</h4>
+            <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-foreground">Your Tasks:</h4>
+                <CountdownTimer expiryDate={expiryDate} />
+            </div>
             <div className="space-y-3">
                 {challenge.tasks?.map((task, index) => {
                     const progress = currentUser.challengeProgress?.[task.action];
