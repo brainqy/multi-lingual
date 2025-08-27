@@ -195,6 +195,33 @@ async function main() {
   });
   console.log('Seeded promo codes.');
 
+  // --- DAILY CHALLENGES ---
+  await prisma.dailyChallenge.createMany({
+    data: [
+      // Standard Challenges
+      { id: 'dc-std-1', type: 'standard', title: "Reverse a String", description: "Write a function that reverses a given string.", difficulty: "Easy", category: "Coding", solution: "A common approach is `str.split('').reverse().join('')` or a two-pointer technique." },
+      { id: 'dc-std-2', type: 'standard', title: "Tell me about a time you failed.", description: "Prepare an answer using the STAR method.", difficulty: "Medium", category: "Behavioral", solution: "Focus on Situation, Task, Action, and Result. Emphasize what you learned from the experience." },
+      // Flip Challenge Tasks (structured as individual challenges)
+      { id: 'dc-flip-1', type: 'flip', title: "Analyze a Resume", description: "Analyze one resume.", xpReward: 20, tasks: [{ description: "Analyze a resume using the Resume Analyzer tool.", action: "analyze_resume", target: 1 }] },
+      { id: 'dc-flip-2', type: 'flip', title: "Analyze 3 Resumes", description: "Analyze three resumes.", xpReward: 50, tasks: [{ description: "Analyze 3 resumes against job descriptions.", action: "analyze_resume", target: 3 }] },
+      { id: 'dc-flip-3', type: 'flip', title: "Track a Job", description: "Add one application to the job tracker.", xpReward: 15, tasks: [{ description: "Add a new job application to your Job Tracker board.", action: "add_job_application", target: 1 }] },
+      { id: 'dc-flip-4', type: 'flip', title: "Track 5 Jobs", description: "Add five applications to the job tracker.", xpReward: 40, tasks: [{ description: "Add 5 new job applications to your Job Tracker board.", action: "add_job_application", target: 5 }] },
+      { id: 'dc-flip-5', type: 'flip', title: "Start a Conversation", description: "Create a post in the community feed.", xpReward: 15, tasks: [{ description: "Create a new post in the community feed.", action: "community_post", target: 1 }] },
+      { id: 'dc-flip-6', type: 'flip', title: "Be Heard", description: "Post 3 times in the community.", xpReward: 40, tasks: [{ description: "Create 3 new posts in the community feed.", action: "community_post", target: 3 }] },
+      { id: 'dc-flip-7', type: 'flip', title: "Join the Discussion", description: "Comment on a community post.", xpReward: 5, tasks: [{ description: "Leave a comment on any community post.", action: "community_comment", target: 1 }] },
+      { id: 'dc-flip-8', type: 'flip', title: "Be Engaging", description: "Leave 5 comments on community posts.", xpReward: 25, tasks: [{ description: "Leave 5 comments on any community posts.", action: "community_comment", target: 5 }] },
+      { id: 'dc-flip-9', type: 'flip', title: "Refer a Friend", description: "Refer one new user.", xpReward: 50, tasks: [{ description: "Successfully refer one new user who signs up.", action: "refer", target: 1 }] },
+      { id: 'dc-flip-10', type: 'flip', title: "Grow the Network", description: "Refer three new users.", xpReward: 150, tasks: [{ description: "Successfully refer three new users who sign up.", action: "refer", target: 3 }] },
+      { id: 'dc-flip-11', type: 'flip', title: "Book a Mentorship Session", description: "Book an appointment with an alumni.", xpReward: 30, tasks: [{ description: "Book an appointment with a mentor in the Alumni Directory.", action: "book_appointment", target: 1 }] },
+      { id: 'dc-flip-12', type: 'flip', title: "Generate a Cover Letter", description: "Use the AI to generate a cover letter.", xpReward: 20, tasks: [{ description: "Generate a cover letter for a job application.", action: "generate_cover_letter", target: 1 }] },
+      { id: 'dc-flip-13', type: 'flip', title: "Complete Daily Challenge", description: "Complete a standard daily challenge.", xpReward: 25, tasks: [{ description: "Complete one standard daily interview challenge.", action: "daily_challenge_complete", target: 1 }] },
+      { id: 'dc-flip-14', type: 'flip', title: "Get Your Profile to 100%", description: "Complete your user profile.", xpReward: 100, tasks: [{ description: "Fill out your user profile until it reaches 100% completion.", action: "profile_completion_percentage", target: 100 }] },
+      { id: 'dc-flip-15', type: 'flip', title: "Create an Interview Quiz", description: "Create and save a custom quiz.", xpReward: 40, tasks: [{ description: "Create a new custom quiz from the question bank with at least 5 questions.", action: "create_quiz", target: 1 }] },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded daily challenges.');
+
   console.log(`Seeding finished.`);
 }
 
@@ -207,3 +234,6 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
+
+
+      
