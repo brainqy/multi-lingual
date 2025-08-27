@@ -141,11 +141,24 @@ model User {
   affiliateSignups        AffiliateSignup[]
   promoCodeRedemptions    UserPromoCodeRedemption[]
   mockInterviewSessions   MockInterviewSession[]
+<<<<<<< HEAD
   
   nominationsMade         Nomination[] @relation("Nominator")
   nominationsReceived     Nomination[] @relation("Nominee")
   votesCast               Vote[] @relation("Voter")
   awardsWon               Award[] @relation("Winner")
+=======
+  nominationsMade         Nomination[]              @relation("NominatorRelation")
+  nominationsReceived     Nomination[]              @relation("NomineeRelation")
+  votesCast               Vote[]                    @relation("VoterRelation")
+  awardsWon               Award[]                   @relation("WinnerRelation")
+
+  // Notification Preferences
+  emailNotificationsEnabled    Boolean? @default(true)
+  appNotificationsEnabled      Boolean? @default(true)
+  gamificationNotificationsEnabled Boolean? @default(true)
+  referralNotificationsEnabled Boolean? @default(true)
+>>>>>>> 7ccd4a3a01b7ed9aa71d41f9f2ba164c4165b2f0
 }
 
 model JobOpening {
