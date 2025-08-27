@@ -21,7 +21,7 @@ export default function AffiliateManagementPage() {
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
   const [stats, setStats] = useState({ totalAffiliates: 0, totalClicks: 0, totalSignups: 0, totalCommissionsPaid: 0 });
-  const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { signups: number; earned: number }>>({});
+  const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { clicks: number; signups: number; earned: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function AffiliateManagementPage() {
     let totalClicks = 0;
     let totalSignups = 0;
     let totalCommissionsPaid = 0;
-    const details: Record<string, { signups: number; earned: number }> = {};
+    const details: Record<string, { clicks: number; signups: number; earned: number }> = {};
 
     for (const aff of allAffiliates) {
       const [clicks, signups] = await Promise.all([
@@ -43,11 +43,14 @@ export default function AffiliateManagementPage() {
         getAffiliateSignups(aff.id)
       ]);
       
-      totalClicks += clicks.length;
-      totalSignups += signups.length;
+      const clicksCount = clicks.length;
+      const signupsCount = signups.length;
+
+      totalClicks += clicksCount;
+      totalSignups += signupsCount;
       const earned = signups.reduce((sum, s) => sum + (s.commissionEarned || 0), 0);
       totalCommissionsPaid += earned;
-      details[aff.id] = { signups: signups.length, earned };
+      details[aff.id] = { clicks: clicksCount, signups: signupsCount, earned };
     }
     
     setStats({ totalAffiliates: allAffiliates.length, totalClicks, totalSignups, totalCommissionsPaid });
@@ -116,6 +119,7 @@ export default function AffiliateManagementPage() {
             <AffiliateTable 
               affiliates={filteredAffiliates} 
               handleAffiliateStatusChange={handleAffiliateStatusChange}
+              getAffiliateClicksCount={(id) => affiliateDetails[id]?.clicks || 0}
               getAffiliateSignupsCount={(id) => affiliateDetails[id]?.signups || 0}
               getAffiliateEarnedAmount={(id) => affiliateDetails[id]?.earned || 0}
             />
