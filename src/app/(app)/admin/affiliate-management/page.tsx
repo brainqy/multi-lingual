@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Target, Loader2 } from "lucide-react";
@@ -24,43 +24,46 @@ export default function AffiliateManagementPage() {
   const [affiliateDetails, setAffiliateDetails] = useState<Record<string, { signups: number; earned: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const allAffiliates = await getAffiliates();
-      setAffiliates(allAffiliates);
-      
-      let totalClicks = 0;
-      let totalSignups = 0;
-      let totalCommissionsPaid = 0;
-      const details: Record<string, { signups: number; earned: number }> = {};
+  const loadData = useCallback(async () => {
+    if (!currentUser) return;
+    setIsLoading(true);
 
-      for (const aff of allAffiliates) {
-        const [clicks, signups] = await Promise.all([
-          getAffiliateClicks(aff.id),
-          getAffiliateSignups(aff.id)
-        ]);
-        
-        totalClicks += clicks.length;
-        totalSignups += signups.length;
-        const earned = signups.reduce((sum, s) => sum + (s.commissionEarned || 0), 0);
-        totalCommissionsPaid += earned;
-        details[aff.id] = { signups: signups.length, earned };
-      }
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
+    const allAffiliates = await getAffiliates(tenantIdToFetch);
+    setAffiliates(allAffiliates);
+    
+    let totalClicks = 0;
+    let totalSignups = 0;
+    let totalCommissionsPaid = 0;
+    const details: Record<string, { signups: number; earned: number }> = {};
+
+    for (const aff of allAffiliates) {
+      const [clicks, signups] = await Promise.all([
+        getAffiliateClicks(aff.id),
+        getAffiliateSignups(aff.id)
+      ]);
       
-      setStats({ totalAffiliates: allAffiliates.length, totalClicks, totalSignups, totalCommissionsPaid });
-      setAffiliateDetails(details);
-      setIsLoading(false);
+      totalClicks += clicks.length;
+      totalSignups += signups.length;
+      const earned = signups.reduce((sum, s) => sum + (s.commissionEarned || 0), 0);
+      totalCommissionsPaid += earned;
+      details[aff.id] = { signups: signups.length, earned };
     }
     
-    if (currentUser?.role === 'admin') {
+    setStats({ totalAffiliates: allAffiliates.length, totalClicks, totalSignups, totalCommissionsPaid });
+    setAffiliateDetails(details);
+    setIsLoading(false);
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser?.role === 'admin' || currentUser?.role === 'manager') {
       loadData();
     } else {
       setIsLoading(false);
     }
-  }, [currentUser?.role]);
+  }, [currentUser, loadData]);
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
 
