@@ -63,7 +63,10 @@ export async function getAwards(): Promise<Award[]> {
   try {
     const awards = await db.award.findMany({ 
         orderBy: { title: 'asc' },
-        include: { nominations: { include: { nominee: true, nominator: true } } }
+        include: { 
+          nominations: { include: { nominee: true, nominator: true } },
+          winner: true,
+        }
     });
     return awards as unknown as Award[];
   } catch (error) {
@@ -72,7 +75,7 @@ export async function getAwards(): Promise<Award[]> {
   }
 }
 
-export async function createAward(data: Omit<Award, 'id' | 'nominations'>): Promise<Award | null> {
+export async function createAward(data: Omit<Award, 'id' | 'nominations' | 'winner' | 'category'>): Promise<Award | null> {
   logAction('Creating award', { title: data.title });
   try {
     const newAward = await db.award.create({ data: data as any });
@@ -83,7 +86,7 @@ export async function createAward(data: Omit<Award, 'id' | 'nominations'>): Prom
   }
 }
 
-export async function updateAward(id: string, data: Partial<Omit<Award, 'id' | 'nominations'>>): Promise<Award | null> {
+export async function updateAward(id: string, data: Partial<Omit<Award, 'id' | 'nominations' | 'winner' | 'category'>>): Promise<Award | null> {
   logAction('Updating award', { id });
   try {
     const updatedAward = await db.award.update({ where: { id }, data: data as any });
@@ -98,6 +101,7 @@ export async function deleteAward(id: string): Promise<boolean> {
   logAction('Deleting award', { id });
   try {
     await db.$transaction([
+      db.vote.deleteMany({ where: { nomination: { awardId: id } } }),
       db.nomination.deleteMany({ where: { awardId: id } }),
       db.award.delete({ where: { id } }),
     ]);
@@ -109,7 +113,7 @@ export async function deleteAward(id: string): Promise<boolean> {
 }
 
 // Nomination Actions
-export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt'>): Promise<Nomination | null> {
+export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt' | 'award' | 'nominee' | 'nominator' | 'votes'>): Promise<Nomination | null> {
     logAction('Creating nomination', { awardId: data.awardId, nomineeId: data.nomineeId });
     try {
         const award = await db.award.findUnique({ where: { id: data.awardId } });
@@ -126,11 +130,12 @@ export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt'
             where: {
                 awardId: data.awardId,
                 nomineeId: data.nomineeId,
-                nominatorId: data.nominatorId
             }
         });
         if(existingNomination) {
-            throw new Error("You have already nominated this person for this award.");
+            // To keep it simple, we don't allow multiple people to nominate the same person.
+            // First nomination counts. A real app might handle this differently.
+            throw new Error("This person has already been nominated for this award.");
         }
 
         const newNomination = await db.nomination.create({ data });
@@ -150,7 +155,6 @@ export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt'
         return newNomination as unknown as Nomination;
     } catch (error) {
         logError('[AwardsAction] Error creating nomination', error, { awardId: data.awardId });
-        // Re-throw the specific error message to be caught by the UI
         if (error instanceof Error) {
             throw error;
         }
@@ -159,17 +163,21 @@ export async function createNomination(data: Omit<Nomination, 'id' | 'createdAt'
 }
 
 export async function getActiveAwardsForNomination(): Promise<(Award & { category: AwardCategory })[]> {
-    logAction('Fetching active awards for nomination');
+    logAction('Fetching active awards for nomination/voting');
     try {
         const now = new Date();
         const awards = await db.award.findMany({
             where: {
-                status: 'Nominating',
-                nominationStartDate: { lte: now },
-                nominationEndDate: { gte: now },
+              status: { in: ['Nominating', 'Voting', 'Completed'] },
+              // Fetch awards that are either currently active or recently completed
+              OR: [
+                { nominationStartDate: { lte: now } },
+                { votingStartDate: { lte: now } },
+              ]
             },
             include: {
                 category: true,
+                winner: true,
                 nominations: {
                     include: {
                         nominee: { select: { id: true, name: true, profilePictureUrl: true } }
@@ -183,4 +191,124 @@ export async function getActiveAwardsForNomination(): Promise<(Award & { categor
         logError('[AwardsAction] Error fetching active awards', error);
         return [];
     }
+}
+
+
+// Voting Actions
+export async function getNomineesForAward(awardId: string): Promise<Nomination[]> {
+  logAction('Fetching nominees for award', { awardId });
+  try {
+    const nominees = await db.nomination.findMany({
+      where: { awardId },
+      include: {
+        nominee: true,
+      },
+      orderBy: { nominee: { name: 'asc' } },
+    });
+    return nominees as unknown as Nomination[];
+  } catch (error) {
+    logError(`[AwardsAction] Error fetching nominees for award ${awardId}`, error, { awardId });
+    return [];
+  }
+}
+
+export async function castVote(data: { awardId: string; nomineeId: string; voterId: string; }): Promise<{ success: boolean; message: string; }> {
+  logAction('Casting vote', { awardId: data.awardId, voterId: data.voterId });
+  try {
+    const award = await db.award.findUnique({ where: { id: data.awardId } });
+    if (!award || award.status !== 'Voting') {
+      return { success: false, message: "Voting is not currently open for this award." };
+    }
+
+    const nomination = await db.nomination.findFirst({
+        where: { awardId: data.awardId, nomineeId: data.nomineeId }
+    });
+    if (!nomination) {
+        return { success: false, message: "Invalid nominee for this award." };
+    }
+
+    // Check for existing vote by this user for this award
+    const existingVote = await db.vote.findFirst({
+      where: {
+        voterId: data.voterId,
+        nomination: {
+          awardId: data.awardId,
+        },
+      },
+    });
+
+    if (existingVote) {
+      return { success: false, message: "You have already voted for this award." };
+    }
+
+    await db.vote.create({
+      data: {
+        nominationId: nomination.id,
+        voterId: data.voterId,
+      },
+    });
+
+    return { success: true, message: "Your vote has been cast successfully." };
+  } catch (error: any) {
+    logError('[AwardsAction] Error casting vote', error, { awardId: data.awardId });
+    if (error.code === 'P2002') { // Unique constraint violation
+      return { success: false, message: "You have already voted for this award." };
+    }
+    return { success: false, message: "An unexpected error occurred." };
+  }
+}
+
+export async function tallyVotesAndDeclareWinner(awardId: string): Promise<{ success: boolean; error?: string; award?: Award }> {
+  logAction('Tallying votes and declaring winner', { awardId });
+  try {
+    const nominationsWithVotes = await db.nomination.findMany({
+      where: { awardId: awardId },
+      include: {
+        _count: {
+          select: { votes: true },
+        },
+      },
+    });
+
+    if (nominationsWithVotes.length === 0) {
+      return { success: false, error: 'No nominations found for this award.' };
+    }
+
+    // Find the nominee with the most votes
+    const sortedNominations = nominationsWithVotes.sort((a, b) => b._count.votes - a._count.votes);
+    const winnerNomination = sortedNominations[0];
+    const topVoteCount = winnerNomination._count.votes;
+    
+    // Check for ties
+    const tiedWinners = sortedNominations.filter(n => n._count.votes === topVoteCount);
+    if (tiedWinners.length > 1) {
+      return { success: false, error: `There is a tie between ${tiedWinners.length} nominees.` };
+    }
+
+    const winnerId = winnerNomination.nomineeId;
+    const updatedAward = await db.award.update({
+      where: { id: awardId },
+      data: {
+        winnerId: winnerId,
+        status: 'Completed',
+      },
+      include: { winner: true }
+    });
+    
+    logAction('Winner declared', { awardId, winnerId });
+    
+    await createNotification({
+        userId: winnerId,
+        type: 'system',
+        content: `Congratulations! You have won the "${updatedAward.title}" award!`,
+        link: '/awards',
+        isRead: false,
+    });
+    
+    return { success: true, award: updatedAward as unknown as Award };
+
+  } catch (error) {
+    logError(`[AwardsAction] Error tallying votes for award ${awardId}`, error, { awardId });
+    return { success: false, error: 'An unexpected error occurred.' };
+  }
 }
