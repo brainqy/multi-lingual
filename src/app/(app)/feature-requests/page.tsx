@@ -20,11 +20,9 @@ import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createFeatureRequest, getFeatureRequests, updateFeatureRequest, upvoteFeatureRequest } from "../../../../lib/actions/feature-requests";
-import { useSettings } from "@/contexts/settings-provider";
 
 export default function FeatureRequestsPage() {
   const { user: currentUser } = useAuth();
-  const { settings } = useSettings();
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuggestDialogOpen, setIsSuggestDialogOpen] = useState(false);
@@ -53,16 +51,9 @@ export default function FeatureRequestsPage() {
   }, []);
 
   useEffect(() => {
-    if (settings?.featureRequestsEnabled) {
-      fetchRequests();
-    } else {
-      setIsLoading(false);
-    }
-  }, [settings, fetchRequests]);
+    fetchRequests();
+  }, [fetchRequests]);
 
-  if (!settings?.featureRequestsEnabled) {
-    return <AccessDeniedMessage title="Feature Disabled" message="The feature requests page is currently disabled by the platform administrator." />;
-  }
 
   if (!currentUser) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
@@ -207,7 +198,7 @@ export default function FeatureRequestsPage() {
                 <DialogTitle className="text-2xl">{selectedRequest.title}</DialogTitle>
                 <DialogUIDescription className="pt-2 flex items-center gap-2">
                    <Avatar className="h-6 w-6"><AvatarImage src={selectedRequest.userAvatar} /><AvatarFallback>{selectedRequest.userName.substring(0,1)}</AvatarFallback></Avatar>
-                    <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(new Date(selectedRequest.timestamp), { addSuffix: true })}</span>
+                    <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(parseISO(selectedRequest.timestamp), { addSuffix: true })}</span>
                 </DialogUIDescription>
               </DialogHeader>
               <div className="py-4 max-h-[50vh] overflow-y-auto">
@@ -254,7 +245,7 @@ export default function FeatureRequestsPage() {
                   </div>
                 <CardTitle className="text-lg line-clamp-2" title={request.title}>{request.title}</CardTitle>
                 <CardDescription className="text-xs">
-                  {t("featureRequests.suggestedBy", { name: request.userName })} • {formatDistanceToNow(new Date(request.timestamp), { addSuffix: true })}
+                  {t("featureRequests.suggestedBy", { name: request.userName })} • {formatDistanceToNow(parseISO(request.timestamp), { addSuffix: true })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
