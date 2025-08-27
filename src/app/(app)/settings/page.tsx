@@ -149,11 +149,7 @@ export default function SettingsPage() {
     // 1. Update user-specific settings
     const updatedUser = await updateUser(currentUser.id, {
         challengeTopics,
-        userApiKey,
-        emailNotificationsEnabled,
-        appNotificationsEnabled,
-        gamificationNotificationsEnabled,
-        referralNotificationsEnabled
+        userApiKey
     });
 
     if (updatedUser) {
