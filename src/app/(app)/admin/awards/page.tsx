@@ -169,7 +169,7 @@ export default function AwardsManagementPage() {
               <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Status</TableHead><TableHead>Winner</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {awards.map(award => {
-                  const votingEnded = award.votingEndDate ? isPast(parseISO(award.votingEndDate)) : false;
+                  const votingEnded = award.votingEndDate ? isPast(new Date(award.votingEndDate)) : false;
                   return (
                     <TableRow key={award.id}>
                       <TableCell className="font-medium">{award.title}</TableCell>
