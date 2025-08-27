@@ -142,6 +142,27 @@ export default function AffiliatesPage() {
     }
   };
   
+  const HowItWorksCard = () => (
+    <Card className="shadow-lg bg-primary/10 border-primary/30">
+      <CardHeader>
+        <CardTitle>{t("affiliates.howItWorksCardTitle")}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+          {affiliateSteps.map((step, index) => (
+            <div key={index} className="flex flex-col items-center p-4">
+              <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-3">
+                {step.icon}
+              </div>
+              <h3 className="font-semibold text-md text-foreground">{t(step.titleKey as any)}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t(`affiliates.howItWorks.${index}.description` as any)}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+  
   if (!settings?.affiliateProgramEnabled) {
     return <AccessDeniedMessage title="Feature Disabled" message="The affiliate program is currently disabled by the platform administrator." />;
   }
@@ -152,7 +173,7 @@ export default function AffiliatesPage() {
 
   if (!userAffiliateProfile) {
     return (
-        <div className="space-y-8 max-w-2xl mx-auto text-center py-10">
+        <div className="space-y-8 max-w-4xl mx-auto text-center py-10">
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
@@ -169,6 +190,7 @@ export default function AffiliatesPage() {
                      </Button>
                 </CardContent>
             </Card>
+            <HowItWorksCard />
         </div>
     );
   }
@@ -326,24 +348,7 @@ export default function AffiliatesPage() {
          </CardFooter>
       </Card>
 
-       <Card className="shadow-lg bg-primary/10 border-primary/30">
-            <CardHeader>
-                <CardTitle>{t("affiliates.howItWorksCardTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                {affiliateSteps.map((step, index) => (
-                    <div key={index} className="flex flex-col items-center p-4">
-                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-3">
-                            {step.icon}
-                        </div>
-                        <h3 className="font-semibold text-md text-foreground">{t(step.titleKey as any)}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">{t(`affiliates.howItWorks.${index}.description` as any)}</p>
-                    </div>
-                ))}
-              </div>
-            </CardContent>
-        </Card>
+      <HowItWorksCard />
     </div>
   );
 }
