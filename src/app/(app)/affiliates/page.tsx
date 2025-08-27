@@ -16,12 +16,15 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAffiliateByUserId, createAffiliate, getAffiliateSignups, getAffiliateClicks } from "@/lib/actions/affiliates";
 import { useAuth } from "@/hooks/use-auth";
+import { useSettings } from "@/contexts/settings-provider";
+import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
 
 export default function AffiliatesPage() {
   const { toast } = useToast();
   const { t } = useI18n();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const [userAffiliateProfile, setUserAffiliateProfile] = useState<Affiliate | null>(null);
   const [userSignups, setUserSignups] = useState<AffiliateSignup[]>([]);
   const [userClicks, setUserClicks] = useState<AffiliateClick[]>([]);
@@ -45,8 +48,12 @@ export default function AffiliatesPage() {
       }
       setIsLoading(false);
     }
-    fetchAffiliateData();
-  }, [user]);
+    if (settings?.affiliateProgramEnabled) {
+      fetchAffiliateData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user, settings]);
 
   const affiliateLink = userAffiliateProfile ? `https://JobMatch.ai/join?aff=${userAffiliateProfile.affiliateCode}` : '';
 
@@ -134,6 +141,10 @@ export default function AffiliatesPage() {
         toast({ title: "Error", description: "Could not submit your application. Please try again.", variant: "destructive"});
     }
   };
+  
+  if (!settings?.affiliateProgramEnabled) {
+    return <AccessDeniedMessage title="Feature Disabled" message="The affiliate program is currently disabled by the platform administrator." />;
+  }
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;

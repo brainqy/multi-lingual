@@ -20,9 +20,11 @@ import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createFeatureRequest, getFeatureRequests, updateFeatureRequest, upvoteFeatureRequest } from "../../../../lib/actions/feature-requests";
+import { useSettings } from "@/contexts/settings-provider";
 
 export default function FeatureRequestsPage() {
   const { user: currentUser } = useAuth();
+  const { settings } = useSettings();
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSuggestDialogOpen, setIsSuggestDialogOpen] = useState(false);
@@ -51,8 +53,16 @@ export default function FeatureRequestsPage() {
   }, []);
 
   useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+    if (settings?.featureRequestsEnabled) {
+      fetchRequests();
+    } else {
+      setIsLoading(false);
+    }
+  }, [settings, fetchRequests]);
+
+  if (!settings?.featureRequestsEnabled) {
+    return <AccessDeniedMessage title="Feature Disabled" message="The feature requests page is currently disabled by the platform administrator." />;
+  }
 
   if (!currentUser) {
     return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;

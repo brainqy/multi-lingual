@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { getPlatformSettings } from '@/lib/actions/platform-settings';
 import type { PlatformSettings } from '@/types';
+import { SettingsProvider } from '@/contexts/settings-provider';
 
 export default function AppLayout({
   children,
@@ -74,7 +75,7 @@ export default function AppLayout({
     }
   }, [settings, user, pathname, router]);
 
-  if (isLoading || isSettingsLoading || !isAuthenticated) {
+  if (isLoading || isSettingsLoading || !isAuthenticated || !settings) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -89,18 +90,20 @@ export default function AppLayout({
 
 
   return (
-    <SidebarProvider defaultOpen>
-      <AppSidebar />
-      <SidebarInset className="flex flex-col min-h-screen">
-        <div className="sticky top-0 z-10 bg-card">
-          <AnnouncementBanner />
-          <AppHeader />
-        </div>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background">
-          {children}
-        </main>
-        <FloatingMessenger />
-      </SidebarInset>
-    </SidebarProvider>
+    <SettingsProvider settings={settings}>
+      <SidebarProvider defaultOpen>
+        <AppSidebar />
+        <SidebarInset className="flex flex-col min-h-screen">
+          <div className="sticky top-0 z-10 bg-card">
+            <AnnouncementBanner />
+            <AppHeader />
+          </div>
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background">
+            {children}
+          </main>
+          <FloatingMessenger />
+        </SidebarInset>
+      </SidebarProvider>
+    </SettingsProvider>
   );
 }

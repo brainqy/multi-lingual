@@ -16,10 +16,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { redeemPromoCode } from "@/lib/actions/promo-codes";
 import { purchaseStreakFreeze } from "@/lib/actions/wallet";
+import { useSettings } from "@/contexts/settings-provider";
+import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
 export default function WalletPage() {
   const { t } = useI18n();
   const { user, wallet, isLoading: isAuthLoading, refreshWallet } = useAuth();
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -67,6 +70,10 @@ export default function WalletPage() {
     }
     setIsBuying(false);
   };
+
+  if (!settings?.walletEnabled) {
+    return <AccessDeniedMessage title="Feature Disabled" message="The Digital Wallet feature is currently disabled by the platform administrator." />;
+  }
 
   if (isAuthLoading) {
       return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
@@ -167,23 +174,25 @@ export default function WalletPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Streak Freeze Store</CardTitle>
-          </CardHeader>
-          <CardContent>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                  <div className="text-center sm:text-left">
-                      <p className="font-medium">You have: <span className="text-2xl font-bold text-primary">{user.streakFreezes || 0}</span> Streak Freezes</p>
-                      <p className="text-xs text-muted-foreground">Protects your daily streak if you miss a day.</p>
-                  </div>
-                  <Button onClick={handleBuyStreakFreeze} disabled={isBuying || (wallet?.coins ?? 0) < 500} className="w-full sm:w-auto mt-2 sm:mt-0">
-                      {isBuying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                      Buy 1 for 500 <Coins className="ml-1 h-4 w-4"/>
-                  </Button>
-              </div>
-          </CardContent>
-        </Card>
+        {settings.gamificationEnabled && (
+          <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Streak Freeze Store</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div className="text-center sm:text-left">
+                        <p className="font-medium">You have: <span className="text-2xl font-bold text-primary">{user.streakFreezes || 0}</span> Streak Freezes</p>
+                        <p className="text-xs text-muted-foreground">Protects your daily streak if you miss a day.</p>
+                    </div>
+                    <Button onClick={handleBuyStreakFreeze} disabled={isBuying || (wallet?.coins ?? 0) < 500} className="w-full sm:w-auto mt-2 sm:mt-0">
+                        {isBuying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Buy 1 for 500 <Coins className="ml-1 h-4 w-4"/>
+                    </Button>
+                </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <Tabs defaultValue="coin_transactions" className="w-full">

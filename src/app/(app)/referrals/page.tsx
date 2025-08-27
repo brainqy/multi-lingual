@@ -13,11 +13,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from "date-fns"; 
 import { useAuth } from "@/hooks/use-auth";
 import { getReferralHistory } from "@/lib/actions/referrals";
+import { useSettings } from "@/contexts/settings-provider";
+import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 
 export default function ReferralsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
+  const { settings } = useSettings();
   const [referralHistory, setReferralHistory] = useState<ReferralHistoryItem[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
@@ -29,11 +32,19 @@ export default function ReferralsPage() {
       setReferralHistory(history);
       setIsDataLoading(false);
     }
-    loadHistory();
-  }, [user]);
+    if (settings?.referralsEnabled) {
+      loadHistory();
+    } else {
+      setIsDataLoading(false);
+    }
+  }, [user, settings]);
   
   const referralsCount = referralHistory.length;
   const successfulReferrals = referralHistory.filter(r => r.status === 'Reward Earned' || r.status === 'Signed Up').length;
+
+  if (!settings?.referralsEnabled) {
+    return <AccessDeniedMessage title="Feature Disabled" message="The referral program is currently disabled by the platform administrator." />;
+  }
 
   if (isLoading || !user) {
     return (

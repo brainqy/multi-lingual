@@ -31,11 +31,13 @@ import { getNotifications, markNotificationsAsRead } from '@/lib/actions/notific
 import type { Notification, RecentPageItem } from "@/types";
 import { formatDistanceToNow } from 'date-fns';
 import { usePathname, useRouter } from "next/navigation"; 
+import { useSettings } from '@/contexts/settings-provider';
 
 export function AppHeader() {
   const { toast } = useToast();
   const { t } = useI18n();
   const { user, logout, wallet } = useAuth();
+  const { settings } = useSettings();
   const [recentPages, setRecentPages] = useState<RecentPageItem[]>([]);
   const pathname = usePathname(); 
   const router = useRouter();
@@ -181,7 +183,7 @@ export function AppHeader() {
                 <DropdownMenuSeparator /> 
                 <Link href="/job-tracker" passHref><DropdownMenuItem><Briefcase className="mr-2 h-4 w-4" />{t("appHeader.jobTracker")}</DropdownMenuItem></Link>
                 <Link href="/gamification" passHref><DropdownMenuItem><Award className="mr-2 h-4 w-4" />{t("appHeader.rewardsBadges")}</DropdownMenuItem></Link>
-                <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />{t("appHeader.wallet")}</DropdownMenuItem></Link>
+                {settings.walletEnabled && <Link href="/wallet" passHref><DropdownMenuItem><WalletCards className="mr-2 h-4 w-4" />{t("appHeader.wallet")}</DropdownMenuItem></Link>}
                 <Link href="/my-resumes" passHref><DropdownMenuItem><Layers3 className="mr-2 h-4 w-4" />{t("appHeader.resumeManager")}</DropdownMenuItem></Link>
                 <Link href="/settings" passHref><DropdownMenuItem><SettingsIcon className="mr-2 h-4 w-4" />{t("appHeader.settings")}</DropdownMenuItem></Link>
                 <Link href="/blog" passHref><DropdownMenuItem><BookOpen className="mr-2 h-4 w-4" />{t("appHeader.blog")}</DropdownMenuItem></Link>
@@ -197,35 +199,41 @@ export function AppHeader() {
         </div>
 
         <div className="hidden sm:flex h-10 items-center justify-end gap-4 border-t bg-secondary/30 px-4 md:px-6">
-           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-sm font-medium text-muted-foreground" onClick={handleShowStreakPopup}>
-                <Flame className="h-5 w-5 text-orange-500" />
-                <span className="ml-1">{user.dailyStreak || 0}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>{t("appHeader.dailyStreak")}</p></TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-default">
-                <Star className="h-5 w-5 text-yellow-500" />
-                <span>{user.xpPoints || 0} XP</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent><p>{t("appHeader.totalXP")}</p></TooltipContent>
-          </Tooltip>
-          <Tooltip>
-             <TooltipTrigger asChild>
-                <Link href="/wallet" passHref>
-                  <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-pointer hover:text-primary transition-colors">
-                    <Coins className="h-5 w-5 text-green-500" />
-                    <span>{wallet?.coins ?? 0}</span>
+           {settings.gamificationEnabled && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-sm font-medium text-muted-foreground" onClick={handleShowStreakPopup}>
+                    <Flame className="h-5 w-5 text-orange-500" />
+                    <span className="ml-1">{user.dailyStreak || 0}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>{t("appHeader.dailyStreak")}</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-default">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    <span>{user.xpPoints || 0} XP</span>
                   </div>
-                 </Link>
-            </TooltipTrigger>
-             <TooltipContent><p>{t("appHeader.coinBalance")}</p></TooltipContent>
-          </Tooltip>
+                </TooltipTrigger>
+                <TooltipContent><p>{t("appHeader.totalXP")}</p></TooltipContent>
+              </Tooltip>
+            </>
+           )}
+           {settings.walletEnabled && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link href="/wallet" passHref>
+                      <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground cursor-pointer hover:text-primary transition-colors">
+                        <Coins className="h-5 w-5 text-green-500" />
+                        <span>{wallet?.coins ?? 0}</span>
+                      </div>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent><p>{t("appHeader.coinBalance")}</p></TooltipContent>
+              </Tooltip>
+           )}
         </div>
       </header>
     </TooltipProvider>
