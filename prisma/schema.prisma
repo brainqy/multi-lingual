@@ -374,7 +374,7 @@ model Activity {
 }
 
 model Badge {
-  id                 String  @id
+  id                 String           @id @default(cuid())
   name               String
   description        String
   icon               String
