@@ -24,10 +24,6 @@ const nextConfig: NextConfig = {
     // This is to fix the HMR websocket connection issue with local subdomains
     if (!isServer) {
       config.watchOptions.poll = 300;
-      if (config.devServer) {
-        config.devServer.hot = true;
-        config.devServer.webSocketURL = 'ws://localhost:9002/ws';
-      }
     }
     
     // This is to suppress the 'require.extensions' warning from handlebars
