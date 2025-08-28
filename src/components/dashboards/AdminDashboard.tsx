@@ -140,7 +140,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     const stats = new Map<string, number>();
     const flaggedPosts = dashboardData.communityPosts.filter((p: CommunityPost) => p.moderationStatus === 'flagged');
     flaggedPosts.forEach((post: CommunityPost) => {
-        post.flagReasons?.forEach(reason => {
+        (post.flagReasons || []).forEach(reason => {
             stats.set(reason, (stats.get(reason) || 0) + 1);
         });
     });
@@ -315,7 +315,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               </CardContent>
             </Card>
           )}
-          {visibleWidgetIds.has('platformActivityStat') && (
+           {visibleWidgetIds.has('platformActivityStat') && (
              <Card className="shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.platformActivity.title")}</CardTitle>
@@ -326,8 +326,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                     <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.platformActivity.description", { period: translatedUsagePeriod })}</p>
                 </CardContent>
              </Card>
-          )}
-          {visibleWidgetIds.has('resumesAnalyzedStat') && (
+           )}
+           {visibleWidgetIds.has('resumesAnalyzedStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.resumesAnalyzed.title")}</CardTitle>
@@ -410,6 +410,73 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           </Card>
         )}
 
+        <div className="grid gap-6 lg:grid-cols-3">
+            {visibleWidgetIds.has('contentModerationQueueSummary') && (
+                <Card className="shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.contentModeration.title")}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center">
+                            <p className="text-4xl font-bold">{platformStats.flaggedPostsCount}</p>
+                            <p className="text-sm text-muted-foreground">{t("adminDashboard.charts.contentModeration.flaggedPosts")}</p>
+                        </div>
+                        <div className="mt-4 space-y-1 text-xs">
+                            <h4 className="font-semibold">Top Reasons:</h4>
+                            {moderationReasonStats.length > 0 ? (
+                                moderationReasonStats.slice(0, 3).map(([reason, count]) => (
+                                    <div key={reason} className="flex justify-between">
+                                        <span>{reason}</span>
+                                        <span className="font-medium">{count}</span>
+                                    </div>
+                                ))
+                            ) : (<p className="text-muted-foreground">No reasons to show.</p>)}
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/admin/content-moderation">{t("adminDashboard.charts.contentModeration.reviewButton")}</Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            )}
+
+            {visibleWidgetIds.has('systemAlerts') && (
+                <Card className="shadow-lg lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <span className="flex items-center gap-2"><ServerIcon className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.systemAlerts.title")}</span>
+                            {unreadAlertsCount > 0 && <Badge variant="destructive">{t("adminDashboard.charts.systemAlerts.unreadAlertsCount", { count: unreadAlertsCount })}</Badge>}
+                        </CardTitle>
+                        <CardDescription>{t("adminDashboard.charts.systemAlerts.description")}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {recentUnreadAlerts.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-8">{t("adminDashboard.charts.systemAlerts.noAlerts")}</p>
+                        ) : (
+                            <ul className="space-y-3">
+                                {recentUnreadAlerts.map(alert => (
+                                    <li key={alert.id} className="flex items-start gap-3 p-2 border rounded-md">
+                                        {getAlertIcon(alert.type)}
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium">{alert.title}</p>
+                                            <p className="text-xs text-muted-foreground">{alert.message}</p>
+                                        </div>
+                                        <Button size="xs" variant="ghost" className="text-xs h-auto p-1" onClick={() => handleMarkAlertAsRead(alert.id)}>{t("adminDashboard.charts.systemAlerts.markReadButton")}</Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                    <CardFooter>
+                         <Button asChild variant="link" className="text-xs p-0">
+                            <Link href="#">{t("adminDashboard.charts.systemAlerts.viewAllButton")}</Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            )}
+        </div>
+        
         {visibleWidgetIds.has('adminQuickActions') && (
             <Card className="shadow-lg">
                 <CardHeader>
