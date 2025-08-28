@@ -36,6 +36,7 @@ import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
+import AiMentorSuggestions from "./AiMentorSuggestions";
 
 interface UserDashboardProps {
   user: UserProfile;
@@ -104,6 +105,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'recentActivities', title: 'Recent Activities', defaultVisible: true },
   { id: 'userBadges', title: 'My Badges', defaultVisible: true },
   { id: 'leaderboard', title: 'Leaderboard Summary', defaultVisible: true },
+  { id: 'aiMentorSuggestions', title: 'AI Mentor Suggestions', defaultVisible: true },
 ];
 
 type IconName = keyof typeof LucideIcons;
@@ -408,8 +410,12 @@ export default function UserDashboard({ user }: UserDashboardProps) {
           </div>
         </div>
         
+        {visibleWidgetIds.has('aiMentorSuggestions') && dashboardData?.alumni && (
+          <AiMentorSuggestions currentUser={user} allAlumni={dashboardData.alumni} />
+        )}
+
         {visibleWidgetIds.has('promotionCard') && activePromotions.length > 0 && (
-            <Card className="shadow-lg md:col-span-2 lg:col-span-4 p-0 overflow-hidden">
+            <Card className="shadow-lg p-0 overflow-hidden">
                 <Carousel plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]} className="w-full" opts={{ loop: true }}>
                 <CarouselContent>
                     {activePromotions.map((promotion: PromotionalContent) => (
@@ -417,23 +423,23 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                         <div className={cn("text-primary-foreground bg-gradient-to-r", promotion.gradientFrom, promotion.gradientVia, promotion.gradientTo)}>
                         <div className="flex flex-col md:flex-row items-center p-6 gap-6">
                             <div className="md:w-1/3 flex justify-center">
-                            <Image src={promotion.imageUrl} alt={promotion.imageAlt} width={250} height={160} className="rounded-lg shadow-md object-cover" data-ai-hint={promotion.imageHint || "promotion"}/>
+                              <Image src={promotion.imageUrl} alt={promotion.imageAlt} width={250} height={160} className="rounded-lg shadow-md object-cover" data-ai-hint={promotion.imageHint || "promotion"}/>
                             </div>
                             <div className="md:w-2/3 text-center md:text-left">
-                            <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
-                            <p className="text-sm opacity-90 mb-4">{promotion.description}</p>
-                            <Button variant="secondary" size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" asChild>
-                                <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
-                                {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
+                              <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
+                              <p className="text-sm opacity-90 mb-4">{promotion.description}</p>
+                              <Button variant="secondary" size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" asChild>
+                                  <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
+                                  {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                                  </Link>
+                              </Button>
                             </div>
                         </div>
                         </div>
                     </CarouselItem>
                     ))}
                 </CarouselContent>
-                {activePromotions.length > 1 && (<><CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" /><CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" /></>)}
+                {activePromotions.length > 1 && (<><CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /><CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /></>)}
                 </Carousel>
             </Card>
         )}
@@ -516,22 +522,22 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                     <CardDescription>Top 5 users on the platform.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableBody>
-                            {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
-                                <TableRow key={lbUser.id} className={cn(lbUser.id === user.id && "bg-primary/10")}>
-                                    <TableCell className="text-center font-bold w-10">{getRankIcon(index + 1)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8"><AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/><AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback></Avatar>
-                                            <span className="font-medium text-sm">{lbUser.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-semibold">{lbUser.xpPoints?.toLocaleString() || 0} XP</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                      <Table>
+                          <TableBody>
+                              {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
+                                  <TableRow key={lbUser.id} className={cn(lbUser.id === user.id && "bg-primary/10")}>
+                                      <TableCell className="text-center font-bold w-10">{getRankIcon(index + 1)}</TableCell>
+                                      <TableCell>
+                                          <div className="flex items-center gap-2">
+                                              <Avatar className="h-8 w-8"><AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/><AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback></Avatar>
+                                              <span className="font-medium text-sm">{lbUser.name}</span>
+                                          </div>
+                                      </TableCell>
+                                      <TableCell className="text-right font-semibold">{lbUser.xpPoints?.toLocaleString() || 0} XP</TableCell>
+                                  </TableRow>
+                              ))}
+                          </TableBody>
+                      </Table>
                 </CardContent>
                 <CardFooter><Button variant="link" asChild className="text-xs p-0"><Link href="/gamification">View Full Leaderboard</Link></Button></CardFooter>
             </Card>
@@ -659,3 +665,5 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     </>
   );
 }
+
+    
