@@ -578,12 +578,6 @@ export interface ResumeTemplate {
   category: string;
   dataAiHint?: string;
   content: string;
-  // New styling fields
-  headerColor?: string;
-  bodyColor?: string;
-  headerFontSize?: string; // e.g., '1.5rem'
-  textAlign?: 'left' | 'center' | 'right';
-  layout?: 'one-column' | 'two-column';
 }
 
 export interface TourStep {
@@ -738,7 +732,6 @@ export interface MockInterviewQuestion {
   questionText: string;
   category?: InterviewQuestionCategory;
   difficulty?: InterviewQuestionDifficulty;
-  baseScore?: number;
 }
 
 export interface MockInterviewAnswer {
@@ -911,6 +904,7 @@ export interface PlatformSettings {
   aiResumeWriterEnabled: boolean;
   coverLetterGeneratorEnabled: boolean;
   mockInterviewEnabled: boolean;
+  aiMockInterviewCost: number;
   referralsEnabled: boolean;
   affiliateProgramEnabled: boolean;
   alumniConnectEnabled: boolean;
@@ -971,7 +965,7 @@ const SearchabilityDetailsSchema = z.object({
   hasAddress: z.boolean().optional().describe("Resume contains a physical address (city, state is sufficient)."),
   jobTitleMatchesJD: z.boolean().optional().describe("Job title in resume aligns with or is found in the job description."),
   hasWorkExperienceSection: z.boolean().optional().describe("A distinct work experience section was identified."),
-  hasEducationSection: z.boolean().optional().describe("A distinct education section was identified."),
+  hasEducationSection: z.boolean().optional().describe("Resume contains a distinct education section."),
   hasProfessionalSummary: z.boolean().optional().describe("Resume contains a professional summary or objective statement."),
   keywordDensityFeedback: z.string().optional().describe("Feedback on keyword density and relevance to the job description."),
 });
@@ -1274,7 +1268,8 @@ export type UserDashboardWidgetId =
   | 'upcomingAppointments'
   | 'recentActivities'
   | 'userBadges'
-  | 'leaderboard';
+  | 'leaderboard'
+  | 'aiMentorSuggestions';
 
 export type ManagerDashboardWidgetId =
   | 'activeUsersStat'
