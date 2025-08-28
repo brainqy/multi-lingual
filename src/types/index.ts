@@ -1341,7 +1341,8 @@ export type AdminDashboardWidgetId =
   | 'contentModerationQueueSummary'
   | 'systemAlerts' 
   | 'adminQuickActions'
-  | 'coinEconomyStats';
+  | 'coinEconomyStats'
+  | 'featureUsage';
 
 export type NotificationType = 'mention' | 'event' | 'system';
 export interface Notification {

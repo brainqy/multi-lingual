@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2, Coins } from "lucide-react";
+import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2, Coins, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
@@ -54,7 +54,8 @@ type AdminDashboardWidgetId =
   | 'contentModerationQueueSummary'
   | 'systemAlerts' 
   | 'adminQuickActions'
-  | 'coinEconomyStats';
+  | 'coinEconomyStats'
+  | 'featureUsage';
 
 interface WidgetConfig {
   id: AdminDashboardWidgetId;
@@ -72,7 +73,8 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: false },
+  { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
@@ -134,6 +136,25 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
     };
   }, [dashboardData, usagePeriod]);
+  
+  const featureUsageStats = useMemo(() => {
+    if (!dashboardData) return { mostUsed: [], leastUsed: [] };
+
+    const features = [
+      { name: 'Resume Scans', count: dashboardData.resumeScans.length },
+      { name: 'Job Applications', count: dashboardData.jobApplications.length },
+      { name: 'Community Posts', count: dashboardData.communityPosts.length },
+      { name: 'Appointments', count: dashboardData.appointments.length },
+      { name: 'Mock Interviews', count: dashboardData.mockInterviews.length },
+      { name: 'Feature Requests', count: dashboardData.featureRequests?.length || 0 },
+      { name: 'Blog Posts', count: dashboardData.blogPosts?.length || 0 },
+    ].sort((a, b) => b.count - a.count);
+
+    return {
+      mostUsed: features.slice(0, 5),
+      leastUsed: features.slice(-5).reverse(),
+    };
+  }, [dashboardData]);
 
   const moderationReasonStats = useMemo(() => {
     if (!dashboardData) return [];
@@ -388,6 +409,39 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
              </Card>
           )}
         </div>
+        
+        {visibleWidgetIds.has('featureUsage') && (
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle>Feature Usage</CardTitle>
+              <CardDescription>Most and least used features across the platform based on total interaction counts.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><ThumbsUp className="h-5 w-5 text-green-500" /> Most Used</h3>
+                <div className="space-y-2">
+                  {featureUsageStats.mostUsed.map(feature => (
+                    <div key={feature.name} className="flex justify-between items-center text-sm p-2 bg-secondary/50 rounded-md">
+                      <span className="text-muted-foreground">{feature.name}</span>
+                      <span className="font-bold text-foreground">{feature.count.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2"><ThumbsDown className="h-5 w-5 text-red-500" /> Least Used</h3>
+                <div className="space-y-2">
+                  {featureUsageStats.leastUsed.map(feature => (
+                    <div key={feature.name} className="flex justify-between items-center text-sm p-2 bg-secondary/50 rounded-md">
+                      <span className="text-muted-foreground">{feature.name}</span>
+                      <span className="font-bold text-foreground">{feature.count.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         {visibleWidgetIds.has('registrationTrendsChart') && (
           <Card className="shadow-lg">
