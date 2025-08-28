@@ -43,8 +43,9 @@ export default function AnalyticsDashboardPage() {
     userGrowthData,
     featureAdoptionData,
     tenantActivityData,
+    demographicsData,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [] };
+    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] } };
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -89,7 +90,12 @@ export default function AnalyticsDashboardPage() {
                      (dashboardData.communityPosts.filter((p: any) => p.tenantId === tenant.id).length)
     }));
 
-    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData };
+    const demoData = {
+      byRole: dashboardData.demographics.byRole,
+      byStatus: dashboardData.demographics.byStatus,
+    };
+
+    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData };
   }, [dashboardData, dateRange, selectedTenantId]);
 
   if (isLoading || !currentUser) {
@@ -156,7 +162,7 @@ export default function AnalyticsDashboardPage() {
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Feature Adoption</CardTitle>
@@ -174,7 +180,7 @@ export default function AnalyticsDashboardPage() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Tenant Leaderboard</CardTitle>
             <CardDescription>Most active tenants by user count and activity score.</CardDescription>
@@ -184,12 +190,49 @@ export default function AnalyticsDashboardPage() {
               <RechartsBarChart data={tenantActivityData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={80} tick={{fontSize: 10}}/>
+                <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 10}}/>
                 <Tooltip />
                 <Legend />
                 <RechartsBar dataKey="userCount" fill="hsl(var(--chart-1))" name="Total Users" />
                 <RechartsBar dataKey="activityScore" fill="hsl(var(--chart-2))" name="Activity Score"/>
               </RechartsBarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>User Demographics by Role</CardTitle>
+            <CardDescription>Distribution of users across different roles.</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPieChart>
+                <Pie data={demographicsData.byRole} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                  {demographicsData.byRole.map((entry, index) => <Cell key={`cell-role-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>User Demographics by Status</CardTitle>
+            <CardDescription>Distribution of users by their account status.</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPieChart>
+                <Pie data={demographicsData.byStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                  {demographicsData.byStatus.map((entry, index) => <Cell key={`cell-status-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </RechartsPieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

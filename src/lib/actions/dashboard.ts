@@ -91,6 +91,19 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const mockInterviews = (await db.mockInterviewSession.findMany({ where: isTenantScoped && userId ? { userId } : {}, include: { answers: true } })) as unknown as MockInterviewSession[];
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
+    
+    // User Demographics Aggregation
+    const userRoleCounts = await db.user.groupBy({
+      by: ['role'],
+      _count: { role: true },
+      where: tenantWhereClause
+    });
+    const userStatusCounts = await db.user.groupBy({
+      by: ['status'],
+      _count: { status: true },
+      where: tenantWhereClause
+    });
+
 
     const usersWithProgress = await Promise.all(
       usersData.map(async (user) => {
@@ -113,6 +126,10 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       mockInterviews,
       systemAlerts,
       challenges,
+      demographics: {
+        byRole: userRoleCounts.map(item => ({ name: item.role, count: item._count.role })),
+        byStatus: userStatusCounts.map(item => ({ name: item.status, count: item._count.status })),
+      }
     };
   } catch (error) {
     logError('[DashboardAction] Error fetching data from database', error, { tenantId, userId });
@@ -130,6 +147,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       activities: [],
       badges: [],
       challenges: [],
+      demographics: { byRole: [], byStatus: [] },
     };
   }
 }
