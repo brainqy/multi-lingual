@@ -161,6 +161,22 @@ async function main() {
 
   // --- OTHER FEATURES ---
 
+  // Announcements
+  await prisma.announcement.create({
+    data: {
+      title: 'Old Event Announcement (for cron test)',
+      content: 'This announcement is from an old event and should be cleaned up by the daily cron job.',
+      startDate: new Date(Date.now() - 86400000 * 40),
+      endDate: new Date(Date.now() - 86400000 * 35),
+      audience: 'All Users',
+      status: 'Archived',
+      createdBy: adminUser.id,
+      tenantId: 'platform',
+      deletedAt: new Date(Date.now() - 86400000 * 31) // Set deletion date to 31 days ago
+    }
+  });
+  console.log('Seeded a soft-deleted announcement for cron job testing.');
+
   // Promotional Content
   await prisma.promotionalContent.createMany({
     data: [
@@ -274,4 +290,5 @@ main()
       
 
     
+
 
