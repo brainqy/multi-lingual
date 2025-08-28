@@ -94,7 +94,6 @@ export default function GamificationRulesPage() {
         toast({ title: t("gamificationRules.toast.badgeUpdated.title"), description: t("gamificationRules.toast.badgeUpdated.description", { name: data.name }) });
       }
     } else {
-      // Omit the 'id' field when creating a new badge
       const { id, ...badgeDataForCreation } = data;
       const created = await createBadge(badgeDataForCreation);
       if (created) {
