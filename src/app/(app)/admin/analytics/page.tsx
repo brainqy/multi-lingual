@@ -13,10 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
-import { subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format, startOfISOWeek, getISOWeek, isAfter, isSameDay, addWeeks, differenceInCalendarWeeks } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { subDays, endOfWeek, format, startOfISOWeek, isAfter, isSameDay, addWeeks } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -47,11 +44,10 @@ export default function AnalyticsDashboardPage() {
     userGrowthData,
     featureAdoptionData,
     tenantActivityData,
-    demographicsData,
     retentionData,
     coinStats,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] }, retentionData: [], coinStats: { spendingByCategory: [], topEarners: [], topSpenders: [] } };
+    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], retentionData: [], coinStats: { spendingByCategory: [], topEarners: [], topSpenders: [] } };
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -106,11 +102,6 @@ export default function AnalyticsDashboardPage() {
                      (dashboardData.communityPosts.filter((p: any) => p.tenantId === tenant.id).length)
     }));
 
-    const demoData = {
-      byRole: dashboardData.demographics.byRole,
-      byStatus: dashboardData.demographics.byStatus,
-    };
-
     // --- Retention Cohort Calculation ---
     const cohorts: Record<string, { total: number; retained: number[] }> = {};
     const cohortWeeks = 8; 
@@ -131,7 +122,7 @@ export default function AnalyticsDashboardPage() {
         for (let i = 0; i < cohortWeeks; i++) {
           const weekStart = addWeeks(cohortWeekStart, i);
           const weekEnd = endOfWeek(weekStart);
-          const userWasActive = dashboardData.activities.some((act: Activity) => 
+          const userWasActive = dashboardData.activities.some((act: any) => 
             act.userId === user.id && 
             new Date(act.timestamp) >= weekStart && 
             new Date(act.timestamp) <= weekEnd
@@ -150,7 +141,7 @@ export default function AnalyticsDashboardPage() {
     })).sort((a,b) => new Date(b.cohort.replace('Week of ', '')).getTime() - new Date(a.cohort.replace('Week of ', '')).getTime());
 
 
-    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData, retentionData: retention, coinStats: dashboardData.coinStats };
+    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, retentionData: retention, coinStats: dashboardData.coinStats };
   }, [dashboardData, dateRange, selectedTenantId]);
   
   const getRetentionColor = (percentage: number) => {

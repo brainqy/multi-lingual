@@ -16,10 +16,10 @@ import type {
   Activity,
   Badge,
   DailyChallenge,
-  ChallengeAction,
 } from '@/types';
 import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
+import { subDays, startOfISOWeek, addWeeks, endOfWeek } from 'date-fns';
 
 async function calculateChallengeProgress(user: UserProfile, challenges: DailyChallenge[]): Promise<UserProfile['challengeProgress']> {
   if (!user || !user.currentFlipChallenge || !user.currentFlipChallenge.tasks) {
@@ -33,8 +33,6 @@ async function calculateChallengeProgress(user: UserProfile, challenges: DailyCh
     const baseline = progressStart?.[task.action] ?? 0;
     let currentTotal = 0;
     
-    // Fetch current totals for relevant actions. This is less efficient than a single large query
-    // but necessary for this demonstration structure.
     switch (task.action) {
       case 'analyze_resume':
         currentTotal = await db.resumeScanHistory.count({ where: { userId: user.id } });
@@ -58,7 +56,7 @@ async function calculateChallengeProgress(user: UserProfile, challenges: DailyCh
     
     progress[task.action] = {
       action: task.action,
-      current: Math.max(0, currentTotal - baseline), // Progress is the difference from baseline
+      current: Math.max(0, currentTotal - baseline),
       target: task.target,
     };
   }
@@ -92,7 +90,6 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
     
-    // User Demographics Aggregation
     const userRoleCounts = await db.user.groupBy({
       by: ['role'],
       _count: { role: true },
@@ -104,7 +101,6 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       where: tenantWhereClause
     });
     
-    // Coin Economy Stats
     const coinStatsPromises = {
       circulation: db.wallet.aggregate({ _sum: { coins: true } }),
       earned: db.walletTransaction.aggregate({ where: { type: 'credit', currency: 'coins' }, _sum: { amount: true } }),
@@ -135,7 +131,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
         spendingByCategory: spendingByCategory.map(c => ({
             name: c.description.replace(/^(Purchased|Fee for|Redeemed promo code:)\s*/, ''),
             value: Math.abs(c._sum.amount || 0),
-        })).reduce((acc, curr) => { // Group similar categories
+        })).reduce((acc, curr) => { 
             const existing = acc.find(item => item.name === curr.name);
             if (existing) {
                 existing.value += curr.value;

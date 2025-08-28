@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -218,7 +219,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     ));
     const alertToMark = alerts.find(a => a.id === alertId);
     if(alertToMark) {
-        // In a real app, you would also update this on the backend.
     }
     toast({
         title: t("adminDashboard.charts.systemAlerts.alertReadToastTitle"), 
