@@ -117,6 +117,7 @@ export default function AffiliatesPage() {
         email: user.email,
         status: 'pending' as AffiliateStatus,
         affiliateCode: `${user.name.substring(0,4).toUpperCase()}${user.id.slice(-4)}`,
+        commissionRate: 0.10, // Default 10% commission
     });
 
     if (created) {
@@ -163,4 +164,3 @@ export default function AffiliatesPage() {
     </div>
   );
 }
-
