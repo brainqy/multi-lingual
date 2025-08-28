@@ -53,8 +53,7 @@ type AdminDashboardWidgetId =
   | 'aiUsageBreakdownChart'
   | 'contentModerationQueueSummary'
   | 'systemAlerts' 
-  | 'adminQuickActions'
-  | 'coinEconomyStats';
+  | 'adminQuickActions';
 
 interface WidgetConfig {
   id: AdminDashboardWidgetId;
@@ -72,7 +71,6 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
@@ -340,23 +338,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
             </Card>
           )}
         </div>
-
-        {visibleWidgetIds.has('coinEconomyStats') && dashboardData?.coinStats && (
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Coins in Circulation</CardTitle><Coins className="h-5 w-5 text-primary" /></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{dashboardData.coinStats.totalInCirculation.toLocaleString()}</div></CardContent>
-                </Card>
-                <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Coins Earned (All Time)</CardTitle><Coins className="h-5 w-5 text-green-500" /></CardHeader>
-                    <CardContent><div className="text-2xl font-bold text-green-600">{dashboardData.coinStats.totalEarned.toLocaleString()}</div></CardContent>
-                </Card>
-                 <Card className="shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Coins Spent (All Time)</CardTitle><Coins className="h-5 w-5 text-red-500" /></CardHeader>
-                    <CardContent><div className="text-2xl font-bold text-red-600">{dashboardData.coinStats.totalSpent.toLocaleString()}</div></CardContent>
-                </Card>
-            </div>
-        )}
         
         {visibleWidgetIds.has('registrationTrendsChart') && (
           <Card className="shadow-lg">
@@ -431,3 +412,5 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     </>
   );
 }
+
+    

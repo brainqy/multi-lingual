@@ -47,7 +47,7 @@ export default function AnalyticsDashboardPage() {
     retentionData,
     coinStats,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], retentionData: [], coinStats: { spendingByCategory: [], topEarners: [], topSpenders: [] } };
+    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], retentionData: [], coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] } };
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -340,3 +340,5 @@ export default function AnalyticsDashboardPage() {
     </div>
   );
 }
+
+    
