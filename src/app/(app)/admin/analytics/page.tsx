@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2, Percent, Users2, Coins, Trophy, ThumbsUp } from "lucide-react";
+import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2, Percent, Users2, Coins, Trophy, ThumbsUp, DollarSign, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import type { UserProfile, Tenant } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -291,54 +291,66 @@ export default function AnalyticsDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>Coin Spending by Feature</CardTitle>
-                <CardDescription>What users are spending their coins on.</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                        <Pie data={coinStats.spendingByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                            {coinStats.spendingByCategory.map((entry: any, index: number) => <Cell key={`cell-spend-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                    </RechartsPieChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>Top Coin Earners</CardTitle><CardDescription>Users who earned the most coins (all time).</CardDescription></CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Earned</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        {coinStats.topEarners.map((user: {name: string, value: number}, index: number) => (
-                            <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><ThumbsUp className="h-5 w-5 text-primary"/>Top Coin Spenders</CardTitle><CardDescription>Users who spent the most coins (all time).</CardDescription></CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Spent</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        {coinStats.topSpenders.map((user: {name: string, value: number}, index: number) => (
-                            <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Coins className="h-6 w-6 text-primary"/>Coin Economy</CardTitle>
+          <CardDescription>Overview of the platform's virtual currency.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><DollarSign/>Total in Circulation</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalInCirculation.toLocaleString()}</p></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowUpCircle className="text-green-500"/>Total Earned (All Time)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalEarned.toLocaleString()}</p></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowDownCircle className="text-red-500"/>Total Spent (All Time)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalSpent.toLocaleString()}</p></CardContent></Card>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>Coin Spending by Feature</CardTitle>
+                    <CardDescription>What users are spending their coins on.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart>
+                            <Pie data={coinStats.spendingByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                                {coinStats.spendingByCategory.map((entry: any, index: number) => <Cell key={`cell-spend-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                            </Pie>
+                            <Tooltip />
+                            <Legend wrapperStyle={{fontSize: '12px'}}/>
+                        </RechartsPieChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-2">
+              <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>Top Users</CardTitle><CardDescription>Most engaged users in the coin economy.</CardDescription></CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                      <h4 className="font-semibold mb-2">Top Earners</h4>
+                      <Table>
+                          <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Earned</TableHead></TableRow></TableHeader>
+                          <TableBody>
+                              {coinStats.topEarners.map((user: {name: string, value: number}, index: number) => (
+                                  <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
+                              ))}
+                          </TableBody>
+                      </Table>
+                  </div>
+                  <div>
+                      <h4 className="font-semibold mb-2">Top Spenders</h4>
+                      <Table>
+                          <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Spent</TableHead></TableRow></TableHeader>
+                          <TableBody>
+                              {coinStats.topSpenders.map((user: {name: string, value: number}, index: number) => (
+                                  <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
+                              ))}
+                          </TableBody>
+                      </Table>
+                  </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
 
     </div>
   );
 }
-
-    
