@@ -103,6 +103,50 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       _count: { status: true },
       where: tenantWhereClause
     });
+    
+    // Coin Economy Stats
+    const coinStatsPromises = {
+      circulation: db.wallet.aggregate({ _sum: { coins: true } }),
+      earned: db.walletTransaction.aggregate({ where: { type: 'credit', currency: 'coins' }, _sum: { amount: true } }),
+      spent: db.walletTransaction.aggregate({ where: { type: 'debit', currency: 'coins' }, _sum: { amount: true } }),
+      spendingByCategory: db.walletTransaction.groupBy({
+        by: ['description'],
+        where: { type: 'debit', currency: 'coins' },
+        _sum: { amount: true },
+        _count: { id: true },
+      }),
+      topEarners: db.walletTransaction.groupBy({
+        by: ['walletId'], where: { type: 'credit', currency: 'coins' }, _sum: { amount: true }, orderBy: { _sum: { amount: 'desc' } }, take: 5
+      }),
+      topSpenders: db.walletTransaction.groupBy({
+        by: ['walletId'], where: { type: 'debit', currency: 'coins' }, _sum: { amount: true }, orderBy: { _sum: { amount: 'desc' } }, take: 5
+      }),
+    };
+    const coinStatsResults = await Promise.all(Object.values(coinStatsPromises));
+    const [circulation, earned, spent, spendingByCategory, topEarners, topSpenders] = coinStatsResults;
+
+    const topEarnerUsers = await db.user.findMany({ where: { wallet: { id: { in: topEarners.map(u => u.walletId) } } }, select: { id: true, name: true, wallet: { select: { id: true } } }});
+    const topSpenderUsers = await db.user.findMany({ where: { wallet: { id: { in: topSpenders.map(u => u.walletId) } } }, select: { id: true, name: true, wallet: { select: { id: true } } }});
+
+    const coinStats = {
+        totalInCirculation: circulation._sum.coins || 0,
+        totalEarned: earned._sum.amount || 0,
+        totalSpent: Math.abs(spent._sum.amount || 0),
+        spendingByCategory: spendingByCategory.map(c => ({
+            name: c.description.replace(/^(Purchased|Fee for|Redeemed promo code:)\s*/, ''),
+            value: Math.abs(c._sum.amount || 0),
+        })).reduce((acc, curr) => { // Group similar categories
+            const existing = acc.find(item => item.name === curr.name);
+            if (existing) {
+                existing.value += curr.value;
+            } else {
+                acc.push(curr);
+            }
+            return acc;
+        }, [] as { name: string, value: number }[]),
+        topEarners: topEarners.map(u => ({ name: topEarnerUsers.find(user => user.wallet?.id === u.walletId)?.name || 'Unknown', value: u._sum.amount || 0 })),
+        topSpenders: topSpenders.map(u => ({ name: topSpenderUsers.find(user => user.wallet?.id === u.walletId)?.name || 'Unknown', value: Math.abs(u._sum.amount || 0) })),
+    };
 
 
     const usersWithProgress = await Promise.all(
@@ -129,7 +173,8 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       demographics: {
         byRole: userRoleCounts.map(item => ({ name: item.role, count: item._count.role })),
         byStatus: userStatusCounts.map(item => ({ name: item.status, count: item._count.status })),
-      }
+      },
+      coinStats
     };
   } catch (error) {
     logError('[DashboardAction] Error fetching data from database', error, { tenantId, userId });
@@ -148,6 +193,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       badges: [],
       challenges: [],
       demographics: { byRole: [], byStatus: [] },
+      coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] },
     };
   }
 }

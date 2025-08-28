@@ -587,6 +587,14 @@ export interface SurveyResponse {
 }
 
 export type AffiliateStatus = 'pending' | 'approved' | 'rejected';
+
+export interface CommissionTier {
+    id: string;
+    name: string;
+    milestoneRequirement: number; // Number of signups to reach this tier
+    commissionRate: number; // e.g., 0.15 for 15%
+}
+
 export interface Affiliate {
   id: string;
   userId: string;
@@ -597,6 +605,8 @@ export interface Affiliate {
   commissionRate: number;
   totalEarned: number;
   createdAt: string;
+  commissionTierId?: string;
+  commissionTier?: CommissionTier;
 }
 
 export interface AffiliateClick {
@@ -1323,7 +1333,8 @@ export type AdminDashboardWidgetId =
   | 'aiUsageBreakdownChart'
   | 'contentModerationQueueSummary'
   | 'systemAlerts'
-  | 'adminQuickActions';
+  | 'adminQuickActions'
+  | 'coinEconomyStats';
 
 export type NotificationType = 'mention' | 'event' | 'system';
 export interface Notification {
@@ -1403,298 +1414,9 @@ export type Vote = {
 export interface EmailTemplate {
   id: string;
   tenantId: string;
-  type: string; // e.g., "WELCOME", "APPOINTMENT_REMINDER"
+  type: 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
   subject: string;
   body: string;
   createdAt: string;
   updatedAt: string;
 }
-
-
-```
-- usr/src/app/src/locales/en/layout.json:
-```json
-{
-  "sideMenu": {
-    "dashboard": "Dashboard",
-    "communityFeed": "Community Feed",
-    "alumniNetwork": "Alumni Network",
-    "jobBoard": "Job Board",
-    "jobTracker": "Job Tracker",
-    "practiceHub": "Practice Hub",
-    "aiTools": "AI Tools",
-    "resumeAnalyzer": "Resume Analyzer",
-    "aiResumeWriter": "AI Resume Writer",
-    "coverLetterGenerator": "Cover Letter Generator",
-    "resumeTools": "Resume Tools",
-    "myResumes": "My Resumes",
-    "resumeBuilder": "Resume Builder",
-    "resumeTemplates": "Resume Templates",
-    "eventGallery": "Event Gallery",
-    "activityLog": "Activity Log",
-    "myProfile": "My Profile",
-    "appointments": "Appointments",
-    "digitalWallet": "Digital Wallet",
-    "featureRequests": "Feature Requests",
-    "settings": "Settings",
-    "documentation": "Documentation",
-    "rewardsBadges": "Rewards & Badges",
-    "referrals": "Referrals",
-    "affiliatesProgram": "Affiliates Program",
-    "blog": "Blog",
-    "dailyChallenge": "Daily Challenge",
-    "kbcGame": "KBC Quiz Game",
-    "numberMatchGame": "Number Match Game",
-    "awards": "Awards & Recognition",
-    "adminDashboard": "Admin Dashboard",
-    "analytics": "Analytics",
-    "tenantManagement": "Tenant Management",
-    "tenantOnboarding": "Tenant Onboarding",
-    "userManagement": "User Management",
-    "gamificationRules": "Gamification Rules",
-    "contentModeration": "Content Moderation",
-    "announcementsMgt": "Announcements Mgt",
-    "emailTemplates": "Email Templates",
-    "messengerMgt": "Messenger Mgt",
-    "affiliateMgt": "Affiliate Mgt",
-    "galleryMgt": "Gallery Mgt",
-    "blogSettings": "Blog Settings",
-    "promoCodeMgt": "Promo Codes",
-    "awardsMgt": "Awards Management",
-    "promotionalContentMgt": "Promo Content",
-    "platformSettings": "Platform Settings",
-    "databases": "Databases",
-    "companyDatabase": "Company Database",
-    "engagement": "Engagement",
-    "utilities": "Utilities",
-    "adminPanel": "Admin Panel",
-    "managerPanel": "Manager Panel",
-    "tenant": "Tenant",
-    "templateDesigner": "Template Designer",
-    "trash": "Trash"
-  },
-  "appHeader": {
-    "notifications": "Notifications",
-    "profile": "Profile",
-    "myBookmarks": "My Bookmarks",
-    "recentPages": "Recent Pages",
-    "jobTracker": "Job Tracker",
-    "rewardsBadges": "Rewards & Badges",
-    "wallet": "Wallet",
-    "resumeManager": "Resume Manager",
-    "settings": "Settings",
-    "blog": "Blog",
-    "activity": "Activity",
-    "logout": "Logout",
-    "dailyStreak": "Daily Login Streak",
-    "totalXP": "Total Experience Points",
-    "coinBalance": "Coin Balance"
-  },
-  "announcementBanner": {
-    "dismiss": "Dismiss announcement"
-  },
-  "welcomeTour": {
-    "previousButton": "Previous",
-    "nextButton": "Next",
-    "finishButton": "Got it!"
-  },
-  "dailyStreakPopup": {
-    "title": "Daily Streak!",
-    "currentStreakLabel": "Current Streak",
-    "longestStreakLabel": "Longest Streak",
-    "totalActiveDaysLabel": "Total Active Days:",
-    "keepItUpButton": "Keep it Up!",
-    "dayLabels": { "S": "S", "M": "M", "T": "T", "W": "W", "Th": "Th", "F": "F", "Sa": "Sa" }
-  }
-}
-```
-- usr/src/app/src/locales/hi/layout.json:
-```json
-{
-  "sideMenu": {
-    "dashboard": "डैशबोर्ड",
-    "communityFeed": "कम्युनिटी फ़ीड",
-    "alumniNetwork": "पूर्व छात्र नेटवर्क",
-    "jobBoard": "जॉब बोर्ड",
-    "jobTracker": "जॉब ट्रैकर",
-    "practiceHub": "अभ्यास केंद्र",
-    "aiTools": "एआई उपकरण",
-    "resumeAnalyzer": "रिज्यूमे विश्लेषक",
-    "aiResumeWriter": "एआई रिज्यूमे राइटर",
-    "coverLetterGenerator": "कवर लेटर जेनरेटर",
-    "resumeTools": "रिज्यूमे उपकरण",
-    "myResumes": "मेरे रिज्यूमे",
-    "resumeBuilder": "रिज्यूमे बिल्डर",
-    "resumeTemplates": "रिज्यूमे टेम्पलेट्स",
-    "eventGallery": "इवेंट गैलरी",
-    "activityLog": "गतिविधि लॉग",
-    "myProfile": "मेरा प्रोफ़ाइल",
-    "appointments": "अपॉइंटमेंट्स",
-    "digitalWallet": "डिजिटल वॉलेट",
-    "featureRequests": "फ़ीचर अनुरोध",
-    "settings": "सेटिंग्स",
-    "documentation": "प्रलेखन",
-    "rewardsBadges": "पुरस्कार और बैज",
-    "referrals": "रेफरल",
-    "affiliatesProgram": "संबद्ध कार्यक्रम",
-    "blog": "ब्लॉग",
-    "dailyChallenge": "दैनिक चुनौती",
-    "kbcGame": "केबीसी क्विज़ गेम",
-    "numberMatchGame": "नंबर मैच गेम",
-    "adminDashboard": "एडमिन डैशबोर्ड",
-    "tenantManagement": "किरायेदार प्रबंधन",
-    "tenantOnboarding": "किरायेदार ऑनबोर्डिंग",
-    "userManagement": "उपयोगकर्ता प्रबंधन",
-    "gamificationRules": "गेमिफिकेशन नियम",
-    "contentModeration": "सामग्री मॉडरेशन",
-    "announcementsMgt": "घोषणा प्रबंधन",
-    "emailTemplates": "ईमेल टेम्पलेट्स",
-    "messengerMgt": "मैसेंजर प्रबंधन",
-    "affiliateMgt": "संबद्ध प्रबंधन",
-    "galleryMgt": "गैलरी प्रबंधन",
-    "blogSettings": "ब्लॉग सेटिंग्स",
-    "promotionalContentMgt": "प्रोमो सामग्री",
-    "platformSettings": "प्लेटफॉर्म सेटिंग्स",
-    "databases": "डेटाबेस",
-    "companyDatabase": "कंपनी डेटाबेस",
-    "engagement": "सगाई",
-    "utilities": "उपयोगिताएँ",
-    "adminPanel": "एडमिन पैनल",
-    "managerPanel": "मैनेजर पैनल",
-    "tenant": "किरायेदार",
-    "templateDesigner": "टेम्पलेट डिज़ाइनर"
-  },
-  "appHeader": {
-    "notifications": "सूचनाएँ",
-    "profile": "प्रोफ़ाइल",
-    "myBookmarks": "मेरे बुकमार्क्स",
-    "recentPages": "हाल के पृष्ठ",
-    "jobTracker": "नौकरी ट्रैकर",
-    "rewardsBadges": "इनाम और बैज",
-    "wallet": "वॉलेट",
-    "resumeManager": "रिज़्यूमे प्रबंधक",
-    "settings": "सेटिंग्स",
-    "blog": "ब्लॉग",
-    "activity": "गतिविधि",
-    "logout": "लॉगआउट",
-    "dailyStreak": "दैनिक लॉगिन स्ट्रीक",
-    "totalXP": "कुल अनुभव अंक",
-    "coinBalance": "सिक्का शेष"
-  },
-  "announcementBanner": {
-    "dismiss": "घोषणा खारिज करें"
-  },
-  "welcomeTour": {
-    "previousButton": "पिछला",
-    "nextButton": "अगला",
-    "finishButton": "समझ गया!"
-  },
-  "dailyStreakPopup": {
-    "title": "दैनिक स्ट्रीक!",
-    "currentStreakLabel": "वर्तमान स्ट्रीक",
-    "longestStreakLabel": "सबसे लंबी स्ट्रीक",
-    "totalActiveDaysLabel": "कुल सक्रिय दिन:",
-    "keepItUpButton": "जारी रखो!",
-    "dayLabels": {
-      "S": "र",
-      "M": "सो",
-      "T": "मं",
-      "W": "बु",
-      "Th": "गु",
-      "F": "शु",
-      "Sa": "श"
-    }
-  }
-}
-```
-- usr/src/app/src/locales/mr/layout.json:
-```json
-{
-  "sideMenu": {
-    "dashboard": "डॅशबोर्ड",
-    "communityFeed": "समुदाय फीड",
-    "alumniNetwork": "माजी विद्यार्थी नेटवर्क",
-    "jobBoard": "नोकरी मंडळ",
-    "jobTracker": "नोकरी ट्रॅकर",
-    "practiceHub": "सराव केंद्र",
-    "aiTools": "एआय साधने",
-    "resumeAnalyzer": "रेझ्युमे विश्लेषक",
-    "aiResumeWriter": "एआय रेझ्युमे लेखक",
-    "coverLetterGenerator": "कव्हर लेटर जनरेटर",
-    "resumeTools": "रेझ्युमे साधने",
-    "myResumes": "माझे रेझ्युमे",
-    "resumeBuilder": "रेझ्युमे बिल्डर",
-    "resumeTemplates": "रेझ्युमे टेम्पलेट्स",
-    "eventGallery": "इव्हेंट गॅलरी",
-    "activityLog": "क्रियाकलाप लॉग",
-    "myProfile": "माझे प्रोफाइल",
-    "appointments": "भेटी",
-    "digitalWallet": "डिजिटल वॉलेट",
-    "featureRequests": "वैशिष्ट्य विनंत्या",
-    "settings": "सेटिंग्ज",
-    "documentation": "डॉक्युमेंटेशन",
-    "rewardsBadges": "बक्षिसे आणि बॅजेस",
-    "referrals": "संदर्भ",
-    "affiliatesProgram": "अफिलिएट्स प्रोग्राम",
-    "blog": "ब्लॉग",
-    "dailyChallenge": "दैनिक आव्हान",
-    "kbcGame": "केबीसी क्विझ गेम",
-    "numberMatchGame": "नंबर मॅच गेम",
-    "adminDashboard": "प्रशासक डॅशबोर्ड",
-    "tenantManagement": "भाडेकरू व्यवस्थापन",
-    "tenantOnboarding": "भाडेकरू ऑनबोर्डिंग",
-    "userManagement": "वापरकर्ता व्यवस्थापन",
-    "gamificationRules": "गेमिफिकेशन नियम",
-    "contentModeration": "सामग्री मॉडरेशन",
-    "announcementsMgt": "घोषणा व्यवस्थापन",
-    "emailTemplates": "ईमेल टेम्पलेट्स",
-    "messengerMgt": "मेसेन्जर व्यवस्थापन",
-    "affiliateMgt": "अफिलिएट व्यवस्थापन",
-    "galleryMgt": "गॅलरी व्यवस्थापन",
-    "blogSettings": "ब्लॉग सेटिंग्ज",
-    "promotionalContentMgt": "प्रोमो सामग्री",
-    "platformSettings": "प्लॅटफॉर्म सेटिंग्ज",
-    "databases": "डेटाबेस",
-    "companyDatabase": "कंपनी डेटाबेस",
-    "engagement": "एंगेजमेंट",
-    "utilities": "उपयुक्तता",
-    "adminPanel": "प्रशासक पॅनेल",
-    "managerPanel": "व्यवस्थापक पॅनेल",
-    "tenant": "भाडेकरू",
-    "templateDesigner": "टेम्पलेट डिझाइनर"
-  },
-  "appHeader": {
-    "notifications": "Notifications",
-    "profile": "Profile",
-    "myBookmarks": "My Bookmarks",
-    "recentPages": "Recent Pages",
-    "jobTracker": "Job Tracker",
-    "rewardsBadges": "Rewards & Badges",
-    "wallet": "Wallet",
-    "resumeManager": "Resume Manager",
-    "settings": "Settings",
-    "blog": "Blog",
-    "activity": "Activity",
-    "logout": "Logout",
-    "dailyStreak": "Daily Login Streak",
-    "totalXP": "Total Experience Points",
-    "coinBalance": "Coin Balance"
-  },
-  "announcementBanner": {
-    "dismiss": "घोषणा बंद करा"
-  },
-  "welcomeTour": {
-    "previousButton": "मागील",
-    "nextButton": "पुढील",
-    "finishButton": "समजले!"
-  },
-  "dailyStreakPopup": {
-    "title": "दैनिक स्ट्रीक!",
-    "currentStreakLabel": "सध्याची स्ट्रीक",
-    "longestStreakLabel": "सर्वात लांब स्ट्रीक",
-    "totalActiveDaysLabel": "एकूण सक्रिय दिन:",
-    "keepItUpButton": "चालू ठेवा!",
-    "dayLabels": { "S": "र", "M": "सो", "T": "मं", "W": "बु", "Th": "गु", "F": "शु", "Sa": "श" }
-  }
-}
-```
