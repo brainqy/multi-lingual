@@ -36,29 +36,29 @@ interface AuthProviderProps {
 const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setStreakPopupOpen: (isOpen: boolean) => void): Promise<UserProfile> => {
       const today = new Date();
       const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
-      
       const isNewDay = differenceInCalendarDays(today, lastLogin) > 0;
 
+      // Only run streak logic on the first login of a new day.
       if (!isNewDay) {
         return userToUpdate;
       }
 
-      let updatedUserData: Partial<UserProfile> = {};
       setStreakPopupOpen(true);
 
       let weeklyActivity = (Array.isArray(userToUpdate.weeklyActivity) && userToUpdate.weeklyActivity.length === 7)
         ? [...userToUpdate.weeklyActivity]
         : [0, 0, 0, 0, 0, 0, 0];
 
-      // Shift activity for the new day, today is initially marked as 0
+      // Shift activity for the new day
       weeklyActivity.shift();
-      weeklyActivity.push(0);
+      weeklyActivity.push(0); // Today starts as inactive, will be marked active later
 
-      // Find the index of the last activity (1 for login, 2 for freeze) before today.
+      // Find the index of the last activity before today.
       const lastActiveDayIndex = weeklyActivity.slice(0, 6).findLastIndex(day => day === 1 || day === 2);
       
       // Calculate days missed since the last activity.
-      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - lastActiveDayIndex - 1;
+      const daysSinceLastLogin = lastActiveDayIndex === -1 ? 7 : 6 - 1 - lastActiveDayIndex;
+
 
       let newStreak = userToUpdate.dailyStreak || 0;
       let newLongestStreak = userToUpdate.longestStreak || 0;
@@ -72,7 +72,6 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
               toast({ title: "Streak Saved!", description: `You used ${daysSinceLastLogin} free pass(es) to protect your ${newStreak}-day streak.` });
               await createActivity({ userId: userToUpdate.id, tenantId: userToUpdate.tenantId, description: `Used a streak freeze to protect a ${newStreak}-day streak.`});
               
-              // Mark the missed day(s) as saved by freeze
               for (let i = 1; i <= daysSinceLastLogin; i++) {
                   const activityIndex = 6 - i;
                   if (activityIndex >= 0) {
@@ -83,7 +82,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           } else {
               newStreak = 1; // Reset streak
           }
-      } else { // First login or logged in today already (isNewDay should prevent this)
+      } else { // First login
           newStreak = 1;
       }
       
@@ -102,7 +101,7 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
         });
       }
       
-      updatedUserData = { 
+      const updatedUserData: Partial<UserProfile> = { 
           dailyStreak: newStreak, 
           longestStreak: newLongestStreak,
           streakFreezes: newStreakFreezes,
@@ -122,7 +121,9 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
           const finalUser = await validateSession(updatedUser.email, updatedUser.sessionId!);
           return finalUser || updatedUser;
       } else {
-          return userToUpdate;
+          // If update fails, at least update lastLogin to prevent loop
+          const fallbackUser = await updateUser(userToUpdate.id, { lastLogin: today.toISOString() });
+          return fallbackUser || userToUpdate;
       }
   };
 
