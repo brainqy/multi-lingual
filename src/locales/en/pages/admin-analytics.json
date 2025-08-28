@@ -1,0 +1,33 @@
+
+{
+    "adminAnalytics": {
+        "pageTitle": "Platform Analytics",
+        "pageDescription": "Insights into user growth, engagement, and feature adoption.",
+        "kpi": {
+            "totalUsers": "Total Users",
+            "newSignups": "New Signups (Period)",
+            "activeUsers": "Active Users (Period)"
+        },
+        "charts": {
+            "userGrowth": {
+                "title": "User Growth Trends",
+                "description": "New user signups over the selected period.",
+                "legend": "New Signups"
+            },
+            "featureAdoption": {
+                "title": "Feature Adoption",
+                "description": "Total usage count for key platform features."
+            },
+            "tenantLeaderboard": {
+                "title": "Tenant Leaderboard",
+                "description": "Most active tenants by user count and activity score.",
+                "legendUsers": "Total Users",
+                "legendActivity": "Activity Score"
+            }
+        },
+        "filters": {
+            "selectTenant": "Select Tenant",
+            "allTenants": "All Tenants"
+        }
+    }
+}
