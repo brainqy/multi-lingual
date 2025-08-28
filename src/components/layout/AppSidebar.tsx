@@ -1,8 +1,7 @@
-
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
-import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices, Award as AwardIcon, Trash2, TrendingUp } from "lucide-react";
+import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices, Award as AwardIcon, Trash2, TrendingUp, Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { samplePlatformSettings } from "@/lib/sample-data";
@@ -77,6 +76,7 @@ const adminItems = [
    { href: "/admin/awards", labelKey: "sideMenu.awardsMgt", icon: AwardIcon },
    { href: "/admin/content-moderation", labelKey: "sideMenu.contentModeration", icon: ShieldAlert },
    { href: "/admin/announcements", labelKey: "sideMenu.announcementsMgt", icon: Megaphone },
+   { href: "/admin/email-templates", labelKey: "sideMenu.emailTemplates", icon: Mail },
    { href: "/admin/messenger-management", labelKey: "sideMenu.messengerMgt", icon: BotMessageSquare },
    { href: "/admin/affiliate-management", labelKey: "sideMenu.affiliateMgt", icon: Users2 },
    { href: "/admin/gallery-management", labelKey: "sideMenu.galleryMgt", icon: GalleryVerticalEnd },
@@ -219,6 +219,7 @@ export function AppSidebar() {
                             "/admin/gallery-management",
                             "/admin/announcements",
                             "/admin/promo-codes",
+                            "/admin/email-templates",
                         ];
                         return managerAccessible.includes(item.href);
                     }
