@@ -182,9 +182,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         ...tenant,
         userCount: usersInTenant.length,
         newUsersThisPeriod: usersInTenant.filter((u: UserProfile) => u.createdAt && new Date(u.createdAt) >= startDate).length,
-        resumesAnalyzedThisPeriod: dashboardData.resumeScans.filter((s: any) => s.tenantId === tenant.id && new Date(s.scanDate) >= startDate).length,
-        communityPostsCountThisPeriod: dashboardData.communityPosts.filter((p: any) => p.tenantId === tenant.id && new Date(p.timestamp) >= startDate).length,
-        jobApplicationsCount: dashboardData.jobApplications.filter((j: any) => j.tenantId === tenant.id).length,
+        activityScore: (dashboardData.resumeScans.filter((s: any) => s.tenantId === tenant.id && new Date(s.scanDate) >= startDate).length * 2) + 
+                       (dashboardData.communityPosts.filter((p: any) => p.tenantId === tenant.id && new Date(p.timestamp) >= startDate).length)
       };
     });
   }, [dashboardData, usagePeriod]);
@@ -203,9 +202,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   const chartData = currentTenantActivityData.map(tenant => ({
       name: tenant.name.substring(0,15) + (tenant.name.length > 15 ? "..." : ""),
       Users: tenant.userCount,
-      NewUsers: tenant.newUsersThisPeriod,
-      ResumesAnalyzed: tenant.resumesAnalyzedThisPeriod,
-      CommunityPosts: tenant.communityPostsCountThisPeriod,
+      ActivityScore: tenant.activityScore,
   }));
 
   const handleCustomizeToggle = (widgetId: AdminDashboardWidgetId, checked: boolean) => {
@@ -439,6 +436,28 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   ))}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        {visibleWidgetIds.has('tenantActivityOverview') && (
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><BarChart className="h-5 w-5 text-primary"/>{t("adminDashboard.charts.tenantActivity.title", { period: translatedUsagePeriod })}</CardTitle>
+              <CardDescription>{t("adminDashboard.charts.tenantActivity.description")}</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.5}/>
+                        <XAxis dataKey="name" tick={{fontSize: 10}}/>
+                        <YAxis allowDecimals={false} tick={{fontSize: 10}}/>
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', fontSize: '12px', padding: '4px 8px' }}/>
+                        <Legend wrapperStyle={{fontSize: "12px"}}/>
+                        <RechartsBar dataKey="Users" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} name="Total Users"/>
+                        <RechartsBar dataKey="ActivityScore" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name="Activity Score"/>
+                    </RechartsBarChart>
+                </ResponsiveContainer>
             </CardContent>
           </Card>
         )}

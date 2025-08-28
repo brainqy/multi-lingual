@@ -89,6 +89,8 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const mockInterviews = (await db.mockInterviewSession.findMany({ where: isTenantScoped && userId ? { userId } : {}, include: { answers: true } })) as unknown as MockInterviewSession[];
     const systemAlerts = (await db.systemAlert.findMany({ orderBy: { timestamp: 'desc' } })) as unknown as SystemAlert[];
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
+    const featureRequests = (await db.featureRequest.findMany()) as unknown as any[];
+    const blogPosts = (await db.blogPost.findMany()) as unknown as any[];
     
     const userRoleCounts = await db.user.groupBy({
       by: ['role'],
@@ -166,6 +168,8 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       mockInterviews,
       systemAlerts,
       challenges,
+      featureRequests,
+      blogPosts,
       demographics: {
         byRole: userRoleCounts.map(item => ({ name: item.role, count: item._count.role })),
         byStatus: userStatusCounts.map(item => ({ name: item.status, count: item._count.status })),
@@ -188,6 +192,8 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       activities: [],
       badges: [],
       challenges: [],
+      featureRequests: [],
+      blogPosts: [],
       demographics: { byRole: [], byStatus: [] },
       coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] },
     };
