@@ -1,16 +1,16 @@
 
 'use server';
 
-import { db } from '../db';
+
 import type { PromoCode } from '@/types';
 import { isPast, parseISO, addDays } from 'date-fns';
-import { getWallet, updateWallet, addXp } from './wallet';
-import { checkAndAwardBadges } from './gamification';
+import { getWallet, updateWallet, addXp } from '@/lib/actions/wallet';
 //import from node modules instead of @prisma/client to avoid TS errors
 import { Prisma } from '@prisma/client';
 import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from '@/lib/actions/activities';
-import { NotFoundError } from '../exceptions';
+import { checkAndAwardBadges } from '@/lib/actions/gamification';
+import { db } from '@/lib/db';
 
 /**
  * Fetches all promo codes, scoped by tenant for managers.
@@ -43,8 +43,10 @@ export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
  * @returns The newly created PromoCode object or null.
  */
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
+  console.log('[PromoCodeAction LOG] Before execution: Entering createPromoCode function.');
   console.log('[PromoCodeAction LOG] 1. Starting createPromoCode with data:', codeData);
   try {
+    console.log('[PromoCodeAction LOG] Inside try block: Preparing data.');
     const { isPlatformWide, ...restOfData } = codeData as any; // Exclude form-only field
     const dataForDb = {
       ...restOfData,
@@ -52,13 +54,17 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
       expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
     };
     console.log('[PromoCodeAction LOG] 2. Prepared data for DB:', dataForDb);
+    console.log('[PromoCodeAction LOG] Before DB call: Attempting to create promo code in database.');
     const newCode = await db.promoCode.create({
       data: dataForDb,
     });
+    console.log('[PromoCodeAction LOG] After DB call: Successfully created promo code.');
     console.log('[PromoCodeAction LOG] 3. DB creation successful:', newCode);
+    console.log('[PromoCodeAction LOG] After execution: Exiting createPromoCode function successfully.');
     return newCode as unknown as PromoCode;
   } catch (error) {
     console.error('[PromoCodeAction LOG] 4. Error creating promo code:', error);
+    console.log('[PromoCodeAction LOG] After execution: Exiting createPromoCode function with error.');
     return null;
   }
 }
@@ -157,7 +163,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
             const rewardDescription = `Redeemed promo code: ${promoCode.code}`;
             const wallet = await getWallet(userId);
             if (!wallet) {
-              throw new NotFoundError("Wallet for user", userId);
+              throw new Error(`Wallet not found for user ${userId}.`);
             }
 
             switch (promoCode.rewardType) {
@@ -165,7 +171,7 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
                     await updateWallet(userId, { coins: wallet.coins + promoCode.rewardValue }, rewardDescription);
                     break;
                 case 'flash_coins':
-                    const expiryDays = 7;
+                    const expiryDays = 3;
                     const newFlashCoin = {
                         id: `fc-${Date.now()}`,
                         amount: promoCode.rewardValue,
@@ -199,9 +205,6 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
 
     } catch (error) {
         console.error(`[PromoCodeAction] Error in the redeem process for code ${code}:`, error);
-        if (error instanceof NotFoundError) {
-          return { success: false, message: "Could not find your wallet to apply rewards. Please try again."};
-        }
         return { success: false, message: 'An unexpected error occurred.' };
     }
 }
