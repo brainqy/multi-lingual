@@ -1359,14 +1359,14 @@ export const EvaluateDailyChallengeAnswerInputSchema = z.object({
   solution: z.string().optional().describe('The ideal solution or key points for reference.'),
   apiKey: z.string().optional(),
 });
-export type EvaluateDailyChallengeInput = z.infer<typeof EvaluateDailyChallengeInputSchema>;
+export type EvaluateDailyChallengeInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
 
-export const EvaluateDailyChallengeOutputSchema = z.object({
+export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   isCorrect: z.boolean().describe('Whether the answer is fundamentally correct.'),
   score: z.number().min(0).max(100).describe('A score from 0-100 evaluating the answer.'),
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
-export type EvaluateDailyChallengeOutput = z.infer<typeof EvaluateDailyChallengeOutputSchema>;
+export type EvaluateDailyChallengeOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
 
 export interface SoftDeletedItem {
     id: string;

@@ -53,7 +53,8 @@ type AdminDashboardWidgetId =
   | 'aiUsageBreakdownChart'
   | 'contentModerationQueueSummary'
   | 'systemAlerts' 
-  | 'adminQuickActions';
+  | 'adminQuickActions'
+  | 'coinEconomyStats';
 
 interface WidgetConfig {
   id: AdminDashboardWidgetId;
@@ -65,12 +66,13 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'promotionalSpotlight', titleKey: 'adminDashboard.widgets.promotionalSpotlight', defaultVisible: true },
   { id: 'totalUsersStat', titleKey: 'adminDashboard.widgets.totalUsersStat', defaultVisible: true },
   { id: 'totalTenantsStat', titleKey: 'adminDashboard.widgets.totalTenantsStat', defaultVisible: true },
-  { id: 'resumesAnalyzedStat', titleKey: 'adminDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
-  { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'platformActivityStat', titleKey: 'adminDashboard.widgets.platformActivityStat', defaultVisible: true },
+  { id: 'resumesAnalyzedStat', titleKey: 'adminDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
   { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: true },
-  { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
-  { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
+  { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
+  { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
+  { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
@@ -127,7 +129,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       totalResumesAnalyzedThisPeriod: dashboardData.resumeScans.filter((s: any) => new Date(s.scanDate) >= startDate).length,
       totalJobApplicationsThisPeriod: dashboardData.jobApplications.filter((j: any) => new Date(j.dateApplied) >= startDate).length,
       totalCommunityPostsThisPeriod: dashboardData.communityPosts.filter((p: any) => new Date(p.timestamp) >= startDate).length,
-      totalAlumniConnections: dashboardData.alumni.length * 5, 
+      totalAlumniConnections: dashboardData.appointments.length, 
       totalMockInterviews: dashboardData.mockInterviews.length,
       flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
     };
@@ -313,6 +315,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               </CardContent>
             </Card>
           )}
+          {visibleWidgetIds.has('platformActivityStat') && (
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.platformActivity.title")}</CardTitle>
+                    <Activity className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{platformStats.activeUsersThisPeriod}</div>
+                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.platformActivity.description", { period: translatedUsagePeriod })}</p>
+                </CardContent>
+             </Card>
+          )}
           {visibleWidgetIds.has('resumesAnalyzedStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -325,6 +339,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               </CardContent>
             </Card>
           )}
+           {visibleWidgetIds.has('jobApplicationsStat') && (
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.jobApplications.title")}</CardTitle>
+                    <Briefcase className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{platformStats.totalJobApplicationsThisPeriod}</div>
+                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.jobApplications.description", { period: translatedUsagePeriod })}</p>
+                </CardContent>
+             </Card>
+           )}
           {visibleWidgetIds.has('communityPostsStat') && (
              <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -336,6 +362,30 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.communityPosts.description", { period: translatedUsagePeriod })}</p>
               </CardContent>
             </Card>
+          )}
+          {visibleWidgetIds.has('alumniConnectionsStat') && (
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.alumniConnections.title")}</CardTitle>
+                    <Handshake className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{platformStats.totalAlumniConnections}</div>
+                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.alumniConnections.description")}</p>
+                </CardContent>
+             </Card>
+          )}
+          {visibleWidgetIds.has('mockInterviewsStat') && (
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.mockInterviews.title")}</CardTitle>
+                    <Mic className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{platformStats.totalMockInterviews}</div>
+                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.mockInterviews.description")}</p>
+                </CardContent>
+             </Card>
           )}
         </div>
         
@@ -412,5 +462,3 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     </>
   );
 }
-
-    
