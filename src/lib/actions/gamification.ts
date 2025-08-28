@@ -231,8 +231,9 @@ export async function getBadges(): Promise<Badge[]> {
 export async function createBadge(badgeData: Omit<Badge, 'id'>): Promise<Badge | null> {
   logAction('Creating new badge', { name: badgeData.name });
   try {
+    const { id, ...dataForDb } = badgeData as any; // Exclude optional id from data
     const newBadge = await db.badge.create({
-      data: badgeData,
+      data: dataForDb,
     });
     return newBadge as unknown as Badge;
   } catch (error) {
