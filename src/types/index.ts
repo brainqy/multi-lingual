@@ -815,6 +815,7 @@ export interface GenerateMockInterviewQuestionsInput {
   difficulty?: 'easy' | 'medium' | 'hard';
   timerPerQuestion?: number;
   questionCategories?: InterviewQuestionCategory[];
+  apiKey?: string;
 }
 export interface GenerateMockInterviewQuestionsOutput {
   questions: MockInterviewQuestion[];
@@ -825,6 +826,7 @@ export interface EvaluateInterviewAnswerInput {
   userAnswer: string;
   topic?: string;
   jobDescriptionText?: string;
+  apiKey?: string;
 }
 export interface EvaluateInterviewAnswerOutput {
   feedback: string;
@@ -838,6 +840,7 @@ export interface GenerateOverallInterviewFeedbackInput {
   topic: string;
   jobDescriptionText?: string;
   evaluatedAnswers: { questionText: string; userAnswer: string; feedback: string; score: number }[];
+  apiKey?: string;
 }
 
 export type MockInterviewStepId = 'setup' | 'interview' | 'feedback';
@@ -992,6 +995,7 @@ export const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
   jobDescriptionText: z.string().describe('The text content of the job description.'),
   jobTitle: z.string().optional().describe('The target job title for the resume.'),
   companyName: z.string().optional().describe('The target company name.'),
+  apiKey: z.string().optional().describe('Optional API key for the user.'),
 });
 export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
 
@@ -1106,6 +1110,7 @@ export interface GenerateResumeVariantInput {
   skillsToHighlight?: string[];
   tone?: 'professional' | 'creative' | 'concise' | 'technical';
   additionalInstructions?: string;
+  apiKey?: string;
 }
 export interface GenerateResumeVariantOutput {
   generatedResumeText: string;
@@ -1118,6 +1123,7 @@ export interface GenerateCoverLetterInput {
   jobTitle: string;
   userName: string;
   additionalNotes?: string;
+  apiKey?: string;
 }
 export interface GenerateCoverLetterOutput {
   generatedResumeText: string;
@@ -1142,6 +1148,7 @@ export interface PersonalizedJobRecommendationsOutput {
 export interface SuggestDynamicSkillsInput {
   currentSkills: string[];
   contextText: string;
+  apiKey?: string;
 }
 
 export interface SuggestDynamicSkillsOutput {
@@ -1157,6 +1164,7 @@ export interface GenerateAiBlogPostInput {
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
   targetAudience?: string;
   keywords?: string[];
+  apiKey?: string;
 }
 export interface GenerateAiBlogPostOutput {
   title: string;
@@ -1327,12 +1335,11 @@ export type AdminDashboardWidgetId =
   | 'jobApplicationsStat'
   | 'alumniConnectionsStat'
   | 'mockInterviewsStat'
-  | 'timeSpentStats'
   | 'tenantActivityOverview'
   | 'registrationTrendsChart'
   | 'aiUsageBreakdownChart'
   | 'contentModerationQueueSummary'
-  | 'systemAlerts'
+  | 'systemAlerts' 
   | 'adminQuickActions'
   | 'coinEconomyStats';
 
@@ -1346,10 +1353,11 @@ export interface Notification {
     isRead: boolean;
     createdAt: string;
 }
-export const EvaluateDailyChallengeInputSchema = z.object({
+export const EvaluateDailyChallengeAnswerInputSchema = z.object({
   question: z.string().describe('The challenge question that was asked.'),
   answer: z.string().describe('The user\'s submitted answer.'),
   solution: z.string().optional().describe('The ideal solution or key points for reference.'),
+  apiKey: z.string().optional(),
 });
 export type EvaluateDailyChallengeInput = z.infer<typeof EvaluateDailyChallengeInputSchema>;
 

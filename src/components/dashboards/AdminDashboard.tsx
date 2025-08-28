@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -30,43 +29,6 @@ interface AdminDashboardProps {
   user: UserProfile; 
 }
 
-interface TenantActivityStats extends Tenant {
-  userCount: number;
-  newUsersThisPeriod: number;
-  resumesAnalyzedThisPeriod: number;
-  communityPostsCountThisPeriod: number;
-  jobApplicationsCount: number;
-}
-
-const mockTimeSpentData = {
-  averageSessionDuration: 25.5,
-  topFeaturesByTime: [
-    { name: "Resume Analyzer", time: 1200 },
-    { name: "Community Feed", time: 950 },
-    { name: "Job Tracker", time: 800 },
-    { name: "Alumni Connect", time: 700 },
-    { name: "Profile Editing", time: 600 },
-  ],
-  platformUsageData: {
-    weekly: [
-      { periodLabel: "Week 1", hours: 150 },
-      { periodLabel: "Week 2", hours: 180 },
-      { periodLabel: "Week 3", hours: 165 },
-      { periodLabel: "Week 4", hours: 200 },
-    ],
-    monthly: [
-      { periodLabel: "Jan", hours: 650 },
-      { periodLabel: "Feb", hours: 700 },
-      { periodLabel: "Mar", hours: 680 },
-      { periodLabel: "Apr", hours: 720 },
-    ],
-  },
-  topUsersByTime: (period: 'weekly' | 'monthly', users: UserProfile[]) => users.slice(0,5).map((user) => ({
-    name: user.name,
-    time: Math.floor(Math.random() * (period === 'weekly' ? 20 : 80)) + (period === 'weekly' ? 5 : 20),
-  })).sort((a,b) => b.time - a.time),
-};
-
 const aiFeatureUsageData = [
   { name: 'Resume Analyzer', count: 1250, fill: 'hsl(var(--chart-1))' },
   { name: 'Mock Interviews', count: 780, fill: 'hsl(var(--chart-2))' },
@@ -85,7 +47,6 @@ type AdminDashboardWidgetId =
   | 'jobApplicationsStat'
   | 'alumniConnectionsStat'
   | 'mockInterviewsStat'
-  | 'timeSpentStats'
   | 'tenantActivityOverview'
   | 'registrationTrendsChart'
   | 'aiUsageBreakdownChart'
@@ -111,7 +72,6 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
   { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
-  { id: 'timeSpentStats', titleKey: 'adminDashboard.widgets.timeSpentStats', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
@@ -259,7 +219,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     const alertToMark = alerts.find(a => a.id === alertId);
     if(alertToMark) {
         // In a real app, you would also update this on the backend.
-        // For demo, we just update the local state that came from dashboardData.
     }
     toast({
         title: t("adminDashboard.charts.systemAlerts.alertReadToastTitle"), 
@@ -326,7 +285,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
             </CardHeader>
             <CardContent className="text-center py-10">
               <p className="text-muted-foreground">{t("adminDashboard.promotionalSpotlight.content")}</p>
-              <Button className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">{t("adminDashboard.promotionalSpotlight.learnMoreButton")}</Button>
+              <Button asChild className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"><Link href="/admin/promotional-content">{t("adminDashboard.promotionalSpotlight.learnMoreButton")}</Link></Button>
             </CardContent>
           </Card>
         )}
@@ -418,6 +377,24 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        )}
+
+        {visibleWidgetIds.has('adminQuickActions') && (
+            <Card className="shadow-lg">
+                <CardHeader>
+                <CardTitle>{t("adminDashboard.quickActions.title")}</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <Button asChild variant="outline"><Link href="/admin/user-management"><Users className="mr-2 h-4 w-4"/> {t("adminDashboard.quickActions.manageUsers")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/platform-settings"><ServerIcon className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.platformSettings")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/tenants"><Building2 className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.manageTenants")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/content-moderation"><ShieldAlert className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.contentModeration")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/announcements"><Megaphone className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.announcements")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/gamification-rules"><ListChecks className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.gamificationRules")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/blog-settings"><Settings className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.blogSettings")}</Link></Button>
+                    <Button asChild variant="outline"><Link href="/admin/analytics"><BarChart className="mr-2 h-4 w-4"/>{t("adminDashboard.quickActions.userActivityAnalytics")}</Link></Button>
+                </CardContent>
+            </Card>
         )}
       </div>
 
