@@ -164,6 +164,8 @@ export default function PromoCodeManagementPage() {
       if (updatedCode) {
         setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
         toast({ title: t("promoCodes.toast.updated.title"), description: t("promoCodes.toast.updated.description", { code: data.code }) });
+      } else {
+        toast({ title: "Update Failed", description: `Could not update the code "${data.code}".`, variant: "destructive" });
       }
     } else {
        if (promoCodes.some(c => c.code === data.code)) {
@@ -174,6 +176,8 @@ export default function PromoCodeManagementPage() {
       if (newCode) {
         setPromoCodes(prev => [newCode, ...prev]);
         toast({ title: t("promoCodes.toast.created.title"), description: t("promoCodes.toast.created.description", { code: data.code }) });
+      } else {
+        toast({ title: "Creation Failed", description: `Could not create the code "${data.code}". Please check the logs.`, variant: "destructive" });
       }
     }
     setIsDialogOpen(false);
@@ -472,4 +476,3 @@ export default function PromoCodeManagementPage() {
     </div>
   );
 }
-

@@ -43,10 +43,8 @@ export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
  * @returns The newly created PromoCode object or null.
  */
 export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
-  console.log('[PromoCodeAction LOG] Before execution: Entering createPromoCode function.');
   console.log('[PromoCodeAction LOG] 1. Starting createPromoCode with data:', codeData);
   try {
-    console.log('[PromoCodeAction LOG] Inside try block: Preparing data.');
     const { isPlatformWide, ...restOfData } = codeData as any; // Exclude form-only field
     const dataForDb = {
       ...restOfData,
@@ -54,17 +52,13 @@ export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUse
       expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
     };
     console.log('[PromoCodeAction LOG] 2. Prepared data for DB:', dataForDb);
-    console.log('[PromoCodeAction LOG] Before DB call: Attempting to create promo code in database.');
     const newCode = await db.promoCode.create({
       data: dataForDb,
     });
-    console.log('[PromoCodeAction LOG] After DB call: Successfully created promo code.');
     console.log('[PromoCodeAction LOG] 3. DB creation successful:', newCode);
-    console.log('[PromoCodeAction LOG] After execution: Exiting createPromoCode function successfully.');
     return newCode as unknown as PromoCode;
   } catch (error) {
     console.error('[PromoCodeAction LOG] 4. Error creating promo code:', error);
-    console.log('[PromoCodeAction LOG] After execution: Exiting createPromoCode function with error.');
     return null;
   }
 }
