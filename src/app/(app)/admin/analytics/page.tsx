@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2 } from "lucide-react";
+import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2, Percent, Users2 } from "lucide-react";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import type { UserProfile, Tenant } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,7 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
-import { subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format } from 'date-fns';
+import { subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format, startOfISOWeek, getISOWeek, isAfter, isSameDay, addWeeks, differenceInCalendarWeeks } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -44,8 +45,9 @@ export default function AnalyticsDashboardPage() {
     featureAdoptionData,
     tenantActivityData,
     demographicsData,
+    retentionData,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] } };
+    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] }, retentionData: [] };
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -58,10 +60,20 @@ export default function AnalyticsDashboardPage() {
         ? dashboardData.users
         : dashboardData.users.filter((u: UserProfile) => u.tenantId === selectedTenantId);
 
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thirtyDaysAgo = subDays(today, 29);
+
+    const dau = usersForTenantFilter.filter((u: UserProfile) => u.lastLogin && isSameDay(new Date(u.lastLogin), today)).length;
+    const mau = usersForTenantFilter.filter((u: UserProfile) => u.lastLogin && isAfter(new Date(u.lastLogin), thirtyDaysAgo)).length;
+
+
     const kpis = {
       totalUsers: usersForTenantFilter.length,
       newSignups: filteredUsers.length,
-      activeUsers: usersForTenantFilter.filter((u: UserProfile) => u.lastLogin && new Date(u.lastLogin) >= (from || new Date(0))).length,
+      dau: dau,
+      mau: mau,
+      stickiness: mau > 0 ? parseFloat(((dau / mau) * 100).toFixed(1)) : 0,
     };
 
     const growthData: { date: string; signups: number }[] = [];
@@ -95,8 +107,56 @@ export default function AnalyticsDashboardPage() {
       byStatus: dashboardData.demographics.byStatus,
     };
 
-    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData };
+    // --- Retention Cohort Calculation ---
+    const cohorts: Record<string, { total: number; retained: number[] }> = {};
+    const cohortWeeks = 8; 
+    const firstWeekStart = startOfISOWeek(subDays(now, (cohortWeeks - 1) * 7));
+
+    for (const user of usersForTenantFilter) {
+      if (!user.createdAt) continue;
+      const signupDate = new Date(user.createdAt);
+      if (isAfter(signupDate, firstWeekStart)) {
+        const cohortWeekStart = startOfISOWeek(signupDate);
+        const cohortKey = format(cohortWeekStart, 'yyyy-MM-dd');
+        
+        if (!cohorts[cohortKey]) {
+          cohorts[cohortKey] = { total: 0, retained: Array(cohortWeeks).fill(0) };
+        }
+        cohorts[cohortKey].total++;
+
+        for (let i = 0; i < cohortWeeks; i++) {
+          const weekStart = addWeeks(cohortWeekStart, i);
+          const weekEnd = endOfWeek(weekStart);
+          const userWasActive = dashboardData.activities.some((act: Activity) => 
+            act.userId === user.id && 
+            new Date(act.timestamp) >= weekStart && 
+            new Date(act.timestamp) <= weekEnd
+          );
+          if (userWasActive) {
+            cohorts[cohortKey].retained[i]++;
+          }
+        }
+      }
+    }
+
+    const retention = Object.entries(cohorts).map(([date, data]) => ({
+      cohort: `Week of ${format(new Date(date), 'MMM d')}`,
+      total: data.total,
+      weeks: data.retained.map(count => (data.total > 0 ? parseFloat(((count / data.total) * 100).toFixed(1)) : 0))
+    })).sort((a,b) => new Date(b.cohort.replace('Week of ', '')).getTime() - new Date(a.cohort.replace('Week of ', '')).getTime());
+
+
+    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData, retentionData: retention };
   }, [dashboardData, dateRange, selectedTenantId]);
+  
+  const getRetentionColor = (percentage: number) => {
+    if (percentage > 50) return 'bg-primary/80 text-primary-foreground';
+    if (percentage > 30) return 'bg-primary/60 text-primary-foreground';
+    if (percentage > 20) return 'bg-primary/40 text-foreground';
+    if (percentage > 10) return 'bg-primary/20 text-foreground';
+    if (percentage > 0) return 'bg-primary/10 text-muted-foreground';
+    return 'bg-muted/50 text-muted-foreground';
+  };
 
   if (isLoading || !currentUser) {
     return (
@@ -138,10 +198,12 @@ export default function AnalyticsDashboardPage() {
         </div>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card><CardHeader><CardTitle className="text-sm font-medium">Total Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.totalUsers}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium">New Signups (Period)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.newSignups}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium">Active Users (Period)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.activeUsers}</p></CardContent></Card>
+      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users2/>Total Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.totalUsers}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users/>New Signups (Period)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.newSignups}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>Daily Active Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.dau}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>Monthly Active Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.mau}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Percent/>Stickiness (DAU/MAU)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.stickiness}%</p></CardContent></Card>
       </div>
 
       <Card>
@@ -159,6 +221,39 @@ export default function AnalyticsDashboardPage() {
               <RechartsBar dataKey="signups" fill="hsl(var(--primary))" name="New Signups"/>
             </RechartsBarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+      
+       <Card>
+        <CardHeader>
+          <CardTitle>User Retention by Signup Week</CardTitle>
+          <CardDescription>Percentage of new users who returned in the weeks following their signup.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="p-2 text-left font-medium text-muted-foreground">Cohort</th>
+                <th className="p-2 text-center font-medium text-muted-foreground">New Users</th>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <th key={i} className="p-2 text-center font-medium text-muted-foreground">Week {i}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {retentionData.map((row) => (
+                <tr key={row.cohort} className="border-b">
+                  <td className="p-2 font-medium">{row.cohort}</td>
+                  <td className="p-2 text-center">{row.total}</td>
+                  {row.weeks.map((percentage, i) => (
+                    <td key={i} className={`p-2 text-center ${getRetentionColor(percentage)}`}>
+                      {percentage > 0 ? `${percentage}%` : '-'}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </CardContent>
       </Card>
       
