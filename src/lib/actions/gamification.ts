@@ -239,6 +239,7 @@ export async function createBadge(badgeData: Omit<Badge, 'id'>): Promise<Badge |
         icon: badgeData.icon,
         xpReward: badgeData.xpReward,
         triggerCondition: badgeData.triggerCondition,
+        streakFreezeReward: badgeData.streakFreezeReward,
     };
     const newBadge = await db.badge.create({
       data: dataForDb,
@@ -360,3 +361,5 @@ export async function deleteGamificationRule(actionId: string): Promise<boolean>
     return false;
   }
 }
+
+    
