@@ -19,6 +19,7 @@ import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
 import { getDynamicFlipChallenge } from "@/lib/actions/challenges";
 import { intervalToDuration, isFuture } from 'date-fns';
+import { useSettings } from "@/contexts/settings-provider";
 
 const CountdownTimer = ({ expiryDate }: { expiryDate: Date }) => {
   const [timeLeft, setTimeLeft] = useState<Duration | null>(null);
@@ -59,6 +60,7 @@ export default function DailyInterviewChallengePage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const { user, login } = useAuth();
+  const { settings } = useSettings();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   
@@ -133,7 +135,7 @@ export default function DailyInterviewChallengePage() {
   };
 
   const handleSubmitAnswer = async () => {
-    if (!user || !standardChallenge || !userAnswer.trim()) {
+    if (!user || !standardChallenge || !userAnswer.trim() || !settings) {
       toast({ title: "No Answer", description: "Please enter your answer before submitting.", variant: "destructive"});
       return;
     }
@@ -143,7 +145,8 @@ export default function DailyInterviewChallengePage() {
       const result = await evaluateDailyChallengeAnswer({
         question: standardChallenge.title,
         answer: userAnswer,
-        solution: standardChallenge.solution
+        solution: standardChallenge.solution,
+        apiKey: settings.allowUserApiKey ? user.userApiKey : undefined,
       });
       setFeedback(result);
 

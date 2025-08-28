@@ -10,12 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { generateResumeVariant, type GenerateResumeVariantInput, type GenerateResumeVariantOutput } from '@/ai/flows/generate-resume-variant';
+import { generateResumeVariant, type GenerateResumeVariantInput } from '@/ai/flows/generate-resume-variant';
 import { sampleResumeProfiles } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types';
 import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { useAuth } from '@/hooks/use-auth';
+import { useSettings } from '@/contexts/settings-provider';
 
 export default function AiResumeWriterPage() {
   const [baseResumeText, setBaseResumeText] = useState('');
@@ -29,6 +30,7 @@ export default function AiResumeWriterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
+  const { settings } = useSettings();
 
   const [userResumes, setUserResumes] = useState<ResumeProfile[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string>('');
@@ -61,7 +63,7 @@ export default function AiResumeWriterPage() {
 
   const handleGenerateVariant = async (event: FormEvent) => {
     event.preventDefault();
-    if (!currentUser) {
+    if (!currentUser || !settings) {
         toast({ title: "Error", description: "You must be logged in to use this feature.", variant: "destructive" });
         return;
     }
@@ -85,6 +87,7 @@ export default function AiResumeWriterPage() {
         skillsToHighlight: skillsToHighlight.split(',').map(s => s.trim()).filter(s => s),
         tone,
         additionalInstructions: additionalInstructions || undefined,
+        apiKey: settings.allowUserApiKey ? currentUser.userApiKey : undefined,
       };
       const result = await generateResumeVariant(input);
       setGeneratedResumeText(result.generatedResumeText);

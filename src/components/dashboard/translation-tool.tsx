@@ -13,8 +13,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useI18n } from "@/hooks/use-i18n";
 import { useToast } from "@/hooks/use-toast";
-import { suggestTranslation } from "@/ai/flows/suggest-translation";
-import type { SuggestTranslationOutput } from "@/ai/flows/suggest-translation";
+import { suggestTranslation, type SuggestTranslationOutput, type SuggestTranslationInput } from "@/ai/flows/suggest-translation";
+import { useAuth } from "@/hooks/use-auth";
+import { useSettings } from "@/contexts/settings-provider";
 
 const formSchema = z.object({
   textToTranslate: z.string().min(1, "Text cannot be empty.").max(500, "Text is too long."),
@@ -26,6 +27,8 @@ export function TranslationTool() {
   const [isLoading, setIsLoading] = useState(false);
   const [translationResult, setTranslationResult] = useState<SuggestTranslationOutput | null>(null);
   const [originalText, setOriginalText] = useState<string>("");
+  const { user } = useAuth();
+  const { settings } = useSettings();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,11 +38,16 @@ export function TranslationTool() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user || !settings) return;
     setIsLoading(true);
     setTranslationResult(null);
     setOriginalText(values.textToTranslate);
     try {
-      const result = await suggestTranslation({ text: values.textToTranslate });
+      const input: SuggestTranslationInput = {
+        text: values.textToTranslate,
+        apiKey: settings.allowUserApiKey ? user.userApiKey : undefined,
+      };
+      const result = await suggestTranslation(input);
       setTranslationResult(result);
     } catch (error) {
       console.error("Translation error:", error);

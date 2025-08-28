@@ -36,6 +36,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useI18n } from '@/hooks/use-i18n';
 import { useAuth } from '@/hooks/use-auth';
+import { useSettings } from '@/contexts/settings-provider';
+import { updateMockInterviewSession } from '@/lib/actions/interviews';
 
 
 declare global {
@@ -71,6 +73,7 @@ export default function AiMockInterviewPage() {
 
   const { toast } = useToast();
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
+  const { settings } = useSettings();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -167,13 +170,81 @@ export default function AiMockInterviewPage() {
   }, [cameraStream]);
 
 
+  const handleSetupComplete = useCallback(async (config: GenerateMockInterviewQuestionsInput, sessionId: string) => {
+    if (!currentUser || !settings) return;
+    setIsLoading(true);
+    setCurrentAnswerFeedback(null);
+    try {
+      logger.info("Requesting interview questions with config:", config);
+      
+      const apiKey = settings.allowUserApiKey ? currentUser.userApiKey : undefined;
+      const { questions: genQuestions } = await generateMockInterviewQuestions({...config, apiKey});
+
+      logger.info("Received questions from AI:", genQuestions);
+
+      if (!genQuestions || genQuestions.length === 0) {
+        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: t("aiMockInterview.toast.setupFailed.description"), variant: "destructive", duration: 7000 });
+        setIsLoading(false);
+        setCurrentUiStepId('setup');
+        router.replace('/ai-mock-interview', undefined);
+        return;
+      }
+      
+      await updateMockInterviewSession(sessionId, { questions: genQuestions });
+
+      const difficultyMap = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
+      const newSession: MockInterviewSession = {
+        id: sessionId,
+        userId: currentUser.id,
+        topic: config.topic,
+        jobDescription: config.jobDescriptionText,
+        questions: genQuestions,
+        answers: [],
+        status: 'in-progress',
+        createdAt: new Date().toISOString(),
+        timerPerQuestion: config.timerPerQuestion,
+        difficulty: config.difficulty ? difficultyMap[config.difficulty] : undefined,
+        questionCategories: config.questionCategories,
+        recordingReferences: [],
+      };
+      setSession(newSession);
+      setCurrentQuestionIndex(0);
+      setUserAnswer('');
+      if (config.timerPerQuestion && config.timerPerQuestion > 0) {
+        setTimeLeft(config.timerPerQuestion);
+      } else {
+        setTimeLeft(0);
+      }
+      setCurrentUiStepId('interview');
+      toast({ title: t("aiMockInterview.toast.interviewReady.title"), description: t("aiMockInterview.toast.interviewReady.description", { count: genQuestions.length }) });
+      await startVideoStream();
+
+    } catch (error: any) {
+      logger.error("Error during setup or question generation:", error);
+      const errorMessage = (error.message || String(error)).toLowerCase();
+      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
+          toast({
+              title: t("aiMockInterview.toast.apiQuotaError.title"),
+              description: t("aiMockInterview.toast.apiQuotaError.description"),
+              variant: "destructive",
+              duration: 9000,
+          });
+      } else {
+        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: error.message || "Could not generate interview questions.", variant: "destructive" });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUser, settings, toast, t, router, startVideoStream]);
+
+
   // Initialize based on query params & cleanup
   useEffect(() => {
     const sourceSessionId = searchParams.get('sourceSessionId');
     const topicFromUrl = searchParams.get('topic');
     logger.info("AI Mock Interview Page loaded. Topic from URL:", topicFromUrl, "Source Session ID:", sourceSessionId);
 
-    if (topicFromUrl && !session && currentUser) {
+    if (topicFromUrl && !session && currentUser && sourceSessionId) {
       const initialConfig: GenerateMockInterviewQuestionsInput = {
         topic: topicFromUrl,
         jobDescriptionText: searchParams.get('jobDescriptionText') || undefined,
@@ -183,7 +254,7 @@ export default function AiMockInterviewPage() {
         questionCategories: searchParams.get('categories')?.split(',') as InterviewQuestionCategory[] | undefined,
       };
       logger.info("Initial config from URL params:", initialConfig);
-      handleSetupComplete(initialConfig);
+      handleSetupComplete(initialConfig, sourceSessionId);
       
       if (searchParams.get('autoFullScreen') === 'true' && interviewContainerRef.current && !document.fullscreenElement) {
           interviewContainerRef.current.requestFullscreen().catch(err => {
@@ -196,7 +267,7 @@ export default function AiMockInterviewPage() {
       stopAllMediaStreams();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     }
-  }, [searchParams, session, currentUser]); // Removed handleSetupComplete, stopAllMediaStreams from deps
+  }, [searchParams, session, currentUser, handleSetupComplete, stopAllMediaStreams]);
 
   // Fullscreen logic
   useEffect(() => {
@@ -282,71 +353,8 @@ export default function AiMockInterviewPage() {
     }
   }, [isMicMuted, toast, cameraStream, t]);
 
-  const handleSetupComplete = async (config: GenerateMockInterviewQuestionsInput) => {
-    if (!currentUser) return;
-    setIsLoading(true);
-    setCurrentAnswerFeedback(null);
-    try {
-      logger.info("Requesting interview questions with config:", config);
-      const { questions: genQuestions } = await generateMockInterviewQuestions(config);
-      logger.info("Received questions from AI:", genQuestions);
-
-      if (!genQuestions || genQuestions.length === 0) {
-        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: t("aiMockInterview.toast.setupFailed.description"), variant: "destructive", duration: 7000 });
-        setIsLoading(false);
-        setCurrentUiStepId('setup');
-        router.replace('/ai-mock-interview', undefined);
-        return;
-      }
-
-      // Map difficulty to capitalized form
-      const difficultyMap = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
-      const newSession: MockInterviewSession = {
-        id: `session-ai-${Date.now()}`,
-        userId: currentUser.id,
-        topic: config.topic,
-        jobDescription: config.jobDescriptionText,
-        questions: genQuestions,
-        answers: [],
-        status: 'in-progress',
-        createdAt: new Date().toISOString(),
-        timerPerQuestion: config.timerPerQuestion,
-        difficulty: config.difficulty ? difficultyMap[config.difficulty] : undefined,
-        questionCategories: config.questionCategories,
-        recordingReferences: [],
-      };
-      setSession(newSession);
-      setCurrentQuestionIndex(0);
-      setUserAnswer('');
-      if (config.timerPerQuestion && config.timerPerQuestion > 0) {
-        setTimeLeft(config.timerPerQuestion);
-      } else {
-        setTimeLeft(0);
-      }
-      setCurrentUiStepId('interview');
-      toast({ title: t("aiMockInterview.toast.interviewReady.title"), description: t("aiMockInterview.toast.interviewReady.description", { count: genQuestions.length }) });
-      await startVideoStream();
-
-    } catch (error: any) {
-      logger.error("Error during setup or question generation:", error);
-      const errorMessage = (error.message || String(error)).toLowerCase();
-      if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
-          toast({
-              title: t("aiMockInterview.toast.apiQuotaError.title"),
-              description: t("aiMockInterview.toast.apiQuotaError.description"),
-              variant: "destructive",
-              duration: 9000,
-          });
-      } else {
-        toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: error.message || "Could not generate interview questions.", variant: "destructive" });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleAnswerSubmit = async () => {
-    if (!session || !currentQuestion || !userAnswer.trim() || isEvaluatingAnswer) return;
+    if (!session || !currentQuestion || !userAnswer.trim() || isEvaluatingAnswer || !settings || !currentUser) return;
 
     setIsEvaluatingAnswer(true);
     setCurrentAnswerFeedback(null);
@@ -356,13 +364,13 @@ export default function AiMockInterviewPage() {
         setIsSpeechRecording(false);
     }
 
-
     try {
       const evaluationInput: EvaluateInterviewAnswerInput = {
         questionText: currentQuestion.questionText,
         userAnswer,
         topic: session.topic,
         jobDescriptionText: session.jobDescription,
+        apiKey: settings.allowUserApiKey ? currentUser.userApiKey : undefined,
       };
       const evaluationResult = await evaluateInterviewAnswer(evaluationInput);
 
@@ -415,7 +423,7 @@ export default function AiMockInterviewPage() {
   };
 
   const handleCompleteInterview = async () => {
-    if (!session || !session.answers) {
+    if (!session || !session.answers || !settings || !currentUser) {
       toast({ title: t("aiMockInterview.toast.sessionIssue.title"), description: t("aiMockInterview.toast.sessionIssue.description"), variant: "destructive" });
       setCurrentUiStepId('setup');
       router.replace('/ai-mock-interview', undefined);
@@ -437,15 +445,25 @@ export default function AiMockInterviewPage() {
             feedback: a.aiFeedback || "N/A",
             score: a.aiScore || 0,
         })),
+        apiKey: settings.allowUserApiKey ? currentUser.userApiKey : undefined,
       };
       const overallFeedbackResult = await generateOverallInterviewFeedback(feedbackInput);
-      setSession(prevSession => prevSession ? ({
-        ...prevSession,
-        overallFeedback: overallFeedbackResult as GenerateOverallInterviewFeedbackOutput,
+      
+      const finalSessionData: Partial<MockInterviewSession> = {
+        answers: session.answers,
+        overallFeedback: overallFeedbackResult,
         overallScore: overallFeedbackResult.overallScore,
         status: 'completed',
         recordingReferences: localRecordingReferences,
+      };
+
+      await updateMockInterviewSession(session.id, finalSessionData);
+
+      setSession(prevSession => prevSession ? ({
+        ...prevSession,
+        ...finalSessionData,
       }) : null);
+      
       setCurrentUiStepId('feedback');
       toast({ title: t("aiMockInterview.toast.interviewComplete.title"), description: t("aiMockInterview.toast.interviewComplete.description") });
       if (isInterviewFullScreen && document.fullscreenElement) {
@@ -632,7 +650,10 @@ export default function AiMockInterviewPage() {
       </Card>
 
       <div className={cn("transition-all duration-300", currentUiStepId === 'interview' && isInterviewFullScreen ? "flex-grow flex flex-col overflow-hidden" : "relative")}>
-          {currentUiStepId === 'setup' && <Card className="shadow-lg"><CardContent className="p-3 md:p-4 lg:p-6"><StepSetup onSetupComplete={handleSetupComplete} isLoading={isLoading} /></CardContent></Card>}
+          {currentUiStepId === 'setup' && <Card className="shadow-lg"><CardContent className="p-3 md:p-4 lg:p-6"><StepSetup onSetupComplete={(config) => {
+            const tempSessionId = `session-ai-${Date.now()}`; 
+            handleSetupComplete(config, tempSessionId);
+          }} isLoading={isLoading} /></CardContent></Card>}
           {currentUiStepId === 'feedback' && session && <StepFeedback session={session} onRestart={handleRestartInterview} />}
           {currentUiStepId === 'interview' && session && (
             <StepInterview

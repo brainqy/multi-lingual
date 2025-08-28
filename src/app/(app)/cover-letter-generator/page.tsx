@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { generateCoverLetter, type GenerateCoverLetterInput, type GenerateCoverLetterOutput } from '@/ai/flows/generate-cover-letter';
+import { generateCoverLetter, type GenerateCoverLetterInput } from '@/ai/flows/generate-cover-letter';
 import { useAuth } from "@/hooks/use-auth";
+import { useSettings } from "@/contexts/settings-provider";
 
 export default function CoverLetterGeneratorPage() {
   const [jobDescriptionText, setJobDescriptionText] = useState('');
@@ -22,10 +23,11 @@ export default function CoverLetterGeneratorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user: currentUser, isLoading: isUserLoading } = useAuth();
+  const { settings } = useSettings();
 
   const handleGenerateCoverLetter = async (event: FormEvent) => {
     event.preventDefault();
-    if (!currentUser) {
+    if (!currentUser || !settings) {
         toast({ title: "Error", description: "You must be logged in to use this feature.", variant: "destructive" });
         return;
     }
@@ -45,7 +47,6 @@ export default function CoverLetterGeneratorPage() {
     setIsLoading(true);
     setGeneratedCoverLetterText('');
 
-    // Construct user profile text for the AI only after confirming currentUser exists.
     const userProfileText = `
 Name: ${currentUser.name}
 Email: ${currentUser.email}
@@ -66,6 +67,7 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
         jobTitle,
         userName: currentUser.name,
         additionalNotes: additionalNotes || undefined,
+        apiKey: settings.allowUserApiKey ? currentUser.userApiKey : undefined,
       };
       const result = await generateCoverLetter(input);
       setGeneratedCoverLetterText(result.generatedCoverLetterText);
