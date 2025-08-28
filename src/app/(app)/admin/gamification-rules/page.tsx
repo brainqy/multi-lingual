@@ -94,7 +94,9 @@ export default function GamificationRulesPage() {
         toast({ title: t("gamificationRules.toast.badgeUpdated.title"), description: t("gamificationRules.toast.badgeUpdated.description", { name: data.name }) });
       }
     } else {
-      const created = await createBadge(data);
+      // Omit the 'id' field when creating a new badge
+      const { id, ...badgeDataForCreation } = data;
+      const created = await createBadge(badgeDataForCreation);
       if (created) {
         setBadges(prev => [created, ...prev]);
         toast({ title: t("gamificationRules.toast.badgeCreated.title"), description: t("gamificationRules.toast.badgeCreated.description", { name: data.name }) });
@@ -472,5 +474,3 @@ export default function GamificationRulesPage() {
     </TooltipProvider>
   );
 }
-
-    
