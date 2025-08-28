@@ -11,6 +11,7 @@ import { useI18n } from "@/hooks/use-i18n";
 interface AffiliateTableProps {
   affiliates: Affiliate[];
   handleAffiliateStatusChange: (affiliateId: string, newStatus: AffiliateStatus) => void;
+  getAffiliateClicksCount: (affiliateId: string) => number;
   getAffiliateSignupsCount: (affiliateId: string) => number;
   getAffiliateEarnedAmount: (affiliateId: string) => number;
 }
@@ -18,6 +19,7 @@ interface AffiliateTableProps {
 export default function AffiliateTable({ 
   affiliates, 
   handleAffiliateStatusChange, 
+  getAffiliateClicksCount,
   getAffiliateSignupsCount, 
   getAffiliateEarnedAmount 
 }: AffiliateTableProps) {
@@ -26,8 +28,17 @@ export default function AffiliateTable({
   if (affiliates.length === 0) {
     return <p className="text-center text-muted-foreground py-8">{t("affiliateManagement.table.noResults")}</p>;
   }
+  
+  const calculateConversionRate = (clicks: number, signups: number) => {
+    if (clicks === 0) return "0.00%";
+    return `${((signups / clicks) * 100).toFixed(2)}%`;
+  };
 
-  const AffiliateCard = ({ affiliate }: { affiliate: Affiliate }) => (
+  const AffiliateCard = ({ affiliate }: { affiliate: Affiliate }) => {
+    const clicks = getAffiliateClicksCount(affiliate.id);
+    const signups = getAffiliateSignupsCount(affiliate.id);
+
+    return (
     <Card className="mb-4">
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start">
@@ -44,18 +55,22 @@ export default function AffiliateTable({
             {affiliate.status}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center text-sm border-t pt-3">
+        <div className="grid grid-cols-4 gap-2 text-center text-sm border-t pt-3">
           <div>
-            <p className="font-semibold">{getAffiliateSignupsCount(affiliate.id)}</p>
+            <p className="font-semibold">{clicks}</p>
+            <p className="text-xs text-muted-foreground">{t("affiliateManagement.table.clicks")}</p>
+          </div>
+          <div>
+            <p className="font-semibold">{signups}</p>
             <p className="text-xs text-muted-foreground">{t("affiliateManagement.table.signups")}</p>
+          </div>
+          <div>
+            <p className="font-semibold">{calculateConversionRate(clicks, signups)}</p>
+            <p className="text-xs text-muted-foreground">{t("affiliateManagement.table.conversion")}</p>
           </div>
           <div>
             <p className="font-semibold">${getAffiliateEarnedAmount(affiliate.id).toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{t("affiliateManagement.table.earned")}</p>
-          </div>
-          <div>
-            <p className="font-semibold">{(affiliate.commissionRate * 100).toFixed(0)}%</p>
-            <p className="text-xs text-muted-foreground">{t("affiliateManagement.table.rate")}</p>
           </div>
         </div>
         {affiliate.status === 'pending' && (
@@ -70,7 +85,8 @@ export default function AffiliateTable({
         )}
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   return (
     <>
@@ -85,21 +101,25 @@ export default function AffiliateTable({
           <TableHeader>
             <TableRow>
               <TableHead>{t("affiliateManagement.table.name")}</TableHead>
-              <TableHead>{t("affiliateManagement.table.email")}</TableHead>
-              <TableHead>{t("affiliateManagement.table.code")}</TableHead>
               <TableHead>{t("affiliateManagement.table.status")}</TableHead>
+              <TableHead className="text-center">{t("affiliateManagement.table.clicks")}</TableHead>
               <TableHead className="text-center">{t("affiliateManagement.table.signups")}</TableHead>
+              <TableHead className="text-center">{t("affiliateManagement.table.conversion")}</TableHead>
               <TableHead className="text-right">{t("affiliateManagement.table.earned")}</TableHead>
               <TableHead className="text-right">{t("affiliateManagement.table.rate")}</TableHead>
               <TableHead className="text-right">{t("affiliateManagement.table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {affiliates.map((affiliate) => (
+            {affiliates.map((affiliate) => {
+              const clicks = getAffiliateClicksCount(affiliate.id);
+              const signups = getAffiliateSignupsCount(affiliate.id);
+              return (
               <TableRow key={affiliate.id}>
-                <TableCell className="font-medium">{affiliate.name}</TableCell>
-                <TableCell>{affiliate.email}</TableCell>
-                <TableCell className="font-mono text-xs">{affiliate.affiliateCode}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{affiliate.name}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{affiliate.affiliateCode}</div>
+                </TableCell>
                 <TableCell>
                   <span className={`px-2 py-0.5 text-xs rounded-full capitalize ${
                     affiliate.status === 'approved' ? 'bg-green-100 text-green-700' :
@@ -109,7 +129,9 @@ export default function AffiliateTable({
                     {affiliate.status}
                   </span>
                 </TableCell>
-                <TableCell className="text-center">{getAffiliateSignupsCount(affiliate.id)}</TableCell>
+                <TableCell className="text-center">{clicks}</TableCell>
+                <TableCell className="text-center">{signups}</TableCell>
+                <TableCell className="text-center font-medium">{calculateConversionRate(clicks, signups)}</TableCell>
                 <TableCell className="text-right">${getAffiliateEarnedAmount(affiliate.id).toFixed(2)}</TableCell>
                 <TableCell className="text-right">{(affiliate.commissionRate * 100).toFixed(0)}%</TableCell>
                 <TableCell className="text-right space-x-1">
@@ -131,7 +153,8 @@ export default function AffiliateTable({
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+            );
+          })}
           </TableBody>
         </Table>
       </div>
