@@ -232,8 +232,9 @@ export async function getBadges(): Promise<Badge[]> {
 export async function createBadge(badgeData: Omit<Badge, 'id'>): Promise<Badge | null> {
   logAction('Creating new badge', { name: badgeData.name });
   try {
-    // Explicitly create a new object without the 'id' field for Prisma.
+    // Manually generate a unique ID to satisfy the generated Prisma client type
     const dataForDb = {
+        id: `badge-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         name: badgeData.name,
         description: badgeData.description,
         icon: badgeData.icon,
