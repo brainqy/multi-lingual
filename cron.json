@@ -21,8 +21,12 @@
         "url": "/api/cron/every-two-minutes"
       },
       "retryConfig": {
-        "retryCount": 1
+        "retryCount": 3,
+        "maxRetryDuration": "5m",
+        "minBackoffDuration": "10s",
+        "maxBackoffDuration": "1m"
       }
     }
   ]
 }
+
