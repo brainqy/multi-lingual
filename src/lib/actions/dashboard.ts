@@ -16,6 +16,7 @@ import type {
   Activity,
   Badge,
   DailyChallenge,
+  Affiliate,
 } from '@/types';
 import { Prisma } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
@@ -91,6 +92,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
     const featureRequests = (await db.featureRequest.findMany()) as unknown as any[];
     const blogPosts = (await db.blogPost.findMany()) as unknown as any[];
+    const affiliates = (await db.affiliate.findMany({})) as unknown as Affiliate[];
     
     const userRoleCounts = await db.user.groupBy({
       by: ['role'],
@@ -170,6 +172,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       challenges,
       featureRequests,
       blogPosts,
+      affiliates,
       demographics: {
         byRole: userRoleCounts.map(item => ({ name: item.role, count: item._count.role })),
         byStatus: userStatusCounts.map(item => ({ name: item.status, count: item._count.status })),
@@ -194,6 +197,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
       challenges: [],
       featureRequests: [],
       blogPosts: [],
+      affiliates: [],
       demographics: { byRole: [], byStatus: [] },
       coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] },
     };

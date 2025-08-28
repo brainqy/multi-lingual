@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -409,7 +410,6 @@ export interface UserProfile extends AlumniProfile {
   weeklyActivity?: number[];
   referralCode?: string;
   earnedBadges?: string[];
-  affiliateCode?: string;
   pastInterviewSessions?: string[];
   interviewCredits?: number;
   createdAt?: string;
@@ -1342,6 +1342,7 @@ export type AdminDashboardWidgetId =
   | 'systemAlerts' 
   | 'adminQuickActions'
   | 'coinEconomyStats'
+  | 'affiliateProgramStat'
   | 'featureUsage';
 
 export type NotificationType = 'mention' | 'event' | 'system';
@@ -1360,14 +1361,14 @@ export const EvaluateDailyChallengeAnswerInputSchema = z.object({
   solution: z.string().optional().describe('The ideal solution or key points for reference.'),
   apiKey: z.string().optional(),
 });
-export type EvaluateDailyChallengeInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
+export type EvaluateDailyChallengeAnswerInput = z.infer<typeof EvaluateDailyChallengeAnswerInputSchema>;
 
 export const EvaluateDailyChallengeAnswerOutputSchema = z.object({
   isCorrect: z.boolean().describe('Whether the answer is fundamentally correct.'),
   score: z.number().min(0).max(100).describe('A score from 0-100 evaluating the answer.'),
   feedback: z.string().describe('Constructive feedback on the user\'s answer.'),
 });
-export type EvaluateDailyChallengeOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
+export type EvaluateDailyChallengeAnswerOutput = z.infer<typeof EvaluateDailyChallengeAnswerOutputSchema>;
 
 export interface SoftDeletedItem {
     id: string;

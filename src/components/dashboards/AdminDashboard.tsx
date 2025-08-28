@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2, Coins, ThumbsUp, ThumbsDown } from "lucide-react";
+import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2, Coins, ThumbsUp, ThumbsDown, Target } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import {
@@ -11,7 +11,7 @@ import {
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Tenant, UserProfile, SystemAlert, CommunityPost } from "@/types"; 
+import type { Tenant, UserProfile, SystemAlert, CommunityPost, Affiliate } from "@/types"; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
@@ -55,6 +55,7 @@ type AdminDashboardWidgetId =
   | 'systemAlerts' 
   | 'adminQuickActions'
   | 'coinEconomyStats'
+  | 'affiliateProgramStat'
   | 'featureUsage';
 
 interface WidgetConfig {
@@ -68,8 +69,9 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'totalUsersStat', titleKey: 'adminDashboard.widgets.totalUsersStat', defaultVisible: true },
   { id: 'totalTenantsStat', titleKey: 'adminDashboard.widgets.totalTenantsStat', defaultVisible: true },
   { id: 'platformActivityStat', titleKey: 'adminDashboard.widgets.platformActivityStat', defaultVisible: true },
+  { id: 'affiliateProgramStat', titleKey: 'adminDashboard.widgets.affiliateProgramStat', defaultVisible: true },
   { id: 'resumesAnalyzedStat', titleKey: 'adminDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
-  { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: true },
+  { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: false },
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
@@ -77,7 +79,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
-  { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: true },
+  { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: false },
   { id: 'contentModerationQueueSummary', titleKey: 'adminDashboard.widgets.contentModerationQueueSummary', defaultVisible: true },
   { id: 'systemAlerts', titleKey: 'adminDashboard.widgets.systemAlerts', defaultVisible: true }, 
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
@@ -117,7 +119,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   }, []);
 
   const platformStats = useMemo(() => {
-    if (!dashboardData) return { totalUsers: 0, newSignupsThisPeriod: 0, totalResumesAnalyzedThisPeriod: 0, totalCommunityPostsThisPeriod: 0, activeUsersThisPeriod: 0, totalJobApplicationsThisPeriod: 0, totalAlumniConnections: 0, totalMockInterviews: 0, flaggedPostsCount: 0 };
+    if (!dashboardData) return { totalUsers: 0, newSignupsThisPeriod: 0, totalResumesAnalyzedThisPeriod: 0, totalCommunityPostsThisPeriod: 0, activeUsersThisPeriod: 0, totalJobApplicationsThisPeriod: 0, totalAlumniConnections: 0, totalMockInterviews: 0, flaggedPostsCount: 0, totalAffiliates: 0, pendingAffiliates: 0 };
     
     const now = new Date();
     const oneWeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
@@ -134,6 +136,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       totalAlumniConnections: dashboardData.appointments.length, 
       totalMockInterviews: dashboardData.mockInterviews.length,
       flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
+      totalAffiliates: dashboardData.affiliates.filter((a: Affiliate) => a.status === 'approved').length,
+      pendingAffiliates: dashboardData.affiliates.filter((a: Affiliate) => a.status === 'pending').length,
     };
   }, [dashboardData, usagePeriod]);
   
@@ -345,66 +349,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 </CardContent>
              </Card>
            )}
-           {visibleWidgetIds.has('resumesAnalyzedStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.resumesAnalyzed.title")}</CardTitle>
-                <FileText className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{platformStats.totalResumesAnalyzedThisPeriod}</div>
-                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.resumesAnalyzed.description", { period: translatedUsagePeriod })}</p>
-              </CardContent>
-            </Card>
-          )}
-           {visibleWidgetIds.has('jobApplicationsStat') && (
+          {visibleWidgetIds.has('affiliateProgramStat') && (
              <Card className="shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.jobApplications.title")}</CardTitle>
-                    <Briefcase className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-sm font-medium">Affiliate Program</CardTitle>
+                    <Target className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{platformStats.totalJobApplicationsThisPeriod}</div>
-                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.jobApplications.description", { period: translatedUsagePeriod })}</p>
+                    <div className="text-2xl font-bold">{platformStats.totalAffiliates}</div>
+                    <p className="text-xs text-muted-foreground">{platformStats.pendingAffiliates > 0 ? `${platformStats.pendingAffiliates} pending approval` : 'All affiliates approved'}</p>
                 </CardContent>
              </Card>
            )}
-          {visibleWidgetIds.has('communityPostsStat') && (
-             <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.communityPosts.title")}</CardTitle>
-                <MessageSquare className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{platformStats.totalCommunityPostsThisPeriod}</div>
-                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.communityPosts.description", { period: translatedUsagePeriod })}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('alumniConnectionsStat') && (
-             <Card className="shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.alumniConnections.title")}</CardTitle>
-                    <Handshake className="h-5 w-5 text-primary" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{platformStats.totalAlumniConnections}</div>
-                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.alumniConnections.description")}</p>
-                </CardContent>
-             </Card>
-          )}
-          {visibleWidgetIds.has('mockInterviewsStat') && (
-             <Card className="shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.mockInterviews.title")}</CardTitle>
-                    <Mic className="h-5 w-5 text-primary" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{platformStats.totalMockInterviews}</div>
-                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.mockInterviews.description")}</p>
-                </CardContent>
-             </Card>
-          )}
         </div>
         
         {visibleWidgetIds.has('featureUsage') && (
