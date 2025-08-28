@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2, Percent, Users2 } from "lucide-react";
+import { Users, FileText, MessageSquare, TrendingUp, BarChart, PieChart as PieChartIcon, Activity, Building2, Percent, Users2, Coins, Trophy, ThumbsUp } from "lucide-react";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import type { UserProfile, Tenant } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +15,9 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { subDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, format, startOfISOWeek, getISOWeek, isAfter, isSameDay, addWeeks, differenceInCalendarWeeks } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -46,8 +49,9 @@ export default function AnalyticsDashboardPage() {
     tenantActivityData,
     demographicsData,
     retentionData,
+    coinStats,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] }, retentionData: [] };
+    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], demographicsData: { byRole: [], byStatus: [] }, retentionData: [], coinStats: { spendingByCategory: [], topEarners: [], topSpenders: [] } };
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -146,7 +150,7 @@ export default function AnalyticsDashboardPage() {
     })).sort((a,b) => new Date(b.cohort.replace('Week of ', '')).getTime() - new Date(a.cohort.replace('Week of ', '')).getTime());
 
 
-    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData, retentionData: retention };
+    return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, demographicsData: demoData, retentionData: retention, coinStats: dashboardData.coinStats };
   }, [dashboardData, dateRange, selectedTenantId]);
   
   const getRetentionColor = (percentage: number) => {
@@ -296,42 +300,52 @@ export default function AnalyticsDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>User Demographics by Role</CardTitle>
-            <CardDescription>Distribution of users across different roles.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPieChart>
-                <Pie data={demographicsData.byRole} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                  {demographicsData.byRole.map((entry, index) => <Cell key={`cell-role-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </CardContent>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>Coin Spending by Feature</CardTitle>
+                <CardDescription>What users are spending their coins on.</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                        <Pie data={coinStats.spendingByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                            {coinStats.spendingByCategory.map((entry: any, index: number) => <Cell key={`cell-spend-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                    </RechartsPieChart>
+                </ResponsiveContainer>
+            </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>User Demographics by Status</CardTitle>
-            <CardDescription>Distribution of users by their account status.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPieChart>
-                <Pie data={demographicsData.byStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                  {demographicsData.byStatus.map((entry, index) => <Cell key={`cell-status-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </CardContent>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>Top Coin Earners</CardTitle><CardDescription>Users who earned the most coins (all time).</CardDescription></CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Earned</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {coinStats.topEarners.map((user: {name: string, value: number}, index: number) => (
+                            <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><ThumbsUp className="h-5 w-5 text-primary"/>Top Coin Spenders</CardTitle><CardDescription>Users who spent the most coins (all time).</CardDescription></CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Spent</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {coinStats.topSpenders.map((user: {name: string, value: number}, index: number) => (
+                            <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
         </Card>
       </div>
+
     </div>
   );
 }
