@@ -35,14 +35,28 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  * @returns The newly created Activity object or null.
  */
 export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
-    logAction('Creating activity', { userId: activityData.userId, description: activityData.description });
+    const { userId, tenantId, ...restOfData } = activityData;
+    logAction('Creating activity', { userId, description: restOfData.description });
     try {
+        const dataForDb: any = {
+            ...restOfData,
+            tenant: {
+                connect: { id: tenantId },
+            },
+        };
+
+        if (userId) {
+            dataForDb.user = {
+                connect: { id: userId },
+            };
+        }
+
         const newActivity = await db.activity.create({
-            data: activityData,
+            data: dataForDb,
         });
         return newActivity as unknown as Activity;
     } catch (error) {
-        logError('[ActivityAction] Error creating activity', error, { userId: activityData.userId });
+        logError('[ActivityAction] Error creating activity', error, { userId });
         return null;
     }
 }
