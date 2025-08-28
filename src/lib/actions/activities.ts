@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Activity } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { getUserByEmail } from '../data-services/users';
 
 /**
  * Fetches all activities, optionally scoped by user.
@@ -49,6 +50,18 @@ export async function createActivity(activityData: Omit<Activity, 'id' | 'timest
             dataForDb.user = {
                 connect: { id: userId },
             };
+        } else {
+            // For system-level activities without a user, assign to the admin user.
+            const adminUser = await getUserByEmail('admin@bhashasetu.com');
+            if (adminUser) {
+                dataForDb.user = {
+                    connect: { id: adminUser.id },
+                };
+            } else {
+                logError('[ActivityAction] Admin user not found for system activity', {}, {});
+                // Fallback or handle error if admin user doesn't exist
+                return null;
+            }
         }
 
         const newActivity = await db.activity.create({
