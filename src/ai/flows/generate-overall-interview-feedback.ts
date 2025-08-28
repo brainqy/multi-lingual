@@ -8,9 +8,10 @@
  * - GenerateOverallInterviewFeedbackOutput - The return type.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import type { GenerateOverallInterviewFeedbackInput, GenerateOverallInterviewFeedbackOutput } from '@/types';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
+import type { GenerateOverallInterviewFeedbackOutput } from '@/types';
 import { AIError } from '@/lib/exceptions';
 
 const EvaluatedAnswerSchema = z.object({
@@ -20,11 +21,16 @@ const EvaluatedAnswerSchema = z.object({
     score: z.number().min(0).max(100),
 });
 
-const GenerateOverallInterviewFeedbackInputSchema = z.object({
+const BaseInputSchema = z.object({
   topic: z.string().describe("The main topic or role of the interview session."),
   jobDescriptionText: z.string().optional().describe('The job description used for the interview, if any.'),
   evaluatedAnswers: z.array(EvaluatedAnswerSchema).describe("An array of questions, user answers, AI feedback, and scores for each question in the session."),
 });
+
+const GenerateOverallInterviewFeedbackInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
+});
+export type GenerateOverallInterviewFeedbackInput = z.infer<typeof GenerateOverallInterviewFeedbackInputSchema>;
 
 const GenerateOverallInterviewFeedbackOutputSchema = z.object({
   overallSummary: z.string().describe("A concise summary of the user's overall performance in the mock interview."),
@@ -37,14 +43,27 @@ const GenerateOverallInterviewFeedbackOutputSchema = z.object({
 export async function generateOverallInterviewFeedback(
   input: GenerateOverallInterviewFeedbackInput
 ): Promise<GenerateOverallInterviewFeedbackOutput> {
-  return generateOverallInterviewFeedbackFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateOverallInterviewFeedbackPrompt',
-  input: {schema: GenerateOverallInterviewFeedbackInputSchema},
-  output: {schema: GenerateOverallInterviewFeedbackOutputSchema},
-  prompt: `You are an expert Interview Coach AI. Your task is to provide comprehensive overall feedback for a mock interview session based on the user's performance on individual questions.
+  if (input.evaluatedAnswers.length === 0) {
+      // Handle case with no answers, though ideally UI prevents this.
+      return {
+          overallSummary: "No answers were provided for this session.",
+          keyStrengths: [],
+          keyAreasForImprovement: ["Provide answers to questions to get feedback."],
+          finalTips: ["Complete a full mock interview session."],
+          overallScore: 0,
+      };
+  }
+  
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
+  
+  const prompt = customAI.definePrompt({
+    name: 'generateOverallInterviewFeedbackPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: GenerateOverallInterviewFeedbackOutputSchema },
+    prompt: `You are an expert Interview Coach AI. Your task is to provide comprehensive overall feedback for a mock interview session based on the user's performance on individual questions.
 
 Interview Topic/Role: {{{topic}}}
 {{#if jobDescriptionText}}}
@@ -71,29 +90,11 @@ Based on the collective performance, please provide:
 
 Focus on constructive, holistic feedback. Output strictly in the JSON format defined by the schema.
 `,
-});
+  });
 
-const generateOverallInterviewFeedbackFlow = ai.defineFlow(
-  {
-    name: 'generateOverallInterviewFeedbackFlow',
-    inputSchema: GenerateOverallInterviewFeedbackInputSchema,
-    outputSchema: GenerateOverallInterviewFeedbackOutputSchema,
-  },
-  async input => {
-    if (input.evaluatedAnswers.length === 0) {
-        // Handle case with no answers, though ideally UI prevents this.
-        return {
-            overallSummary: "No answers were provided for this session.",
-            keyStrengths: [],
-            keyAreasForImprovement: ["Provide answers to questions to get feedback."],
-            finalTips: ["Complete a full mock interview session."],
-            overallScore: 0,
-        };
-    }
-    const {output} = await prompt(input);
-    if (!output) {
-        throw new AIError("AI failed to generate overall interview feedback.");
-    }
-    return output;
+  const { output } = await prompt(input);
+  if (!output) {
+      throw new AIError("AI failed to generate overall interview feedback.");
   }
-);
+  return output;
+}

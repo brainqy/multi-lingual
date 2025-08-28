@@ -8,13 +8,17 @@
  * - SuggestDynamicSkillsOutput - The return type.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
 import { AIError } from '@/lib/exceptions';
 
-const SuggestDynamicSkillsInputSchema = z.object({
+const BaseInputSchema = z.object({
   currentSkills: z.array(z.string()).describe("A list of the user's current skills."),
   contextText: z.string().describe("Contextual information, such as a job description the user is viewing, topics they engaged with, or their career interests and bio. This text will be used to derive relevant skill suggestions."),
+});
+const SuggestDynamicSkillsInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
 });
 export type SuggestDynamicSkillsInput = z.infer<typeof SuggestDynamicSkillsInputSchema>;
 
@@ -32,14 +36,16 @@ export type SuggestDynamicSkillsOutput = z.infer<typeof SuggestDynamicSkillsOutp
 export async function suggestDynamicSkills(
   input: SuggestDynamicSkillsInput
 ): Promise<SuggestDynamicSkillsOutput> {
-  return suggestDynamicSkillsFlow(input);
-}
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
 
-const prompt = ai.definePrompt({
-  name: 'suggestDynamicSkillsPrompt',
-  input: {schema: SuggestDynamicSkillsInputSchema},
-  output: {schema: SuggestDynamicSkillsOutputSchema},
-  prompt: `You are an AI career development assistant. Your task is to analyze a user's current skills and a provided contextual text (like a job description, their bio, or topics of interest).
+  const prompt = customAI.definePrompt({
+    name: 'suggestDynamicSkillsPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: SuggestDynamicSkillsOutputSchema },
+    prompt: `You are an AI career development assistant. Your task is to analyze a user's current skills and a provided contextual text (like a job description, their bio, or topics of interest).
 Based on this, suggest new skills the user could add to their profile that would be relevant and beneficial for their career development.
 For each suggested skill, provide:
 1.  The 'skill' name.
@@ -63,19 +69,11 @@ Contextual Information:
 Please return up to 5 highly relevant skill suggestions, sorted by relevanceScore in descending order.
 Ensure the output is in the specified JSON format.
 `,
-});
+  });
 
-const suggestDynamicSkillsFlow = ai.defineFlow(
-  {
-    name: 'suggestDynamicSkillsFlow',
-    inputSchema: SuggestDynamicSkillsInputSchema,
-    outputSchema: SuggestDynamicSkillsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-     if (!output) {
-        throw new AIError("AI failed to generate skill suggestions.");
-    }
-    return output;
+  const { output } = await prompt(input);
+   if (!output) {
+      throw new AIError("AI failed to generate skill suggestions.");
   }
-);
+  return output;
+}

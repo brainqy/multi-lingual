@@ -8,17 +8,21 @@
  * - GenerateResumeVariantOutput - The return type for the generateResumeVariant function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
 import { AIError } from '@/lib/exceptions';
 
-const GenerateResumeVariantInputSchema = z.object({
+const BaseInputSchema = z.object({
   baseResumeText: z.string().describe('The original resume text to be adapted.'),
   targetRole: z.string().describe('The desired job title or role for the new resume variant.'),
   targetIndustry: z.string().optional().describe('The target industry for the new resume variant.'),
   skillsToHighlight: z.array(z.string()).optional().describe('Specific skills to emphasize in the new resume variant.'),
   tone: z.enum(['professional', 'creative', 'concise', 'technical']).default('professional').describe('The desired tone for the new resume variant.'),
   additionalInstructions: z.string().optional().describe('Any other specific instructions for the AI.'),
+});
+const GenerateResumeVariantInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
 });
 export type GenerateResumeVariantInput = z.infer<typeof GenerateResumeVariantInputSchema>;
 
@@ -30,14 +34,16 @@ export type GenerateResumeVariantOutput = z.infer<typeof GenerateResumeVariantOu
 export async function generateResumeVariant(
   input: GenerateResumeVariantInput
 ): Promise<GenerateResumeVariantOutput> {
-  return generateResumeVariantFlow(input);
-}
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
 
-const prompt = ai.definePrompt({
-  name: 'generateResumeVariantPrompt',
-  input: {schema: GenerateResumeVariantInputSchema},
-  output: {schema: GenerateResumeVariantOutputSchema},
-  prompt: `You are an expert resume writer. Your task is to adapt the provided base resume text to create a new variant tailored for a specific job role and industry.
+  const prompt = customAI.definePrompt({
+    name: 'generateResumeVariantPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: GenerateResumeVariantOutputSchema },
+    prompt: `You are an expert resume writer. Your task is to adapt the provided base resume text to create a new variant tailored for a specific job role and industry.
 
 Base Resume Text:
 {{{baseResumeText}}}
@@ -64,19 +70,11 @@ The generated resume should be ready to be copy-pasted.
 
 CRITICAL: Your entire output must be a single, valid JSON object that strictly adheres to the provided schema. The final resume text must be contained within the 'generatedResumeText' field.
 `,
-});
-
-const generateResumeVariantFlow = ai.defineFlow(
-  {
-    name: 'generateResumeVariantFlow',
-    inputSchema: GenerateResumeVariantInputSchema,
-    outputSchema: GenerateResumeVariantOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-        throw new AIError("AI failed to generate a resume variant.");
-    }
-    return output;
+  });
+  
+  const { output } = await prompt(input);
+  if (!output) {
+      throw new AIError("AI failed to generate a resume variant.");
   }
-);
+  return output;
+}

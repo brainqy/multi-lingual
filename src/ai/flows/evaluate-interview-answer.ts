@@ -8,17 +8,23 @@
  * - EvaluateInterviewAnswerOutput - The return type.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import type { EvaluateInterviewAnswerInput, EvaluateInterviewAnswerOutput } from '@/types';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
+import type { EvaluateInterviewAnswerOutput } from '@/types';
 import { AIError } from '@/lib/exceptions';
 
-const EvaluateInterviewAnswerInputSchema = z.object({
+const BaseInputSchema = z.object({
   questionText: z.string().describe("The interview question that was asked."),
   userAnswer: z.string().describe("The user's answer to the question."),
   topic: z.string().optional().describe("The general topic or role of the interview for context (e.g., 'Java Developer', 'Behavioral Interview')."),
   jobDescriptionText: z.string().optional().describe('The job description, if available, for context in evaluating the answer.'),
 });
+
+const EvaluateInterviewAnswerInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
+});
+export type EvaluateInterviewAnswerInput = z.infer<typeof EvaluateInterviewAnswerInputSchema>;
 
 const EvaluateInterviewAnswerOutputSchema = z.object({
   feedback: z.string().describe("Overall constructive feedback on the user's answer. Should be polite and helpful."),
@@ -31,14 +37,16 @@ const EvaluateInterviewAnswerOutputSchema = z.object({
 export async function evaluateInterviewAnswer(
   input: EvaluateInterviewAnswerInput
 ): Promise<EvaluateInterviewAnswerOutput> {
-  return evaluateInterviewAnswerFlow(input);
-}
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
 
-const prompt = ai.definePrompt({
-  name: 'evaluateInterviewAnswerPrompt',
-  input: {schema: EvaluateInterviewAnswerInputSchema},
-  output: {schema: EvaluateInterviewAnswerOutputSchema},
-  prompt: `You are an expert Interview Coach AI. Your task is to evaluate a user's answer to a mock interview question and provide constructive feedback.
+  const prompt = customAI.definePrompt({
+    name: 'evaluateInterviewAnswerPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: EvaluateInterviewAnswerOutputSchema },
+    prompt: `You are an expert Interview Coach AI. Your task is to evaluate a user's answer to a mock interview question and provide constructive feedback.
 
 Context:
 {{#if topic}}Interview Topic/Role: {{{topic}}}{{/if}}
@@ -71,19 +79,11 @@ Provide the following:
 
 Be encouraging and aim to help the user improve. Output strictly in the JSON format defined by the schema.
 `,
-});
+  });
 
-const evaluateInterviewAnswerFlow = ai.defineFlow(
-  {
-    name: 'evaluateInterviewAnswerFlow',
-    inputSchema: EvaluateInterviewAnswerInputSchema,
-    outputSchema: EvaluateInterviewAnswerOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-        throw new AIError("AI failed to evaluate the interview answer.");
-    }
-    return output;
+  const { output } = await prompt(input);
+  if (!output) {
+      throw new AIError("AI failed to evaluate the interview answer.");
   }
-);
+  return output;
+}

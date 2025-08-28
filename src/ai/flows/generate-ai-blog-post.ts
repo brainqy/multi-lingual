@@ -8,15 +8,20 @@
  * - GenerateAiBlogPostOutput - The return type for the generateAiBlogPost function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
 import { AIError } from '@/lib/exceptions';
 
-const GenerateAiBlogPostInputSchema = z.object({
+const BaseInputSchema = z.object({
   topic: z.string().describe('The main topic or theme for the blog post.'),
   style: z.enum(['informative', 'casual', 'formal', 'technical', 'storytelling']).optional().default('informative').describe('The desired writing style for the blog post.'),
   targetAudience: z.string().optional().describe('The intended audience for the blog post (e.g., students, professionals, beginners).'),
   keywords: z.array(z.string()).optional().describe('A list of keywords to try and include in the blog post for SEO or focus.'),
+});
+
+const GenerateAiBlogPostInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
 });
 export type GenerateAiBlogPostInput = z.infer<typeof GenerateAiBlogPostInputSchema>;
 
@@ -31,14 +36,16 @@ export type GenerateAiBlogPostOutput = z.infer<typeof GenerateAiBlogPostOutputSc
 export async function generateAiBlogPost(
   input: GenerateAiBlogPostInput
 ): Promise<GenerateAiBlogPostOutput> {
-  return generateAiBlogPostFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateAiBlogPostPrompt',
-  input: {schema: GenerateAiBlogPostInputSchema},
-  output: {schema: GenerateAiBlogPostOutputSchema},
-  prompt: `You are an expert blog post writer for an Alumni Engagement Platform called "JobMatch AI".
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
+  
+  const prompt = customAI.definePrompt({
+    name: 'generateAiBlogPostPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: GenerateAiBlogPostOutputSchema },
+    prompt: `You are an expert blog post writer for an Alumni Engagement Platform called "JobMatch AI".
 Your task is to write an engaging and informative blog post on the topic: {{{topic}}}.
 
 Writing Style: {{{style}}}
@@ -59,23 +66,15 @@ Please generate the following for the blog post:
 Ensure the content is original, well-written, and provides value to the reader.
 The platform helps users with resume analysis, job tracking, alumni connections, and career development. You can subtly weave in how JobMatch AI might help with the topic if it feels natural, but the primary focus should be the topic itself.
 `,
-});
+  });
 
-const generateAiBlogPostFlow = ai.defineFlow(
-  {
-    name: 'generateAiBlogPostFlow',
-    inputSchema: GenerateAiBlogPostInputSchema,
-    outputSchema: GenerateAiBlogPostOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-        throw new AIError("AI failed to generate a blog post.");
-    }
-    // Ensure excerpt is within typical limits, if AI generates too long.
-    if (output.excerpt.length > 220) {
-        output.excerpt = output.excerpt.substring(0, 217) + "...";
-    }
-    return output;
+  const { output } = await prompt(input);
+  if (!output) {
+      throw new AIError("AI failed to generate a blog post.");
   }
-);
+  // Ensure excerpt is within typical limits, if AI generates too long.
+  if (output.excerpt.length > 220) {
+      output.excerpt = output.excerpt.substring(0, 217) + "...";
+  }
+  return output;
+}

@@ -8,17 +8,22 @@
  * - GenerateCoverLetterOutput - The return type for the generateCoverLetter function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { genkit } from 'genkit';
+import { z } from 'genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
 import { AIError } from '@/lib/exceptions';
 
-const GenerateCoverLetterInputSchema = z.object({
+const BaseInputSchema = z.object({
   userProfileText: z.string().describe('A summary of the user\'s profile, including key skills, experience, and bio.'),
   jobDescriptionText: z.string().describe('The full text of the job description the user is applying for.'),
   companyName: z.string().describe('The name of the company to address the cover letter to.'),
   jobTitle: z.string().describe('The specific job title being applied for.'),
   userName: z.string().describe('The name of the user applying.'),
   additionalNotes: z.string().optional().describe('Any specific points the user wants to include or emphasize in the cover letter.'),
+});
+
+const GenerateCoverLetterInputSchema = BaseInputSchema.extend({
+  apiKey: z.string().optional(),
 });
 export type GenerateCoverLetterInput = z.infer<typeof GenerateCoverLetterInputSchema>;
 
@@ -30,14 +35,16 @@ export type GenerateCoverLetterOutput = z.infer<typeof GenerateCoverLetterOutput
 export async function generateCoverLetter(
   input: GenerateCoverLetterInput
 ): Promise<GenerateCoverLetterOutput> {
-  return generateCoverLetterFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'generateCoverLetterPrompt',
-  input: {schema: GenerateCoverLetterInputSchema},
-  output: {schema: GenerateCoverLetterOutputSchema},
-  prompt: `You are an expert career coach specializing in writing compelling cover letters.
+  const customAI = genkit({
+    plugins: [getGoogleAIPlugin(input.apiKey)],
+    model: 'googleai/gemini-2.0-flash',
+  });
+  
+  const prompt = customAI.definePrompt({
+    name: 'generateCoverLetterPrompt',
+    input: { schema: BaseInputSchema },
+    output: { schema: GenerateCoverLetterOutputSchema },
+    prompt: `You are an expert career coach specializing in writing compelling cover letters.
 Your task is to generate a personalized cover letter for {{{userName}}} who is applying for the role of {{{jobTitle}}} at {{{companyName}}}.
 
 User Profile Information:
@@ -64,19 +71,11 @@ The letter should:
 Address the letter appropriately if a hiring manager name is available, otherwise use a general salutation.
 End the letter with {{{userName}}}'s name.
 `,
-});
+  });
 
-const generateCoverLetterFlow = ai.defineFlow(
-  {
-    name: 'generateCoverLetterFlow',
-    inputSchema: GenerateCoverLetterInputSchema,
-    outputSchema: GenerateCoverLetterOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-     if (!output) {
-        throw new AIError("AI failed to generate a cover letter.");
-    }
-    return output;
+  const { output } = await prompt(input);
+   if (!output) {
+      throw new AIError("AI failed to generate a cover letter.");
   }
-);
+  return output;
+}
