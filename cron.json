@@ -1,14 +1,28 @@
 
 {
-    "schedule": "0 5 * * *",
-    "handler": {
+  "cron": [
+    {
+      "schedule": "0 5 * * *",
+      "handler": {
         "type": "https",
         "url": "/api/cron/daily"
-    },
-    "retryConfig": {
+      },
+      "retryConfig": {
         "retryCount": 3,
         "maxRetryDuration": "10m",
         "minBackoffDuration": "1m",
         "maxBackoffDuration": "5m"
+      }
+    },
+    {
+      "schedule": "*/2 * * * *",
+      "handler": {
+        "type": "https",
+        "url": "/api/cron/every-two-minutes"
+      },
+      "retryConfig": {
+        "retryCount": 1
+      }
     }
+  ]
 }
