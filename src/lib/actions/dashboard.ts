@@ -92,7 +92,7 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     const challenges = (await db.dailyChallenge.findMany()) as unknown as DailyChallenge[];
     const featureRequests = (await db.featureRequest.findMany()) as unknown as any[];
     const blogPosts = (await db.blogPost.findMany()) as unknown as any[];
-    const affiliates = (await db.affiliate.findMany({})) as unknown as Affiliate[];
+    const affiliates = (await db.affiliate.findMany({ include: { commissionTier: true } })) as unknown as Affiliate[];
     
     const userRoleCounts = await db.user.groupBy({
       by: ['role'],
@@ -203,3 +203,5 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     };
   }
 }
+
+    

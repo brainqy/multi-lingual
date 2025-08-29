@@ -75,7 +75,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: false },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
@@ -558,3 +558,5 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     </>
   );
 }
+
+    
