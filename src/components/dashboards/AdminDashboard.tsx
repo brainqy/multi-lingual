@@ -75,7 +75,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: false },
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
@@ -136,8 +136,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       totalAlumniConnections: dashboardData.appointments.length, 
       totalMockInterviews: dashboardData.mockInterviews.length,
       flaggedPostsCount: dashboardData.communityPosts.filter((p: any) => p.moderationStatus === 'flagged').length,
-      totalAffiliates: dashboardData.affiliates.filter((a: Affiliate) => a.status === 'approved').length,
-      pendingAffiliates: dashboardData.affiliates.filter((a: Affiliate) => a.status === 'pending').length,
+      totalAffiliates: dashboardData.affiliates?.filter((a: Affiliate) => a.status === 'approved').length || 0,
+      pendingAffiliates: dashboardData.affiliates?.filter((a: Affiliate) => a.status === 'pending').length || 0,
     };
   }, [dashboardData, usagePeriod]);
   
@@ -303,6 +303,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           <Card className="shadow-lg md:col-span-2 lg:col-span-4 bg-gradient-to-r from-primary/10 via-secondary/5 to-accent/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary"/>{t("adminDashboard.promotionalSpotlight.title")}</CardTitle>
+              <CardDescription>{t("adminDashboard.promotionalSpotlight.description")}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-muted-foreground text-sm flex-1">{t("adminDashboard.promotionalSpotlight.content")}</p>
@@ -417,6 +418,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               <CardContent>
                 <div className="text-2xl font-bold">{platformStats.totalMockInterviews}</div>
                 <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.mockInterviews.description")}</p>
+              </CardContent>
+            </Card>
+          )}
+           {visibleWidgetIds.has('coinEconomyStats') && (
+            <Card className="shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Coin Economy</CardTitle>
+                <Coins className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{dashboardData?.coinStats?.totalInCirculation?.toLocaleString() || 0}</div>
+                <p className="text-xs text-muted-foreground">Total coins in circulation</p>
               </CardContent>
             </Card>
           )}
