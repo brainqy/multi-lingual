@@ -71,14 +71,14 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'platformActivityStat', titleKey: 'adminDashboard.widgets.platformActivityStat', defaultVisible: true },
   { id: 'affiliateProgramStat', titleKey: 'adminDashboard.widgets.affiliateProgramStat', defaultVisible: true },
   { id: 'resumesAnalyzedStat', titleKey: 'adminDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
-  { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: false },
+  { id: 'jobApplicationsStat', titleKey: 'adminDashboard.widgets.jobApplicationsStat', defaultVisible: true },
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
-  { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
-  { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: false },
+  { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: true },
+  { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: true },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
-  { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
+  { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: false },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: false },
   { id: 'contentModerationQueueSummary', titleKey: 'adminDashboard.widgets.contentModerationQueueSummary', defaultVisible: true },
   { id: 'systemAlerts', titleKey: 'adminDashboard.widgets.systemAlerts', defaultVisible: true }, 
@@ -234,7 +234,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     setTempVisibleWidgetIds(new Set(visibleWidgetIds));
     setIsCustomizeDialogOpen(true);
   };
-
+  
   const handleMarkAlertAsRead = (alertId: string) => {
     setAlerts(prevAlerts => prevAlerts.map(alert =>
       alert.id === alertId ? { ...alert, isRead: true } : alert
@@ -361,6 +361,30 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 </CardContent>
              </Card>
            )}
+           {visibleWidgetIds.has('resumesAnalyzedStat') && (
+            <Card className="shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.resumesAnalyzed.title")}</CardTitle>
+                <FileText className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{platformStats.totalResumesAnalyzedThisPeriod}</div>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.resumesAnalyzed.description", { period: translatedUsagePeriod })}</p>
+              </CardContent>
+            </Card>
+          )}
+           {visibleWidgetIds.has('jobApplicationsStat') && (
+            <Card className="shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.jobApplications.title")}</CardTitle>
+                <Briefcase className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{platformStats.totalJobApplicationsThisPeriod}</div>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.jobApplications.description", { period: translatedUsagePeriod })}</p>
+              </CardContent>
+            </Card>
+          )}
            {visibleWidgetIds.has('communityPostsStat') && (
              <Card className="shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -373,6 +397,30 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 </CardContent>
              </Card>
            )}
+           {visibleWidgetIds.has('alumniConnectionsStat') && (
+            <Card className="shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.alumniConnections.title")}</CardTitle>
+                <Handshake className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{platformStats.totalAlumniConnections}</div>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.alumniConnections.description")}</p>
+              </CardContent>
+            </Card>
+          )}
+          {visibleWidgetIds.has('mockInterviewsStat') && (
+            <Card className="shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.mockInterviews.title")}</CardTitle>
+                <Mic className="h-5 w-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{platformStats.totalMockInterviews}</div>
+                <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.mockInterviews.description")}</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         {visibleWidgetIds.has('featureUsage') && (
