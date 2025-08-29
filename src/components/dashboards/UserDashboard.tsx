@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -36,6 +35,7 @@ import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
+import AiMentorSuggestions from "./AiMentorSuggestions";
 
 interface UserDashboardProps {
   user: UserProfile;
@@ -104,6 +104,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'recentActivities', title: 'Recent Activities', defaultVisible: true },
   { id: 'userBadges', title: 'My Badges', defaultVisible: true },
   { id: 'leaderboard', title: 'Leaderboard Summary', defaultVisible: true },
+  { id: 'aiMentorSuggestions', title: 'AI Mentor Suggestions', defaultVisible: true },
 ];
 
 type IconName = keyof typeof LucideIcons;
@@ -423,6 +424,10 @@ export default function UserDashboard({ user }: UserDashboardProps) {
           </div>
         </div>
         
+        {visibleWidgetIds.has('aiMentorSuggestions') && dashboardData?.alumni && (
+          <AiMentorSuggestions currentUser={user} allAlumni={dashboardData.alumni} />
+        )}
+
         {visibleWidgetIds.has('promotionCard') && activePromotions.length > 0 && (
             <Card className="shadow-lg p-0 overflow-hidden">
                 <Carousel plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]} className="w-full" opts={{ loop: true }}>
@@ -564,8 +569,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>{t("userDashboard.reminders.jobApp.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardDescription>
-              </CardHeader>
+                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardHeader>
+              </CardContent>
               <CardContent>
                 {upcomingReminders.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.reminders.jobApp.noReminders")}</p>
