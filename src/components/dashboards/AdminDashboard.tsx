@@ -78,7 +78,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
-  { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: false },
+  { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
   { id: 'aiUsageBreakdownChart', titleKey: 'adminDashboard.widgets.aiUsageBreakdownChart', defaultVisible: false },
   { id: 'contentModerationQueueSummary', titleKey: 'adminDashboard.widgets.contentModerationQueueSummary', defaultVisible: true },
   { id: 'systemAlerts', titleKey: 'adminDashboard.widgets.systemAlerts', defaultVisible: true }, 
@@ -303,11 +303,10 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           <Card className="shadow-lg md:col-span-2 lg:col-span-4 bg-gradient-to-r from-primary/10 via-secondary/5 to-accent/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary"/>{t("adminDashboard.promotionalSpotlight.title")}</CardTitle>
-              <CardDescription>{t("adminDashboard.promotionalSpotlight.description")}</CardDescription>
             </CardHeader>
-            <CardContent className="text-center py-10">
-              <p className="text-muted-foreground">{t("adminDashboard.promotionalSpotlight.content")}</p>
-              <Button asChild className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"><Link href="/admin/promotional-content">{t("adminDashboard.promotionalSpotlight.learnMoreButton")}</Link></Button>
+            <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-muted-foreground text-sm flex-1">{t("adminDashboard.promotionalSpotlight.content")}</p>
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground"><Link href="/admin/promotional-content">{t("adminDashboard.promotionalSpotlight.manageButton")}</Link></Button>
             </CardContent>
           </Card>
         )}

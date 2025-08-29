@@ -6,9 +6,9 @@
     "customizeButton": "Customize",
     "promotionalSpotlight": {
       "title": "Promotional Spotlight",
-      "description": "Manage and create promotional content for the user dashboard.",
-      "content": "This is a placeholder for a promotional card. Use the management page to configure what users see here.",
-      "learnMoreButton": "Learn More"
+      "description": "Manage the promotional content cards shown to users on their dashboards.",
+      "content": "This is a direct link to the Promotional Content management page. Use it to highlight new features, upcoming events, or premium offers to your users.",
+      "manageButton": "Manage Promotional Content"
     },
     "stats": {
       "totalUsers": {
@@ -37,7 +37,7 @@
       },
       "alumniConnections": {
         "title": "Alumni Connections",
-        "description": "Total potential connections"
+        "description": "Total appointments made"
       },
       "mockInterviews": {
         "title": "Mock Interviews",
@@ -114,13 +114,15 @@
       "jobApplicationsStat": "Job Applications Stat",
       "alumniConnectionsStat": "Alumni Connections Stat",
       "mockInterviewsStat": "Mock Interviews Stat",
-      "timeSpentStats": "Time Spent Stats",
       "tenantActivityOverview": "Tenant Activity Overview",
       "registrationTrendsChart": "Registration Trends Chart",
       "aiUsageBreakdownChart": "AI Usage Breakdown Chart",
       "contentModerationQueueSummary": "Content Moderation Summary",
       "systemAlerts": "System Alerts",
-      "adminQuickActions": "Admin Quick Actions"
+      "adminQuickActions": "Admin Quick Actions",
+      "coinEconomyStats": "Coin Economy Stats",
+      "affiliateProgramStat": "Affiliate Program Stat",
+      "featureUsage": "Feature Usage"
     }
   }
 }
