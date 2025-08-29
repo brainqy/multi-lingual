@@ -75,7 +75,7 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'communityPostsStat', titleKey: 'adminDashboard.widgets.communityPostsStat', defaultVisible: true },
   { id: 'alumniConnectionsStat', titleKey: 'adminDashboard.widgets.alumniConnectionsStat', defaultVisible: false },
   { id: 'mockInterviewsStat', titleKey: 'adminDashboard.widgets.mockInterviewsStat', defaultVisible: false },
-  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: true },
+  { id: 'coinEconomyStats', titleKey: 'adminDashboard.widgets.coinEconomyStats', defaultVisible: false },
   { id: 'featureUsage', titleKey: 'adminDashboard.widgets.featureUsage', defaultVisible: true },
   { id: 'tenantActivityOverview', titleKey: 'adminDashboard.widgets.tenantActivityOverview', defaultVisible: true },
   { id: 'registrationTrendsChart', titleKey: 'adminDashboard.widgets.registrationTrendsChart', defaultVisible: true },
@@ -312,7 +312,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           </Card>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {visibleWidgetIds.has('totalUsersStat') && (
             <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -358,6 +358,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                 <CardContent>
                     <div className="text-2xl font-bold">{platformStats.totalAffiliates}</div>
                     <p className="text-xs text-muted-foreground">{platformStats.pendingAffiliates > 0 ? `${platformStats.pendingAffiliates} pending approval` : 'All affiliates approved'}</p>
+                </CardContent>
+             </Card>
+           )}
+           {visibleWidgetIds.has('communityPostsStat') && (
+             <Card className="shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t("adminDashboard.stats.communityPosts.title")}</CardTitle>
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{platformStats.totalCommunityPostsThisPeriod}</div>
+                    <p className="text-xs text-muted-foreground">{t("adminDashboard.stats.communityPosts.description", {period: translatedUsagePeriod})}</p>
                 </CardContent>
              </Card>
            )}
@@ -558,5 +570,3 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     </>
   );
 }
-
-    
