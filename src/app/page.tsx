@@ -52,19 +52,19 @@ export default function LandingPage() {
   const latestBlogPosts = sampleBlogPosts.slice(0, 5);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-primary via-secondary to-accent">
-      <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="bg-card text-card-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
-            <FileText className="h-7 w-7" />
-            {platformName}
+            <FileText className="h-7 w-7 text-primary" />
+            <span className="hidden sm:inline">{platformName}</span>
           </Link>
           <nav className="space-x-2 sm:space-x-4">
             <Link href="/auth/login">
-              <Button variant="ghost" className="text-primary-foreground hover:bg-primary/80">Login</Button>
+              <Button variant="ghost">Login</Button>
             </Link>
             <Link href="/auth/signup">
-              <Button variant="secondary" className="bg-secondary hover:bg-secondary/80 text-secondary-foreground">Sign Up</Button>
+              <Button>Sign Up</Button>
             </Link>
           </nav>
         </div>
@@ -92,7 +92,7 @@ export default function LandingPage() {
         </section>
 
         {/* Core Features Section */}
-        <section id="features" className="py-16 sm:py-24 bg-gradient-to-br from-secondary via-muted to-background">
+        <section id="features" className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">All The Tools You Need to Succeed</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -100,9 +100,9 @@ export default function LandingPage() {
             </p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-10">
               {coreFeatures.map((feature, index) => (
-                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <CardHeader className="flex items-center gap-4">
-                    <feature.icon className="h-8 w-8 text-primary" />
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 text-left">
+                  <CardHeader className="flex flex-row items-center gap-4">
+                    <feature.icon className="h-8 w-8 text-primary shrink-0" />
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -115,7 +115,7 @@ export default function LandingPage() {
         </section>
 
         {/* Trending Jobs Section */}
-        <section id="trending-jobs" className="py-16 sm:py-24 bg-background">
+        <section id="trending-jobs" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Trending Job Categories</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -152,7 +152,7 @@ export default function LandingPage() {
         </section>
 
         {/* Statistics Section */}
-        <section className="py-16 sm:py-24 bg-secondary">
+        <section className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center text-foreground mb-12">Join a Thriving Community</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
@@ -166,27 +166,12 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* FAQs Section */}
-        <section className="py-16 sm:py-24 bg-gradient-to-br from-secondary via-muted to-background">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8">Frequently Asked Questions</h2>
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`faq-${index}`}>
-                  <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </section>
-
+        
         {/* Customer Reviews Section */}
         <CustomerReviewsSection />
         
         {/* Latest Blog Posts Section */}
-        <section id="blog" className="py-16 sm:py-24 bg-background">
+        <section id="blog" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground">From Our Blog</h2>
@@ -254,6 +239,21 @@ export default function LandingPage() {
           </div>
         </section>
         
+        {/* FAQs Section */}
+        <section className="py-16 sm:py-24 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+              {faqs.map((faq, index) => (
+                <AccordionItem key={index} value={`faq-${index}`}>
+                  <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+        
         {/* Call to Action Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -272,7 +272,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-8 bg-primary/5 text-center text-muted-foreground">
+      <footer className="py-8 bg-card text-center text-muted-foreground border-t">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center mb-4">
             <FileText className="h-8 w-8 text-primary" />
