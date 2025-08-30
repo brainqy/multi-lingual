@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus } from '@/types';
+import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, CommissionTier } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
 
@@ -20,6 +20,9 @@ export async function getAffiliates(tenantId?: string): Promise<Affiliate[]> {
     }
     const affiliates = await db.affiliate.findMany({
       where: whereClause,
+      include: {
+        commissionTier: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
     return affiliates as unknown as Affiliate[];
@@ -39,6 +42,7 @@ export async function getAffiliateByUserId(userId: string): Promise<Affiliate | 
     try {
         const affiliate = await db.affiliate.findUnique({
             where: { userId },
+            include: { commissionTier: true }
         });
         return affiliate as unknown as Affiliate | null;
     } catch (error) {
@@ -52,7 +56,7 @@ export async function getAffiliateByUserId(userId: string): Promise<Affiliate | 
  * @param affiliateData Data for the new affiliate.
  * @returns The newly created Affiliate object or null.
  */
-export async function createAffiliate(affiliateData: Omit<Affiliate, 'id' | 'totalEarned' | 'createdAt' | 'updatedAt'>): Promise<Affiliate | null> {
+export async function createAffiliate(affiliateData: Omit<Affiliate, 'id' | 'totalEarned' | 'createdAt' | 'updatedAt' | 'commissionTier'>): Promise<Affiliate | null> {
     logAction('Creating affiliate', { userId: affiliateData.userId });
     try {
         const newAffiliate = await db.affiliate.create({
@@ -77,6 +81,7 @@ export async function updateAffiliateStatus(affiliateId: string, status: Affilia
         const updatedAffiliate = await db.affiliate.update({
             where: { id: affiliateId },
             data: { status },
+            include: { commissionTier: true }
         });
 
         // Notify user on approval
@@ -132,6 +137,24 @@ export async function getAffiliateClicks(affiliateId: string): Promise<Affiliate
         return clicks as unknown as AffiliateClick[];
     } catch (error) {
         logError(`[AffiliateAction] Error fetching clicks for affiliate ${affiliateId}`, error, { affiliateId });
+        return [];
+    }
+}
+
+
+/**
+ * Fetches all commission tiers.
+ * @returns A promise resolving to an array of CommissionTier objects.
+ */
+export async function getCommissionTiers(): Promise<CommissionTier[]> {
+    logAction('Fetching commission tiers');
+    try {
+        const tiers = await db.commissionTier.findMany({
+            orderBy: { milestoneRequirement: 'asc' }
+        });
+        return tiers as unknown as CommissionTier[];
+    } catch(error) {
+        logError('[AffiliateAction] Error fetching commission tiers', error);
         return [];
     }
 }
