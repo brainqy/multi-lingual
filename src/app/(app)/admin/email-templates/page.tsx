@@ -39,6 +39,11 @@ export default function EmailTemplatesPage() {
   
   const { control, handleSubmit, reset, formState: { isDirty } } = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
+    defaultValues: {
+      id: '',
+      subject: '',
+      body: '',
+    }
   });
 
   const fetchData = useCallback(async () => {
@@ -46,22 +51,21 @@ export default function EmailTemplatesPage() {
     setIsLoading(true);
     const fetchedTemplates = await getTenantEmailTemplates(currentUser.tenantId);
     setTemplates(fetchedTemplates);
-    if (fetchedTemplates.length > 0 && !activeTemplateId) {
+    if (fetchedTemplates.length > 0) {
       const firstTemplate = fetchedTemplates[0];
       setActiveTemplateId(firstTemplate.id);
       reset(firstTemplate);
     }
     setIsLoading(false);
-  }, [currentUser, activeTemplateId, reset]);
+  }, [currentUser, reset]);
 
   useEffect(() => {
+    // Admins need a tenant selector to use this page, so for now it's manager-only.
     if (currentUser?.role === 'manager' ) {
       fetchData();
-    } else if (currentUser?.role !== 'admin') {
+    } else {
       setIsLoading(false);
     }
-    // Admin does not have a tenant, so this page is for managers only for now.
-    // If an admin needs to see this, they would need a tenant selection UI.
   }, [currentUser, fetchData]);
 
   const handleTabChange = (templateId: string) => {
@@ -100,8 +104,12 @@ export default function EmailTemplatesPage() {
     { value: "{{appointmentLink}}", description: "Link to view the appointment details." },
   ];
 
-  if (!currentUser || currentUser.role !== 'manager' && currentUser.role !== 'admin') {
+  if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
     return <AccessDeniedMessage message="This feature is available for Tenant Managers." />;
+  }
+  
+  if (currentUser.role === 'admin') {
+      return <AccessDeniedMessage title="Admin View" message="Admins must select a tenant to manage their email templates. This feature is currently available for Tenant Managers." />;
   }
 
   return (
@@ -145,12 +153,11 @@ export default function EmailTemplatesPage() {
             </Card>
           </div>
           <div className="col-span-3">
-            {templates.map(template => (
-              <TabsContent key={template.id} value={template.id} className="mt-0">
+            <TabsContent value={activeTemplateId || ""} className="mt-0">
                 <Card className="shadow-lg">
                   <form onSubmit={handleSubmit(onSubmit)}>
                   <CardHeader>
-                    <CardTitle>{t("emailTemplates.editingTitle", { type: t(`emailTemplates.types.${template.type}`, { default: template.type.replace(/_/g, ' ') }) })}</CardTitle>
+                    <CardTitle>{t("emailTemplates.editingTitle", { type: t(`emailTemplates.types.${templates.find(t=>t.id === activeTemplateId)?.type as string}`, { default: templates.find(t=>t.id === activeTemplateId)?.type.replace(/_/g, ' ') }) })}</CardTitle>
                     <CardDescription>{t("emailTemplates.editingDescription")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -183,8 +190,7 @@ export default function EmailTemplatesPage() {
                   </CardFooter>
                   </form>
                 </Card>
-              </TabsContent>
-            ))}
+            </TabsContent>
           </div>
         </div>
       </Tabs>
