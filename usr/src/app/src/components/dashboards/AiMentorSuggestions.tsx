@@ -10,6 +10,7 @@ import type { UserProfile } from "@/types";
 import { personalizedConnectionRecommendations, type PersonalizedConnectionRecommendationsOutput } from '@/ai/flows/personalized-connection-recommendations';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface AiMentorSuggestionsProps {
     currentUser: UserProfile;
@@ -123,5 +124,3 @@ export default function AiMentorSuggestions({ currentUser, allAlumni }: AiMentor
         </Card>
     );
 }
-
-    
