@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award, Loader2 } from "lucide-react";
+import { Target, Copy, Share2, Users, CheckCircle, LinkIcon, DollarSign, BarChart3, CalendarDays, Gift, ThumbsUp, Info, UserPlus, Award, Loader2, Clock, Hourglass, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, CommissionTier } from "@/types";
 import { format, subDays, isAfter, parseISO } from "date-fns";
@@ -106,8 +106,10 @@ export default function AffiliatesPage() {
   };
 
   const handleBecomeAffiliate = async () => {
-    if (!user || userAffiliateProfile) {
-        toast({title: "Already an Affiliate", description: `Your status is: ${userAffiliateProfile?.status}`});
+    if (!user) return;
+    const firstTier = commissionTiers.sort((a,b) => a.milestoneRequirement - b.milestoneRequirement)[0];
+    if (!firstTier) {
+        toast({title: "Error", description: "Affiliate program not configured correctly.", variant: "destructive"});
         return;
     }
     
@@ -117,7 +119,8 @@ export default function AffiliatesPage() {
         email: user.email,
         status: 'pending' as AffiliateStatus,
         affiliateCode: `${user.name.substring(0,4).toUpperCase()}${user.id.slice(-4)}`,
-        commissionRate: 0.10, // Default 10% commission
+        commissionRate: firstTier.commissionRate,
+        commissionTierId: firstTier.id
     });
 
     if (created) {
@@ -136,15 +139,74 @@ export default function AffiliatesPage() {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
   }
 
-  // Approved affiliate view
-  return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Target className="h-8 w-8" /> {t("affiliates.title")}
-      </h1>
-      <CardDescription>{t("affiliates.pageDescription")}</CardDescription>
+  const renderContent = () => {
+    if (!userAffiliateProfile) {
+      return (
+        <Card className="shadow-lg text-center">
+          <CardHeader>
+            <CardTitle>Become an Affiliate Partner</CardTitle>
+            <CardDescription>Join our affiliate program to earn rewards by sharing JobMatch AI.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">Click the button below to submit your application. It will be reviewed by our team.</p>
+            <Button onClick={handleBecomeAffiliate}>Apply to Become an Affiliate</Button>
+          </CardContent>
+        </Card>
+      );
+    }
 
-      {userAffiliateProfile && userAffiliateProfile.status === 'approved' && nextTier && (
+    if (userAffiliateProfile.status === 'pending') {
+      return (
+        <Card className="shadow-lg text-center">
+          <CardHeader>
+            <Hourglass className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+            <CardTitle>Application Pending</CardTitle>
+            <CardDescription>Your affiliate application is currently under review. We'll notify you once a decision is made.</CardDescription>
+          </CardHeader>
+        </Card>
+      );
+    }
+    
+    if (userAffiliateProfile.status === 'rejected') {
+      return (
+        <Card className="shadow-lg text-center">
+          <CardHeader>
+            <XCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
+            <CardTitle>Application Status</CardTitle>
+            <CardDescription>We regret to inform you that your affiliate application was not approved at this time. For more details, please contact support.</CardDescription>
+          </CardHeader>
+        </Card>
+      );
+    }
+
+    // Approved affiliate view
+    return (
+      <>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>{t("affiliates.yourDetails")}</CardTitle>
+            <CardDescription>{t("affiliates.detailsDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div>
+              <Label htmlFor="affiliate-code">{t("affiliates.codeLabel")}</Label>
+              <div className="flex gap-2">
+                <Input id="affiliate-code" value={userAffiliateProfile.affiliateCode} readOnly />
+                <Button variant="outline" onClick={() => copyToClipboard(userAffiliateProfile.affiliateCode)}><Copy className="h-4 w-4"/></Button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="affiliate-link">{t("affiliates.linkLabel")}</Label>
+              <div className="flex gap-2">
+                <Input id="affiliate-link" value={affiliateLink} readOnly />
+                <Button variant="outline" onClick={() => copyToClipboard(affiliateLink)}><LinkIcon className="h-4 w-4"/></Button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">Your current commission rate: <strong className="text-primary">{(userAffiliateProfile.commissionRate * 100).toFixed(0)}%</strong> ({userAffiliateProfile.commissionTier?.name || 'Standard'})</p>
+          </CardContent>
+        </Card>
+        
+        {nextTier && (
           <Card className="shadow-lg">
               <CardHeader>
                   <CardTitle>Next Commission Tier: {nextTier.name}</CardTitle>
@@ -158,9 +220,75 @@ export default function AffiliatesPage() {
                   </div>
               </CardContent>
           </Card>
-      )}
+        )}
 
-      {/* Other components like Your Details, Performance, Recent Signups etc. */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>{t("affiliates.performance")}</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardDescription>{t("affiliates.performanceDesc")}</CardDescription>
+              <Tabs defaultValue="all" onValueChange={(v) => setDurationFilter(v as any)}>
+                <TabsList>
+                  <TabsTrigger value="7d">7d</TabsTrigger>
+                  <TabsTrigger value="30d">30d</TabsTrigger>
+                  <TabsTrigger value="all">All Time</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border rounded-lg text-center"><BarChart3 className="h-6 w-6 text-primary mx-auto mb-2"/><p className="text-2xl font-bold">{filteredStats.clicks}</p><p className="text-sm text-muted-foreground">{t("affiliates.totalClicks")}</p></div>
+            <div className="p-4 border rounded-lg text-center"><Users className="h-6 w-6 text-primary mx-auto mb-2"/><p className="text-2xl font-bold">{filteredStats.signups}</p><p className="text-sm text-muted-foreground">{t("affiliates.successfulSignups")}</p></div>
+            <div className="p-4 border rounded-lg text-center"><DollarSign className="h-6 w-6 text-primary mx-auto mb-2"/><p className="text-2xl font-bold">${filteredStats.earned.toFixed(2)}</p><p className="text-sm text-muted-foreground">{t("affiliates.totalEarned")}</p></div>
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-lg">
+          <CardHeader><CardTitle>{t("affiliates.recentSignups")}</CardTitle></CardHeader>
+          <CardContent>
+            {userSignups.length === 0 ? <p className="text-muted-foreground text-center">{t("affiliates.noSignups")}</p> : (
+              <Table>
+                <TableHeader>
+                  <TableRow><TableHead>{t("affiliates.userIdMasked")}</TableHead><TableHead>{t("affiliates.signupDate")}</TableHead><TableHead className="text-right">{t("affiliates.commissionEarned")}</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userSignups.slice(0, 5).map(signup => (
+                    <TableRow key={signup.id}><TableCell>{t("affiliates.userMasked", { last4: signup.newUserId.slice(-4) })}</TableCell><TableCell>{format(parseISO(signup.signupDate), "PPP")}</TableCell><TableCell className="text-right">${(signup.commissionEarned || 0).toFixed(2)}</TableCell></TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </>
+    );
+  };
+
+  return (
+    <div className="space-y-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+        <Target className="h-8 w-8" /> {t("affiliates.title")}
+      </h1>
+      <CardDescription>{t("affiliates.pageDescription")}</CardDescription>
+      
+      {renderContent()}
+
+      <Card className="shadow-lg bg-primary/10 border-primary/30">
+        <CardHeader>
+            <CardTitle>{t("affiliates.howItWorksCardTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            {affiliateSteps.map((step, index) => (
+                <div key={index} className="flex flex-col items-center p-4">
+                    <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 mb-3">{step.icon}</div>
+                    <h3 className="font-semibold text-md text-foreground">{t(step.titleKey as any)}</h3>
+                </div>
+            ))}
+          </div>
+        </CardContent>
+    </Card>
+
     </div>
   );
 }
