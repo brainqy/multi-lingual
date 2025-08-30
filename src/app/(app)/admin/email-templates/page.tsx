@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -37,7 +38,7 @@ export default function EmailTemplatesPage() {
   const { toast } = useToast();
   const { t } = useI18n();
   
-  const { control, handleSubmit, reset, formState: { isDirty } } = useForm<TemplateFormData>({
+  const { control, handleSubmit, reset, formState: { errors, isDirty } } = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
     defaultValues: {
       id: '',
@@ -146,51 +147,53 @@ export default function EmailTemplatesPage() {
                 <CardContent className="p-3 pt-0">
                     <ScrollArea className="h-48">
                       <ul className="text-xs space-y-1">
-                        {placeholders.map(p => <li key={p.value}><code className="font-mono bg-muted p-0.5 rounded">{p.value}</code> - <span className="text-muted-foreground">{t(`emailTemplates.placeholders.${p.value}`, { default: p.description })}</span></li>)}
+                        {placeholders.map(p => <li key={p.value}><code className="font-mono bg-muted p-0.5 rounded">{p.value}</code> - <span className="text-muted-foreground">{t(`emailTemplates.placeholders.${p.value.replace(/\{|\}/g, '')}` as any, { default: p.description })}</span></li>)}
                       </ul>
                     </ScrollArea>
                 </CardContent>
             </Card>
           </div>
           <div className="col-span-3">
-            <TabsContent value={activeTemplateId || ""} className="mt-0">
-                <Card className="shadow-lg">
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                  <CardHeader>
-                    <CardTitle>{t("emailTemplates.editingTitle", { type: t(`emailTemplates.types.${templates.find(t=>t.id === activeTemplateId)?.type as string}`, { default: templates.find(t=>t.id === activeTemplateId)?.type.replace(/_/g, ' ') }) })}</CardTitle>
-                    <CardDescription>{t("emailTemplates.editingDescription")}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Controller name="id" control={control} render={({ field }) => <input type="hidden" {...field} />} />
-                    <div>
-                      <Label htmlFor="subject">{t("emailTemplates.form.subjectLabel")}</Label>
-                      <Controller
-                        name="subject"
-                        control={control}
-                        render={({ field }) => <Input id="subject" {...field} />}
-                      />
-                      {errors.subject && <p className="text-sm text-destructive mt-1">{errors.subject.message}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="body">{t("emailTemplates.form.bodyLabel")}</Label>
-                      <Controller
-                        name="body"
-                        control={control}
-                        render={({ field }) => <Textarea id="body" {...field} rows={15} />}
-                      />
-                      {errors.body && <p className="text-sm text-destructive mt-1">{errors.body.message}</p>}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button type="submit" disabled={isSaving || !isDirty}>
-                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <Save className="mr-2 h-4 w-4" />
-                      {t("emailTemplates.saveButton")}
-                    </Button>
-                  </CardFooter>
-                  </form>
-                </Card>
-            </TabsContent>
+            {templates.map(template => (
+              <TabsContent key={template.id} value={template.id} className="mt-0">
+                  <Card className="shadow-lg">
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <CardHeader>
+                      <CardTitle>{t("emailTemplates.editingTitle", { type: t(`emailTemplates.types.${template.type}` as any, { default: template.type.replace(/_/g, ' ') }) })}</CardTitle>
+                      <CardDescription>{t("emailTemplates.editingDescription")}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Controller name="id" control={control} render={({ field }) => <input type="hidden" {...field} />} />
+                      <div>
+                        <Label htmlFor="subject">{t("emailTemplates.form.subjectLabel")}</Label>
+                        <Controller
+                          name="subject"
+                          control={control}
+                          render={({ field }) => <Input id="subject" {...field} />}
+                        />
+                        {errors.subject && <p className="text-sm text-destructive mt-1">{errors.subject.message}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="body">{t("emailTemplates.form.bodyLabel")}</Label>
+                        <Controller
+                          name="body"
+                          control={control}
+                          render={({ field }) => <Textarea id="body" {...field} rows={15} />}
+                        />
+                        {errors.body && <p className="text-sm text-destructive mt-1">{errors.body.message}</p>}
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button type="submit" disabled={isSaving || !isDirty}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Save className="mr-2 h-4 w-4" />
+                        {t("emailTemplates.saveButton")}
+                      </Button>
+                    </CardFooter>
+                    </form>
+                  </Card>
+              </TabsContent>
+            ))}
           </div>
         </div>
       </Tabs>
