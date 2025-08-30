@@ -7,9 +7,6 @@ async function main() {
   console.log(`Start seeding ...`)
 
   // --- CLEANUP ---
-  // In a real dev environment, you might want to clean up old data first.
-  // For this demo, upsert and createMany handle most cases.
-  // We'll clean relations manually where needed.
   await prisma.vote.deleteMany({});
   await prisma.nomination.deleteMany({});
   await prisma.award.deleteMany({});
@@ -17,6 +14,7 @@ async function main() {
   await prisma.affiliateClick.deleteMany({});
   await prisma.affiliateSignup.deleteMany({});
   await prisma.affiliate.deleteMany({});
+  await prisma.commissionTier.deleteMany({});
   
   // --- CORE DATA ---
 
@@ -88,9 +86,14 @@ async function main() {
   const [alice, bob, charlie, diana, ethan] = createdUsers;
 
   // --- AFFILIATE MANAGEMENT ---
-  const aff1 = await prisma.affiliate.create({ data: { userId: alice.id, name: alice.name, email: alice.email, status: 'approved', affiliateCode: 'ALICEPRO', commissionRate: 0.15 } });
-  const aff2 = await prisma.affiliate.create({ data: { userId: bob.id, name: bob.name, email: bob.email, status: 'pending', affiliateCode: 'BUILDWITHBOB', commissionRate: 0.10 } });
-  const aff3 = await prisma.affiliate.create({ data: { userId: diana.id, name: diana.name, email: diana.email, status: 'approved', affiliateCode: 'WONDERWOMAN', commissionRate: 0.20 } });
+  const tier1 = await prisma.commissionTier.create({ data: { name: 'Bronze', milestoneRequirement: 0, commissionRate: 0.10 } });
+  const tier2 = await prisma.commissionTier.create({ data: { name: 'Silver', milestoneRequirement: 10, commissionRate: 0.15 } });
+  const tier3 = await prisma.commissionTier.create({ data: { name: 'Gold', milestoneRequirement: 50, commissionRate: 0.20 } });
+  console.log('Seeded commission tiers.');
+  
+  const aff1 = await prisma.affiliate.create({ data: { userId: alice.id, name: alice.name, email: alice.email, status: 'approved', affiliateCode: 'ALICEPRO', commissionRate: 0.15, commissionTierId: tier2.id } });
+  const aff2 = await prisma.affiliate.create({ data: { userId: bob.id, name: bob.name, email: bob.email, status: 'pending', affiliateCode: 'BUILDWITHBOB', commissionRate: 0.10, commissionTierId: tier1.id } });
+  const aff3 = await prisma.affiliate.create({ data: { userId: diana.id, name: diana.name, email: diana.email, status: 'approved', affiliateCode: 'WONDERWOMAN', commissionRate: 0.20, commissionTierId: tier3.id } });
   console.log('Seeded affiliates.');
 
   // Affiliate Clicks and Signups
@@ -107,7 +110,6 @@ async function main() {
     data: [
       { affiliateId: aff1.id, newUserId: charlie.id, commissionEarned: 10.00 },
       { affiliateId: aff3.id, newUserId: ethan.id, commissionEarned: 15.00 },
-      // Note: We'd need another user to seed the second signup for Diana (aff3)
     ]
   });
   console.log('Seeded affiliate clicks and signups.');
@@ -302,11 +304,4 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-
-      
-
-    
-
-
 

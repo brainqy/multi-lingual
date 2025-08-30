@@ -334,21 +334,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     );
   }
 
-  const LeaderboardCard = ({ user: lbUser, rank }: { user: UserProfile; rank: number }) => (
-    <Card className="p-3 flex items-center gap-3">
-      <div className="font-bold text-lg w-6 text-center">{getRankIcon(rank)}</div>
-      <Avatar className="h-9 w-9">
-        <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face" />
-        <AvatarFallback>{lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserIcon />}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1">
-        <p className="font-medium text-sm">{lbUser.name}</p>
-        <p className="text-xs text-muted-foreground">{lbUser.xpPoints?.toLocaleString() || 0} XP</p>
-      </div>
-      {lbUser.id === user.id && <Badge variant="outline">You</Badge>}
-    </Card>
-  );
-
   return (
     <>
       <WelcomeTourDialog
@@ -536,13 +521,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                     <CardDescription>Top 5 users on the platform.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* Responsive Leaderboard */}
-                    <div className="sm:hidden space-y-2"> {/* Mobile view: Cards */}
-                        {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
-                          <LeaderboardCard key={lbUser.id} user={lbUser} rank={index + 1} />
-                        ))}
-                    </div>
-                    <div className="hidden sm:block"> {/* Desktop view: Table */}
                       <Table>
                           <TableBody>
                               {leaderboardUsers.map((lbUser: UserProfile, index: number) => (
@@ -559,7 +537,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                               ))}
                           </TableBody>
                       </Table>
-                    </div>
                 </CardContent>
                 <CardFooter><Button variant="link" asChild className="text-xs p-0"><Link href="/gamification">View Full Leaderboard</Link></Button></CardFooter>
             </Card>
@@ -569,8 +546,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-primary"/>{t("userDashboard.reminders.jobApp.title")}</CardTitle>
-                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardHeader>
-              </CardContent>
+                <CardDescription>{t("userDashboard.reminders.jobApp.description")}</CardDescription>
+              </CardHeader>
               <CardContent>
                 {upcomingReminders.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">{t("userDashboard.reminders.jobApp.noReminders")}</p>
@@ -687,3 +664,4 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     </>
   );
 }
+
