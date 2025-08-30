@@ -52,6 +52,7 @@ export default function EmailTemplatesPage() {
     setIsLoading(true);
     const fetchedTemplates = await getTenantEmailTemplates(currentUser.tenantId);
     setTemplates(fetchedTemplates);
+    // This is the critical fix: only set active tab *after* data is fetched.
     if (fetchedTemplates.length > 0) {
       const firstTemplate = fetchedTemplates[0];
       setActiveTemplateId(firstTemplate.id);
@@ -61,7 +62,6 @@ export default function EmailTemplatesPage() {
   }, [currentUser, reset]);
 
   useEffect(() => {
-    // Admins need a tenant selector to use this page, so for now it's manager-only.
     if (currentUser?.role === 'manager' ) {
       fetchData();
     } else {
@@ -122,13 +122,13 @@ export default function EmailTemplatesPage() {
         {t("emailTemplates.description")}
       </CardDescription>
       
-      {isLoading ? (
+      {isLoading || !activeTemplateId ? (
         <Card className="shadow-lg">
           <CardHeader><Skeleton className="h-8 w-1/3"/></CardHeader>
           <CardContent><Skeleton className="h-64 w-full"/></CardContent>
         </Card>
       ) : (
-      <Tabs value={activeTemplateId || ""} onValueChange={handleTabChange} orientation="vertical" className="h-full">
+      <Tabs value={activeTemplateId} onValueChange={handleTabChange} orientation="vertical" className="h-full">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="col-span-1">
             <TabsList className="flex flex-col h-auto w-full p-2 bg-card border rounded-lg">
