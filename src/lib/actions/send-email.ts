@@ -4,6 +4,10 @@
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { getTenantEmailTemplates } from './email-templates';
+import { Resend } from 'resend';
+
+// Initialize Resend with the API key from environment variables
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface EmailPlaceholders {
   userName?: string;
@@ -17,14 +21,14 @@ interface EmailPlaceholders {
 }
 
 /**
- * Simulates sending an email by fetching a template, replacing placeholders, and logging the output.
- * In a real application, this would integrate with an email service like SendGrid, Mailgun, or AWS SES.
+ * Sends an email using the Resend service.
+ * It fetches a template, replaces placeholders, and sends the email.
  * 
- * @param tenantId The tenant for which to send the email, determines the template.
+ * @param tenantId The tenant for which to send the email, which determines the template.
  * @param recipientEmail The email address of the recipient.
  * @param type The type of email template to use.
  * @param placeholders An object containing values to replace in the template.
- * @returns A promise that resolves when the email has been "sent" (logged).
+ * @returns A promise that resolves when the email has been sent.
  */
 export async function sendEmail({
   tenantId,
@@ -38,6 +42,17 @@ export async function sendEmail({
   placeholders: EmailPlaceholders;
 }) {
   logAction('Attempting to send email', { recipientEmail, type, tenantId });
+
+  if (!process.env.RESEND_API_KEY) {
+    logError('[SendEmail] Resend API key is not configured. Email sending is disabled.', new Error('RESEND_API_KEY missing'));
+    // Log the intended email to the console as a fallback
+    console.log(`--- FALLBACK: EMAIL NOT SENT (NO API KEY) ---`);
+    console.log(`To: ${recipientEmail}`);
+    console.log(`Type: ${type}`);
+    console.log(`Placeholders: ${JSON.stringify(placeholders)}`);
+    console.log(`-------------------------------------------`);
+    return;
+  }
 
   try {
     const templates = await getTenantEmailTemplates(tenantId);
@@ -65,19 +80,27 @@ export async function sendEmail({
             body = body.replace(regex, value);
         }
     }
+    
+    // Using a generic "from" address. Resend requires a verified domain.
+    // Replace 'onboarding@resend.dev' with your own verified domain email in a real app.
+    const fromAddress = `donotreply@${tenant.domain || 'bhashasetu.com'}`;
+    const fallbackFrom = 'JobMatch AI <onboarding@resend.dev>';
+    
+    const { data, error } = await resend.emails.send({
+      from: fallbackFrom,
+      to: [recipientEmail],
+      subject: subject,
+      text: body, // Use the text version of the body for simplicity
+      // For HTML emails, you would use:
+      // html: '<p>Your HTML content here</p>'
+    });
 
-    // --- Email Sending Simulation ---
-    // In a real app, you would use an email sending library here.
-    // For this project, we will log the email content to the console.
-    console.log('--- SIMULATING EMAIL SEND ---');
-    console.log(`To: ${recipientEmail}`);
-    console.log(`From: noreply@${tenant.domain || 'jobmatch.ai'}`);
-    console.log(`Subject: ${subject}`);
-    console.log('--- Body ---');
-    console.log(body);
-    console.log('-----------------------------');
-    logAction('Email sent successfully (simulated)', { recipientEmail, type });
-    // --- End Simulation ---
+    if (error) {
+      logError('[SendEmail] Resend API error', error, { recipientEmail, type });
+      throw error;
+    }
+
+    logAction('Email sent successfully via Resend', { recipientEmail, type, messageId: data?.id });
 
   } catch (error) {
     logError('[SendEmail] Failed to send email', error, { recipientEmail, type, tenantId });
