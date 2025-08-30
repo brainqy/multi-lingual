@@ -1,10 +1,11 @@
 
 'use server';
 
-import { db } from '@/lib/db';
+import { PrismaClient } from '@prisma/client';
 import type { EmailTemplate } from '@/types';
 import { logAction, logError } from '@/lib/logger';
-import { Prisma } from '@prisma/client';
+
+const db = new PrismaClient();
 
 const DEFAULT_TEMPLATES = [
   {
@@ -51,19 +52,10 @@ export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTe
         tenantId: tenantId,
       }));
       
-      console.log('[EmailTemplateAction LOG] 4. Starting loop to create default templates.');
-      for (const templateData of templatesToCreate) {
-        console.log(`[EmailTemplateAction LOG] 4a. Creating template of type: ${templateData.type}`);
-        await db.emailTemplate.create({
-          data: {
-            ...templateData,
-            tenant: {
-              connect: { id: tenantId }
-            }
-          }
-        });
-        console.log(`[EmailTemplateAction LOG] 4b. Successfully created template: ${templateData.type}`);
-      }
+      console.log('[EmailTemplateAction LOG] 4. Starting transaction to create default templates.');
+      await db.emailTemplate.createMany({
+        data: templatesToCreate,
+      });
       console.log('[EmailTemplateAction LOG] 5. Finished creating default templates.');
       
       console.log('[EmailTemplateAction LOG] 6. Re-fetching templates after creation.');
