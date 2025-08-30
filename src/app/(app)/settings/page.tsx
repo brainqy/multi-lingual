@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { getTenants, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
 import { updatePlatformSettings as updatePlatformSettingsAction } from "@/lib/actions/platform-settings";
+import { changePassword } from "@/lib/actions/auth";
 
 export default function SettingsPage() {
   const { t } = useI18n();
@@ -193,8 +194,9 @@ export default function SettingsPage() {
   };
 
 
-  const handleChangePassword = (event: FormEvent) => {
+  const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
+    if (!currentUser) return;
     if (newPassword !== confirmNewPassword) {
       toast({ title: t("userSettings.toast.passwordMismatch.title"), description: t("userSettings.toast.passwordMismatch.description"), variant: "destructive" });
       return;
@@ -203,12 +205,22 @@ export default function SettingsPage() {
       toast({ title: t("userSettings.toast.passwordTooShort.title"), description: t("userSettings.toast.passwordTooShort.description"), variant: "destructive" });
       return;
     }
-    console.log("Attempting to change password (mocked):", { currentPassword, newPassword });
-    toast({ title: t("userSettings.toast.passwordChangedMock.title"), description: t("userSettings.toast.passwordChangedMock.description") });
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-    setIsChangePasswordDialogOpen(false);
+    
+    const result = await changePassword({
+      userId: currentUser.id,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    });
+
+    if (result.success) {
+      toast({ title: "Password Changed", description: "Your password has been successfully updated." });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setIsChangePasswordDialogOpen(false);
+    } else {
+      toast({ title: "Password Change Failed", description: result.error, variant: "destructive" });
+    }
   };
 
   const handleDataDeletionRequest = () => {

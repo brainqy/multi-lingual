@@ -104,3 +104,41 @@ export async function validateSession(email: string, sessionId: string): Promise
     return null;
   }
 }
+
+/**
+ * Changes a user's password after verifying their current password.
+ * @param data Object containing userId, currentPassword, and newPassword.
+ * @returns A success or error object.
+ */
+export async function changePassword(data: { userId: string; currentPassword?: string; newPassword?: string }): Promise<{ success: boolean; error?: string }> {
+  logAction('Attempting to change password', { userId: data.userId });
+  try {
+    const user = await db.user.findUnique({ where: { id: data.userId } });
+
+    if (!user) {
+      logError('[AuthAction] User not found for password change', {}, { userId: data.userId });
+      return { success: false, error: "User not found." };
+    }
+
+    // In a real app with hashed passwords, you'd compare the hash.
+    // For this app's logic, we compare plain text.
+    if (user.password && user.password !== data.currentPassword) {
+      logAction('Password change failed: Incorrect current password', { userId: data.userId });
+      return { success: false, error: "The current password you entered is incorrect." };
+    }
+    
+    // In a real app, you would hash the new password here before saving.
+    // const hashedPassword = await hash(data.newPassword, 10);
+    await db.user.update({
+      where: { id: data.userId },
+      data: { password: data.newPassword }, // Save the plain text password as per current app structure
+    });
+    
+    logAction('Password changed successfully', { userId: data.userId });
+    return { success: true };
+
+  } catch (error) {
+    logError('[AuthAction] Exception during password change', error, { userId: data.userId });
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
