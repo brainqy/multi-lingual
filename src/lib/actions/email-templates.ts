@@ -9,7 +9,7 @@ const DEFAULT_TEMPLATES = [
   {
     type: 'WELCOME',
     subject: 'Welcome to {{tenantName}}!',
-    body: 'Hi {{userName}},\n\nWelcome to the {{tenantName}} alumni network, powered by JobMatch AI! We are thrilled to have you as part of our community.\n\nExplore the platform to connect with fellow alumni, find job opportunities, and access career resources.\n\nBest,\nThe {{tenantName}} Team',
+    body: 'Hi {{userName}},\n\nWelcome to the {{tenantName}} alumni network! We are thrilled to have you as part of our community.\n\nYour username is your email: {{userEmail}}\n\nYou can now log in to explore the platform, connect with fellow alumni, find job opportunities, and access career resources.\n\nBest,\nThe {{tenantName}} Team',
   },
   {
     type: 'APPOINTMENT_CONFIRMATION',
@@ -31,18 +31,14 @@ const DEFAULT_TEMPLATES = [
  * @returns A promise that resolves to an array of EmailTemplate objects.
  */
 export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTemplate[]> {
-  console.log('[EmailTemplateAction LOG] --- Entering getTenantEmailTemplates ---', { tenantId });
   logAction('Fetching email templates for tenant', { tenantId });
   try {
-    console.log('[EmailTemplateAction LOG] 1. Checking for existing templates in the database.');
     let templates = await db.emailTemplate.findMany({
       where: { tenantId },
       orderBy: { type: 'asc' },
     });
-    console.log(`[EmailTemplateAction LOG] 2. Found ${templates.length} existing templates.`);
 
     if (templates.length === 0) {
-      console.log('[EmailTemplateAction LOG] 3. No templates found. Proceeding to create default templates.');
       logAction('No templates found, creating defaults for tenant', { tenantId });
       
       const templatesToCreate = DEFAULT_TEMPLATES.map(t => ({
@@ -50,26 +46,18 @@ export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTe
         tenantId: tenantId,
       }));
       
-      console.log('[EmailTemplateAction LOG] 4. Starting transaction to create default templates.');
-      await db.$transaction(
-        templatesToCreate.map(templateData => 
-          db.emailTemplate.create({ data: templateData })
-        )
-      );
-      console.log('[EmailTemplateAction LOG] 5. Finished creating default templates.');
+      await db.emailTemplate.createMany({
+        data: templatesToCreate,
+      });
       
-      console.log('[EmailTemplateAction LOG] 6. Re-fetching templates after creation.');
       templates = await db.emailTemplate.findMany({
         where: { tenantId },
         orderBy: { type: 'asc' },
       });
-      console.log(`[EmailTemplateAction LOG] 7. Re-fetched and found ${templates.length} templates.`);
     }
 
-    console.log('[EmailTemplateAction LOG] --- Exiting getTenantEmailTemplates successfully ---');
     return templates as unknown as EmailTemplate[];
   } catch (error) {
-    console.error('[EmailTemplateAction LOG] !!! ERROR in getTenantEmailTemplates:', error);
     logError(`[EmailTemplateAction] Error fetching templates for tenant ${tenantId}`, error, { tenantId });
     return [];
   }
@@ -82,19 +70,14 @@ export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTe
  * @returns The updated EmailTemplate object or null.
  */
 export async function updateEmailTemplate(templateId: string, updateData: Partial<Pick<EmailTemplate, 'subject' | 'body'>>): Promise<EmailTemplate | null> {
-  console.log('[EmailTemplateAction LOG] --- Entering updateEmailTemplate ---', { templateId, updateData });
   logAction('Updating email template', { templateId });
   try {
-    console.log('[EmailTemplateAction LOG] 1. Calling database to update template.');
     const updatedTemplate = await db.emailTemplate.update({
       where: { id: templateId },
       data: updateData,
     });
-    console.log('[EmailTemplateAction LOG] 2. Database update successful.', { updatedTemplateId: updatedTemplate.id });
-    console.log('[EmailTemplateAction LOG] --- Exiting updateEmailTemplate successfully ---');
     return updatedTemplate as unknown as EmailTemplate;
   } catch (error) {
-    console.error('[EmailTemplateAction LOG] !!! ERROR in updateEmailTemplate:', error);
     logError(`[EmailTemplateAction] Error updating template ${templateId}`, error, { templateId });
     return null;
   }

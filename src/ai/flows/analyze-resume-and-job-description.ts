@@ -8,16 +8,11 @@
  * - AnalyzeResumeAndJobDescriptionOutput - The return type for the analyzeResumeAndJobDescription function.
  */
 
-import { genkit } from 'genkit';
-import { z } from 'genkit';
-import { getGoogleAIPlugin, AI_PROMPT_CONFIG } from '@/ai/genkit';
-import { AnalyzeResumeAndJobDescriptionInputSchema as BaseInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionOutput } from '@/types';
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+import { AnalyzeResumeAndJobDescriptionInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionOutput } from '@/types';
 import { AIError, InvalidInputError } from '@/lib/exceptions';
 
-// Extend the base schema to include an optional apiKey
-const AnalyzeResumeAndJobDescriptionInputSchema = BaseInputSchema.extend({
-  apiKey: z.string().optional(),
-});
 
 export async function analyzeResumeAndJobDescription(
   input: z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>
@@ -26,17 +21,26 @@ export async function analyzeResumeAndJobDescription(
     throw new InvalidInputError("Resume text or Job Description text cannot be empty.");
   }
   
-  const customAI = genkit({
-    plugins: [getGoogleAIPlugin(input.apiKey)],
-    model: 'googleai/gemini-2.0-flash',
-  });
+  const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
+  if (!output) {
+      throw new AIError("AI analysis did not return any parsable output.");
+  }
+  return output;
+}
 
-  const analyzeResumeAndJobDescriptionPrompt = customAI.definePrompt({
-    name: 'analyzeResumeAndJobDescriptionPrompt',
-    input: { schema: BaseInputSchema },
-    output: { schema: AnalyzeResumeAndJobDescriptionOutputSchema },
-    config: AI_PROMPT_CONFIG,
-    prompt: `You are an expert resume and job description analyst. Your task is to provide a comprehensive analysis of the given resume against the provided job description.
+const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
+  name: 'analyzeResumeAndJobDescriptionPrompt',
+  input: {schema: AnalyzeResumeAndJobDescriptionInputSchema},
+  output: {schema: AnalyzeResumeAndJobDescriptionOutputSchema},
+  config: {
+    safetySettings: [ 
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
+  },
+  prompt: `You are an expert resume and job description analyst. Your task is to provide a comprehensive analysis of the given resume against the provided job description.
 
 **Analysis Context:**
 {{#if jobTitle}}Target Job Title: {{{jobTitle}}}{{/if}}
@@ -61,11 +65,4 @@ Job Description Text:
 {{{jobDescriptionText}}}
 
 **FINAL INSTRUCTION:** Your entire response MUST be a single, valid JSON object that strictly adheres to the AnalyzeResumeAndJobDescriptionOutputSchema. It is IMPERATIVE that all fields expected by the schema, including all nested optional objects and their fields, are present. If you cannot determine a value for a field, YOU MUST use a sensible default.`,
-  });
-  
-  const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
-  if (!output) {
-      throw new AIError("AI analysis did not return any parsable output.");
-  }
-  return output;
-}
+});

@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -58,7 +59,7 @@ async function main() {
       email: 'admin@bhashasetu.com',
       name: 'Admin User',
       password: 'password123',
-      role: 'ADMIN',
+      role: 'admin',
       tenantId: platformTenant.id,
     },
   })

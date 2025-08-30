@@ -1,1347 +1,250 @@
+import { PrismaClient } from '@prisma/client'
 
-{
-  "dashboard": {
-    "navigation": {
-      "overview": "Overview",
-      "translate": "Translate",
-      "settings": "Settings",
-      "admin": "Admin Panel"
+const prisma = new PrismaClient()
+
+async function main() {
+  console.log(`Start seeding ...`)
+
+  // Create default languages
+  const english = await prisma.language.upsert({
+    where: { code: 'en' },
+    update: {},
+    create: { code: 'en', name: 'English' },
+  })
+
+  const marathi = await prisma.language.upsert({
+    where: { code: 'mr' },
+    update: {},
+    create: { code: 'mr', name: 'Marathi' },
+  })
+  
+  const hindi = await prisma.language.upsert({
+    where: { code: 'hi' },
+    update: {},
+    create: { code: 'hi', name: 'Hindi' },
+  })
+
+  console.log('Seeded languages:', { english, marathi, hindi })
+
+  // Create a default Platform tenant for the admin user
+  const platformTenant = await prisma.tenant.upsert({
+    where: { id: 'platform' },
+    update: {},
+    create: {
+      id: 'platform',
+      name: 'Bhasha Setu Platform',
     },
-    "userMenu": {
-      "profile": "Profile",
-      "logout": "Logout"
-    }
-  },
-  "userDashboard": {
-    "title": "Dashboard",
-    "welcomeTour": {
-      "title": "Welcome to Your Dashboard!"
+  })
+
+  console.log('Seeded platform tenant:', platformTenant)
+
+    const platformTenant1 = await prisma.tenant.upsert({
+    where: { id: 'brainqy' },
+    update: {},
+    create: {
+      id: 'brainqy',
+      name: 'Bhasha Setu Platform',
     },
-    "customizeButton": "Customize Dashboard",
-    "progress": {
-      "title": "Your Progress",
-      "level": "Level {level}",
-      "totalXp": "Total {xp} XP",
-      "dayStreak": "Day Streak",
-      "badgesEarned": "Badges Earned"
+  })
+
+  console.log('Seeded platform tenant:', platformTenant1)
+
+
+  // Create a default admin user and connect to the platform tenant
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@bhashasetu.com' },
+    update: {},
+    create: {
+      email: 'admin@bhashasetu.com',
+      name: 'Admin User',
+      password: 'password123',
+      role: 'ADMIN',
+      tenantId: platformTenant.id,
     },
-    "dailyChallenge": {
-      "title": "Today's Daily Challenge",
-      "viewButton": "View Challenge"
-    },
-    "toast": {
-      "appointmentReminder": {
-        "title": "Appointment Reminder",
-        "description": "Your '{title}' appointment with {user} is today at {time}."
-      },
-      "dashboardUpdated": {
-        "title": "Dashboard Updated!",
-        "description": "Your widget preferences have been saved."
-      }
-    },
-    "charts": {
-      "jobApplicationStatus": {
-        "title": "Job Application Status",
-        "description": "A visual overview of your job search."
-      },
-      "matchScoreOverTime": {
-        "title": "Match Score Over Time",
-        "description": "Trends in your resume analysis scores."
-      }
-    },
-    "reminders": {
-      "jobApp": {
-        "title": "Job App Reminders",
-        "description": "Your upcoming deadlines and follow-ups.",
-        "noReminders": "No upcoming reminders.",
-        "viewButton": "View Details"
-      }
-    },
-    "upcomingSessions": {
-      "title": "Upcoming Sessions",
-      "description": "Your confirmed appointments and practice interviews.",
-      "noSessions": "No upcoming sessions scheduled.",
-      "typeLabel": "Type",
-      "withLabel": "With",
-      "dateLabel": "Date",
-      "todayLabel": "(Today!)"
-    },
-    "recentActivities": {
-      "title": "Recent Activities",
-      "description": "A snapshot of your recent actions.",
-      "noActivities": "No activities yet.",
-      "viewAllButton": "View All Activities"
-    },
-    "widgets": {
-      "promotionCard": "Promotional Spotlight",
-      "jobApplicationStatusChart": "Job Application Status Chart",
-      "matchScoreOverTimeChart": "Match Score Over Time Chart",
-      "jobAppReminders": "Job App Reminders",
-      "upcomingAppointments": "Upcoming Appointments & Interviews",
-      "recentActivities": "Recent Activities",
-      "userBadges": "My Badges",
-      "leaderboard": "Leaderboard Summary"
-    },
-    "customizeDialog": {
-      "title": "Customize Dashboard Widgets",
-      "description": "Choose which widgets to display on your dashboard.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save"
-    }
-  },
-   "adminDashboard": {
-    "title": "Admin Dashboard",
-    "description": "Platform-wide overview and management tools.",
-    "customizeButton": "Customize",
-    "promotionalSpotlight": {
-      "title": "Promotional Spotlight",
-      "description": "Manage and create promotional content for the user dashboard.",
-      "content": "This is a placeholder for a promotional card. Use the management page to configure what users see here.",
-      "learnMoreButton": "Learn More"
-    },
-    "stats": {
-      "totalUsers": {
-        "title": "Total Users",
-        "description": "+{count} signups this {period}"
-      },
-      "totalTenants": {
-        "title": "Total Tenants",
-        "description": "Active organizational accounts"
-      },
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed",
-        "description": "In the last {period}"
-      },
-      "communityPosts": {
-        "title": "Community Posts",
-        "description": "In the last {period}"
-      },
-      "platformActivity": {
-        "title": "Platform Activity",
-        "description": "Active users this {period}"
-      },
-      "jobApplications": {
-        "title": "Job Applications",
-        "description": "Created this {period}"
-      },
-      "alumniConnections": {
-        "title": "Alumni Connections",
-        "description": "Total potential connections"
-      },
-      "mockInterviews": {
-        "title": "Mock Interviews",
-        "description": "Total sessions completed"
-      }
-    },
-    "charts": {
-      "registrationTrends": {
-        "title": "Registration Trends (Last 30 Days)",
-        "description": "Monitor daily new user signups across the platform."
-      },
-      "aiUsage": {
-        "title": "AI Feature Usage Breakdown",
-        "description": "Distribution of popular AI-powered features."
-      },
-      "contentModeration": {
-        "title": "Content Moderation Queue",
-        "description": "Posts flagged by users for review.",
-        "flaggedPosts": "Flagged Posts",
-        "reviewButton": "Review Posts"
-      },
-      "systemAlerts": {
-        "title": "System Alerts",
-        "description": "Recent system-level notifications and errors.",
-        "noAlerts": "No system alerts to display.",
-        "unreadAlertsCount": "{count} new",
-        "markReadButton": "Mark as Read",
-        "viewAllButton": "View All Alerts",
-        "alertReadToastTitle": "Alert Marked as Read",
-        "alertReadToastDescription": "The alert '{title}' has been marked as read."
-      },
-      "timeSpent": {
-        "title": "Time Spent Analysis",
-        "description": "Overview of user engagement and time spent on features.",
-        "weekly": "Week",
-        "monthly": "Month",
-        "avgSessionDuration": "Avg. Session Duration",
-        "totalPlatformUsage": "Total Usage ({period})",
-        "topUsers": "Top Users ({period})",
-        "mostUsedFeatures": "Most Used Features"
-      },
-      "tenantActivity": {
-        "title": "Tenant Activity Overview ({period})",
-        "description": "Comparative activity across different tenants.",
-        "legendNewUsers": "New Users",
-        "legendResumesAnalyzed": "Resumes Analyzed",
-        "legendCommunityPosts": "Community Posts"
-      }
-    },
-    "quickActions": {
-      "title": "Quick Actions",
-      "manageUsers": "Manage Users",
-      "platformSettings": "Platform Settings",
-      "manageTenants": "Manage Tenants",
-      "contentModeration": "Content Moderation",
-      "announcements": "Announcements",
-      "gamificationRules": "Gamification Rules",
-      "blogSettings": "Blog Settings",
-      "userActivityAnalytics": "User Analytics"
-    },
-    "customizeDialog": {
-      "title": "Customize Admin Dashboard",
-      "description": "Select the widgets you want to see on your dashboard.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save Preferences"
-    },
-    "widgets": {
-      "promotionalSpotlight": "Promotional Spotlight",
-      "totalUsersStat": "Total Users Stat",
-      "totalTenantsStat": "Total Tenants Stat",
-      "resumesAnalyzedStat": "Resumes Analyzed Stat",
-      "communityPostsStat": "Community Posts Stat",
-      "platformActivityStat": "Platform Activity Stat",
-      "jobApplicationsStat": "Job Applications Stat",
-      "alumniConnectionsStat": "Alumni Connections Stat",
-      "mockInterviewsStat": "Mock Interviews Stat",
-      "timeSpentStats": "Time Spent Stats",
-      "tenantActivityOverview": "Tenant Activity Overview",
-      "registrationTrendsChart": "Registration Trends Chart",
-      "aiUsageBreakdownChart": "AI Usage Breakdown Chart",
-      "contentModerationQueueSummary": "Content Moderation Summary",
-      "systemAlerts": "System Alerts",
-      "adminQuickActions": "Admin Quick Actions"
-    }
-  },
-  "managerDashboard": {
-    "title": "Manager Dashboard ({tenantName})",
-    "description": "Oversee engagement and manage features for your tenant.",
-    "customizeButton": "Customize",
-    "stats": {
-      "activeUsers": {
-        "title": "Active Users (Last 7 Days)",
-        "description": "{count} total users in tenant"
-      },
-      "resumesAnalyzed": {
-        "title": "Resumes Analyzed",
-        "description": "Total scans within your tenant"
-      },
-      "communityPosts": {
-        "title": "Community Posts",
-        "description": "Total posts by your members"
-      },
-      "pendingApprovals": {
-        "title": "Pending Approvals",
-        "description": "Event submissions needing review"
-      }
-    },
-    "charts": {
-      "tenantEngagement": {
-        "title": "Tenant Engagement Overview",
-        "description": "A snapshot of key activities within your tenant.",
-        "legendPosts": "Community Posts",
-        "legendResumesAnalyzed": "Resumes Analyzed",
-        "legendAppointments": "Active Appointments",
-        "activityCount": "Activity Count"
-      }
-    },
-    "quickActions": {
-      "title": "Tenant Management Actions",
-      "description": "Quick links to manage your tenant's community and settings.",
-      "manageTenantUsers": "Manage Tenant Users",
-      "moderateTenantFeed": "Moderate Tenant Feed",
-      "manageEventGallery": "Manage Event Gallery",
-      "reviewEventSubmissions": "Review Event Submissions",
-      "manageAnnouncements": "Manage Announcements",
-      "promoCodeMgt": "Promo Codes"
-    },
-    "toast": {
-      "dashboardUpdated": {
-        "title": "Dashboard Updated",
-        "description": "Your widget preferences have been saved."
-      }
-    },
-    "customizeDialog": {
-      "title": "Customize Manager Dashboard",
-      "description": "Select the widgets you want to see.",
-      "cancelButton": "Cancel",
-      "saveButton": "Save"
-    },
-    "widgets": {
-      "activeUsersStat": "Active Users Stat",
-      "resumesAnalyzedStat": "Resumes Analyzed Stat",
-      "communityPostsStat": "Community Posts Stat",
-      "pendingApprovalsStat": "Pending Approvals Stat",
-      "tenantEngagementOverview": "Tenant Engagement Overview",
-      "tenantManagementActions": "Tenant Management Actions"
-    }
-  },
-  "platformSettings": {
-    "title": "Platform Settings",
-    "description": "Manage global settings for the JobMatch AI platform.",
-    "saveButton": "Save All Settings",
-    "validation": {
-      "platformNameMin": "Platform name must be at least 3 characters.",
-      "maxJobPostingDaysMin": "Max job posting days must be at least 1.",
-      "maxJobPostingDaysMax": "Max job posting days cannot exceed 365.",
-      "xpMin": "XP points must be non-negative.",
-      "appointmentCostMin": "Appointment cost must be non-negative.",
-      "maxResumesMin": "Max resume uploads must be at least 1.",
-      "maxResumesMax": "Max resume uploads cannot exceed 50.",
-      "sessionTimeoutMin": "Session timeout must be at least 5 minutes.",
-      "sessionTimeoutMax": "Session timeout cannot exceed 1440 minutes (24 hours).",
-      "maxEventRegistrationsMin": "Max event registrations must be at least 1.",
-      "maxEventRegistrationsMax": "Max event registrations cannot exceed 100.",
-      "globalAnnouncementMax": "Global announcement cannot exceed 500 characters.",
-      "pointsForAffiliateMin": "Points for affiliate signup must be non-negative."
-    },
-    "toast": {
-      "settingsSaved": {
-        "title": "Settings Saved",
-        "description": "Platform settings have been successfully updated."
-      }
-    },
-    "general": {
-      "sectionTitle": "General Settings",
-      "platformName": {
-        "label": "Platform Name",
-        "description": "The name displayed across the platform."
-      },
-      "maintenanceMode": {
-        "label": "Maintenance Mode",
-        "description": "Enable to take the platform offline for users."
-      },
-      "defaultProfileVisibility": {
-        "label": "Default Profile Visibility",
-        "description": "Set the default visibility for new user profiles.",
-        "options": {
-          "public": "Public",
-          "alumni_only": "Alumni Only",
-          "private": "Private"
-        }
-      },
-      "maxResumesPerUser": {
-        "label": "Max Resume Uploads per User",
-        "description": "Limit for resume profiles a user can create/upload."
-      },
-      "defaultTheme": {
-        "label": "Default Theme",
-        "description": "Set the default theme for new users.",
-        "options": {
-          "light": "Light",
-          "dark": "Dark"
-        }
-      },
-      "enablePublicProfilePages": {
-        "label": "Enable Public Profile Pages",
-        "description": "Allow users to have publicly accessible profile URLs."
-      },
-      "sessionTimeoutMinutes": {
-        "label": "Session Timeout (Minutes)",
-        "description": "Inactive user sessions will expire after this duration."
-      },
-      "globalAnnouncement": {
-        "label": "Global Announcement Bar Text",
-        "description": "Text displayed in a banner across the platform (leave empty to hide).",
-        "placeholder": "e.g., New features launched! Check out..."
-      }
-    },
-    "community": {
-      "sectionTitle": "Community & Feed",
-      "communityFeedEnabled": {
-        "label": "Enable Community Feed"
-      },
-      "autoModeratePosts": {
-        "label": "Enable AI Auto-Moderation for Posts",
-        "description": "If enabled, AI will attempt to flag potentially inappropriate content."
-      }
-    },
-    "career": {
-      "sectionTitle": "Career Tools",
-      "jobBoardEnabled": {
-        "label": "Enable Job Board"
-      },
-      "maxJobPostingDays": {
-        "label": "Max Job Posting Duration (Days)",
-        "description": "How long job posts remain active by default."
-      },
-      "resumeAnalyzerEnabled": {
-        "label": "Enable Resume Analyzer"
-      },
-      "aiResumeWriterEnabled": {
-        "label": "Enable AI Resume Writer"
-      },
-      "coverLetterGeneratorEnabled": {
-        "label": "Enable Cover Letter Generator"
-      },
-      "mockInterviewEnabled": {
-        "label": "Enable Mock Interview Features"
-      }
-    },
-    "engagement": {
-      "sectionTitle": "Engagement & Rewards",
-      "gamificationEnabled": {
-        "label": "Enable Gamification (XP, Badges)"
-      },
-      "xpForLogin": {
-        "label": "XP for Daily Login",
-        "description": "Points awarded for daily active use."
-      },
-      "xpForNewPost": {
-        "label": "XP for New Community Post",
-        "description": "Points awarded for creating a post."
-      },
-      "referralsEnabled": {
-        "label": "Enable User Referrals"
-      },
-      "affiliateProgramEnabled": {
-        "label": "Enable Affiliate Program"
-      },
-      "pointsForAffiliateSignup": {
-        "label": "Points for Successful Affiliate Signup",
-        "description": "Points awarded to referrer when an affiliate signup is completed."
-      },
-      "featureRequestsEnabled": {
-        "label": "Enable Feature Request System"
-      }
-    },
-    "alumniConnect": {
-      "sectionTitle": "Alumni Connect & Events",
-      "alumniConnectEnabled": {
-        "label": "Enable Alumni Connect (Directory, Appointments)"
-      },
-      "defaultAppointmentCost": {
-        "label": "Default Cost for Booking Alumni Appointment (Coins)",
-        "description": "Coins deducted from requester's wallet."
-      },
-      "maxEventRegistrationsPerUser": {
-        "label": "Max Event Registrations per User",
-        "description": "Limit for active event registrations per user."
-      }
-    },
-    "tenantCustomization": {
-      "sectionTitle": "Tenant Customization Options",
-      "description": "Control what aspects tenants can customize for their instance.",
-      "allowTenantCustomBranding": {
-        "label": "Allow Tenants to Customize Branding",
-        "description": "If enabled, tenant managers can upload logos and set theme colors."
-      },
-      "allowTenantEmailCustomization": {
-        "label": "Allow Tenants to Customize Email Templates",
-        "description": "If enabled, tenant managers can modify certain outgoing email templates."
-      }
-    }
-  },
-  "tenantManagement": {
-    "title": "Tenant Management",
-    "description": "Oversee and manage all organizational tenants on the platform.",
-    "createNewButton": "Create New Tenant",
-    "tenantListTitle": "Current Tenants",
-    "noTenantsFound": "No tenants have been onboarded yet. Click 'Create New Tenant' to get started.",
-    "editActionMock": "Edit action for tenant {tenantId} is a mock.",
-    "deleteActionToast": "Tenant '{tenantName}' and all its data have been removed.",
-    "table": {
-      "name": "Tenant Name",
-      "id": "Tenant ID",
-      "createdAt": "Created On",
-      "publicSignup": "Public Signup",
-      "actions": "Actions"
-    }
-  },
-  "tenantOnboarding": {
-    "title": "Tenant Onboarding Wizard",
-    "toast": {
-      "tenantCreated": {
-        "title": "Tenant Created!",
-        "description": "{tenantName} has been successfully onboarded."
-      }
-    },
-    "steps": {
-      "basicInfo": "Basic Info",
-      "branding": "Branding",
-      "features": "Features",
-      "adminUser": "Admin User",
-      "review": "Review & Create"
-    },
-    "currentStep": "Step {current} of {total}",
-    "formLabels": {
-      "tenantName": "Tenant Name (e.g., University Name, Company)",
-      "tenantDomain": "Tenant Domain (Optional)",
-      "tenantDomainPlaceholder": "e.g., myuni.JobMatch.ai",
-      "customLogoUrl": "Custom Logo URL (Optional)",
-      "customLogoUrlPlaceholder": "https://example.com/logo.png",
-      "primaryColor": "Primary Color (HSL or Hex)",
-      "primaryColorPlaceholder": "e.g., hsl(180 100% 25%) or #008080",
-      "accentColor": "Accent Color (HSL or Hex)",
-      "accentColorPlaceholder": "e.g., hsl(180 100% 30%) or #009999",
-      "coreFeaturesTitle": "Core Features",
-      "featureCommunityFeed": "Community Feed",
-      "featureJobBoard": "Job Board",
-      "featureGamification": "Gamification (XP & Badges)",
-      "featureWallet": "Digital Wallet (Coins)",
-      "featureEventRegistration": "Event Registration",
-      "signupTitle": "Signup Settings",
-      "allowPublicSignup": "Allow Public Signup",
-      "adminFullName": "Initial Admin Full Name",
-      "adminEmail": "Admin Email",
-      "adminPassword": "Admin Password"
-    },
-    "reviewSection": {
-      "title": "Review Details",
-      "nameLabel": "Name:",
-      "domainLabel": "Domain:",
-      "logoUrlLabel": "Logo URL:",
-      "primaryColorLabel": "Primary Color:",
-      "accentColorLabel": "Accent Color:",
-      "publicSignupLabel": "Public Signup:",
-      "featuresLabel": "Enabled Features:",
-      "initialAdminUserTitle": "Initial Admin User",
-      "emailLabel": "Email:"
-    },
-    "buttons": {
-      "previous": "Previous",
-      "next": "Next",
-      "createTenant": "Create Tenant"
-    }
-  },
-  "announcementsAdmin": {
-    "title": "Announcements Management",
-    "manageTenant": "Manage announcements for {tenantId}",
-    "createNewButton": "Create New Announcement",
-    "managePlatform": "Manage announcements for the entire platform.",
-    "currentAnnouncementsTitle": "Current Announcements",
-    "noAnnouncementsTenant": "No announcements found for your tenant.",
-    "noAnnouncementsPlatform": "No announcements have been created yet.",
-    "audienceTargetDisplay": "(Target: {target})",
-    "audiencePlatformWide": "(Platform-wide)",
-    "endDateOngoing": "Ongoing",
-    "dialog": {
-      "editTitle": "Edit Announcement",
-      "createTitle": "Create New Announcement",
-      "titleLabel": "Title",
-      "contentLabel": "Content",
-      "contentPlaceholder": "Enter the announcement content here (Markdown supported).",
-      "startDateLabel": "Start Date",
-      "endDateLabel": "End Date (Optional)",
-      "audienceLabel": "Audience",
-      "audienceAllUsers": "All Users (Platform-wide)",
-      "audienceSpecificTenant": "Specific Tenant",
-      "audienceSpecificRole": "Specific Role",
-      "targetTenantLabel": "Target Tenant",
-      "selectTenantPlaceholder": "Select a tenant",
-      "targetRoleLabel": "Target Role",
-      "selectRolePlaceholder": "Select a role",
-      "roleUser": "User",
-      "roleManager": "Manager",
-      "roleAdmin": "Admin",
-      "statusLabel": "Status",
-      "statusDraft": "Draft",
-      "statusPublished": "Published",
-      "statusArchived": "Archived",
-      "cancelButton": "Cancel",
-      "saveChangesButton": "Save Changes",
-      "createButton": "Create Announcement"
-    },
-    "table": {
-      "title": "Title",
-      "status": "Status",
-      "audience": "Audience",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "actions": "Actions"
-    },
-    "toast": {
-      "permissionDeniedEdit": {
-        "title": "Permission Denied",
-        "description": "You do not have permission to edit this announcement."
-      },
-      "announcementUpdated": {
-        "title": "Announcement Updated",
-        "description": "The announcement '{title}' has been updated."
-      },
-      "announcementCreated": {
-        "title": "Announcement Created",
-        "description": "The announcement '{title}' has been created."
-      },
-      "permissionDeniedDelete": {
-        "title": "Permission Denied",
-        "description": "You do not have permission to delete this announcement."
-      },
-      "announcementDeleted": {
-        "title": "Announcement Deleted",
-        "description": "The announcement has been deleted."
-      }
-    }
-  },
-  "contentModeration": {
-    "title": "Content Moderation",
-    "descriptionTenant": "Review and manage flagged content within your tenant: {tenantId}.",
-    "descriptionPlatform": "Review and manage flagged content from across the platform.",
-    "flaggedPostsTitle": "Flagged Posts for Review",
-    "noFlaggedPostsTenant": "No posts have been flagged for review in your tenant.",
-    "noFlaggedPostsPlatform": "No posts have been flagged for review on the platform.",
-    "viewOnFeedTitle": "View Post on Feed",
-    "toast": {
-      "postApproved": {
-        "title": "Post Approved",
-        "description": "The post is now visible on the community feed."
-      },
-      "postRemoved": {
-        "title": "Post Removed",
-        "description": "The flagged post has been removed from the feed."
-      }
-    },
-    "table": {
-      "author": "Author",
-      "contentSnippet": "Content Snippet",
-      "flagCount": "Flag Count",
-      "dateFlagged": "Date Flagged",
-      "actions": "Actions"
-    }
-  },
-  "blogSettingsAdmin": {
-    "title": "AI Blog Settings",
-    "description": "Configure automated blog post generation and manually create posts with AI.",
-    "automationSettingsTitle": "Automation Settings",
-    "generationIntervalLabel": "Generation Interval (Hours)",
-    "generationIntervalHelp": "The time in hours between automatically generated blog posts (e.g., 24 for daily).",
-    "topicsLabel": "Topics for Automation",
-    "topicsPlaceholder": "Career Advice, Interview Tips, Networking...",
-    "topicsHelp": "Comma-separated list of topics the AI will choose from for automated posts.",
-    "styleLabel": "Writing Style",
-    "stylePlaceholder": "Choose a writing style...",
-    "styleInformative": "Informative",
-    "styleCasual": "Casual",
-    "styleFormal": "Formal",
-    "styleTechnical": "Technical",
-    "styleStorytelling": "Storytelling",
-    "saveAutomationButton": "Save Automation Settings",
-    "manualGenerationTitle": "Manual Generation",
-    "lastGeneratedPrefix": "Last generated:",
-    "lastGeneratedNever": "Never",
-    "selectTopicManualLabel": "Select Topic or Enter Custom",
-    "selectTopicManualPlaceholder": "Select a pre-defined topic",
-    "customTopicPlaceholder": "Or enter a custom topic...",
-    "generatingButton": "Generating...",
-    "generateNowButton": "Generate Now",
-    "importantNoteTitle": "Important Note on AI Usage",
-    "importantNoteContent": "Manual and automated blog post generation both consume AI API credits. Ensure your API key has sufficient quota. Automated generation will pause if it encounters an API error.",
-    "validation": {
-      "intervalMin": "Interval must be at least 1 hour.",
-      "intervalMax": "Interval cannot exceed 720 hours (30 days).",
-      "topicsRequired": "At least one topic is required."
-    },
-    "toast": {
-      "settingsSaved": {
-        "title": "Settings Saved",
-        "description": "Blog automation settings have been updated."
-      },
-      "noTopicSelected": {
-        "title": "No Topic Selected",
-        "description": "Please select or enter a topic to generate a blog post."
-      },
-      "postGenerated": {
-        "title": "Post Generated!",
-        "description": "New blog post '{title}' created successfully."
-      },
-      "generationFailed": {
-        "title": "Generation Failed",
-        "description": "Could not generate the blog post. Please try again."
-      }
-    }
-  },
-  "featureRequests": {
-    "pageTitle": "Feature Requests & Suggestions",
-    "pageDescription": "Have an idea to improve the platform? Share it with us! Vote on suggestions you like.",
-    "suggestButton": "Suggest a Feature",
-    "dialogCreateTitle": "Suggest a New Feature",
-    "dialogEditTitle": "Edit Your Suggestion",
-    "dialogDescriptionCreate": "What new idea do you have? Describe it below.",
-    "dialogDescriptionEdit": "You can update the title and description of your suggestion.",
-    "formTitleLabel": "Title",
-    "formTitlePlaceholder": "e.g., Add a dark mode",
-    "formDescriptionLabel": "Description",
-    "formDescriptionPlaceholder": "Explain your idea in more detail. Why would it be useful?",
-    "cancelButtonDialog": "Cancel",
-    "submitButtonDialog": "Submit Suggestion",
-    "saveChangesButtonDialog": "Save Changes",
-    "noRequestsTitle": "No Suggestions Yet",
-    "noRequestsDescription": "Be the first to suggest a new feature!",
-    "statusPending": "Pending",
-    "statusInProgress": "In Progress",
-    "statusCompleted": "Completed",
-    "statusRejected": "Rejected",
-    "statusUnknown": "Unknown",
-    "suggestedBy": "Suggested by {name}",
-    "voteButton": "Vote ({count})",
-    "viewDetailsButton": "View Details",
-    "validation": {
-      "titleMin": "Title must be at least 5 characters.",
-      "titleMax": "Title cannot exceed 100 characters.",
-      "descriptionMin": "Description must be at least 10 characters.",
-      "descriptionMax": "Description cannot exceed 1000 characters."
-    },
-    "toastSuggestionSubmitted": {
-      "title": "Suggestion Submitted!",
-      "description": "Thank you for your feedback."
-    },
-    "toastSuggestionUpdated": {
-      "title": "Suggestion Updated!",
-      "description": "Your feature request has been updated."
-    },
-    "toastCannotEdit": {
-      "title": "Cannot Edit",
-      "description": "You can only edit your own suggestions while they are pending."
-    },
-    "toastUpvoted": {
-      "title": "Voted!",
-      "description": "Your vote has been recorded."
-    },
-    "toastViewDetailsMock": {
-      "title": "View Details (Mock)",
-      "description": "Viewing details for '{title}'. This feature is for demonstration."
-    }
-  },
-  "referrals": {
-    "pageTitle": "Referral Program",
-    "pageDescription": "Refer friends to JobMatch AI and earn rewards for every successful signup!",
-    "yourReferralCardTitle": "Your Referral Link",
-    "yourReferralCardDescription": "Share your unique link or code. When someone signs up, you get rewarded.",
-    "referralCodeLabel": "Your Referral Code",
-    "referralLinkLabel": "Your Referral Link",
-    "copyButton": "Copy",
-    "shareButton": "Share",
-    "statsCardTitle": "Your Stats",
-    "statsCardDescription": "Track your referral performance.",
-    "totalReferralsLabel": "Total Referrals",
-    "successfulSignupsLabel": "Successful Signups",
-    "rewardsInfo": "Rewards are credited to your wallet once a referral is verified.",
-    "historyCardTitle": "Referral History",
-    "historyCardDescription": "A log of your referral activity.",
-    "noHistory": "You haven't referred anyone yet. Share your link to get started!",
-    "tableReferredUser": "Referred User",
-    "tableDateReferred": "Date Referred",
-    "tableStatus": "Status",
-    "tableReward": "Reward",
-    "statusPending": "Pending",
-    "statusSignedUp": "Signed Up",
-    "statusRewardEarned": "Reward Earned",
-    "statusExpired": "Expired",
-    "howItWorksCardTitle": "How It Works",
-    "howItWorks": [
+  })
+
+  console.log('Seeded admin user:', adminUser)
+
+  // Seed Promotional Content
+  await prisma.promotionalContent.createMany({
+    data: [
       {
-        "title": "Share Your Link",
-        "description": "Distribute your unique referral link through social media, email, or your website."
+        isActive: true,
+        title: 'Unlock Premium Features!',
+        description: 'Upgrade your JobMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Retro motel sign against a blue sky',
+        imageHint: 'motel sign',
+        buttonText: 'Learn More',
+        buttonLink: '#',
+        gradientFrom: 'from-primary/80',
+        gradientVia: 'via-primary',
+        gradientTo: 'to-accent/80',
       },
       {
-        "title": "Friend Signs Up",
-        "description": "Your friend clicks your link and successfully signs up on the JobMatch AI platform."
-      },
-      {
-        "title": "Earn Rewards",
-        "description": "You earn coins or XP once their signup is verified and they become an active user."
-      },
-      {
-        "title": "Track Progress",
-        "description": "Monitor all your referrals and rewards right here in your dashboard."
+        isActive: true,
+        title: 'New Feature: AI Mock Interview!',
+        description: 'Practice for your next big interview with our new AI-powered mock interview tool. Get instant feedback and improve your skills.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Person in a video call interview',
+        imageHint: 'interview video call',
+        buttonText: 'Try it Now',
+        buttonLink: '/ai-mock-interview',
+        gradientFrom: 'from-blue-500',
+        gradientVia: 'via-cyan-500',
+        gradientTo: 'to-teal-500',
       }
     ],
-    "toastCopied": {
-      "title": "Copied to Clipboard!",
-      "description": "Your referral link is ready to share."
-    },
-    "toastCopyFailed": {
-      "title": "Copy Failed",
-      "description": "Could not copy the text."
-    },
-    "toastShareAPINotSupported": {
-      "title": "Share API Not Supported",
-      "description": "Your browser doesn't support the Web Share API. Link copied to clipboard instead."
+    skipDuplicates: true,
+  });
+  console.log('Seeded promotional content.')
+  
+    // Seed Community Posts
+  const post1 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'Welcome to the new community feed! Share your thoughts, ask questions, and connect with fellow alumni.',
+      type: 'text',
+      tags: ['welcome', 'community'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
     }
-  },
-  "userSettings": {
-    "pageTitle": "Settings",
-    "appearanceCardTitle": "Appearance",
-    "appearanceCardDescription": "Customize the look and feel of the application.",
-    "darkModeLabel": "Dark Mode",
-    "tenantBrandingCardTitle": "Tenant Branding",
-    "tenantBrandingCardDescription": "Customize the branding for your tenant: {tenantName}",
-    "tenantNameLabel": "Tenant Display Name",
-    "tenantNamePlaceholder": "e.g., State University Alumni",
-    "tenantLogoUrlLabel": "Tenant Logo URL",
-    "tenantLogoUrlPlaceholder": "https://example.com/logo.png",
-    "logoUploadLabel": "Or Upload Logo",
-    "logoUploadHelpText": "A new URL will be generated after upload.",
-    "tenantThemeColorsLabel": "Tenant Theme Colors",
-    "primaryColorLabel": "Primary Color",
-    "accentColorLabel": "Accent Color",
-    "colorPlaceholder": "e.g., hsl(221 83% 53%)",
-    "challengePrefsCardTitle": "Challenge Preferences",
-    "challengePrefsCardDescription": "Select your preferred categories for the Daily Challenge.",
-    "notificationsCardTitle": "Notifications",
-    "notificationsCardDescription": "Manage how you receive notifications from the platform.",
-    "emailNotificationsLabel": "Email Notifications",
-    "appNotificationsLabel": "In-App Notifications",
-    "gamificationNotificationsLabel": "Gamification & Rewards Notifications",
-    "referralNotificationsLabel": "Referral Program Notifications",
-    "devSettings": {
-      "title": "Developer Settings",
-      "description": "Configure advanced developer options for AI features.",
-      "apiKeyLabel": "Your Gemini API Key (Overrides platform default)",
-      "apiKeyPlaceholder": "Enter your Google AI Studio API Key...",
-      "apiKeyDescription": "Your key is stored locally in your browser and is never sent to our servers."
-    },
-    "platformFeaturesAdminCardTitle": "Platform Features (Admin)",
-    "platformFeaturesAdminCardDescription": "Enable or disable major features for all users.",
-    "walletEnablePlatformLabel": "Enable Digital Wallet (Coins) Platform-Wide",
-    "accountSecurityCardTitle": "Account & Security",
-    "accountSecurityCardDescription": "Manage your password and data privacy settings.",
-    "changePasswordButton": "Change Password",
-    "dataSharingLabel": "Allow data sharing for analytics",
-    "twoFactorAuthLabel": "Enable Two-Factor Authentication (2FA)",
-    "requestDataDeletionButton": "Request Data Deletion",
-    "saveAllSettingsButton": "Save All Settings",
-    "cancelButton": "Cancel",
-    "changePasswordDialogTitle": "Change Password",
-    "changePasswordDialogDescription": "Enter your current and new password.",
-    "currentPasswordLabel": "Current Password",
-    "newPasswordLabel": "New Password",
-    "confirmNewPasswordLabel": "Confirm New Password",
-    "updatePasswordButton": "Update Password",
-    "confirmDataDeletionDialogTitle": "Are you absolutely sure?",
-    "confirmDataDeletionDialogDescription": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. To confirm, please type \"{phrase}\" below.",
-    "confirmDeletionInputPlaceholder": "Type \"{phrase}\" to confirm",
-    "deleteConfirmationPhrase": "delete my account",
-    "confirmDeletionButton": "Yes, delete my account",
-    "toast": {
-      "mockAction": {
-        "title": "Mock Action",
-        "description": "This is a placeholder for a real implementation."
-      },
-      "tenantBrandingSaved": {
-        "title": "Tenant Branding Saved",
-        "description": "Branding settings for {tenantName} have been updated."
-      },
-      "platformSettingsSaved": {
-        "title": "Platform Settings Saved",
-        "description": "Platform-wide features have been updated."
-      },
-      "userSettingsSaved": {
-        "title": "Settings Saved",
-        "description": "Your preferences have been updated."
-      },
-      "passwordChangedMock": {
-        "title": "Password Changed (Mock)",
-        "description": "Your password has been successfully updated."
-      },
-      "passwordMismatch": {
-        "title": "Passwords Do Not Match",
-        "description": "Please ensure the new password and confirmation match."
-      },
-      "passwordTooShort": {
-        "title": "Password Too Short",
-        "description": "Your new password must be at least 8 characters long."
-      },
-      "dataDeletionMock": {
-        "title": "Deletion Request Submitted (Mock)",
-        "description": "Your account deletion request has been received. This is a mock action."
-      },
-      "logoSelectedMock": {
-        "title": "Logo Selected (Mock)",
-        "description": "File '{fileName}' selected. Click Save to apply changes."
-      },
-      "themeChanged": {
-        "title": "Theme Changed",
-        "description": "Switched to {themeMode} Mode."
-      }
-    },
-    "apiKeyTour": {
-      "dialogTitle": "Using Your Own API Key",
-      "step1": {
-        "title": "What's this?",
-        "description": "This feature allows you to use your own Google AI Studio (Gemini) API key for all AI-powered actions in the app, potentially giving you more control and usage beyond the platform's default limits."
-      },
-      "step2": {
-        "title": "Find the Setting",
-        "description": "Your API key can be entered in the 'Developer Settings' card. This card is only visible if the platform administrator has enabled this feature."
-      },
-      "step3": {
-        "title": "Enter Your Key",
-        "description": "Paste your key here. It's saved only in your browser and never sent to our servers. Leaving it blank will revert to using the platform's default key."
-      }
+  });
+
+  const post2 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'What type of content would you like to see more of?',
+      type: 'poll',
+      pollOptions: [
+        { option: 'Career Advice Articles', votes: 15 },
+        { option: 'Alumni Success Stories', votes: 25 },
+        { option: 'Industry Trend Reports', votes: 8 },
+        { option: 'Live Q&A Sessions', votes: 12 },
+      ],
+      tags: ['feedback', 'content'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
     }
-  },
-  "interviewPrep": {
-    "pageTitle": "Interview Preparation Hub"
-  },
-    "dailyChallenge": {
-      "title": "Daily Interview Challenge",
-      "refresh": "Get New Challenge",
-      "category": "Category",
-      "difficulty": "Difficulty",
-      "yourAnswer": "Type your answer here...",
-      "showHint": "Show Hint",
-      "submit": "Submit",
-      "footerNote": "A new challenge is posted every day. Practice regularly to improve your interview skills!",
-      "completeTasksButton": "Complete Tasks to Earn XP",
-      "flipChallengeTitle": "Flip Challenge",
-      "toast": {
-        "newChallenge": {
-          "title": "New Challenges Loaded",
-          "description": "A new standard and flip challenge have been fetched for you."
-        },
-        "showHint": {
-          "title": "Hint",
-          "noHint": "No specific hint available for this question."
-        },
-        "submitMock": {
-          "title": "Submission Received (Mock)",
-          "description": "In a real app, your answer would be evaluated. This feature is coming soon!"
-        }
-      }
+  });
+  
+  const post3 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      type: 'event',
+      eventTitle: 'Alumni Virtual Networking Night',
+      eventDate: new Date(Date.now() + 86400000 * 7).toISOString(), // A week from now
+      eventLocation: 'Zoom (Link will be shared with attendees)',
+      content: 'Join us for a fun and informal virtual networking event. A great chance to reconnect with old friends and make new connections in your field. All alumni are welcome!',
+      capacity: 100,
+      attendees: 23,
+      tags: ['event', 'networking'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(),
     },
-  "translateTool": {
-    "title": "Translation Tool",
-    "enterTextLabel": "Enter Text to Translate",
-    "enterTextPlaceholder": "Type any word or sentence here...",
-    "submitButton": "Translate",
-    "originalText": "Original Text",
-    "suggestedTranslations": "Suggested Translations",
-    "qualityScore": "Quality Score",
-    "errorTranslating": "An error occurred while translating. Please try again.",
-    "english": "English",
-    "marathi": "Marathi",
-    "hindi": "Hindi"
-  },
-  "alumniConnect": {
-    "title": "Alumni Directory",
-    "pageDescription": "Connect with fellow alumni. Discover skills, interests, and potential collaborators.",
-    "distinguishedTitle": "Most Distinguished Alumni",
-    "distinguishedDesc": "Spotlight on our accomplished alumni making an impact.",
-    "filters": "Filters",
-    "nameOrJobTitle": "Name or Job Title",
-    "namePlaceholder": "e.g., Alice Wonderland",
-    "company": "Company",
-    "skills": "Skills",
-    "university": "University",
-    "noAlumniFound": "No Alumni Found",
-    "tryAdjusting": "Try adjusting your search or filter criteria.",
-    "bookTitle": "Book Appointment with {name}",
-    "bookDesc": "Complete the form below to request a meeting.",
-    "purposeLabel": "Purpose of Meeting",
-    "purposePlaceholder": "e.g., Career advice, Mock interview...",
-    "preferredDate": "Preferred Date",
-    "preferredTimeSlot": "Preferred Time Slot",
-    "selectTimeSlot": "Select a time slot",
-    "messageOptional": "Brief Message (Optional)",
-    "messagePlaceholder": "Any additional details for your request.",
-    "feeNotice_part1": "A fee of ",
-    "feeNotice_part2": " coins will be deducted upon confirmation.",
-    "cancel": "Cancel",
-    "requestAppointment": "Request Appointment"
-  },
-  "affiliates": {
-    "title": "Affiliates Program",
-    "pageDescription": "Partner with JobMatch AI, share with your network, and earn commissions!",
-    "yourDetails": "Your Affiliate Details",
-    "detailsDesc": "Use this code or link to promote JobMatch AI.",
-    "codeLabel": "Your Unique Affiliate Code",
-    "linkLabel": "Your Affiliate Link",
-    "commissionRate": "Commission Rate",
-    "shareLink": "Share Affiliate Link",
-    "performance": "Affiliate Performance",
-    "performanceDesc": "Track your clicks, signups, and earnings.",
-    "totalClicks": "Total Clicks",
-    "successfulSignups": "Successful Signups",
-    "totalEarned": "Total Earned",
-    "recentSignups": "Recent Signups via Your Link",
-    "noSignups": "No signups through your affiliate link yet.",
-    "userIdMasked": "User ID (Masked)",
-    "signupDate": "Signup Date",
-    "commissionEarned": "Commission Earned",
-    "userMasked": "User...{last4}",
-    "pending": "Pending",
-    "commissionProcessNote": "Commissions are typically processed at the end of each month.",
-    "howItWorksCardTitle": "How It Works",
-    "howItWorks": [
-      {
-        "title": "Share Your Link",
-        "description": "Distribute your unique referral link through social media, email, or your website."
-      },
-      {
-        "title": "New User Signs Up",
-        "description": "A new user signs up on JobMatch AI through your unique referral link."
-      },
-      {
-        "title": "Earn Commission",
-        "description": "You earn a commission for qualifying purchases or subscriptions made by your referred user."
-      },
-      {
-        "title": "Get Paid",
-        "description": "Track your earnings and receive payouts, typically on a monthly basis."
-      }
-    ]
-  },
-  "activityLog": {
-    "title": "Activity Log",
-    "recentActivities": "Recent Activities",
-    "description": "A log of your recent actions and system events within JobMatch AI.",
-    "noActivities": "No activities recorded yet."
-  },
-  "appointments": {
-    "assignedCommunityRequests": "Assigned Community Requests",
-    "assignedPosts": "Assigned Posts",
-    "assignedTo": "Assigned to",
-    "assignedToYou": "Assigned to you",
-    "communityFeed": "Community Feed",
-    "decline": "Decline",
-    "endDate": "End Date",
-    "endDateOngoing": "Ongoing",
-    "filters": "Filters",
-    "joinMeeting": "Join Meeting",
-    "noAppointments": "No Appointments Found",
-    "noScheduled": "You have no appointments or assigned requests.",
-    "notes": "Notes",
-    "request": "Request",
-    "rescheduleDesc": "Suggest a new time for your appointment with {user}",
-    "rescheduleReason": "e.g., Conflict with another meeting",
-    "rescheduleTitle": "Reschedule Appointment",
-    "selectRating": "Select a rating (1-5)",
-    "status": "Status",
-    "submit": "Submit",
-    "table": {
-        "actions": "Actions",
-        "audience": "Audience",
-        "contentSnippet": "Content Snippet",
-        "dateFlagged": "Date Flagged",
-        "endDate": "End Date",
-        "flagCount": "Flag Count",
-        "startDate": "Start Date",
-        "status": "Status",
-        "title": "Title"
-    },
-    "tags": "Tags",
-    "toastCompleted": "Appointment Completed",
-    "toastCompletedDesc": "The appointment has been marked as complete.",
-    "toastConfirmed": "Appointment Confirmed!",
-    "toastConfirmedDesc": "The appointment has been accepted.",
-    "toastDeclined": "Appointment Declined",
-    "toastDeclinedDesc": "The appointment request has been declined.",
-    "toastFeedback": "Feedback Submitted",
-    "toastFeedbackDesc": "Thank you for your feedback on your session with {user}.",
-    "toastJoinMeeting": "Joining Meeting (Mock)",
-    "toastJoinMeetingDesc": "This would launch the video conferencing link.",
-    "toastReschedule": "Reschedule Request Sent",
-    "toastRescheduleDesc": "A reschedule request has been sent to {user}.",
-    "toastScheduleNew": "Schedule New (Mock)",
-    "toastScheduleNewDesc": "Please use the Alumni Directory to book appointments.",
-    "today": "today",
-    "tryAdjustingFilters": "Try adjusting your filters.",
-    "viewOnFeed": "View on Feed",
-    "withUser": "With {name} {incoming}",
-    "accept": "Accept",
-    "alumniName": "Alumni Name",
-    "cancelledMsg": "This appointment was cancelled.",
-    "commentsOptional": "Comments (Optional)",
-    "dateRange": "Date Range",
-    "dateTime": "Date & Time",
-    "incomingRequest": "(Incoming Request)",
-    "inDays": "in {count} days",
-    "manageReschedule": "Reschedule",
-    "markCompleted": "Mark as Completed",
-    "newPreferredDate": "New Preferred Date",
-    "newPreferredTimeSlot": "New Preferred Time Slot",
-    "noTags": "No tags",
-    "overallRating": "Overall Rating",
-    "pageDescription": "View and manage your scheduled appointments, mock interviews, and assigned community requests.",
-    "provideFeedback": "Provide Feedback",
-    "provideFeedbackDesc": "Share your thoughts on the session with {user}.",
-    "provideFeedbackTitle": "Provide Feedback",
-    "reminder": "Reminder {when}",
-    "requestReschedule": "Request Reschedule",
-    "searchByName": "Search by name...",
-    "scheduleNew": "Schedule New",
-    "selectTimeSlot": "Select time slot",
-    "startDate": "Start Date",
-    "statuses": {
-        "Confirmed": "Confirmed",
-        "Pending": "Pending",
-        "Cancelled": "Cancelled",
-        "Completed": "Completed"
-    },
-    "title": "My Appointments",
-    "untitledRequest": "Untitled Request",
-    "whatWentWell": "What went well? Any areas for improvement?"
-  },
-  "blog": {
-      "createNewPost": "Create New Post",
-      "createPageDescription": "Share your knowledge and insights with the community. Write a blog post on a topic relevant to career development, networking, or your industry.",
-      "newPostDetails": "New Post Details",
-      "titleLabel": "Title",
-      "titlePlaceholder": "e.g., 5 Tips for a Killer Resume",
-      "excerptLabel": "Excerpt / Short Summary",
-      "excerptPlaceholder": "A brief, catchy summary of your post (150-200 characters).",
-      "contentLabel": "Content (Markdown Supported)",
-      "contentPlaceholder": "Write your full blog post here. Use Markdown for formatting like ## Headings and **bold** text.",
-      "imageUrlLabel": "Feature Image URL (Optional)",
-      "tagsLabel": "Tags (comma-separated)",
-      "tagsPlaceholder": "e.g., career, resume, advice",
-      "submitPost": "Submit Post",
-      "submitting": "Submitting...",
-      "toastCreatedTitle": "Post Created!",
-      "toastCreatedDesc": "Your blog post has been published.",
-      "title": "Blog & Insights",
-      "searchPlaceholder": "Search articles...",
-      "filterByTag": "Filter by Tag",
-      "allTags": "All Tags",
-      "noArticlesFound": "No Articles Found",
-      "noArticlesHint": "There are no blog posts yet. Why not be the first to create one?"
-  },
-  "bookmarks": {
-      "title": "My Bookmarks",
-      "filter": "Filter bookmarks",
-      "all": "All Bookmarks",
-      "posts": "Community Posts",
-      "blogs": "Blog Posts",
-      "questions": "Interview Questions",
-      "resumeScans": "Resume Scans",
-      "noPosts": "You haven't bookmarked any community posts yet.",
-      "noBlogs": "You haven't bookmarked any blog articles yet.",
-      "noQuestions": "You haven't bookmarked any interview questions yet.",
-      "noResumeScans": "You haven't bookmarked any resume scan reports yet."
-  },
-  "gallery": {
-      "title": "Event Gallery",
-      "pageDescription": "A visual journey through our past events, workshops, and meetups.",
-      "noEvents": "No Events in Gallery",
-      "noEventsHint": "Check back later for photos from our upcoming events!",
-      "participantsFor": "Participants for: {title}",
-      "participantListDesc": "List of users who attended this event.",
-      "noParticipants": "No participant data available for this event.",
-      "close": "Close",
-      "noImages": "No images available for this event."
-  },
-  "gamification": {
-    "title": "Rewards & Badges",
-    "pageDescription": "Track your XP, daily streak, and earned badges.",
-    "xpLevel": {
-      "title": "XP & Level",
-      "level": "Level",
-      "xpToNextLevel": "{count} XP to Level {level}",
-      "totalXp": "{count} Total XP"
-    },
-    "dailyStreak": {
-      "title": "Daily Streak",
-      "dayStreak": "Day Streak"
-    },
-    "badgesEarned": {
-      "title": "Badges Earned",
-      "totalBadges": "Total Badges"
-    },
-    "yourBadges": "Your Badge Collection",
-    "badgesDescription": "Badges are awarded for completing tasks and milestones on the platform. Hover over a badge to see what it's for.",
-    "notYetEarned": "(Not Yet Earned)",
-    "leaderboard": "Community Leaderboard",
-    "leaderboardDescription": "See how you rank against other users based on XP points.",
-    "noLeaderboardData": "Leaderboard data is currently being calculated. Check back soon!",
-    "table": {
-      "rank": "Rank",
-      "user": "User",
-      "xpPoints": "XP Points"
-    },
-    "you": "(You)"
-  },
-  "jobBoard": {
-      "title": "Job Board",
-      "pageDescription": "Find your next opportunity. Explore job openings posted by alumni and partner companies.",
-      "searchPlaceholder": "Search by title, company, or keyword...",
-      "postOpportunity": "Post an Opportunity"
-  },
-  "jobTracker": {
-      "title": "Job Application Tracker",
-      "addJob": "Add Job",
-      "jobs": "Jobs",
-      "searchJob": "Search Jobs",
-      "keywordsPlaceholder": "Keywords (e.g., 'React')",
-      "location": "Location",
-      "locationPlaceholder": "e.g., 'Remote'",
-      "search": "Search",
-      "noJobsFound": "No jobs found.",
-      "searchHint": "Search for jobs on external platforms and add them to your tracker.",
-      "addToSaved": "Add to Saved",
-      "findMoreJobs": "Find More Jobs on Board",
-      "editJob": "Edit Job Application",
-      "addNewJob": "Add New Job Application",
-      "statuses": {
-          "Saved": "Saved",
-          "Applied": "Applied",
-          "Interviewing": "Interviewing",
-          "Offer": "Offer",
-          "Rejected": "Rejected"
-      },
-      "kanban": {
-          "Saved": {
-              "title": "Saved",
-              "description": "Jobs you're interested in."
-          },
-          "Applied": {
-              "title": "Applied",
-              "description": "Applications submitted."
-          },
-          "Interviewing": {
-              "title": "Interview",
-              "description": "Interviews scheduled."
-          },
-          "Offer": {
-              "title": "Offer",
-              "description": "Offers received."
-          }
-      }
-  },
-  "profile": {
-      "title": "My Profile",
-      "editProfile": "Edit Profile",
-      "completion": "Profile Completion",
-      "completionTooltip": "Complete your profile to unlock more features and get better recommendations.",
-      "completionPercent": "Your profile is {percent}% complete.",
-      "aiSkillSuggestions": "AI Skill Suggestions",
-      "aiSkillDesc": "Get AI-powered skill suggestions based on your profile.",
-      "aiAnalyzing": "AI is analyzing your profile for skill suggestions...",
-      "noSkillSuggestions": "No new skill suggestions at this time. Ensure your bio and career interests are filled out!",
-      "relevance": "Relevance",
-      "addSkill": "Add Skill",
-      "reasoning": "Reasoning",
-      "getSkillSuggestions": "Get Skill Suggestions",
-      "editToGetSuggestions": "Edit Profile to Get Suggestions",
-      "savedTitle": "Profile Saved Successfully!",
-      "savedDesc": "Your profile information has been updated.",
-      "ok": "OK"
-  },
-  "wallet": {
-      "title": "Digital Wallet",
-      "addCoins": "Add Coins",
-      "currentBalance": "Current Balance",
-      "coins": "Coins",
-      "usageHint": "Use coins to book appointments with alumni mentors.",
-      "addFundsToastTitle": "Add Funds (Mock)",
-      "addFundsToastDesc": "This would lead to a payment gateway to add more coins.",
-      "transactionHistory": "Transaction History",
-      "recentActivity": "Your recent credits and debits.",
-      "noTransactions": "You have no transactions yet.",
-      "date": "Date",
-      "description": "Description",
-      "amount": "Amount"
-  },
-  "spreadTheWord": {
-    "title": "Spread the Word!",
-    "description": "Love using our platform? Share it with your friends and network, and help our community grow.",
-    "toast": {
-      "copied": {
-        "title": "Link Copied!",
-        "description": "Your unique referral link is ready to share."
-      }
+  });
+
+  console.log('Seeded community posts.');
+
+  // Seed Comments
+  const comment1 = await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Alice Wonderland',
+      userAvatar: 'https://avatar.vercel.sh/alice.png',
+      comment: 'This is great! Looking forward to connecting with everyone.',
+      timestamp: new Date(Date.now() - 86400000 * 1.9),
     }
-  },
-  "numberMatchGame": {
-    "title": "Number Match Game",
-    "description": "Match the number 777 to win a big prize!",
-    "initialMessage": "Click 'Play' to start the game!",
-    "rollingMessage": "Rolling...",
-    "winMessage": "It's 777! You won {reward} coins!",
-    "gameOverMessage": "Game Over! You won a total of {total} coins.",
-    "notAMatchMessage": "Not a match. Better luck next time!",
-    "resetMessage": "Click 'Play' to start a new game!",
-    "gameOverTitle": "Game Over!",
-    "consolationPrizeMessage": "You won a total consolation prize of:",
-    "coins": "Coins",
-    "cost": "Cost",
-    "attemptsLeft": "Attempts Left",
-    "playButton": "Play Now",
-    "rollingButton": "Rolling...",
-    "resetButton": "Reset Game",
-    "otherGames": "Other Games",
-    "playKBC": "Play KBC Quiz Game",
-    "prizeTitle": "Prize",
-    "toast": {
-      "gameOver": {
-        "title": "Game Over",
-        "description": "Please reset to play again."
-      },
-      "insufficientCoins": {
-        "title": "Insufficient Coins",
-        "description": "You need {cost} coins to play."
-      },
-      "gameStart": {
-        "title": "-{cost} Coins",
-        "description": "Good luck!"
-      },
-      "win": {
-        "title": "Congratulations!",
-        "description": "You won {reward} coins! They have been added to your wallet."
-      }
+  });
+
+  await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Bob The Builder',
+      userAvatar: 'https://avatar.vercel.sh/bob.png',
+      comment: 'Replying to Alice: Me too! Great initiative.',
+      parentId: comment1.id,
+      timestamp: new Date(Date.now() - 86400000 * 1.8),
     }
-  },
-  "kbcGame": {
-    "initialMessage": "Select an answer and lock it!",
-    "winMessage": "Congratulations! You've won the game with {xp} XP!",
-    "correctMessage": "Correct! Click 'Next Question' to continue.",
-    "wrongMessage": "Wrong Answer! You walk away with {xp} XP.",
-    "nextReward": "Next Reward",
-    "audiencePollResults": "Audience Poll Results",
-    "backToQuestion": "Back to Question",
-    "questionForXP": "Question {number} for {xp} XP",
-    "lockAnswer": "Lock Answer",
-    "nextQuestion": "Next Question",
-    "playAgain": "Play Again",
-    "xpLadder": "XP Ladder",
-    "otherGames": "Other Games",
-    "playNumberMatch": "Play Number Match Game",
-    "setup": {
-      "title": "Choose Your Topic",
-      "description": "Select a category to start the KBC quiz game. It costs {cost} coins to play.",
-      "allTopics": "All Topics",
-      "startButton": "Start Game"
-    },
-    "gameOver": {
-      "title": "Incorrect Answer",
-      "correctAnswerWas": "The correct answer was:",
-      "explanation": "Explanation:"
-    },
-    "toast": {
-      "walletNotLoaded": {
-        "title": "Wallet not loaded",
-        "description": "Please wait a moment for your wallet to load."
-      },
-      "insufficientCoins": {
-        "title": "Insufficient Coins",
-        "description": "You need {cost} coins to play. Earn more through referrals or other activities!"
-      },
-      "notEnoughQuestions": {
-        "title": "Not Enough Questions",
-        "description": "There aren't enough questions tagged with \"{topic}\" to start a game. Please select another topic or 'All'."
-      },
-      "gameStart": {
-        "title": "-{cost} Coins",
-        "description": "Good luck in the game!"
-      },
-      "fullscreenError": {
-        "title": "Fullscreen Mode",
-        "description": "Could not enter fullscreen automatically. You can try it manually."
-      },
-      "noAnswer": {
-        "title": "No Answer Selected",
-        "description": "Please select an answer before locking."
-      },
-      "gameWon": {
-        "title": "You've Won!",
-        "description": "You've answered all questions correctly!"
-      },
-      "correctAnswer": {
-        "title": "Correct Answer!",
-        "description": "You've secured {xp} XP!"
-      },
-      "expertAdvice": {
-        "title": "Expert Advice"
-      }
+  });
+  
+  await prisma.communityComment.create({
+    data: {
+      postId: post2.id,
+      userId: adminUser.id,
+      userName: 'Charlie Brown',
+      userAvatar: 'https://avatar.vercel.sh/charlie.png',
+      comment: 'Voted for success stories! So inspiring.',
+      timestamp: new Date(Date.now() - 86400000 * 0.9),
     }
-  }
+  });
+
+  console.log('Seeded community comments.');
+
+  // Seed System Alerts
+  await prisma.systemAlert.createMany({
+    data: [
+      { type: 'error', title: 'Database Connection Issue', message: 'Failed to connect to the primary database. Services might be affected.', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
+      { type: 'warning', title: 'High CPU Usage Detected', message: 'CPU usage on server EU-WEST-1A has exceeded 85%.', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
+      { type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog/platform-update-v2-5-1' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded system alerts.');
+
+  // Seed Daily Challenges
+
+  // Seed Badges
+  await prisma.badge.createMany({
+    data: [
+      { id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' },
+      { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3', streakFreezeReward: 1 },
+      { id: 'networker', name: 'Networker', description: 'Made 10+ alumni connections.', icon: 'Users', xpReward: 75, triggerCondition: 'connections_10' },
+      { id: 'analyzer-ace', name: 'Analyzer Ace', description: 'Analyzed 5+ resumes.', icon: 'Zap', xpReward: 50, triggerCondition: 'resume_scans_5' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded badges.');
+
+  // Seed Gamification Rules
+  await prisma.gamificationRule.createMany({
+    data: [
+      { actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 },
+      { actionId: 'community_post', description: 'Create a new post in the community', xpPoints: 15 },
+      { actionId: 'community_comment', description: 'Comment on a community post', xpPoints: 5 },
+      { actionId: 'analyze_resume', description: 'Analyze a resume with the AI tool', xpPoints: 20 },
+      { actionId: 'add_job_application', description: 'Add a new application to the job tracker', xpPoints: 10 },
+      { actionId: 'successful_referral', description: 'Successfully refer a new user', xpPoints: 50 },
+      { actionId: 'daily_challenge_complete', description: 'Complete the daily interview challenge', xpPoints: 25 },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded gamification rules.');
+
+
+  console.log(`Seeding finished.`)
 }
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

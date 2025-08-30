@@ -1,9 +1,7 @@
 
-
 'use server';
 /**
- * @fileOverview THIS FLOW IS DEPRECATED AND NO LONGER IN USE.
- * Provides AI-driven suggestions for alumni connections.
+ * @fileOverview Provides AI-driven suggestions for alumni connections.
  *
  * - personalizedConnectionRecommendations - A function that suggests alumni connections.
  * - PersonalizedConnectionRecommendationsInput - The input type for the personalizedConnectionRecommendations function.
@@ -12,24 +10,36 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AIError } from '@/lib/exceptions';
+
+const AlumniProfileSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    currentJobTitle: z.string(),
+    company: z.string(),
+    skills: z.array(z.string()),
+    offersHelpWith: z.array(z.string()).optional(),
+});
 
 const PersonalizedConnectionRecommendationsInputSchema = z.object({
-  userProfile: z
-    .string()
-    .describe('The user profile including skills, experience, and interests.'),
-  careerInterests: z.string().describe('The career interests and specific goals of the user.'),
+  userProfileText: z.string().describe("A comprehensive summary of the current user's profile, including skills, experience, and career aspirations."),
+  careerInterests: z.string().describe("Specific career interests or roles the user is targeting."),
+  availableAlumni: z.array(AlumniProfileSchema).describe("A list of available alumni profiles to choose from for recommendations."),
 });
 export type PersonalizedConnectionRecommendationsInput = z.infer<
   typeof PersonalizedConnectionRecommendationsInputSchema
 >;
 
+const RecommendedConnectionSchema = z.object({
+    alumniId: z.string().describe("The ID of the recommended alumnus, which must match one from the input list."),
+    name: z.string().describe("The name of the recommended alumnus."),
+    reasoning: z.string().describe("A concise, personalized reason explaining why this alumnus is a good connection for the user."),
+});
+
 const PersonalizedConnectionRecommendationsOutputSchema = z.object({
   suggestedConnections: z
-    .array(z.string())
-    .describe('A list of suggested alumni connection names.'),
-  reasoning: z
-    .string()
-    .describe('The AI reasoning behind these connection suggestions, explaining how each connection aligns with the user\'s goals.'),
+    .array(RecommendedConnectionSchema)
+    .describe('A list of up to 3 highly relevant suggested alumni connections.'),
 });
 export type PersonalizedConnectionRecommendationsOutput = z.infer<
   typeof PersonalizedConnectionRecommendationsOutputSchema
@@ -38,33 +48,42 @@ export type PersonalizedConnectionRecommendationsOutput = z.infer<
 export async function personalizedConnectionRecommendations(
   input: PersonalizedConnectionRecommendationsInput
 ): Promise<PersonalizedConnectionRecommendationsOutput> {
-  // This flow is deprecated. Return a default or error response.
-  console.warn("DEPRECATED: personalizedConnectionRecommendations flow was called.");
-  return {
-    suggestedConnections: [],
-    reasoning: "This feature (AI Mentorship Matching) is currently unavailable or has been removed."
-  };
+  return personalizedConnectionRecommendationsFlow(input);
 }
 
-// The actual Genkit flow definition can be commented out or removed
-/*
+
 const prompt = ai.definePrompt({
   name: 'personalizedConnectionRecommendationsPrompt',
   input: {schema: PersonalizedConnectionRecommendationsInputSchema},
   output: {schema: PersonalizedConnectionRecommendationsOutputSchema},
-  prompt: `You are an AI career networking assistant. Your goal is to provide highly tailored alumni connection recommendations to help users achieve their specific career goals.
+  prompt: `You are an AI career networking assistant for an alumni platform. Your goal is to provide highly tailored alumni connection recommendations to help users achieve their specific career goals.
 
-Analyze the user's profile, explicitly stated career interests, and any implied career goals.
-Suggest a list of alumni connections who are particularly well-suited to help with these specific goals, whether for networking, mentorship, or insights.
-For each suggestion, provide a detailed reasoning that clearly links the alumnus's profile/experience to the user's stated interests and goals.
+Analyze the current user's profile and their stated career interests.
+From the provided list of available alumni, select up to 3 individuals who are best suited to help the user.
 
-User Profile:
-{{{userProfile}}}
+For each suggestion, provide:
+1.  'alumniId': The exact ID of the alumnus from the list.
+2.  'name': The name of the alumnus.
+3.  'reasoning': A short, compelling, one-sentence explanation for the recommendation. The reasoning should directly connect the user's goals with the alumnus's experience or skills. Example: "His experience in scaling startups at Google aligns perfectly with your entrepreneurial interests."
+
+Current User Profile:
+{{{userProfileText}}}
 
 Career Interests & Goals:
 {{{careerInterests}}}
 
-Output in JSON format with 'suggestedConnections' (an array of alumni names or IDs) and 'reasoning' (a comprehensive explanation for the suggestions, tying them to the user's goals).
+Available Alumni to choose from:
+{{#each availableAlumni}}
+---
+ID: {{{id}}}
+Name: {{{name}}}
+Job Title: {{{currentJobTitle}}} at {{{company}}}
+Skills: {{#each skills}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+Offers Help With: {{#each offersHelpWith}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+---
+{{/each}}
+
+Output strictly in the specified JSON format.
   `,
 });
 
@@ -75,11 +94,15 @@ const personalizedConnectionRecommendationsFlow = ai.defineFlow(
     outputSchema: PersonalizedConnectionRecommendationsOutputSchema,
   },
   async input => {
+    if (input.availableAlumni.length === 0) {
+      return { suggestedConnections: [] };
+    }
     const {output} = await prompt(input);
     if (!output) {
-        throw new Error("AI failed to generate connection recommendations.");
+        throw new AIError("AI failed to generate connection recommendations.");
     }
     return output;
   }
 );
-*/
+
+    

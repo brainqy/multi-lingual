@@ -1,309 +1,250 @@
+import { PrismaClient } from '@prisma/client'
 
-"use client";
+const prisma = new PrismaClient()
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift, Loader2 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
-import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import {
-    managerDashboardTourSteps,
-} from "@/lib/sample-data";
-import { getDashboardData } from "@/lib/actions/dashboard";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid } from 'recharts';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/hooks/use-i18n";
-import { Skeleton } from "../ui/skeleton";
-import type { UserProfile, Appointment, CommunityPost, ResumeScanHistoryItem, GalleryEvent } from "@/types";
+async function main() {
+  console.log(`Start seeding ...`)
 
-interface ManagerDashboardProps {
-  user: UserProfile;
-}
+  // Create default languages
+  const english = await prisma.language.upsert({
+    where: { code: 'en' },
+    update: {},
+    create: { code: 'en', name: 'English' },
+  })
 
-type ManagerDashboardWidgetId =
-  | 'activeUsersStat'
-  | 'resumesAnalyzedStat'
-  | 'communityPostsStat'
-  | 'pendingApprovalsStat'
-  | 'tenantEngagementOverview'
-  | 'tenantManagementActions';
-
-interface WidgetConfig {
-  id: ManagerDashboardWidgetId;
-  titleKey: string;
-  defaultVisible: boolean;
-}
-
-const AVAILABLE_WIDGETS: WidgetConfig[] = [
-  { id: 'activeUsersStat', titleKey: 'managerDashboard.widgets.activeUsersStat', defaultVisible: true },
-  { id: 'resumesAnalyzedStat', titleKey: 'managerDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
-  { id: 'communityPostsStat', titleKey: 'managerDashboard.widgets.communityPostsStat', defaultVisible: true },
-  { id: 'pendingApprovalsStat', titleKey: 'managerDashboard.widgets.pendingApprovalsStat', defaultVisible: true },
-  { id: 'tenantEngagementOverview', titleKey: 'managerDashboard.widgets.tenantEngagementOverview', defaultVisible: true },
-  { id: 'tenantManagementActions', titleKey: 'managerDashboard.widgets.tenantManagementActions', defaultVisible: true },
-];
-
-export default function ManagerDashboard({ user }: ManagerDashboardProps) {
-  const { t } = useI18n();
-  const [showManagerTour, setShowManagerTour] = useState(false);
-  const tenantId = user.tenantId;
-  const { toast } = useToast();
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<ManagerDashboardWidgetId>>(
-    new Set(AVAILABLE_WIDGETS.filter(w => w.defaultVisible).map(w => w.id))
-  );
-  const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
-  const [tempVisibleWidgetIds, setTempVisibleWidgetIds] = useState<Set<ManagerDashboardWidgetId>>(visibleWidgetIds);
-
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const data = await getDashboardData(tenantId);
-      setDashboardData(data);
-      setIsLoading(false);
-    }
-    loadData();
-
-    if (typeof window !== 'undefined') {
-      const tourSeen = localStorage.getItem('managerDashboardTourSeen');
-      if (!tourSeen) {
-        setShowManagerTour(true);
-      }
-    }
-  }, [tenantId]);
-
-  const tenantStats = useMemo(() => {
-    if (!dashboardData) return { activeUsers: 0, totalUsers: 0, resumesAnalyzed: 0, communityPosts: 0, activeAppointments: 0, pendingEventApprovals: 0 };
-    
-    const usersInTenant = dashboardData.users.filter((u: UserProfile) => u.tenantId === tenantId);
-    const resumesAnalyzedInTenant = dashboardData.resumeScans.filter((s: ResumeScanHistoryItem) => s.tenantId === tenantId);
-    const communityPostsInTenant = dashboardData.communityPosts.filter((p: CommunityPost) => p.tenantId === tenantId);
-    const activeAppointments = dashboardData.appointments.filter((a: Appointment) => a.tenantId === tenantId && a.status === 'Confirmed');
-    const pendingEventApprovals = dashboardData.events?.filter((e: GalleryEvent) => e.tenantId === tenantId && !(e as any).approved).length || 0;
-
-    return {
-      activeUsers: usersInTenant.filter((u: UserProfile) => u.lastLogin && new Date(u.lastLogin) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
-      totalUsers: usersInTenant.length,
-      resumesAnalyzed: resumesAnalyzedInTenant.length,
-      communityPosts: communityPostsInTenant.length,
-      activeAppointments: activeAppointments.length,
-      pendingEventApprovals,
-    };
-  }, [dashboardData, tenantId]);
-
-  const engagementChartData = [
-    { name: t("managerDashboard.charts.tenantEngagement.legendPosts"), count: tenantStats.communityPosts },
-    { name: t("managerDashboard.charts.tenantEngagement.legendResumesAnalyzed"), count: tenantStats.resumesAnalyzed },
-    { name: t("managerDashboard.charts.tenantEngagement.legendAppointments"), count: tenantStats.activeAppointments },
-  ];
-
-  const handleCustomizeToggle = (widgetId: ManagerDashboardWidgetId, checked: boolean) => {
-    setTempVisibleWidgetIds(prev => {
-      const newSet = new Set(prev);
-      if (checked) newSet.add(widgetId);
-      else newSet.delete(widgetId);
-      return newSet;
-    });
-  };
-
-  const handleSaveCustomization = () => {
-    setVisibleWidgetIds(tempVisibleWidgetIds);
-    setIsCustomizeDialogOpen(false);
-    toast({ title: t("managerDashboard.toast.dashboardUpdated.title"), description: t("managerDashboard.toast.dashboardUpdated.description") });
-  };
-
-  const openCustomizeDialog = () => {
-    setTempVisibleWidgetIds(new Set(visibleWidgetIds));
-    setIsCustomizeDialogOpen(true);
-  };
+  const marathi = await prisma.language.upsert({
+    where: { code: 'mr' },
+    update: {},
+    create: { code: 'mr', name: 'Marathi' },
+  })
   
-  if (isLoading) {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-12 w-1/2" />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-            </div>
-            <Skeleton className="h-96 w-full" />
-        </div>
-    );
-  }
+  const hindi = await prisma.language.upsert({
+    where: { code: 'hi' },
+    update: {},
+    create: { code: 'hi', name: 'Hindi' },
+  })
 
-  return (
-    <>
-      <WelcomeTourDialog
-        isOpen={showManagerTour}
-        onClose={() => setShowManagerTour(false)}
-        tourKey="managerDashboardTourSeen"
-        steps={managerDashboardTourSteps}
-        title="Welcome Manager!"
-      />
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("managerDashboard.title", { tenantName: user.currentOrganization || `Tenant ${tenantId}` })}</h1>
-            <p className="text-muted-foreground">{t("managerDashboard.description")}</p>
-          </div>
-          <Button variant="outline" onClick={openCustomizeDialog}>
-            <SettingsIcon className="mr-2 h-4 w-4" /> {t("managerDashboard.customizeButton")}
-          </Button>
-        </div>
+  console.log('Seeded languages:', { english, marathi, hindi })
+
+  // Create a default Platform tenant for the admin user
+  const platformTenant = await prisma.tenant.upsert({
+    where: { id: 'platform' },
+    update: {},
+    create: {
+      id: 'platform',
+      name: 'Bhasha Setu Platform',
+    },
+  })
+
+  console.log('Seeded platform tenant:', platformTenant)
+
+    const platformTenant1 = await prisma.tenant.upsert({
+    where: { id: 'brainqy' },
+    update: {},
+    create: {
+      id: 'brainqy',
+      name: 'Bhasha Setu Platform',
+    },
+  })
+
+  console.log('Seeded platform tenant:', platformTenant1)
 
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {visibleWidgetIds.has('activeUsersStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("managerDashboard.stats.activeUsers.title")}</CardTitle>
-                <Users className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tenantStats.activeUsers}</div>
-                <p className="text-xs text-muted-foreground">{t("managerDashboard.stats.activeUsers.description", { count: tenantStats.totalUsers })}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('resumesAnalyzedStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("managerDashboard.stats.resumesAnalyzed.title")}</CardTitle>
-                <Zap className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tenantStats.resumesAnalyzed}</div>
-                <p className="text-xs text-muted-foreground">{t("managerDashboard.stats.resumesAnalyzed.description")}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('communityPostsStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("managerDashboard.stats.communityPosts.title")}</CardTitle>
-                <MessageSquare className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tenantStats.communityPosts}</div>
-                <p className="text-xs text-muted-foreground">{t("managerDashboard.stats.communityPosts.description")}</p>
-              </CardContent>
-            </Card>
-          )}
-          {visibleWidgetIds.has('pendingApprovalsStat') && (
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("managerDashboard.stats.pendingApprovals.title")}</CardTitle>
-                <CheckSquare className="h-5 w-5 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{tenantStats.pendingEventApprovals}</div>
-                <p className="text-xs text-muted-foreground">{t("managerDashboard.stats.pendingApprovals.description")}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+  // Create a default admin user and connect to the platform tenant
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@bhashasetu.com' },
+    update: {},
+    create: {
+      email: 'admin@bhashasetu.com',
+      name: 'Admin User',
+      password: 'password123',
+      role: 'ADMIN',
+      tenantId: platformTenant.id,
+    },
+  })
 
-        {visibleWidgetIds.has('tenantEngagementOverview') && (
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>{t("managerDashboard.charts.tenantEngagement.title")}</CardTitle>
-              <CardDescription>{t("managerDashboard.charts.tenantEngagement.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[350px]">
-               <ResponsiveContainer width="100%" height="100%">
-                  <RechartsBarChart data={engagementChartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" allowDecimals={false} />
-                      <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 12}}/>
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}/>
-                      <RechartsBar dataKey="count" fill="hsl(var(--primary))" name={t("managerDashboard.charts.tenantEngagement.activityCount")} radius={[0, 4, 4, 0]} barSize={30}/>
-                  </RechartsBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
+  console.log('Seeded admin user:', adminUser)
 
-        {visibleWidgetIds.has('tenantManagementActions') && (
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>{t("managerDashboard.quickActions.title")}</CardTitle>
-              <CardDescription>{t("managerDashboard.quickActions.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <Button asChild variant="outline">
-                  <Link href="/admin/user-management">
-                      <Users className="mr-2 h-4 w-4"/> {t("managerDashboard.quickActions.manageTenantUsers")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                  <Link href="/admin/content-moderation">
-                      <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.moderateTenantFeed")}
-                  </Link>
-              </Button>
-               <Button asChild variant="outline">
-                  <Link href="/admin/gallery-management">
-                      <Activity className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageEventGallery")}
-                  </Link>
-              </Button>
-               <Button asChild variant="outline">
-                  <Link href="/events">
-                      <CalendarCheck2 className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.reviewEventSubmissions")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                  <Link href="/admin/announcements">
-                      <MessageSquare className="mr-2 h-4 w-4"/>{t("managerDashboard.quickActions.manageAnnouncements")}
-                  </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/admin/promo-codes">
-                    <Gift className="mr-2 h-4 w-4" />{t("managerDashboard.quickActions.promoCodeMgt", { defaultValue: "Promo Codes" })}
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+  // Seed Promotional Content
+  await prisma.promotionalContent.createMany({
+    data: [
+      {
+        isActive: true,
+        title: 'Unlock Premium Features!',
+        description: 'Upgrade your JobMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Retro motel sign against a blue sky',
+        imageHint: 'motel sign',
+        buttonText: 'Learn More',
+        buttonLink: '#',
+        gradientFrom: 'from-primary/80',
+        gradientVia: 'via-primary',
+        gradientTo: 'to-accent/80',
+      },
+      {
+        isActive: true,
+        title: 'New Feature: AI Mock Interview!',
+        description: 'Practice for your next big interview with our new AI-powered mock interview tool. Get instant feedback and improve your skills.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Person in a video call interview',
+        imageHint: 'interview video call',
+        buttonText: 'Try it Now',
+        buttonLink: '/ai-mock-interview',
+        gradientFrom: 'from-blue-500',
+        gradientVia: 'via-cyan-500',
+        gradientTo: 'to-teal-500',
+      }
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded promotional content.')
+  
+    // Seed Community Posts
+  const post1 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'Welcome to the new community feed! Share your thoughts, ask questions, and connect with fellow alumni.',
+      type: 'text',
+      tags: ['welcome', 'community'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
+    }
+  });
 
-      <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("managerDashboard.customizeDialog.title")}</DialogTitle>
-            <DialogUIDescription>
-              {t("managerDashboard.customizeDialog.description")}
-            </DialogUIDescription>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh] p-1 -mx-1">
-            <div className="space-y-3 p-4">
-              {AVAILABLE_WIDGETS.map((widget) => (
-                <div key={widget.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-secondary/30">
-                  <Checkbox
-                    id={`widget-toggle-${widget.id}`}
-                    checked={tempVisibleWidgetIds.has(widget.id)}
-                    onCheckedChange={(checked) => handleCustomizeToggle(widget.id, Boolean(checked))}
-                  />
-                  <Label htmlFor={`widget-toggle-${widget.id}`} className="font-normal text-sm flex-1 cursor-pointer">
-                    {t(widget.titleKey as any, { defaultValue: widget.titleKey.substring(widget.titleKey.lastIndexOf('.') + 1)})}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>{t("managerDashboard.customizeDialog.cancelButton")}</Button>
-            <Button onClick={handleSaveCustomization} className="bg-primary hover:bg-primary/90">{t("managerDashboard.customizeDialog.saveButton")}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+  const post2 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'What type of content would you like to see more of?',
+      type: 'poll',
+      pollOptions: [
+        { option: 'Career Advice Articles', votes: 15 },
+        { option: 'Alumni Success Stories', votes: 25 },
+        { option: 'Industry Trend Reports', votes: 8 },
+        { option: 'Live Q&A Sessions', votes: 12 },
+      ],
+      tags: ['feedback', 'content'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
+    }
+  });
+  
+  const post3 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      type: 'event',
+      eventTitle: 'Alumni Virtual Networking Night',
+      eventDate: new Date(Date.now() + 86400000 * 7).toISOString(), // A week from now
+      eventLocation: 'Zoom (Link will be shared with attendees)',
+      content: 'Join us for a fun and informal virtual networking event. A great chance to reconnect with old friends and make new connections in your field. All alumni are welcome!',
+      capacity: 100,
+      attendees: 23,
+      tags: ['event', 'networking'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(),
+    },
+  });
+
+  console.log('Seeded community posts.');
+
+  // Seed Comments
+  const comment1 = await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Alice Wonderland',
+      userAvatar: 'https://avatar.vercel.sh/alice.png',
+      comment: 'This is great! Looking forward to connecting with everyone.',
+      timestamp: new Date(Date.now() - 86400000 * 1.9),
+    }
+  });
+
+  await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Bob The Builder',
+      userAvatar: 'https://avatar.vercel.sh/bob.png',
+      comment: 'Replying to Alice: Me too! Great initiative.',
+      parentId: comment1.id,
+      timestamp: new Date(Date.now() - 86400000 * 1.8),
+    }
+  });
+  
+  await prisma.communityComment.create({
+    data: {
+      postId: post2.id,
+      userId: adminUser.id,
+      userName: 'Charlie Brown',
+      userAvatar: 'https://avatar.vercel.sh/charlie.png',
+      comment: 'Voted for success stories! So inspiring.',
+      timestamp: new Date(Date.now() - 86400000 * 0.9),
+    }
+  });
+
+  console.log('Seeded community comments.');
+
+  // Seed System Alerts
+  await prisma.systemAlert.createMany({
+    data: [
+      { type: 'error', title: 'Database Connection Issue', message: 'Failed to connect to the primary database. Services might be affected.', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
+      { type: 'warning', title: 'High CPU Usage Detected', message: 'CPU usage on server EU-WEST-1A has exceeded 85%.', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
+      { type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog/platform-update-v2-5-1' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded system alerts.');
+
+  // Seed Daily Challenges
+
+  // Seed Badges
+  await prisma.badge.createMany({
+    data: [
+      { id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' },
+      { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3', streakFreezeReward: 1 },
+      { id: 'networker', name: 'Networker', description: 'Made 10+ alumni connections.', icon: 'Users', xpReward: 75, triggerCondition: 'connections_10' },
+      { id: 'analyzer-ace', name: 'Analyzer Ace', description: 'Analyzed 5+ resumes.', icon: 'Zap', xpReward: 50, triggerCondition: 'resume_scans_5' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded badges.');
+
+  // Seed Gamification Rules
+  await prisma.gamificationRule.createMany({
+    data: [
+      { actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 },
+      { actionId: 'community_post', description: 'Create a new post in the community', xpPoints: 15 },
+      { actionId: 'community_comment', description: 'Comment on a community post', xpPoints: 5 },
+      { actionId: 'analyze_resume', description: 'Analyze a resume with the AI tool', xpPoints: 20 },
+      { actionId: 'add_job_application', description: 'Add a new application to the job tracker', xpPoints: 10 },
+      { actionId: 'successful_referral', description: 'Successfully refer a new user', xpPoints: 50 },
+      { actionId: 'daily_challenge_complete', description: 'Complete the daily interview challenge', xpPoints: 25 },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded gamification rules.');
+
+
+  console.log(`Seeding finished.`)
 }
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

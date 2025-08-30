@@ -4,6 +4,7 @@
 import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
+import { sendEmail } from '../actions/send-email';
 
 const log = console.log;
 
@@ -130,6 +131,17 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
           },
         },
       },
+    });
+
+    // Send welcome email after user is successfully created
+    await sendEmail({
+        tenantId: newUser.tenantId,
+        recipientEmail: newUser.email,
+        type: 'WELCOME',
+        placeholders: {
+            userName: newUser.name,
+            userEmail: newUser.email,
+        }
     });
 
     return newUser as unknown as UserProfile;

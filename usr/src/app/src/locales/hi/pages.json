@@ -1,358 +1,250 @@
+import { PrismaClient } from '@prisma/client'
 
-{
-  "dashboard": {
-    "navigation": {
-      "overview": "अवलोकन",
-      "translate": "अनुवाद करें",
-      "settings": "सेटिंग्स",
-      "admin": "एडमिन पैनल"
+const prisma = new PrismaClient()
+
+async function main() {
+  console.log(`Start seeding ...`)
+
+  // Create default languages
+  const english = await prisma.language.upsert({
+    where: { code: 'en' },
+    update: {},
+    create: { code: 'en', name: 'English' },
+  })
+
+  const marathi = await prisma.language.upsert({
+    where: { code: 'mr' },
+    update: {},
+    create: { code: 'mr', name: 'Marathi' },
+  })
+  
+  const hindi = await prisma.language.upsert({
+    where: { code: 'hi' },
+    update: {},
+    create: { code: 'hi', name: 'Hindi' },
+  })
+
+  console.log('Seeded languages:', { english, marathi, hindi })
+
+  // Create a default Platform tenant for the admin user
+  const platformTenant = await prisma.tenant.upsert({
+    where: { id: 'platform' },
+    update: {},
+    create: {
+      id: 'platform',
+      name: 'Bhasha Setu Platform',
     },
-    "userMenu": {
-      "profile": "प्रोफ़ाइल",
-      "logout": "लॉग आउट"
-    }
-  },
-  "userDashboard": {
-    "title": "डैशबोर्ड",
-    "welcomeTour": {
-      "title": "आपके डैशबोर्ड में आपका स्वागत है!"
+  })
+
+  console.log('Seeded platform tenant:', platformTenant)
+
+    const platformTenant1 = await prisma.tenant.upsert({
+    where: { id: 'brainqy' },
+    update: {},
+    create: {
+      id: 'brainqy',
+      name: 'Bhasha Setu Platform',
     },
-    "customizeButton": "डैशबोर्ड अनुकूलित करें",
-    "progress": {
-      "title": "आपकी प्रगति",
-      "level": "स्तर {level}",
-      "totalXp": "कुल {xp} XP",
-      "dayStreak": "दिन की स्ट्रीक",
-      "badgesEarned": "बैज अर्जित"
+  })
+
+  console.log('Seeded platform tenant:', platformTenant1)
+
+
+  // Create a default admin user and connect to the platform tenant
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@bhashasetu.com' },
+    update: {},
+    create: {
+      email: 'admin@bhashasetu.com',
+      name: 'Admin User',
+      password: 'password123',
+      role: 'ADMIN',
+      tenantId: platformTenant.id,
     },
-    "dailyChallenge": {
-      "title": "आज की दैनिक चुनौती",
-      "viewButton": "चुनौती देखें"
-    },
-    "toast": {
-      "appointmentReminder": {
-        "title": "नियुक्ति अनुस्मारक",
-        "description": "{user} के साथ आपकी '{title}' नियुक्ति आज {time} पर है।"
-      },
-      "dashboardUpdated": {
-        "title": "डैशबोर्ड अपडेट किया गया!",
-        "description": "आपकी विजेट प्राथमिकताएं सहेजी गई हैं।"
-      }
-    },
-    "charts": {
-      "jobApplicationStatus": {
-        "title": "नौकरी आवेदन स्थिति",
-        "description": "आपकी नौकरी खोज का एक दृश्य अवलोकन।"
-      },
-      "matchScoreOverTime": {
-        "title": "समय के साथ मैच स्कोर",
-        "description": "आपके रिज्यूमे विश्लेषण स्कोर में रुझान।"
-      }
-    },
-    "reminders": {
-      "jobApp": {
-        "title": "नौकरी आवेदन अनुस्मारक",
-        "description": "आपकी आगामी समय-सीमा और अनुवर्ती कार्रवाइयाँ।",
-        "noReminders": "कोई आगामी अनुस्मारक नहीं।",
-        "viewButton": "विवरण देखें"
-      }
-    },
-    "upcomingSessions": {
-      "title": "आगामी सत्र",
-      "description": "आपकी पुष्टि की गई नियुक्तियाँ और अभ्यास साक्षात्कार।",
-      "noSessions": "कोई आगामी सत्र निर्धारित नहीं है।",
-      "typeLabel": "प्रकार",
-      "withLabel": "साथ",
-      "dateLabel": "तिथि",
-      "todayLabel": "(आज!)"
-    },
-    "recentActivities": {
-      "title": "हाल की गतिविधियाँ",
-      "description": "आपके हाल के कार्यों का एक स्नैपशॉट।",
-      "noActivities": "अभी तक कोई गतिविधि नहीं।",
-      "viewAllButton": "सभी गतिविधियाँ देखें"
-    },
-    "widgets": {
-      "promotionCard": "प्रचार स्पॉटलाइट",
-      "jobApplicationStatusChart": "नौकरी आवेदन स्थिति चार्ट",
-      "matchScoreOverTimeChart": "समय के साथ मैच स्कोर चार्ट",
-      "jobAppReminders": "नौकरी ऐप अनुस्मारक",
-      "upcomingAppointments": "आगामी नियुक्तियाँ और साक्षात्कार",
-      "recentActivities": "हाल की गतिविधियाँ",
-      "userBadges": "मेरे बैज",
-      "leaderboard": "लीडरबोर्ड सारांश"
-    },
-    "customizeDialog": {
-      "title": "डैशबोर्ड विजेट्स को अनुकूलित करें",
-      "description": "अपने डैशबोर्ड पर प्रदर्शित करने के लिए विजेट्स चुनें।",
-      "cancelButton": "रद्द करें",
-      "saveButton": "सहेजें"
-    }
-  },
-  "affiliates": {
-    "title": "संबद्ध कार्यक्रम",
-    "pageDescription": "JobMatch AI के साथ भागीदार बनें, अपने नेटवर्क के साथ साझा करें, और कमीशन अर्जित करें!",
-    "yourDetails": "आपके संबद्ध विवरण",
-    "detailsDesc": "JobMatch AI को बढ़ावा देने के लिए इस कोड या लिंक का उपयोग करें।",
-    "codeLabel": "आपका अद्वितीय संबद्ध कोड",
-    "linkLabel": "आपका संबद्ध लिंक",
-    "commissionRate": "कमीशन दर",
-    "shareLink": "संबद्ध लिंक साझा करें",
-    "performance": "संबद्ध प्रदर्शन",
-    "performanceDesc": "अपने क्लिक, साइनअप और कमाई को ट्रैक करें।",
-    "totalClicks": "कुल क्लिक",
-    "successfulSignups": "सफल साइनअप",
-    "totalEarned": "कुल कमाई",
-    "recentSignups": "आपके लिंक के माध्यम से हाल के साइनअप",
-    "noSignups": "आपके संबद्ध लिंक के माध्यम से अभी तक कोई साइनअप नहीं हुआ है।",
-    "userIdMasked": "उपयोगकर्ता आईडी (मास्क किया हुआ)",
-    "signupDate": "साइनअप तिथि",
-    "commissionEarned": "अर्जित कमीशन",
-    "userMasked": "उपयोगकर्ता...{last4}",
-    "pending": "लंबित",
-    "commissionProcessNote": "कमीशन आमतौर पर हर महीने के अंत में संसाधित किए जाते हैं।",
-    "howItWorksCardTitle": "यह कैसे काम करता है",
-    "howItWorks": [
+  })
+
+  console.log('Seeded admin user:', adminUser)
+
+  // Seed Promotional Content
+  await prisma.promotionalContent.createMany({
+    data: [
       {
-        "title": "अपना लिंक साझा करें",
-        "description": "सोशल मीडिया, ईमेल या अपनी वेबसाइट के माध्यम से अपना अद्वितीय रेफरल लिंक वितरित करें।"
+        isActive: true,
+        title: 'Unlock Premium Features!',
+        description: 'Upgrade your JobMatch AI experience with advanced analytics, unlimited resume scans, priority support, and exclusive templates.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Retro motel sign against a blue sky',
+        imageHint: 'motel sign',
+        buttonText: 'Learn More',
+        buttonLink: '#',
+        gradientFrom: 'from-primary/80',
+        gradientVia: 'via-primary',
+        gradientTo: 'to-accent/80',
       },
       {
-        "title": "नया उपयोगकर्ता साइन अप करता है",
-        "description": "एक नया उपयोगकर्ता आपके अद्वितीय रेफरल लिंक के माध्यम से JobMatch AI प्लेटफ़ॉर्म पर सफलतापूर्वक साइन अप करता है।"
-      },
-      {
-        "title": "कमीशन अर्जित करें",
-        "description": "आपके द्वारा रेफर किए गए उपयोगकर्ता द्वारा की गई योग्य खरीद या सदस्यता के लिए आप कमीशन अर्जित करते हैं।"
-      },
-      {
-        "title": "भुगतान प्राप्त करें",
-        "description": "अपनी कमाई को ट्रैक करें और आमतौर पर मासिक आधार पर भुगतान प्राप्त करें।"
+        isActive: true,
+        title: 'New Feature: AI Mock Interview!',
+        description: 'Practice for your next big interview with our new AI-powered mock interview tool. Get instant feedback and improve your skills.',
+        imageUrl: 'https://placehold.co/300x200.png',
+        imageAlt: 'Person in a video call interview',
+        imageHint: 'interview video call',
+        buttonText: 'Try it Now',
+        buttonLink: '/ai-mock-interview',
+        gradientFrom: 'from-blue-500',
+        gradientVia: 'via-cyan-500',
+        gradientTo: 'to-teal-500',
       }
-    ]
-  },
-  "activityLog": {
-    "title": "गतिविधि लॉग",
-    "recentActivities": "हाल की गतिविधियां",
-    "description": "JobMatch AI के भीतर आपकी हाल की कार्रवाइयों और सिस्टम घटनाओं का एक लॉग।",
-    "noActivities": "अभी तक कोई गतिविधि दर्ज नहीं की गई है।"
-  },
-  "appointments": {
-    "assignedCommunityRequests": "नियत सामुदायिक अनुरोध",
-    "assignedPosts": "नियत पोस्ट",
-    "assignedTo": "को नियत",
-    "assignedToYou": "आपको नियत",
-    "communityFeed": "सामुदायिक फ़ीड",
-    "decline": "अस्वीकार करें",
-    "endDate": "अंतिम तिथि",
-    "endDateOngoing": "चल रहा है",
-    "filters": "फ़िल्टर",
-    "joinMeeting": "बैठक में शामिल हों",
-    "noAppointments": "कोई नियुक्ति नहीं मिली",
-    "noScheduled": "आपके पास कोई नियुक्ति या नियत अनुरोध नहीं हैं।",
-    "notes": "टिप्पणियाँ",
-    "request": "अनुरोध",
-    "rescheduleDesc": "{user} के साथ अपनी नियुक्ति के लिए एक नया समय सुझाएं",
-    "rescheduleReason": "उदा., किसी अन्य बैठक के साथ संघर्ष",
-    "rescheduleTitle": "नियुक्ति पुनर्निर्धारित करें",
-    "selectRating": "एक रेटिंग चुनें (1-5)",
-    "status": "स्थिति",
-    "submit": "सबमिट करें",
-    "table": {
-      "actions": "कार्रवाइयां",
-      "audience": "दर्शक",
-      "contentSnippet": "सामग्री का अंश",
-      "dateFlagged": "फ़्लैग करने की तिथि",
-      "endDate": "अंतिम तिथि",
-      "flagCount": "फ़्लैग गणना",
-      "startDate": "प्रारंभ तिथि",
-      "status": "स्थिति",
-      "title": "शीर्षक"
-    },
-    "tags": "टैग",
-    "toastCompleted": "नियुक्ति पूर्ण",
-    "toastCompletedDesc": "नियुक्ति को पूर्ण के रूप में चिह्नित किया गया है।",
-    "toastConfirmed": "नियुक्ति की पुष्टि!",
-    "toastConfirmedDesc": "नियुक्ति स्वीकार कर ली गई है।",
-    "toastDeclined": "नियुक्ति अस्वीकृत",
-    "toastDeclinedDesc": "नियुक्ति अनुरोध अस्वीकार कर दिया गया है।",
-    "toastFeedback": "प्रतिक्रिया सबमिट की गई",
-    "toastFeedbackDesc": "{user} के साथ आपके सत्र पर आपकी प्रतिक्रिया के लिए धन्यवाद।",
-    "toastJoinMeeting": "बैठक में शामिल हो रहे हैं (मॉक)",
-    "toastJoinMeetingDesc": "यह वीडियो कॉन्फ्रेंसिंग लिंक लॉन्च करेगा।",
-    "toastReschedule": "पुनर्निर्धारण अनुरोध भेजा गया",
-    "toastRescheduleDesc": "{user} को एक पुनर्निर्धारण अनुरोध भेजा गया है।",
-    "toastScheduleNew": "नया शेड्यूल करें (मॉक)",
-    "toastScheduleNewDesc": "नियुक्तियाँ बुक करने के लिए कृपया पूर्व छात्र निर्देशिका का उपयोग करें।",
-    "today": "आज",
-    "tryAdjustingFilters": "अपने फ़िल्टर समायोजित करने का प्रयास करें।",
-    "viewOnFeed": "फ़ीड पर देखें",
-    "withUser": "{name} के साथ {incoming}",
-    "accept": "स्वीकार करें",
-    "alumniName": "पूर्व छात्र का नाम",
-    "cancelledMsg": "यह नियुक्ति रद्द कर दी गई थी।",
-    "commentsOptional": "टिप्पणियाँ (वैकल्पिक)",
-    "dateRange": "तिथि सीमा",
-    "dateTime": "तिथि और समय",
-    "incomingRequest": "(आने वाला अनुरोध)",
-    "inDays": "{count} दिनों में",
-    "manageReschedule": "पुनर्निर्धारित करें",
-    "markCompleted": "पूर्ण के रूप में चिह्नित करें",
-    "newPreferredDate": "नई पसंदीदा तिथि",
-    "newPreferredTimeSlot": "नया पसंदीदा समय स्लॉट",
-    "noTags": "कोई टैग नहीं",
-    "overallRating": "समग्र रेटिंग",
-    "pageDescription": "अपनी निर्धारित नियुक्तियों, मॉक साक्षात्कारों और नियत सामुदायिक अनुरोधों को देखें और प्रबंधित करें।",
-    "provideFeedback": "प्रतिक्रिया दें",
-    "provideFeedbackDesc": "{user} के साथ सत्र पर अपने विचार साझा करें",
-    "provideFeedbackTitle": "प्रतिक्रिया दें",
-    "reminder": "अनुस्मारक {when}",
-    "requestReschedule": "पुनर्निर्धारण का अनुरोध करें",
-    "searchByName": "नाम से खोजें...",
-    "scheduleNew": "नया शेड्यूल करें",
-    "selectTimeSlot": "एक समय स्लॉट चुनें",
-    "startDate": "प्रारंभ तिथि",
-    "statuses": {
-      "Confirmed": "पुष्टि",
-      "Pending": "लंबित",
-      "Cancelled": "रद्द",
-      "Completed": "पूर्ण"
-    },
-    "title": "मेरी नियुक्तियाँ",
-    "untitledRequest": "अशीर्षक अनुरोध",
-    "whatWentWell": "क्या अच्छा हुआ? सुधार के लिए कोई क्षेत्र हैं?"
-  },
-  "gamification": {
-    "title": "पुरस्कार और बैज",
-    "pageDescription": "अपने XP, दैनिक स्ट्रीक, और अर्जित बैज को ट्रैक करें।",
-    "xpLevel": {
-      "title": "XP और स्तर",
-      "level": "स्तर",
-      "xpToNextLevel": "अगले स्तर {level} के लिए {count} XP",
-      "totalXp": "कुल {count} XP"
-    },
-    "dailyStreak": {
-      "title": "दैनिक स्ट्रीक",
-      "dayStreak": "दिन की स्ट्रीक"
-    },
-    "badgesEarned": {
-      "title": "अर्जित बैज",
-      "totalBadges": "कुल बैज"
-    },
-    "yourBadges": "आपका बैज संग्रह",
-    "badgesDescription": "प्लेटफ़ॉर्म पर कार्यों और मील के पत्थर को पूरा करने के लिए बैज प्रदान किए जाते हैं। यह देखने के लिए कि यह किस लिए है, एक बैज पर होवर करें।",
-    "notYetEarned": "(अभी तक अर्जित नहीं)",
-    "leaderboard": "सामुदायिक लीडरबोर्ड",
-    "leaderboardDescription": "देखें कि आप XP अंकों के आधार पर अन्य उपयोगकर्ताओं के मुकाबले कहाँ रैंक करते हैं।",
-    "noLeaderboardData": "लीडरबोर्ड डेटा की गणना वर्तमान में की जा रही है। जल्द ही वापस देखें!",
-    "table": {
-      "rank": "रैंक",
-      "user": "उपयोगकर्ता",
-      "xpPoints": "XP अंक"
-    },
-    "you": "(आप)"
-  },
-  "numberMatchGame": {
-    "title": "नंबर मैच गेम",
-    "description": "एक बड़ा पुरस्कार जीतने के लिए 777 नंबर का मिलान करें!",
-    "initialMessage": "खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
-    "rollingMessage": "रोलिंग...",
-    "winMessage": "यह 777 है! आपने {reward} सिक्के जीते!",
-    "gameOverMessage": "खेल समाप्त! आपने कुल {total} सिक्के जीते।",
-    "notAMatchMessage": "मिलान नहीं हुआ। अगली बार बेहतर भाग्य!",
-    "resetMessage": "एक नया खेल शुरू करने के लिए 'Play' पर क्लिक करें!",
-    "gameOverTitle": "खेल समाप्त!",
-    "consolationPrizeMessage": "आपने कुल सांत्वना पुरस्कार जीता:",
-    "coins": "सिक्के",
-    "cost": "लागत",
-    "attemptsLeft": "शेष प्रयास",
-    "playButton": "अभी खेलें",
-    "rollingButton": "रोलिंग...",
-    "resetButton": "खेल रीसेट करें",
-    "otherGames": "अन्य खेल",
-    "playKBC": "केबीसी क्विज़ गेम खेलें",
-    "prizeTitle": "पुरस्कार",
-    "toast": {
-      "gameOver": {
-        "title": "खेल समाप्त",
-        "description": "फिर से खेलने के लिए कृपया रीसेट करें।"
-      },
-      "insufficientCoins": {
-        "title": "अपर्याप्त सिक्के",
-        "description": "खेलने के लिए आपको {cost} सिक्कों की आवश्यकता है।"
-      },
-      "gameStart": {
-        "title": "-{cost} सिक्के",
-        "description": "शुभकामनाएं!"
-      },
-      "win": {
-        "title": "बधाई हो!",
-        "description": "आपने {reward} सिक्के जीते! वे आपके वॉलेट में जोड़ दिए गए हैं।"
-      }
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded promotional content.')
+  
+    // Seed Community Posts
+  const post1 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'Welcome to the new community feed! Share your thoughts, ask questions, and connect with fellow alumni.',
+      type: 'text',
+      tags: ['welcome', 'community'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 2), // 2 days ago
     }
-  },
-  "kbcGame": {
-    "initialMessage": "एक उत्तर चुनें और उसे लॉक करें!",
-    "winMessage": "बधाई हो! आपने {xp} XP के साथ खेल जीत लिया है!",
-    "correctMessage": "सही! जारी रखने के लिए 'Next Question' पर क्लिक करें।",
-    "wrongMessage": "गलत जवाब! आप {xp} XP के साथ बाहर जाते हैं।",
-    "nextReward": "अगला पुरस्कार",
-    "audiencePollResults": "दर्शक सर्वेक्षण परिणाम",
-    "backToQuestion": "प्रश्न पर वापस जाएं",
-    "questionForXP": "{xp} XP के लिए प्रश्न {number}",
-    "lockAnswer": "उत्तर लॉक करें",
-    "nextQuestion": "अगला प्रश्न",
-    "playAgain": "फिर से खेलें",
-    "xpLadder": "XP सीढ़ी",
-    "otherGames": "अन्य खेल",
-    "playNumberMatch": "नंबर मैच गेम खेलें",
-    "setup": {
-      "title": "अपना विषय चुनें",
-      "description": "केबीसी क्विज़ गेम शुरू करने के लिए एक श्रेणी चुनें। खेलने के लिए {cost} सिक्के लगते हैं।",
-      "allTopics": "सभी विषय",
-      "startButton": "खेल शुरू करें"
-    },
-    "gameOver": {
-      "title": "गलत जवाब",
-      "correctAnswerWas": "सही जवाब था:",
-      "explanation": "स्पष्टीकरण:"
-    },
-    "toast": {
-      "walletNotLoaded": {
-        "title": "वॉलेट लोड नहीं हुआ",
-        "description": "कृपया अपने वॉलेट को लोड होने के लिए कुछ क्षण प्रतीक्षा करें।"
-      },
-      "insufficientCoins": {
-        "title": "अपर्याप्त सिक्के",
-        "description": "खेलने के लिए आपको {cost} सिक्कों की आवश्यकता है। रेफरल या अन्य गतिविधियों के माध्यम से अधिक कमाएँ!"
-      },
-      "notEnoughQuestions": {
-        "title": "पर्याप्त प्रश्न नहीं",
-        "description": "\"{topic}\" के साथ टैग किए गए पर्याप्त प्रश्न नहीं हैं। कृपया कोई अन्य विषय या 'सभी' चुनें।"
-      },
-      "gameStart": {
-        "title": "-{cost} सिक्के",
-        "description": "खेल में शुभकामनाएँ!"
-      },
-      "fullscreenError": {
-        "title": "फुलस्क्रीन मोड",
-        "description": "स्वचालित रूप से फुलस्क्रीन में प्रवेश नहीं कर सका। आप इसे मैन्युअल रूप से आज़मा सकते हैं।"
-      },
-      "noAnswer": {
-        "title": "कोई उत्तर नहीं चुना गया",
-        "description": "लॉक करने से पहले कृपया एक उत्तर चुनें।"
-      },
-      "gameWon": {
-        "title": "आप जीत गए!",
-        "description": "आपने सभी प्रश्नों का सही उत्तर दिया है!"
-      },
-      "correctAnswer": {
-        "title": "सही जवाब!",
-        "description": "आपने {xp} XP हासिल किए हैं!"
-      },
-      "expertAdvice": {
-        "title": "विशेषज्ञ की सलाह"
-      }
+  });
+
+  const post2 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      content: 'What type of content would you like to see more of?',
+      type: 'poll',
+      pollOptions: [
+        { option: 'Career Advice Articles', votes: 15 },
+        { option: 'Alumni Success Stories', votes: 25 },
+        { option: 'Industry Trend Reports', votes: 8 },
+        { option: 'Live Q&A Sessions', votes: 12 },
+      ],
+      tags: ['feedback', 'content'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(Date.now() - 86400000 * 1), // 1 day ago
     }
-  }
+  });
+  
+  const post3 = await prisma.communityPost.create({
+    data: {
+      tenantId: 'platform',
+      userId: adminUser.id,
+      userName: adminUser.name,
+      userAvatar: 'https://avatar.vercel.sh/admin.png',
+      type: 'event',
+      eventTitle: 'Alumni Virtual Networking Night',
+      eventDate: new Date(Date.now() + 86400000 * 7).toISOString(), // A week from now
+      eventLocation: 'Zoom (Link will be shared with attendees)',
+      content: 'Join us for a fun and informal virtual networking event. A great chance to reconnect with old friends and make new connections in your field. All alumni are welcome!',
+      capacity: 100,
+      attendees: 23,
+      tags: ['event', 'networking'],
+      moderationStatus: 'visible',
+      flagCount: 0,
+      timestamp: new Date(),
+    },
+  });
+
+  console.log('Seeded community posts.');
+
+  // Seed Comments
+  const comment1 = await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Alice Wonderland',
+      userAvatar: 'https://avatar.vercel.sh/alice.png',
+      comment: 'This is great! Looking forward to connecting with everyone.',
+      timestamp: new Date(Date.now() - 86400000 * 1.9),
+    }
+  });
+
+  await prisma.communityComment.create({
+    data: {
+      postId: post1.id,
+      userId: adminUser.id,
+      userName: 'Bob The Builder',
+      userAvatar: 'https://avatar.vercel.sh/bob.png',
+      comment: 'Replying to Alice: Me too! Great initiative.',
+      parentId: comment1.id,
+      timestamp: new Date(Date.now() - 86400000 * 1.8),
+    }
+  });
+  
+  await prisma.communityComment.create({
+    data: {
+      postId: post2.id,
+      userId: adminUser.id,
+      userName: 'Charlie Brown',
+      userAvatar: 'https://avatar.vercel.sh/charlie.png',
+      comment: 'Voted for success stories! So inspiring.',
+      timestamp: new Date(Date.now() - 86400000 * 0.9),
+    }
+  });
+
+  console.log('Seeded community comments.');
+
+  // Seed System Alerts
+  await prisma.systemAlert.createMany({
+    data: [
+      { type: 'error', title: 'Database Connection Issue', message: 'Failed to connect to the primary database. Services might be affected.', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
+      { type: 'warning', title: 'High CPU Usage Detected', message: 'CPU usage on server EU-WEST-1A has exceeded 85%.', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
+      { type: 'info', title: 'New Platform Update Deployed', message: 'Version 2.5.1 has been successfully deployed.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), linkTo: '/blog/platform-update-v2-5-1' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded system alerts.');
+
+  // Seed Daily Challenges
+
+  // Seed Badges
+  await prisma.badge.createMany({
+    data: [
+      { id: 'profile-pro', name: 'Profile Pro', description: 'Completed 100% of your profile.', icon: 'UserCheck', xpReward: 100, triggerCondition: 'profile_completion_100' },
+      { id: 'streak-starter', name: 'Streak Starter', description: 'Maintained a 3-day login streak.', icon: 'Flame', xpReward: 30, triggerCondition: 'daily_streak_3', streakFreezeReward: 1 },
+      { id: 'networker', name: 'Networker', description: 'Made 10+ alumni connections.', icon: 'Users', xpReward: 75, triggerCondition: 'connections_10' },
+      { id: 'analyzer-ace', name: 'Analyzer Ace', description: 'Analyzed 5+ resumes.', icon: 'Zap', xpReward: 50, triggerCondition: 'resume_scans_5' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded badges.');
+
+  // Seed Gamification Rules
+  await prisma.gamificationRule.createMany({
+    data: [
+      { actionId: 'daily_login', description: 'Log in to the platform', xpPoints: 10 },
+      { actionId: 'community_post', description: 'Create a new post in the community', xpPoints: 15 },
+      { actionId: 'community_comment', description: 'Comment on a community post', xpPoints: 5 },
+      { actionId: 'analyze_resume', description: 'Analyze a resume with the AI tool', xpPoints: 20 },
+      { actionId: 'add_job_application', description: 'Add a new application to the job tracker', xpPoints: 10 },
+      { actionId: 'successful_referral', description: 'Successfully refer a new user', xpPoints: 50 },
+      { actionId: 'daily_challenge_complete', description: 'Complete the daily interview challenge', xpPoints: 25 },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded gamification rules.');
+
+
+  console.log(`Seeding finished.`)
 }
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })
