@@ -161,6 +161,23 @@ async function main() {
 
   // --- OTHER FEATURES ---
 
+  // Sample Appointment for Email Template testing
+  await prisma.appointment.create({
+    data: {
+      tenantId: 'brainqy',
+      requesterUserId: alice.id,
+      alumniUserId: bob.id,
+      title: 'Career Advice Session',
+      dateTime: new Date(Date.now() + 86400000 * 7), // 1 week from now
+      status: 'Confirmed',
+      withUser: bob.name,
+      notes: 'Looking forward to discussing career paths in AI.',
+      costInCoins: 10,
+    }
+  });
+  console.log('Seeded a sample appointment for email testing.');
+
+
   // Announcements
   await prisma.announcement.create({
     data: {
@@ -290,5 +307,6 @@ main()
       
 
     
+
 
 
