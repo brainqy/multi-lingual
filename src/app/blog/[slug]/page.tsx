@@ -150,9 +150,9 @@ export default function BlogPostClientView() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-3xl md:text-4xl font-extrabold tracking-tight">{post.title}</CardTitle>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground pt-2">
-            <span className="flex items-center gap-1"><User className="h-4 w-4"/> {post.author}</span>
-            <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4"/> {format(new Date(post.date), 'PPP')}</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground pt-2">
+            <div className="flex items-center gap-1"><User className="h-4 w-4"/> {post.author}</div>
+            <div className="flex items-center gap-1"><CalendarDays className="h-4 w-4"/> {format(new Date(post.date), 'PPP')}</div>
              {post.tags && post.tags.length > 0 && (
                 <div className="flex items-center gap-1 flex-wrap">
                     <Tag className="h-4 w-4"/>
