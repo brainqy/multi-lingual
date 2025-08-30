@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -145,7 +146,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     async function loadData() {
         setIsLoading(true);
         const [data, promotions] = await Promise.all([
-            getDashboardData(user.tenantId, user.id, user.role),
+            getDashboardData(user.tenantId, user.id),
             getActivePromotionalContent()
         ]);
         setDashboardData(data);
@@ -664,4 +665,3 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     </>
   );
 }
-
