@@ -55,7 +55,7 @@ export default function EmailTemplatesPage() {
   }, [currentUser, activeTemplateId, reset]);
 
   useEffect(() => {
-    if (currentUser?.role === 'manager') {
+    if (currentUser?.role === 'manager' ) {
       fetchData();
     } else if (currentUser?.role !== 'admin') {
       setIsLoading(false);
@@ -100,7 +100,7 @@ export default function EmailTemplatesPage() {
     { value: "{{appointmentLink}}", description: "Link to view the appointment details." },
   ];
 
-  if (!currentUser || currentUser.role !== 'manager') {
+  if (!currentUser || currentUser.role !== 'manager' && currentUser.role !== 'admin') {
     return <AccessDeniedMessage message="This feature is available for Tenant Managers." />;
   }
 
