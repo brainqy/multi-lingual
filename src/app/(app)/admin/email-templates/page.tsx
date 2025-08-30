@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Mail, Save, Loader2, Info, Pilcrow } from "lucide-react";
+import { Mail, Save, Loader2, Pilcrow } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EmailTemplate } from "@/types";
-import { useForm, Controller, useFormState } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,6 +18,7 @@ import { getTenantEmailTemplates, updateEmailTemplate } from "@/lib/actions/emai
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useI18n } from "@/hooks/use-i18n";
 
 const templateSchema = z.object({
   id: z.string(),
@@ -34,8 +35,9 @@ export default function EmailTemplatesPage() {
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
   
-  const { control, handleSubmit, reset, getValues, formState: { isDirty } } = useForm<TemplateFormData>({
+  const { control, handleSubmit, reset, formState: { isDirty } } = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
   });
 
@@ -45,19 +47,26 @@ export default function EmailTemplatesPage() {
     const fetchedTemplates = await getTenantEmailTemplates(currentUser.tenantId);
     setTemplates(fetchedTemplates);
     if (fetchedTemplates.length > 0 && !activeTemplateId) {
-      setActiveTemplateId(fetchedTemplates[0].id);
-      reset(fetchedTemplates[0]);
+      const firstTemplate = fetchedTemplates[0];
+      setActiveTemplateId(firstTemplate.id);
+      reset(firstTemplate);
     }
     setIsLoading(false);
   }, [currentUser, activeTemplateId, reset]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (currentUser?.role === 'manager') {
+      fetchData();
+    } else if (currentUser?.role !== 'admin') {
+      setIsLoading(false);
+    }
+    // Admin does not have a tenant, so this page is for managers only for now.
+    // If an admin needs to see this, they would need a tenant selection UI.
+  }, [currentUser, fetchData]);
 
   const handleTabChange = (templateId: string) => {
     if (isDirty) {
-      if (!confirm("You have unsaved changes. Are you sure you want to switch templates? Your changes will be lost.")) {
+      if (!confirm("You have unsaved changes. Are you sure you want to switch? Your changes will be lost.")) {
         return;
       }
     }
@@ -74,7 +83,7 @@ export default function EmailTemplatesPage() {
     if (updatedTemplate) {
       setTemplates(prev => prev.map(t => t.id === data.id ? updatedTemplate : t));
       reset(updatedTemplate); // Reset form to new state to clear isDirty flag
-      toast({ title: "Template Saved", description: `The "${updatedTemplate.type}" template has been updated.` });
+      toast({ title: t("emailTemplates.toast.updated.title"), description: t("emailTemplates.toast.updated.description", { type: updatedTemplate.type }) });
     } else {
       toast({ title: "Error", description: "Failed to save the template.", variant: "destructive" });
     }
@@ -91,17 +100,17 @@ export default function EmailTemplatesPage() {
     { value: "{{appointmentLink}}", description: "Link to view the appointment details." },
   ];
 
-  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
-    return <AccessDeniedMessage />;
+  if (!currentUser || currentUser.role !== 'manager') {
+    return <AccessDeniedMessage message="This feature is available for Tenant Managers." />;
   }
 
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Mail className="h-8 w-8" /> Email Template Management
+        <Mail className="h-8 w-8" /> {t("emailTemplates.title")}
       </h1>
       <CardDescription>
-        Customize the automated emails sent to users in your tenant. Use placeholders to include dynamic content.
+        {t("emailTemplates.description")}
       </CardDescription>
       
       {isLoading ? (
@@ -120,16 +129,16 @@ export default function EmailTemplatesPage() {
                   value={template.id}
                   className="w-full justify-start data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
                 >
-                  {template.type.replace(/_/g, ' ')}
+                  {t(`emailTemplates.types.${template.type}`, { default: template.type.replace(/_/g, ' ') })}
                 </TabsTrigger>
               ))}
             </TabsList>
             <Card className="mt-4">
-                <CardHeader className="p-3"><CardTitle className="text-sm flex items-center gap-1"><Pilcrow className="h-4 w-4"/>Placeholders</CardTitle></CardHeader>
+                <CardHeader className="p-3"><CardTitle className="text-sm flex items-center gap-1"><Pilcrow className="h-4 w-4"/>{t("emailTemplates.placeholders.title")}</CardTitle></CardHeader>
                 <CardContent className="p-3 pt-0">
                     <ScrollArea className="h-48">
                       <ul className="text-xs space-y-1">
-                        {placeholders.map(p => <li key={p.value}><code className="font-mono bg-muted p-0.5 rounded">{p.value}</code> - <span className="text-muted-foreground">{p.description}</span></li>)}
+                        {placeholders.map(p => <li key={p.value}><code className="font-mono bg-muted p-0.5 rounded">{p.value}</code> - <span className="text-muted-foreground">{t(`emailTemplates.placeholders.${p.value}`, { default: p.description })}</span></li>)}
                       </ul>
                     </ScrollArea>
                 </CardContent>
@@ -141,13 +150,13 @@ export default function EmailTemplatesPage() {
                 <Card className="shadow-lg">
                   <form onSubmit={handleSubmit(onSubmit)}>
                   <CardHeader>
-                    <CardTitle>Editing: {template.type.replace(/_/g, ' ')}</CardTitle>
-                    <CardDescription>Modify the subject and body of this email.</CardDescription>
+                    <CardTitle>{t("emailTemplates.editingTitle", { type: t(`emailTemplates.types.${template.type}`, { default: template.type.replace(/_/g, ' ') }) })}</CardTitle>
+                    <CardDescription>{t("emailTemplates.editingDescription")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Controller name="id" control={control} render={({ field }) => <input type="hidden" {...field} />} />
                     <div>
-                      <Label htmlFor="subject">Email Subject</Label>
+                      <Label htmlFor="subject">{t("emailTemplates.form.subjectLabel")}</Label>
                       <Controller
                         name="subject"
                         control={control}
@@ -156,7 +165,7 @@ export default function EmailTemplatesPage() {
                       {errors.subject && <p className="text-sm text-destructive mt-1">{errors.subject.message}</p>}
                     </div>
                     <div>
-                      <Label htmlFor="body">Email Body</Label>
+                      <Label htmlFor="body">{t("emailTemplates.form.bodyLabel")}</Label>
                       <Controller
                         name="body"
                         control={control}
@@ -169,7 +178,7 @@ export default function EmailTemplatesPage() {
                     <Button type="submit" disabled={isSaving || !isDirty}>
                       {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       <Save className="mr-2 h-4 w-4" />
-                      Save Changes
+                      {t("emailTemplates.saveButton")}
                     </Button>
                   </CardFooter>
                   </form>

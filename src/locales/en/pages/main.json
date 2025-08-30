@@ -58,5 +58,37 @@
         "description": "The event has been removed from the gallery."
       }
     }
+  },
+  "emailTemplates": {
+    "title": "Email Template Management",
+    "description": "Customize the automated emails sent to users in your tenant. Use placeholders to include dynamic content.",
+    "editingTitle": "Editing: {type}",
+    "editingDescription": "Modify the subject and body of this email.",
+    "saveButton": "Save Changes",
+    "types": {
+        "WELCOME": "Welcome Email",
+        "APPOINTMENT_CONFIRMATION": "Appointment Confirmation",
+        "PASSWORD_RESET": "Password Reset"
+    },
+    "placeholders": {
+        "title": "Placeholders",
+        "{{userName}}": "The recipient's full name.",
+        "{{tenantName}}": "The name of your organization/tenant.",
+        "{{resetLink}}": "URL for password reset (Password Reset only).",
+        "{{appointmentTitle}}": "Title of the appointment (Appointment only).",
+        "{{partnerName}}": "Name of the other person in the appointment.",
+        "{{appointmentDateTime}}": "Formatted date and time of the appointment.",
+        "{{appointmentLink}}": "Link to view the appointment details."
+    },
+    "form": {
+        "subjectLabel": "Email Subject",
+        "bodyLabel": "Email Body"
+    },
+    "toast": {
+        "updated": {
+            "title": "Template Saved",
+            "description": "The \"{type}\" template has been updated."
+        }
+    }
   }
 }
