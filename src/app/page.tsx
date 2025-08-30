@@ -7,14 +7,13 @@ import { BarChart, Briefcase, Users, Zap, FileText, Edit, MessageSquare, Brain, 
 import Image from "next/image";
 import Link from "next/link";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
 import { samplePlatformSettings, sampleBlogPosts } from "@/lib/sample-data";
 import { format, parseISO } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import CustomerReviewsSection from "@/components/features/landing/CustomerReviewsSection";
 
 export default function LandingPage() {
-  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const platformName = samplePlatformSettings.platformName;
 
   const stats = [
@@ -49,24 +48,8 @@ export default function LandingPage() {
     { question: "Is JobMatch AI free?", answer: "Yes, you can start using JobMatch AI for free. Premium features are available with subscription plans." },
     { question: "Can I customize my resume templates?", answer: "Absolutely! JobMatch AI provides customizable templates to suit your needs." },
   ];
-
-  const customerReviews = [
-    { name: "Alice Wonderland", review: "JobMatch AI helped me land my dream job at Google! The AI Mock Interview feature was a game-changer.", avatar: "https://picsum.photos/seed/alice/50/50" },
-    { name: "Bob The Builder", review: "The resume analyzer gave me insights I never thought of. Highly recommend this platform!", avatar: "https://picsum.photos/seed/bob/50/50" },
-    { name: "Charlie Brown", review: "The alumni network feature connected me with mentors who guided me through my career transition.", avatar: "https://picsum.photos/seed/charlie/50/50" },
-    { name: "Diana Prince", review: "The gamified rewards kept me motivated throughout my job search journey. Great platform!", avatar: "https://picsum.photos/seed/diana/50/50" },
-    { name: "Eve Adams", review: "The job tracker feature helped me stay organized and focused during my job search.", avatar: "https://picsum.photos/seed/eve/50/50" },
-    { name: "Frank Castle", review: "The resume templates are professional and easy to customize. Highly recommended!", avatar: "https://picsum.photos/seed/frank/50/50" },
-  ];
   
   const latestBlogPosts = sampleBlogPosts.slice(0, 5);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentReviewIndex((prevIndex) => (prevIndex + 1) % customerReviews.length); // Cyclic rotation
-    }, 3000); // Change slide every 3 seconds
-    return () => clearInterval(interval);
-  }, [customerReviews.length]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-primary via-secondary to-accent">
@@ -200,33 +183,7 @@ export default function LandingPage() {
         </section>
 
         {/* Customer Reviews Section */}
-        <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8">What Our Users Say</h2>
-            <div className="relative overflow-hidden">
-              <div
-                className="flex gap-6 transition-transform duration-500"
-                style={{ transform: `translateX(-${currentReviewIndex * 33.33}%)` }} // Slide one review at a time
-              >
-                {customerReviews.map((review, index) => (
-                  <div
-                    key={index}
-                    className="w-1/3 p-6 bg-card rounded-lg shadow-lg hover:shadow-xl transition-shadow flex flex-col items-center gap-4"
-                  >
-                    <Avatar className="w-16 h-16">
-                      <AvatarImage src={review.avatar} alt={review.name} />
-                      <AvatarFallback>{review.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">{review.review}</p>
-                      <p className="text-xs text-primary font-semibold mt-2">{review.name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <CustomerReviewsSection />
         
         {/* Latest Blog Posts Section */}
         <section id="blog" className="py-16 sm:py-24 bg-background">
