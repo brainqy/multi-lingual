@@ -36,7 +36,7 @@ import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
-import AiMentorSuggestions from "../../../usr/src/app/src/components/dashboards/AiMentorSuggestions";
+import AiMentorSuggestions from "@/components/dashboards/AiMentorSuggestions";
 
 interface UserDashboardProps {
   user: UserProfile;
