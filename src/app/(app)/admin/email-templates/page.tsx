@@ -52,7 +52,6 @@ export default function EmailTemplatesPage() {
     setIsLoading(true);
     const fetchedTemplates = await getTenantEmailTemplates(currentUser.tenantId);
     setTemplates(fetchedTemplates);
-    // This is the critical fix: only set active tab *after* data is fetched.
     if (fetchedTemplates.length > 0) {
       const firstTemplate = fetchedTemplates[0];
       setActiveTemplateId(firstTemplate.id);
@@ -87,7 +86,7 @@ export default function EmailTemplatesPage() {
     const updatedTemplate = await updateEmailTemplate(data.id, { subject: data.subject, body: data.body });
     if (updatedTemplate) {
       setTemplates(prev => prev.map(t => t.id === data.id ? updatedTemplate : t));
-      reset(updatedTemplate); // Reset form to new state to clear isDirty flag
+      reset(updatedTemplate);
       toast({ title: t("emailTemplates.toast.updated.title"), description: t("emailTemplates.toast.updated.description", { type: updatedTemplate.type }) });
     } else {
       toast({ title: "Error", description: "Failed to save the template.", variant: "destructive" });

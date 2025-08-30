@@ -51,9 +51,11 @@ export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTe
       }));
       
       console.log('[EmailTemplateAction LOG] 4. Starting transaction to create default templates.');
-      await db.emailTemplate.createMany({
-        data: templatesToCreate,
-      });
+      await db.$transaction(
+        templatesToCreate.map(templateData => 
+          db.emailTemplate.create({ data: templateData })
+        )
+      );
       console.log('[EmailTemplateAction LOG] 5. Finished creating default templates.');
       
       console.log('[EmailTemplateAction LOG] 6. Re-fetching templates after creation.');
