@@ -4,10 +4,7 @@
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { getTenantEmailTemplates } from './email-templates';
-import { Resend } from 'resend';
-
-// Initialize Resend with the API key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from 'nodemailer';
 
 interface EmailPlaceholders {
   userName?: string;
@@ -21,7 +18,7 @@ interface EmailPlaceholders {
 }
 
 /**
- * Sends an email using the Resend service.
+ * Sends an email using the Nodemailer service with Gmail.
  * It fetches a template, replaces placeholders, and sends the email.
  * 
  * @param tenantId The tenant for which to send the email, which determines the template.
@@ -41,12 +38,12 @@ export async function sendEmail({
   type: 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
   placeholders: EmailPlaceholders;
 }) {
-  logAction('Attempting to send email', { recipientEmail, type, tenantId });
+  logAction('Attempting to send email via Gmail', { recipientEmail, type, tenantId });
 
-  if (!process.env.RESEND_API_KEY) {
-    logError('[SendEmail] Resend API key is not configured. Email sending is disabled.', new Error('RESEND_API_KEY missing'));
+  if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
+    logError('[SendEmail] Gmail credentials are not configured in .env file. Email sending is disabled.', new Error('GMAIL_EMAIL or GMAIL_APP_PASSWORD missing'));
     // Log the intended email to the console as a fallback
-    console.log(`--- FALLBACK: EMAIL NOT SENT (NO API KEY) ---`);
+    console.log(`--- FALLBACK: EMAIL NOT SENT (NO GMAIL CREDS) ---`);
     console.log(`To: ${recipientEmail}`);
     console.log(`Type: ${type}`);
     console.log(`Placeholders: ${JSON.stringify(placeholders)}`);
@@ -67,7 +64,6 @@ export async function sendEmail({
     let subject = template.subject;
     let body = template.body;
     
-    // Replace all placeholders
     const allPlaceholders: EmailPlaceholders = {
         tenantName: tenant.name,
         ...placeholders,
@@ -81,28 +77,28 @@ export async function sendEmail({
         }
     }
     
-    // Using a generic "from" address. Resend requires a verified domain.
-    // Replace 'onboarding@resend.dev' with your own verified domain email in a real app.
-    const fromAddress = `donotreply@${tenant.domain || 'bhashasetu.com'}`;
-    const fallbackFrom = 'JobMatch AI <onboarding@resend.dev>';
-    
-    const { data, error } = await resend.emails.send({
-      from: fallbackFrom,
-      to: [recipientEmail],
-      subject: subject,
-      text: body, // Use the text version of the body for simplicity
-      // For HTML emails, you would use:
-      // html: '<p>Your HTML content here</p>'
+    // Create a transporter object using the default SMTP transport
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD, // Use the App Password here
+      },
     });
 
-    if (error) {
-      logError('[SendEmail] Resend API error', error, { recipientEmail, type });
-      throw error;
-    }
+    const mailOptions = {
+      from: `"${tenant.name}" <${process.env.GMAIL_EMAIL}>`,
+      to: recipientEmail,
+      subject: subject,
+      text: body,
+      // html: "<p>HTML version of the message</p>" // You can add an HTML version here
+    };
 
-    logAction('Email sent successfully via Resend', { recipientEmail, type, messageId: data?.id });
+    const info = await transporter.sendMail(mailOptions);
+
+    logAction('Email sent successfully via Gmail', { recipientEmail, type, messageId: info.messageId });
 
   } catch (error) {
-    logError('[SendEmail] Failed to send email', error, { recipientEmail, type, tenantId });
+    logError('[SendEmail] Failed to send email via Gmail', error, { recipientEmail, type, tenantId });
   }
 }
