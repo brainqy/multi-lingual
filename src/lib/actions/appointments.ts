@@ -41,7 +41,7 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
   logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
   try {
-    const dashboardData = await getDashboardData(appointmentData.tenantId, appointmentData.requesterUserId, 'user');
+    const dashboardData = await getDashboardData();
     const requesterUser = dashboardData.users.find(u => u.id === appointmentData.requesterUserId);
 
     if (!requesterUser) {
@@ -114,4 +114,49 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
     logError(`[AppointmentAction] Error updating appointment ${appointmentId}`, error, { appointmentId });
     return null;
   }
+}
+
+/**
+ * Reassigns an appointment to a new alumni expert.
+ * @param appointmentId The ID of the appointment to reassign.
+ * @param newAlumniUserId The ID of the new alumni expert.
+ * @param reason Optional reason for reassignment.
+ * @returns An object indicating success and the updated appointment or an error message.
+ */
+export async function reassignAppointment(appointmentId: string, newAlumniUserId: string, reason?: string): Promise<{ success: boolean; appointment?: Appointment; error?: string }> {
+    logAction('Reassigning appointment', { appointmentId, newAlumniUserId });
+    try {
+        const appointment = await db.appointment.findUnique({ where: { id: appointmentId } });
+        if (!appointment) {
+            return { success: false, error: 'Appointment not found.' };
+        }
+
+        const newAlumni = await db.user.findUnique({ where: { id: newAlumniUserId }});
+        if (!newAlumni) {
+            return { success: false, error: 'New expert not found.' };
+        }
+
+        const updatedAppointment = await db.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                alumniUserId: newAlumniUserId,
+                withUser: newAlumni.name,
+                notes: `Reassigned. Reason: ${reason || 'N/A'}. Original note: ${appointment.notes}`,
+            },
+        });
+
+        // Notify the new expert
+        await createNotification({
+            userId: newAlumniUserId,
+            type: 'event',
+            content: `An appointment request for "${updatedAppointment.title}" has been reassigned to you.`,
+            link: '/appointments',
+            isRead: false,
+        });
+
+        return { success: true, appointment: updatedAppointment as unknown as Appointment };
+    } catch (error) {
+        logError(`[AppointmentAction] Error reassigning appointment ${appointmentId}`, error, { appointmentId });
+        return { success: false, error: 'An unexpected error occurred during reassignment.' };
+    }
 }
