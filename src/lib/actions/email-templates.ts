@@ -1,11 +1,9 @@
 
 'use server';
 
-import { PrismaClient } from '@prisma/client';
+import { db } from '@/lib/db';
 import type { EmailTemplate } from '@/types';
 import { logAction, logError } from '@/lib/logger';
-
-const db = new PrismaClient();
 
 const DEFAULT_TEMPLATES = [
   {
