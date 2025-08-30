@@ -1,3 +1,4 @@
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -44,9 +45,19 @@ export async function getTenantEmailTemplates(tenantId: string): Promise<EmailTe
         ...t,
         tenantId: tenantId,
       }));
-      await db.emailTemplate.createMany({
-        data: templatesToCreate,
-      });
+      // Using createMany with explicit connections is not directly supported for relations.
+      // We must create them individually to establish the relation correctly.
+      for (const templateData of templatesToCreate) {
+        await db.emailTemplate.create({
+          data: {
+            ...templateData,
+            tenant: {
+              connect: { id: tenantId }
+            }
+          }
+        });
+      }
+      
       templates = await db.emailTemplate.findMany({
         where: { tenantId },
         orderBy: { type: 'asc' },
