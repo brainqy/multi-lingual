@@ -1,19 +1,20 @@
 import nextJest from 'next/jest.js'
  
+/** @type {import('jest').Config} */
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: './',
 })
  
 // Add any custom config to be passed to Jest
-/** @type {import('jest').Config} */
 const config = {
+  coverageProvider: 'v8',
+  testEnvironment: 'jsdom',
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testEnvironment: 'jest-environment-jsdom',
+  setupFilesAfterEnv: ['<rootDir>/src/jest.setup.js'],
   moduleNameMapper: {
-    // This is the key change: Force module resolves for lucide-react to our manual mock
-    '^lucide-react$': '<rootDir>/src/__mocks__/lucide-react.js',
+    // Force modules to resolve with the CJS entry point
+    'lucide-react': 'lucide-react/dist/cjs',
   },
 }
  
