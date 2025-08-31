@@ -1,4 +1,3 @@
-
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Page from '../app/landing/page'
@@ -11,5 +10,13 @@ describe('Page', () => {
  
     expect(heading).toBeInTheDocument()
     expect(heading).toHaveTextContent('Unlock Your Career Potential with AI')
+  })
+
+  it('renders the main call-to-action link', () => {
+    render(<Page />)
+
+    const ctaLink = screen.getByRole('link', { name: /Get Started Free/i })
+
+    expect(ctaLink).toBeInTheDocument()
   })
 })
