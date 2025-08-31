@@ -16,7 +16,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock IntersectionObserver for Jest/JSDOM environment, required by embla-carousel
+// Mock IntersectionObserver for Jest/JSDOM, required by embla-carousel
 const mockIntersectionObserver = jest.fn();
 mockIntersectionObserver.mockReturnValue({
   observe: () => null,
@@ -25,7 +25,7 @@ mockIntersectionObserver.mockReturnValue({
 });
 window.IntersectionObserver = mockIntersectionObserver;
 
-// Mock ResizeObserver for Jest/JSDOM environment, required by embla-carousel
+// Mock ResizeObserver for Jest/JSDOM, required by embla-carousel
 const mockResizeObserver = jest.fn();
 mockResizeObserver.mockReturnValue({
   observe: () => null,
