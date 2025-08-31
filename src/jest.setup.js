@@ -24,3 +24,12 @@ mockIntersectionObserver.mockReturnValue({
   disconnect: () => null,
 });
 window.IntersectionObserver = mockIntersectionObserver;
+
+// Mock ResizeObserver for Jest/JSDOM environment, required by embla-carousel
+const mockResizeObserver = jest.fn();
+mockResizeObserver.mockReturnValue({
+  observe: () => null,
+  unobserve: () => null,
+  disconnect: () => null,
+});
+window.ResizeObserver = mockResizeObserver;
