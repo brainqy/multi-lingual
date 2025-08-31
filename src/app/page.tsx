@@ -84,7 +84,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground font-headline">
               Unlock Your <span className="text-primary">Career Potential</span> with AI
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground">
@@ -105,7 +105,7 @@ export default function LandingPage() {
         {/* Core Features Section */}
         <section id="features" className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">All The Tools You Need to Succeed</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground font-headline">All The Tools You Need to Succeed</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               From crafting the perfect resume to acing the interview and building your network, JobMatch AI provides a comprehensive suite of tools.
             </p>
@@ -115,7 +115,7 @@ export default function LandingPage() {
                 <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 text-left">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <feature.icon className="h-8 w-8 text-primary shrink-0" />
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    <CardTitle className="text-lg font-semibold">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -131,7 +131,7 @@ export default function LandingPage() {
         {/* Trending Jobs Section */}
         <section id="trending-jobs" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Trending Job Categories</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground font-headline">Trending Job Categories</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Explore the most in-demand roles and industries our alumni are thriving in.
             </p>
@@ -142,7 +142,7 @@ export default function LandingPage() {
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <job.icon className="h-8 w-8 text-primary" />
-                      <CardTitle className="text-lg">{job.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">{job.name}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -171,7 +171,7 @@ export default function LandingPage() {
         {/* Statistics Section */}
         <section className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center text-foreground mb-12">Join a Thriving Community</h2>
+            <h2 className="text-3xl font-bold text-center text-foreground mb-12 font-headline">Join a Thriving Community</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {console.log("Line 196: Mapping stats...")}
               {stats.map((stat) => (
@@ -195,7 +195,7 @@ export default function LandingPage() {
         <section id="blog" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground">From Our Blog</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground font-headline">From Our Blog</h2>
               <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
                 Get the latest insights, tips, and success stories to supercharge your career.
               </p>
@@ -210,7 +210,7 @@ export default function LandingPage() {
               <CarouselContent className="-ml-4">
                 {console.log("Line 234: Mapping latestBlogPosts...")}
                 {latestBlogPosts.map((post) => (
-                  <CarouselItem key={post.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                  <CarouselItem key={post.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3">
                     <Link href={`/blog/${post.slug}`} passHref>
                       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden h-full cursor-pointer">
                         {post.imageUrl && (
@@ -225,7 +225,7 @@ export default function LandingPage() {
                           </div>
                         )}
                         <CardHeader className="p-4">
-                          <CardTitle className="text-lg leading-tight line-clamp-2">{post.title}</CardTitle>
+                          <CardTitle className="text-lg leading-tight line-clamp-2 font-semibold">{post.title}</CardTitle>
                           <div className="flex items-center space-x-2 text-xs text-muted-foreground pt-1">
                             <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {post.author}</span>
                             <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
@@ -266,12 +266,12 @@ export default function LandingPage() {
         {/* FAQs Section */}
         <section className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8">Frequently Asked Questions</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8 font-headline">Frequently Asked Questions</h2>
             <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
               {console.log("Line 301: Mapping faqs...")}
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`faq-${index}`}>
-                  <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
+                  <AccordionTrigger className="text-lg font-semibold text-left">{faq.question}</AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
@@ -284,7 +284,7 @@ export default function LandingPage() {
         {/* Call to Action Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Ready to Elevate Your Career?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground font-headline">Ready to Elevate Your Career?</h2>
             <p className="mt-4 max-w-xl mx-auto text-lg text-muted-foreground">
               Stop guessing and start getting results. Sign up for JobMatch AI today and take the next step in your professional journey.
             </p>
