@@ -7,7 +7,7 @@ import { SettingsProvider } from '@/contexts/settings-provider';
 import { samplePlatformSettings } from '@/lib/sample-data';
 
 // Mock the useAuth hook to provide a dummy user
-jest.mock('@/hooks/use-auth', () => ({
+jest.mock('../hooks/use-auth', () => ({
   useAuth: () => ({
     user: { name: 'Test User', email: 'test@example.com' },
     wallet: { coins: 100 },
