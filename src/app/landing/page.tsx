@@ -14,9 +14,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import CustomerReviewsSection from "@/components/features/landing/CustomerReviewsSection";
 
 export default function LandingPage() {
-  console.log("Line 15: LandingPage component rendering...");
   const platformName = samplePlatformSettings.platformName;
-  console.log("Line 17: platformName initialized:", platformName);
 
   const stats = [
     { name: "Resumes Analyzed", value: "10,000+", icon: FileText },
@@ -24,7 +22,6 @@ export default function LandingPage() {
     { name: "Alumni Network", value: "5,000+", icon: Users },
     { name: "AI Features Used", value: "25,000+", icon: Zap },
   ];
-  console.log("Line 25: stats array initialized.");
 
   const coreFeatures = [
     { title: "AI Resume Analyzer", description: "Get deep insights into your resume's match with job descriptions, ATS compatibility, and keyword optimization.", icon: Zap, dataAiHint: "resume analysis report", imagePlaceholder: "https://placehold.co/600x400.png" },
@@ -37,7 +34,6 @@ export default function LandingPage() {
     { title: "Alumni Connect Directory", description: "Network with fellow alumni, find mentors, and book appointments for career guidance.", icon: Users, dataAiHint: "alumni directory", imagePlaceholder: "https://placehold.co/600x400.png" },
     { title: "Event Management & Gallery", description: "Discover and register for alumni events, and browse past event galleries.", icon: CalendarCheck2, dataAiHint: "events gallery", imagePlaceholder: "https://placehold.co/600x400.png" },
   ];
-  console.log("Line 43: coreFeatures array initialized.");
 
   const trendingJobs = [
     { name: "AI & Machine Learning", icon: Brain, roles: ["ML Engineer", "Data Scientist", "AI Researcher"] },
@@ -45,7 +41,6 @@ export default function LandingPage() {
     { name: "Cloud & DevOps", icon: Layers3, roles: ["Cloud Architect", "DevOps Engineer", "SRE"] },
     { name: "Product Management", icon: Zap, roles: ["Product Manager", "Product Owner", "Technical PM"] },
   ];
-  console.log("Line 51: trendingJobs array initialized.");
 
   const faqs = [
     { question: "What is JobMatch AI?", answer: "JobMatch AI is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks." },
@@ -53,15 +48,11 @@ export default function LandingPage() {
     { question: "Is JobMatch AI free?", answer: "Yes, you can start using JobMatch AI for free. Premium features are available with subscription plans." },
     { question: "Can I customize my resume templates?", answer: "Absolutely! JobMatch AI provides customizable templates to suit your needs." },
   ];
-  console.log("Line 60: faqs array initialized.");
   
   const latestBlogPosts = sampleBlogPosts.slice(0, 5);
-  console.log("Line 63: latestBlogPosts initialized.");
 
-  console.log("Line 65: Before returning JSX...");
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {console.log("Line 68: Rendering header.")}
       <header className="bg-card text-card-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
@@ -80,7 +71,6 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-grow">
-        {console.log("Line 90: Rendering Hero Section.")}
         {/* Hero Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -101,7 +91,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {console.log("Line 114: Rendering Core Features Section.")}
         {/* Core Features Section */}
         <section id="features" className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -110,7 +99,6 @@ export default function LandingPage() {
               From crafting the perfect resume to acing the interview and building your network, JobMatch AI provides a comprehensive suite of tools.
             </p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-10">
-              {console.log("Line 125: Mapping coreFeatures...")}
               {coreFeatures.map((feature, index) => (
                 <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 text-left">
                   <CardHeader className="flex flex-row items-center gap-4">
@@ -122,12 +110,10 @@ export default function LandingPage() {
                   </CardContent>
                 </Card>
               ))}
-              {console.log("Line 138: Finished mapping coreFeatures.")}
             </div>
           </div>
         </section>
 
-        {console.log("Line 143: Rendering Trending Jobs Section.")}
         {/* Trending Jobs Section */}
         <section id="trending-jobs" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -136,7 +122,6 @@ export default function LandingPage() {
               Explore the most in-demand roles and industries our alumni are thriving in.
             </p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-10">
-              {console.log("Line 154: Mapping trendingJobs...")}
               {trendingJobs.map((job, index) => (
                 <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 text-left">
                   <CardHeader>
@@ -162,18 +147,15 @@ export default function LandingPage() {
                   </CardFooter>
                 </Card>
               ))}
-              {console.log("Line 183: Finished mapping trendingJobs.")}
             </div>
           </div>
         </section>
 
-        {console.log("Line 188: Rendering Statistics Section.")}
         {/* Statistics Section */}
         <section className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center text-foreground mb-12 font-headline">Join a Thriving Community</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-              {console.log("Line 196: Mapping stats...")}
               {stats.map((stat) => (
                 <div key={stat.name} className="p-6 bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <stat.icon className="w-12 h-12 text-primary mx-auto mb-4" />
@@ -181,16 +163,13 @@ export default function LandingPage() {
                   <p className="text-muted-foreground mt-1">{stat.name}</p>
                 </div>
               ))}
-              {console.log("Line 205: Finished mapping stats.")}
             </div>
           </div>
         </section>
         
-        {console.log("Line 210: Rendering Customer Reviews Section.")}
         {/* Customer Reviews Section */}
         <CustomerReviewsSection />
         
-        {console.log("Line 215: Rendering Latest Blog Posts Section.")}
         {/* Latest Blog Posts Section */}
         <section id="blog" className="py-16 sm:py-24 bg-secondary/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -208,7 +187,6 @@ export default function LandingPage() {
               className="w-full"
             >
               <CarouselContent className="-ml-4">
-                {console.log("Line 234: Mapping latestBlogPosts...")}
                 {latestBlogPosts.map((post) => (
                   <CarouselItem key={post.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3">
                     <Link href={`/blog/${post.slug}`} passHref>
@@ -247,7 +225,6 @@ export default function LandingPage() {
                     </Link>
                   </CarouselItem>
                 ))}
-                {console.log("Line 277: Finished mapping latestBlogPosts.")}
               </CarouselContent>
               <CarouselPrevious className="ml-[-1rem] bg-card hover:bg-secondary" />
               <CarouselNext className="mr-[-1rem] bg-card hover:bg-secondary" />
@@ -262,25 +239,21 @@ export default function LandingPage() {
           </div>
         </section>
         
-        {console.log("Line 293: Rendering FAQs Section.")}
         {/* FAQs Section */}
         <section className="py-16 sm:py-24 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-foreground mb-8 font-headline">Frequently Asked Questions</h2>
             <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
-              {console.log("Line 301: Mapping faqs...")}
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`faq-${index}`}>
                   <AccordionTrigger className="text-lg font-semibold text-left">{faq.question}</AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
-              {console.log("Line 308: Finished mapping faqs.")}
             </Accordion>
           </div>
         </section>
         
-        {console.log("Line 313: Rendering Call to Action Section.")}
         {/* Call to Action Section */}
         <section className="py-16 sm:py-24 bg-gradient-to-br from-primary/10 via-background to-secondary/10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -299,7 +272,6 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {console.log("Line 335: Rendering footer.")}
       <footer className="py-8 bg-card text-center text-muted-foreground border-t">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center mb-4">
@@ -316,7 +288,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-      {console.log("Line 354: Finished rendering component.")}
     </div>
   );
 }
