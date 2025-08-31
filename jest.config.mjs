@@ -10,8 +10,9 @@ const createJestConfig = nextJest({
 const config = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
+ 
   testEnvironment: 'jest-environment-jsdom',
-  testMatch: ['**/__tests__/**/*.test.tsx'],
+  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   transformIgnorePatterns: [
     "/node_modules/(?!lucide-react)/"
   ],
