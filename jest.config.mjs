@@ -10,12 +10,10 @@ const createJestConfig = nextJest({
 const config = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
- 
   testEnvironment: 'jest-environment-jsdom',
   transformIgnorePatterns: [
-    '/node_modules/(?!(lucide-react)/)',
+    '/node_modules/(?!lucide-react)/'
   ],
-  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
 }
  
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
