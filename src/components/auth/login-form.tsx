@@ -62,7 +62,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
-        <CardTitle className="text-3xl font-headline text-center text-primary">{t("login.title")}</CardTitle>
+        <CardTitle asChild className="text-3xl font-headline text-center text-primary">
+          <h1>{t("login.title")}</h1>
+        </CardTitle>
         <CardDescription className="text-center">{tenantId ? `Signing in to: ${tenantId}` : platformName}</CardDescription>
       </CardHeader>
       <CardContent>
