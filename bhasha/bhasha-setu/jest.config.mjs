@@ -9,16 +9,17 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 /** @type {import('jest').Config} */
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
-  // Add more setup options before each test is run
-  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
+  // This pattern tells Jest to NOT transform files in node_modules, EXCEPT for the ones listed.
+  // This is crucial for packages that use modern JavaScript (ESM) syntax.
   transformIgnorePatterns: [
-    '/node_modules/(?!lucide-react|@genkit-ai/|genkit/|dotprompt|yaml)',
+    '/node_modules/(?!(genkit|@genkit-ai|yaml|dotprompt)/)',
   ],
+  moduleNameMapper: {
+    // Mock for lucide-react icons
+    '^lucide-react$': '<rootDir>/src/__mocks__/lucide-react.js',
+  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
