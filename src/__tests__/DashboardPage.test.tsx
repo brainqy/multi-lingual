@@ -1,10 +1,11 @@
+
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import DashboardPage from '../app/(app)/dashboard/page';
 import { I18nProvider } from '@/contexts/i18n-provider';
 import { AuthProvider } from '@/contexts/auth-provider';
 import { SettingsProvider } from '@/contexts/settings-provider';
-import { useAuth, __setMockState } from '@/hooks/use-auth';
+import { __setMockState } from '@/hooks/use-auth';
 import { samplePlatformSettings } from '@/lib/sample-data';
 
 // Mock next/navigation because the AuthProvider and layout use it.
