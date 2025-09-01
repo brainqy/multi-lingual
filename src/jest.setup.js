@@ -1,6 +1,8 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Mock browser APIs that are not available in JSDOM
+
 // Mock IntersectionObserver
 const mockIntersectionObserver = jest.fn();
 mockIntersectionObserver.mockReturnValue({
@@ -33,3 +35,13 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock Genkit and its related dependencies to avoid ESM parsing issues in tests
+jest.mock('genkit', () => require('./__mocks__/genkit.ts'));
+jest.mock('@genkit-ai/core', () => require('./__mocks__/genkit.ts'));
+jest.mock('@genkit-ai/ai', () => require('./__mocks__/genkit.ts'));
+jest.mock('@genkit-ai/googleai', () => require('./__mocks__/genkit.ts'));
+
+// Mock the problematic dependencies directly
+jest.mock('dotprompt', () => ({}));
+jest.mock('yaml', () => ({}));
