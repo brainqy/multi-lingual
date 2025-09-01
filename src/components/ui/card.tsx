@@ -1,5 +1,5 @@
 import * as React from "react"
-
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
@@ -33,18 +33,18 @@ const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement> & { asChild?: boolean }
 >(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? React.Fragment : 'div';
+  const Comp = asChild ? Slot : "div"
   return (
     <Comp
-      ref={ref as any}
+      ref={ref}
       className={cn(
         "text-2xl font-semibold leading-none tracking-tight",
         className
       )}
       {...props}
     />
-  );
-});
+  )
+})
 CardTitle.displayName = "CardTitle"
 
 const CardDescription = React.forwardRef<
