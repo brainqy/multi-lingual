@@ -5,8 +5,10 @@ import DashboardPage from '../app/(app)/dashboard/page';
 import { I18nProvider } from '@/contexts/i18n-provider';
 import { AuthProvider } from '@/contexts/auth-provider';
 import { SettingsProvider } from '@/contexts/settings-provider';
-import { __setMockState } from '@/hooks/use-auth';
 import { samplePlatformSettings } from '@/lib/sample-data';
+
+// Correctly import the mock function. This tells TypeScript to look at the mock file.
+const { __setMockState } = require('@/hooks/use-auth');
 
 // Mock next/navigation because the AuthProvider and layout use it.
 jest.mock('next/navigation', () => ({
@@ -18,7 +20,7 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
 }));
 
-// Mock the custom useAuth hook
+// Mock the custom useAuth hook for Jest
 jest.mock('@/hooks/use-auth');
 
 describe('DashboardPage', () => {
