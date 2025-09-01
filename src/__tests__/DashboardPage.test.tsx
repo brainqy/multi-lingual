@@ -8,7 +8,7 @@ import { SettingsProvider } from '@/contexts/settings-provider';
 import { samplePlatformSettings } from '@/lib/sample-data';
 
 // Correctly import the mock function. This tells TypeScript to look at the mock file.
-const { __setMockState } = require('@/hooks/use-auth');
+const { __setMockState } = require('../__mocks__/use-auth.js');
 
 // Mock next/navigation because the AuthProvider and layout use it.
 jest.mock('next/navigation', () => ({
@@ -20,8 +20,8 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
 }));
 
-// Mock the custom useAuth hook for Jest
-jest.mock('@/hooks/use-auth');
+// Mock the custom useAuth hook for Jest using the correct relative path
+jest.mock('../hooks/use-auth');
 
 describe('DashboardPage', () => {
   // Test case for an authenticated user
