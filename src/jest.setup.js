@@ -37,11 +37,11 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock Genkit and its related dependencies to avoid ESM parsing issues in tests
-jest.mock('genkit', () => require('./__mocks__/genkit.ts'));
-jest.mock('@genkit-ai/core', () => require('./__mocks__/genkit.ts'));
-jest.mock('@genkit-ai/ai', () => require('./__mocks__/genkit.ts'));
-jest.mock('@genkit-ai/googleai', () => require('./__mocks__/genkit.ts'));
+jest.mock('genkit');
+jest.mock('@genkit-ai/core');
+jest.mock('@genkit-ai/ai');
+jest.mock('@genkit-ai/googleai');
 
-// Mock the problematic dependencies directly
+// Stub out low-level deps we don’t care about
 jest.mock('dotprompt', () => ({}));
 jest.mock('yaml', () => ({}));
