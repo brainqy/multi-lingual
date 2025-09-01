@@ -4,6 +4,17 @@ import SignupPage from '../app/auth/signup/page';
 import { I18nProvider } from '@/contexts/i18n-provider';
 import { AuthProvider } from '@/contexts/auth-provider';
 
+// Mock next/navigation to provide a dummy router for Jest
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    refresh: jest.fn(),
+  }),
+  usePathname: () => '/',
+}));
+
+
 // Mock the useAuth hook as it's used within the form, but we don't need its functionality for this render test.
 jest.mock('../hooks/use-auth', () => ({
   useAuth: () => ({
