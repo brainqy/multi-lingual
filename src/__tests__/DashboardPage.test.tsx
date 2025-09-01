@@ -7,7 +7,7 @@ import { AuthProvider } from '@/contexts/auth-provider';
 import { SettingsProvider } from '@/contexts/settings-provider';
 import { samplePlatformSettings } from '@/lib/sample-data';
 
-// Correctly import the mock function. This tells TypeScript to look at the mock file.
+// Correctly import the mock function from its actual file path
 const { __setMockState } = require('../__mocks__/use-auth.js');
 
 // Mock next/navigation because the AuthProvider and layout use it.
