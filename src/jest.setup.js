@@ -16,16 +16,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock IntersectionObserver for components like embla-carousel
-const mockIntersectionObserver = jest.fn();
-mockIntersectionObserver.mockReturnValue({
-  observe: () => null,
-  unobserve: () => null,
-  disconnect: () => null,
-});
-window.IntersectionObserver = mockIntersectionObserver;
-
-// Mock ResizeObserver for Radix UI components
+// Mock ResizeObserver
 const mockResizeObserver = jest.fn();
 mockResizeObserver.mockReturnValue({
   observe: () => null,
@@ -33,3 +24,12 @@ mockResizeObserver.mockReturnValue({
   disconnect: () => null,
 });
 window.ResizeObserver = mockResizeObserver;
+
+// Mock IntersectionObserver
+const mockIntersectionObserver = jest.fn();
+mockIntersectionObserver.mockReturnValue({
+  observe: () => null,
+  unobserve: () => null,
+  disconnect: () => null,
+});
+window.IntersectionObserver = mockIntersectionObserver;
