@@ -12,9 +12,8 @@ const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/jest.setup.js'],
   
-  // This is the crucial part:
   // By default, everything in node_modules is ignored. We need to create an exception for
   // the ESM modules that are causing the syntax error.
   transformIgnorePatterns: [
@@ -22,7 +21,6 @@ const config: Config = {
   ],
   
   // Since we are now ignoring some transform ignores, we need to tell jest how to transform them.
-  // Next.js's SWC compiler will handle this.
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
