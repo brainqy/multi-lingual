@@ -1,3 +1,4 @@
+
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import LaunchingSoonPage from '../app/launching-soon/page';
@@ -14,6 +15,7 @@ jest.mock('next/navigation', () => ({
     replace: jest.fn(),
     refresh: jest.fn(),
   }),
+  usePathname: () => '/',
 }));
 
 describe('LaunchingSoonPage', () => {
