@@ -34,7 +34,7 @@ describe('SignupPage', () => {
       </AuthProvider>
     );
 
-    const heading = screen.getByRole('heading', { name: /Join JobMatch AI/i });
+    const heading = screen.getByRole('heading', { name: /Join Bhasha Setu/i, level: 1 });
     expect(heading).toBeInTheDocument();
   });
 
