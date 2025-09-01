@@ -70,8 +70,8 @@ export function SignupForm() {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
-        <CardTitle asChild className="text-3xl font-headline text-center text-primary">
-          <h1>{t("signup.title")}</h1>
+        <CardTitle className="text-3xl font-headline text-center text-primary">
+          <h1>{t("signup.title", { default: "Join Bhasha Setu" })}</h1>
         </CardTitle>
         <CardDescription className="text-center">{tenantId ? `Joining: ${tenantId}` : platformName}</CardDescription>
       </CardHeader>
