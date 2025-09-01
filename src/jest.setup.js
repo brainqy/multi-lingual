@@ -2,7 +2,6 @@
 import '@testing-library/jest-dom';
 
 // Mock browser APIs that are not available in JSDOM
-
 // Mock IntersectionObserver
 const mockIntersectionObserver = jest.fn();
 mockIntersectionObserver.mockReturnValue({
@@ -36,12 +35,13 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock Genkit and its related dependencies to avoid ESM parsing issues in tests
+// Mock Genkit and its related dependencies.
+// The moduleNameMapper in jest.config.ts will redirect these to our manual mock.
 jest.mock('genkit');
 jest.mock('@genkit-ai/core');
 jest.mock('@genkit-ai/ai');
 jest.mock('@genkit-ai/googleai');
 
-// Stub out low-level deps we don’t care about
+// Stub out low-level deps we don’t care about to prevent parsing errors
 jest.mock('dotprompt', () => ({}));
 jest.mock('yaml', () => ({}));
