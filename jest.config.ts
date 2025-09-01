@@ -14,13 +14,14 @@ const config: Config = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/src/jest.setup.js'],
   
-  // By default, everything in node_modules is ignored. We need to create an exception for
-  // the ESM modules that are causing the syntax error.
+  // By default, everything in node_modules is ignored. This pattern creates an exception
+  // for the specified packages, telling Jest to transform them.
   transformIgnorePatterns: [
     '/node_modules/(?!(@genkit-ai|genkit|dotprompt|yaml)/)',
   ],
   
-  // Since we are now ignoring some transform ignores, we need to tell jest how to transform them.
+  // This transform is necessary because we are now transforming some node_modules.
+  // It tells Jest to use babel-jest for all JS/TS files.
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
