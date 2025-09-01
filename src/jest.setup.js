@@ -34,14 +34,3 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
-
-// Mock Genkit and its related dependencies.
-// The moduleNameMapper in jest.config.ts will redirect these to our manual mock.
-jest.mock('genkit');
-jest.mock('@genkit-ai/core');
-jest.mock('@genkit-ai/ai');
-jest.mock('@genkit-ai/googleai');
-
-// Stub out low-level deps we don’t care about to prevent parsing errors
-jest.mock('dotprompt', () => ({}));
-jest.mock('yaml', () => ({}));

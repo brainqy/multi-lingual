@@ -31,6 +31,8 @@ const config: Config = {
     'lucide-react': '<rootDir>/src/__mocks__/lucide-react.js',
     '^genkit$': '<rootDir>/src/__mocks__/genkit.ts',
     '^@genkit-ai/.*$': '<rootDir>/src/__mocks__/genkit.ts',
+    '^dotprompt$': '<rootDir>/src/__mocks__/empty.js',
+    '^yaml$': '<rootDir>/src/__mocks__/empty.js',
   },
 };
 

@@ -33,3 +33,7 @@ export const ai = {
 };
 
 export const configureGenkit = jest.fn();
+
+// Export constants that might be imported by components
+export const STANDARD_SAFETY_SETTINGS = [];
+export const AI_PROMPT_CONFIG = {};
