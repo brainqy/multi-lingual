@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('should allow a logged-in user to navigate to the job tracker', async ({ page }) => {
-  // Start by signing up a new user to ensure we have an authenticated session.
+  // Step 1: Sign up a new user to ensure we have an authenticated session.
   await page.goto('/auth/signup');
   const uniqueEmail = `testuser_nav_${Date.now()}@example.com`;
   await page.getByLabel('Full Name').fill('Nav Test User');
@@ -10,20 +10,16 @@ test('should allow a logged-in user to navigate to the job tracker', async ({ pa
   await page.getByLabel(/Agree to our terms and conditions/i).check();
   await page.getByRole('button', { name: /Create Account/i }).click();
 
-  await page.waitForTimeout(7000);
-  // Wait for the redirect to the dashboard.
-  await expect(page).toHaveURL('/dashboard');
+  // Step 2: Wait for the redirect to the dashboard after signup.
+  // We give this a longer timeout as creating a user and logging in can take time.
+  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
-  // The Daily Streak popup will appear on the first login. We need to dismiss it.
-  // Wait for the popup to be visible by looking for its unique title.
- await page.waitForTimeout(15000);
-  // Find the "Job Tracker" link in the sidebar and click it.
- await page.goto('/job-tracker');
-await page.waitForTimeout(7000);
-  // The new URL should be /job-tracker.
-  await expect(page).toHaveURL('/job-tracker');
+  // Step 3: Directly navigate to the job tracker page.
+  // This is more robust than trying to find and click a link, especially if modals appear.
+  await page.goto('/job-tracker');
 
-  // The new page should have a heading related to the job tracker.
+  // Step 4: Verify the navigation was successful.
+  await expect(page).toHaveURL('/job-tracker');
   await expect(page.getByRole('heading', { name: /Job Application Tracker/i })).toBeVisible();
 });
