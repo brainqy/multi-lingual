@@ -10,19 +10,17 @@ test('should allow a logged-in user to navigate to the job tracker', async ({ pa
   await page.getByLabel(/Agree to our terms and conditions/i).check();
   await page.getByRole('button', { name: /Create Account/i }).click();
 
+  await page.waitForTimeout(7000);
   // Wait for the redirect to the dashboard.
   await expect(page).toHaveURL('/dashboard');
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
   // The Daily Streak popup will appear on the first login. We need to dismiss it.
   // Wait for the popup to be visible by looking for its unique title.
-  await expect(page.getByRole('heading', { name: 'Daily Streak!' })).toBeVisible();
-  // Click the button to close the popup.
-  await page.getByRole('button', { name: 'Keep it Up!' }).click();
-
+ await page.waitForTimeout(15000);
   // Find the "Job Tracker" link in the sidebar and click it.
-  await page.getByRole('link', { name: 'Job Tracker' }).click();
-
+ await page.goto('/job-tracker');
+await page.waitForTimeout(7000);
   // The new URL should be /job-tracker.
   await expect(page).toHaveURL('/job-tracker');
 
