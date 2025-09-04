@@ -221,27 +221,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => {
     try {
-        if (!password) {
-            throw new Error("Password is required for signup.");
-        }
-        const result = await signupUser({ name, email, role, password, tenantId });
-        
-        if (result.success && result.user) {
-          setUser(result.user);
-          await fetchWalletForUser(result.user.id);
-          localStorage.setItem('bhashaSetuUser', JSON.stringify(result.user));
-          router.push('/dashboard');
-          toast({
-            title: "Signup Successful!",
-            description: `Welcome, ${name}! Your account has been created.`,
-          });
-        } else {
-           toast({
-            title: result.error === "Account Exists" ? "Account Exists" : "Signup Failed",
-            description: result.message || "Could not create a new user account.",
-            variant: "destructive",
-          });
-        }
+      if (!password) {
+        throw new Error("Password is required for signup.");
+      }
+      const result = await signupUser({ name, email, role, password, tenantId });
+      
+      if (result.success && result.user) {
+        let signedUpUser = result.user;
+        signedUpUser = await handleStreakAndBadges(signedUpUser, toast, setStreakPopupOpen);
+        setUser(signedUpUser);
+        await fetchWalletForUser(signedUpUser.id);
+        localStorage.setItem('bhashaSetuUser', JSON.stringify(signedUpUser));
+        router.push('/dashboard');
+        toast({
+          title: "Signup Successful!",
+          description: `Welcome, ${name}! Your account has been created.`,
+        });
+      } else {
+         toast({
+          title: result.error === "Account Exists" ? "Account Exists" : "Signup Failed",
+          description: result.message || "Could not create a new user account.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
         console.error("Signup error:", error);
         toast({ title: "Signup Error", description: "An unexpected error occurred.", variant: "destructive" });
