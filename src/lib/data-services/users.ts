@@ -5,6 +5,7 @@ import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { sendEmail } from '../actions/send-email';
+import { getWallet } from '../actions/wallet';
 
 const log = console.log;
 
@@ -132,6 +133,10 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         },
       },
     });
+    
+    // Create a wallet for the new user
+    await getWallet(newUser.id);
+
 
     // Send welcome email after user is successfully created
     await sendEmail({
