@@ -37,13 +37,23 @@ const handleStreakAndBadges = async (userToUpdate: UserProfile, toast: any, setS
       const today = new Date();
       const lastLogin = userToUpdate.lastLogin ? new Date(userToUpdate.lastLogin) : new Date(0);
       const isNewDay = differenceInCalendarDays(today, lastLogin) > 0;
+      
+      const todayString = today.toISOString().split('T')[0];
+      const popupShownKey = `dailyStreakPopupShown_${userToUpdate.id}_${todayString}`;
+      const hasPopupBeenShown = typeof window !== 'undefined' ? localStorage.getItem(popupShownKey) : false;
 
       // Only run streak logic on the first login of a new day.
       if (!isNewDay) {
         return userToUpdate;
       }
-
-      setStreakPopupOpen(true);
+      
+      // And only show the popup once per day
+      if (!hasPopupBeenShown) {
+        setStreakPopupOpen(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(popupShownKey, 'true');
+        }
+      }
 
       let weeklyActivity = (Array.isArray(userToUpdate.weeklyActivity) && userToUpdate.weeklyActivity.length === 7)
         ? [...userToUpdate.weeklyActivity]

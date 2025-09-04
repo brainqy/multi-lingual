@@ -15,7 +15,6 @@ import { useAuth } from "@/hooks/use-auth";
 export default function DashboardPage() {
   const { t } = useI18n();
   const { user, isLoading } = useAuth();
-  const [showStreakPopup, setShowStreakPopup] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
   const [tourSteps, setTourSteps] = useState<any[]>([]);
   const [tourKey, setTourKey] = useState('');
@@ -26,27 +25,12 @@ export default function DashboardPage() {
 
     const role = user.role;
     
-    const today = new Date().toISOString().split('T')[0];
     if (typeof window !== 'undefined') {
-      // Condition to show popup for user, manager, or admin roles
-      if (role === 'user' || role === 'manager' || role === 'admin') {
-        const popupShownKey = `dailyStreakPopupShown_${user.id}_${today}`;
-        if (!localStorage.getItem(popupShownKey)) {
-          console.log(`[DashboardPage] Daily streak popup condition met for user ${user.id}, role ${role}. Key: ${popupShownKey}`);
-          setShowStreakPopup(true);
-          localStorage.setItem(popupShownKey, 'true');
-        } else {
-          console.log(`[DashboardPage] Daily streak popup already shown today for user ${user.id}. Key: ${popupShownKey}`);
-        }
-      }
-
       let currentTourKey = '';
       let currentTourSteps: any[] = [];
       let currentTourTitle = '';
 
       if (role === 'admin') {
-        // Admins are redirected, so this tour might not be seen here.
-        // Kept for robustness in case of direct navigation.
         currentTourKey = 'adminDashboardTourSeen';
         currentTourSteps = adminDashboardTourSteps;
         currentTourTitle = "Welcome Admin!";
@@ -70,20 +54,6 @@ export default function DashboardPage() {
       }
     }
   }, [isLoading, user]);
-  
-  useEffect(() => {
-    const handleShowStreakPopup = () => setShowStreakPopup(true);
-    
-    window.addEventListener('show-streak-popup', handleShowStreakPopup);
-
-    return () => {
-      window.removeEventListener('show-streak-popup', handleShowStreakPopup);
-    };
-  }, []);
-
-  const handleCloseStreakPopup = () => {
-    setShowStreakPopup(false);
-  };
 
   const handleCloseWelcomeTour = () => {
     setShowWelcomeTour(false);
@@ -126,13 +96,6 @@ export default function DashboardPage() {
   return (
     <>
       {renderDashboard()}
-      {(user.role === 'user' || user.role === 'manager' || user.role === 'admin') && user && (
-         <DailyStreakPopup
-          isOpen={showStreakPopup}
-          onClose={handleCloseStreakPopup}
-          userProfile={user}
-        />
-      )}
       {tourSteps.length > 0 && tourKey && (
          <WelcomeTourDialog
           isOpen={showWelcomeTour}

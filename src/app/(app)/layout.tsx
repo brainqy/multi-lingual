@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { getPlatformSettings } from '@/lib/actions/platform-settings';
 import type { PlatformSettings } from '@/types';
 import { SettingsProvider } from '@/contexts/settings-provider';
+import DailyStreakPopup from "@/components/features/DailyStreakPopup";
 
 export default function AppLayout({
   children,
@@ -22,7 +23,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, isStreakPopupOpen, setStreakPopupOpen } = useAuth();
   const router = useRouter();
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
@@ -104,6 +105,11 @@ export default function AppLayout({
           <FloatingMessenger />
         </SidebarInset>
       </SidebarProvider>
+       <DailyStreakPopup
+        isOpen={isStreakPopupOpen}
+        onClose={() => setStreakPopupOpen(false)}
+        userProfile={user}
+      />
     </SettingsProvider>
   );
 }
