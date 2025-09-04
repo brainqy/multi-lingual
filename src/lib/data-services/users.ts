@@ -80,10 +80,10 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         throw new Error("Name, email, and role are required to create a user.");
     }
 
-    const defaultTenantId = 'brainqy';
+    const defaultTenantId = 'platform'; // Fallback to platform if no tenant ID is provided
     const tenantId = data.tenantId || defaultTenantId;
     const password = data.password;
- const referralCode = await generateUniqueReferralCode(data.name);
+    const referralCode = await generateUniqueReferralCode(data.name);
 
     const newUserPayload = {
         id: `user-${Date.now()}`,
@@ -100,10 +100,10 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         bio: data.bio || '',
         profilePictureUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.email}.png`,
         xpPoints: 0,
-        dailyStreak: 0,
-        longestStreak: 0,
-        totalActiveDays: 0,
-        weeklyActivity: Array(7).fill(0),
+        dailyStreak: 1, // Start with a 1-day streak
+        longestStreak: 1,
+        totalActiveDays: 1,
+        weeklyActivity: [0, 0, 0, 0, 0, 0, 1], // Mark today as active
         earnedBadges: [],
         interviewCredits: 5,
         isDistinguished: false,
@@ -111,7 +111,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         referralCode: referralCode,
     };
     
-    log(`[DataService] Creating user in real DB: ${data.email}`);
+    log(`[DataService] Creating user in real DB: ${data.email} for tenant ${tenantId}`);
     
     const tenantExists = await db.tenant.findUnique({
       where: { id: tenantId },

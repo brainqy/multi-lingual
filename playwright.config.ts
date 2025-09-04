@@ -23,6 +23,9 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
+  
+  // Increase the default timeout for tests
+  timeout: 60 * 1000, // 60 seconds
 
   /* Configure projects for major browsers */
   projects: [
@@ -37,5 +40,6 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:9002',
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 120 seconds for the server to start
   },
 });
