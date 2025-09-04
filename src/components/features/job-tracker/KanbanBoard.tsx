@@ -24,7 +24,7 @@ interface KanbanColumnProps {
 function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: KanbanColumnProps) {
   const { t } = useI18n();
   return (
-    <Card className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-secondary/50 shadow-sm h-full flex flex-col">
+    <Card data-testid={`kanban-column-${column.id}`} className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-secondary/50 shadow-sm h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 px-4">
         <CardTitle className="text-md font-semibold">{column.title} ({applications.length})</CardTitle>
         <CardDescription className="text-xs">{column.description}</CardDescription>

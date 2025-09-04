@@ -26,7 +26,7 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 **Objective:** Test the primary functionalities that a standard logged-in user will interact with daily.
 
 *   **Job Tracker (`/job-tracker`):**
-    *   [ ] **Create Application:** Test opening the "Add Job" dialog, filling it out, and verifying the new job card appears in the 'Saved' column.
+    *   [x] **Create Application:** Test opening the "Add Job" dialog, filling it out, and verifying the new job card appears in the 'Saved' column.
     *   [ ] **Move Application:** Test dragging a job card from one column (e.g., 'Applied') to another (e.g., 'Interviewing').
     *   [ ] **Edit Application:** Test opening an existing job card, editing a field (like 'Notes'), saving, and verifying the change.
     *   [ ] **Delete Application:** Test deleting a job card and ensuring it is removed from the board.
