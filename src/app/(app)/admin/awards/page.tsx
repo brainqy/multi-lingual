@@ -181,7 +181,7 @@ export default function AwardsManagementPage() {
                     <TableRow key={award.id}>
                       <TableCell className="font-medium">{award.title}</TableCell>
                       <TableCell>{categories.find(c => c.id === award.categoryId)?.name || 'N/A'}</TableCell>
-                      <TableCell><Badge>{award.status}</TableCell>
+                      <TableCell><Badge>{award.status}</Badge></TableCell>
                       <TableCell>{award.winner ? award.winner.name : 'N/A'}</TableCell>
                       <TableCell className="text-right space-x-2">
                          {votingEnded && !award.winnerId && award.status === 'Completed' && (
