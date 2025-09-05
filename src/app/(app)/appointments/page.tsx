@@ -55,7 +55,7 @@ export default function AppointmentsPage() {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [allUsers, setAllUsers] = useState<AlumniProfile[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
@@ -91,7 +91,7 @@ export default function AppointmentsPage() {
       getCommunityPosts(currentUser.tenantId, currentUser.id),
     ]);
     setAppointments(userAppointments);
-    setAllUsers(users as AlumniProfile[]);
+    setAllUsers(users as UserProfile[]);
     setCommunityPosts(posts);
     setIsLoading(false);
   }, [currentUser]);
@@ -108,7 +108,7 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getPartnerDetails = useCallback((appointment: Appointment | null): AlumniProfile | undefined => {
+  const getPartnerDetails = useCallback((appointment: Appointment | null): UserProfile | undefined => {
     if (!currentUser || !appointment) return undefined;
     const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
