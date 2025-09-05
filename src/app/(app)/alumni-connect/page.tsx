@@ -323,11 +323,10 @@ export default function AlumniConnectPage() {
 
       <Accordion type="single" collapsible className="w-full bg-card shadow-lg rounded-lg">
         <AccordionItem value="filters">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", { default: "Filters" })}
-              </Button>
+          <AccordionTrigger className="px-6 py-4 hover:no-underline text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <FilterIcon className="h-5 w-5" />
+              <span>{t("alumniConnect.filters", { default: "Filters" })}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
