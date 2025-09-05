@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { User, Mail, Briefcase, Sparkles, Upload, Save, CalendarDays, Users, HelpCircle, CheckSquare, Settings as SettingsIcon, Phone, MapPin, GraduationCap, Building, LinkIcon, Brain, Handshake, Clock, MessageCircle, Info, CheckCircle as CheckCircleIcon, XCircle, Edit3, Loader2, ThumbsUp, PlusCircle as PlusCircleIcon } from "lucide-react";
-import { sampleUserProfile, graduationYears, sampleTenants } from "@/lib/sample-data";
+import { graduationYears } from "@/lib/sample-data";
 import type { UserProfile, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought } from "@/types";
 import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, SupportTypesSought as SupportTypesSoughtOptions, Genders, SupportTypesSought } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -70,6 +70,18 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 type SuggestedSkill = SuggestDynamicSkillsOutput['suggestedSkills'][0];
 
+// Helper function to convert server data to form data
+const convertUserProfileToFormData = (user: UserProfile): ProfileFormData => {
+  return {
+    ...user,
+    skills: user.skills?.join(', ') || '',
+    areasOfSupport: user.areasOfSupport || [],
+    dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
+    shareProfileConsent: user.shareProfileConsent ?? true,
+    featureInSpotlightConsent: user.featureInSpotlightConsent ?? false,
+  };
+};
+
 export default function ProfilePage() {
   const { t } = useI18n();
   const { user, login } = useAuth(); // Use auth context
@@ -85,14 +97,7 @@ export default function ProfilePage() {
   
   useEffect(() => {
     if (user) {
-      reset({
-        ...user,
-        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
-        skills: user.skills?.join(', ') || '',
-        areasOfSupport: user.areasOfSupport || [],
-        shareProfileConsent: user.shareProfileConsent ?? true,
-        featureInSpotlightConsent: user.featureInSpotlightConsent ?? false,
-      });
+      reset(convertUserProfileToFormData(user));
     }
   }, [user, reset]);
 
@@ -142,7 +147,7 @@ export default function ProfilePage() {
       await login(updatedUser.email);
       setIsEditing(false); 
       setIsProfileSavedDialogOpen(true);
-      reset(updatedUser); // Reset form to show new clean state
+      reset(convertUserProfileToFormData(updatedUser)); // Reset form to show new clean state
     } else {
       toast({
         title: "Update Failed",
@@ -532,7 +537,7 @@ export default function ProfilePage() {
                    <Button type="submit" disabled={!isDirty} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Save className="mr-2 h-4 w-4" /> Save Changes
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => { setIsEditing(false); reset(); }}>
+                  <Button type="button" variant="outline" onClick={() => { setIsEditing(false); user && reset(convertUserProfileToFormData(user)); }}>
                     Cancel
                   </Button>
                 </div>
