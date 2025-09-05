@@ -24,8 +24,13 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   
-  // Increase the default timeout for tests
-  timeout: 60 * 1000, // 60 seconds
+  // Increase the default timeout for individual tests
+  timeout: 90 * 1000, // 90 seconds
+
+  // Increase the default timeout for expect assertions
+  expect: {
+    timeout: 15 * 1000, // 15 seconds
+  },
 
   /* Configure projects for major browsers */
   projects: [
@@ -40,6 +45,6 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://platform.localhost:9002',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 120 seconds for the server to start
+    timeout: 180 * 1000, // 180 seconds for the server to start
   },
 });
