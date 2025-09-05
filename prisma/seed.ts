@@ -63,7 +63,7 @@ async function main() {
   // Sample Users
   const sampleUsersData = [
     { id: 'sample-user-1', name: 'Alice Wonderland', email: 'alice@example.com', tenantId: 'platform', xpPoints: 850, isDistinguished: true, currentJobTitle: 'AI Researcher', currentOrganization: 'OpenAI' },
-    { id: 'sample-user-2', name: 'Bob Builder', email: 'bob@example.com', tenantId: 'brainqy', xpPoints: 620, currentJobTitle: 'Lead Engineer', currentOrganization: 'Google' },
+    { id: 'sample-user-2', name: 'Bob Builder', email: 'bob@example.com', tenantId: 'platform', xpPoints: 620, currentJobTitle: 'Lead Engineer', currentOrganization: 'Google' },
     { id: 'sample-user-3', name: 'Charlie Chocolate', email: 'charlie@example.com', tenantId: 'brainqy', xpPoints: 710, currentJobTitle: 'Product Manager', currentOrganization: 'Microsoft' },
     { id: 'sample-user-4', name: 'Diana Prince', email: 'diana@example.com', tenantId: 'guruji', xpPoints: 950, isDistinguished: true, currentJobTitle: 'UX Lead', currentOrganization: 'Apple' },
     { id: 'sample-user-5', name: 'Ethan Hunt', email: 'ethan@example.com', tenantId: 'guruji', xpPoints: 450, currentJobTitle: 'DevOps Specialist', currentOrganization: 'Amazon' },
@@ -72,7 +72,7 @@ async function main() {
   const userPromises = sampleUsersData.map(userData => 
     prisma.user.upsert({
       where: { id: userData.id },
-      update: { xpPoints: userData.xpPoints, isDistinguished: userData.isDistinguished, currentJobTitle: userData.currentJobTitle, currentOrganization: userData.currentOrganization },
+      update: { xpPoints: userData.xpPoints, isDistinguished: userData.isDistinguished, currentJobTitle: userData.currentJobTitle, currentOrganization: userData.currentOrganization, tenantId: userData.tenantId },
       create: {
         ...userData, password: 'password123', role: 'manager', status: 'active',
         bio: `${userData.name} is a skilled professional at ${userData.currentOrganization}.`,
