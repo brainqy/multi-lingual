@@ -7,13 +7,13 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, CheckCircle, Repeat, Lightbulb, Zap, Loader2, Trophy, Send, Clock } from 'lucide-react';
-import type { DailyChallenge, UserProfile, InterviewQuestionCategory } from '@/types';
+import type { DailyChallenge, UserProfile, InterviewQuestionCategory, EvaluateDailyChallengeAnswerOutput } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { createActivity } from "@/lib/actions/activities";
-import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
+import { evaluateDailyChallengeAnswer } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from '@/components/ui/score-circle';
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
