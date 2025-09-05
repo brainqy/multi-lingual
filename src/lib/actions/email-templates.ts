@@ -2,10 +2,10 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { EmailTemplate } from '@/types';
+import type { EmailTemplate, EmailTemplateType } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 
-const DEFAULT_TEMPLATES = [
+const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
   {
     type: 'WELCOME',
     subject: 'Welcome to {{tenantName}}!',

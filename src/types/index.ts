@@ -1430,13 +1430,14 @@ export type Vote = {
     createdAt: string;
 }
 
+export type EmailTemplateType = 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
+
 export interface EmailTemplate {
   id: string;
   tenantId: string;
-  type: 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
+  type: EmailTemplateType;
   subject: string;
   body: string;
   createdAt: string;
   updatedAt: string;
 }
-
