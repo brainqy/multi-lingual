@@ -24,9 +24,9 @@ test('should allow a user to search and filter the alumni directory', async ({ p
   // Alice is distinguished and should always be visible in her carousel.
   await expect(distinguishedCarousel.getByText('Alice Wonderland')).toBeVisible();
 
-  // Step 3: Apply a company filter first.
+  // Step 3: Apply a company filter first. This is more robust than checking the initial unfiltered list.
   await page.getByRole('button', { name: /Filters/i }).click();
-  // Use a more specific selector to find the checkbox by its accessible name.
+  // Use a direct selector for the checkbox by its accessible name.
   await page.getByRole('checkbox', { name: 'Google' }).check();
 
   // Step 4: Verify that only alumni from that company are visible in the main grid.

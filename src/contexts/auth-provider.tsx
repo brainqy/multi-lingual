@@ -214,7 +214,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(userToLogin);
         await fetchWalletForUser(userToLogin.id);
         localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
-        router.push('/dashboard');
+        
+        // Redirect admin users to the admin dashboard
+        if (userToLogin.role === 'admin') {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/dashboard');
+        }
+        
         toast({ title: "Login Successful", description: `Welcome back, ${userToLogin.name}!` });
       } else {
         toast({

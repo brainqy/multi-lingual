@@ -77,8 +77,8 @@ export async function getUserById(id: string): Promise<UserProfile | null> {
 }
 
 export async function createUser(data: Partial<UserProfile>): Promise<UserProfile | null> {
-    if (!data.name || !data.email || !data.role) {
-        throw new Error("Name, email, and role are required to create a user.");
+    if (!data.name || !data.email) {
+        throw new Error("Name and email are required to create a user.");
     }
 
     const defaultTenantId = 'platform'; // Fallback to platform if no tenant ID is provided
@@ -90,7 +90,7 @@ export async function createUser(data: Partial<UserProfile>): Promise<UserProfil
         id: `user-${Date.now()}`,
         name: data.name,
         email: data.email,
-        role: data.role,
+        role: data.role || 'user', // Default to 'user' role
         status: data.status || 'active',
         lastLogin: new Date(),
         createdAt: new Date(),
