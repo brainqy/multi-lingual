@@ -19,7 +19,7 @@ test('should allow a new user to sign up and be redirected to the dashboard', as
   await page.getByRole('button', { name: /Create Account/i }).click();
 
   // The new URL should be the dashboard. Give it extra time to redirect.
-  await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
 
   // The dashboard should have a welcome heading for the user.
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();

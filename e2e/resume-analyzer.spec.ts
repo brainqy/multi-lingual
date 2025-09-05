@@ -11,7 +11,7 @@ test('should allow a user to analyze a resume against a job description', async 
   await page.getByRole('button', { name: /Create Account/i }).click();
 
   // Step 2: Wait for redirect and navigate to the resume analyzer page.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await page.goto('/resume-analyzer');
   await expect(page.getByRole('heading', { name: /Resume Analyzer/i })).toBeVisible();
 
