@@ -125,18 +125,18 @@ export function AppSidebar() {
     return (
       <SidebarMenuItem key={item.href || item.labelKey}>
          {effectiveHref ? (
-           <Link href={effectiveHref} passHref legacyBehavior>
-            <SidebarMenuButton 
+           <SidebarMenuButton 
               asChild
               isActive={isActive} 
               size={isSubItem ? "sm" : "default"} 
               className="w-full justify-start"
               onClick={handleMenuItemClick}
             >
-              <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
-              <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
+              <Link href={effectiveHref}>
+                <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
+                <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
+              </Link>
             </SidebarMenuButton>
-           </Link>
          ) : (
            <SidebarMenuButton size={isSubItem ? "sm" : "default"} className="w-full justify-start cursor-default hover:bg-transparent group-data-[collapsible=icon]:justify-center">
               <item.icon className="h-5 w-5 text-sidebar-foreground/80" />
