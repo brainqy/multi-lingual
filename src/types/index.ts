@@ -163,7 +163,7 @@ export interface AlumniProfile {
   name: string;
   profilePictureUrl?: string;
   currentJobTitle: string;
-  company: string;
+  currentOrganization: string;
   shortBio: string;
   university: string;
   skills: string[];
@@ -373,7 +373,6 @@ export interface UserProfile extends AlumniProfile {
   department?: string;
 
   currentJobTitle: string;
-  company: string;
   currentOrganization?: string;
   industry?: Industry;
   workLocation?: string;
