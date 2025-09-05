@@ -1,5 +1,7 @@
-import { genkit, defineConfig } from 'genkit';
+
+import { genkit } from 'genkit';
 import { googleAI, GoogleAIBasicSafetySettings, GoogleAIPluginParams } from '@genkit-ai/googleai';
+import type { GenerationCommonConfig } from '@genkit-ai/googleai';
 
 // Keep the global instance for flows that don't need user-specific keys
 // or as a fallback.
@@ -36,6 +38,6 @@ export const STANDARD_SAFETY_SETTINGS: GoogleAIBasicSafetySettings[] = [
 /**
  * Common configuration for AI generation calls, including safety settings.
  */
-export const AI_PROMPT_CONFIG: ReturnType<typeof defineConfig>['generation'] = {
+export const AI_PROMPT_CONFIG: GenerationCommonConfig = {
     safetySettings: STANDARD_SAFETY_SETTINGS,
 };
