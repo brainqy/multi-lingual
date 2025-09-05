@@ -18,7 +18,7 @@ import ScoreCircle from '@/components/ui/score-circle';
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
 import { getDynamicFlipChallenge } from "@/lib/actions/challenges";
-import { intervalToDuration, isFuture } from 'date-fns';
+import { Duration, intervalToDuration, isFuture } from 'date-fns';
 import { useSettings } from "@/contexts/settings-provider";
 
 const CountdownTimer = ({ expiryDate }: { expiryDate: Date }) => {

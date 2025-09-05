@@ -28,7 +28,7 @@ import {
 const useMockDb = process.env.USE_MOCK_DB === 'true';
 
 // This is the primary data fetching function for all dashboards.
-export async function getDashboardData(tenantId?: string | null, userId?: string | null) {
+export async function getDashboardData(tenantId?: string | null, userId?: string | null, role?: string) {
   console.log(`[DashboardAction] Fetching data... (Mock DB: ${useMockDb})`);
   
   // Real database fetching logic using Prisma
