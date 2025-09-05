@@ -1,12 +1,20 @@
 import { test, expect } from '@playwright/test';
 
 test('should allow a user to search and filter the alumni directory', async ({ page }) => {
-  // Step 1: Sign up a new user to ensure an authenticated session.
+  // Step 1: Sign up a new user to ensure an authenticated session in the correct tenant.
   await page.goto('/auth/signup');
   const uniqueEmail = `testuser_alumni_${Date.now()}@example.com`;
   await page.getByLabel('Full Name').fill('Alumni Test User');
   await page.getByLabel('Email').fill(uniqueEmail);
   await page.getByLabel('Password').fill('password123');
+  // Assign to 'brainqy' tenant to see Bob and Charlie
+  await page.evaluate(() => {
+    const tenantIdInput = document.createElement('input');
+    tenantIdInput.type = 'hidden';
+    tenantIdInput.name = 'tenantId';
+    tenantIdInput.value = 'brainqy';
+    document.querySelector('form')?.appendChild(tenantIdInput);
+  });
   await page.getByLabel(/Agree to our terms and conditions/i).check();
   await page.getByRole('button', { name: /Create Account/i }).click();
 
@@ -15,9 +23,9 @@ test('should allow a user to search and filter the alumni directory', async ({ p
   await page.goto('/alumni-connect');
   await expect(page.getByRole('heading', { name: /Alumni Directory/i })).toBeVisible();
 
-  // Initially, multiple alumni should be visible. We'll check for a couple.
-  await expect(page.getByText('Alice Wonderland')).toBeVisible();
-  await expect(page.getByText('Bob Builder')).toBeVisible();
+  // Initially, multiple alumni from the 'brainqy' and 'platform' tenants should be visible.
+  await expect(page.getByText('Alice Wonderland')).toBeVisible(); // Platform tenant
+  await expect(page.getByText('Bob Builder')).toBeVisible();      // Brainqy tenant
 
   // Step 3: Perform a search for a specific alumnus.
   await page.getByLabel(/Name or Job Title/i).fill('Alice');

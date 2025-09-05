@@ -68,7 +68,8 @@ export default function AlumniConnectPage() {
 
   const fetchAlumni = useCallback(async () => {
     setIsLoading(true);
-    const users = await getUsers();
+    // Fetch all users, then filter on the client-side based on the current user's tenant.
+    const users = await getUsers(); 
     setAllAlumniData(users as AlumniProfile[]);
     setIsLoading(false);
   }, []);
@@ -88,7 +89,13 @@ export default function AlumniConnectPage() {
 
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
-    let results = allAlumniData.filter(a => a.id !== currentUser.id); // Exclude self
+
+    // Filter alumni to show only those from the same tenant or the 'platform' tenant
+    let results = allAlumniData.filter(alumni => 
+      alumni.id !== currentUser.id && 
+      (alumni.tenantId === currentUser.tenantId || alumni.tenantId === 'platform')
+    );
+
     if (searchTerm) {
       results = results.filter(alumni =>
         alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -564,5 +571,3 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
-
-    
