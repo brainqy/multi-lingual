@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -230,7 +229,7 @@ export interface CommunityPost {
   attendees?: number;
   capacity?: number;
   assignedTo?: string;
-  status: 'open' | 'in progress' | 'completed';
+  status?: 'open' | 'in progress' | 'completed';
   moderationStatus: CommunityPostModerationStatus;
   flagCount: number;
   flagReasons?: string[];
@@ -582,6 +581,7 @@ export interface Survey {
   tenantId?: string; // Optional: for tenant-specific surveys
   createdAt: string;
 }
+
 
 export interface SurveyResponse {
   id: string;
