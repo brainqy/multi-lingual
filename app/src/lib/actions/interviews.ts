@@ -21,6 +21,8 @@ export async function createMockInterviewSession(sessionData: Omit<MockInterview
         timerPerQuestion: sessionData.timerPerQuestion || null,
         difficulty: sessionData.difficulty || null,
         questionCategories: (sessionData.questionCategories as any) || [],
+        interviewerScores: (sessionData.interviewerScores as any) || [],
+        finalScore: (sessionData.finalScore as any) || undefined,
       },
     });
     return newSession as unknown as MockInterviewSession;
