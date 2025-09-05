@@ -14,7 +14,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent } from '@/types';
+import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent, MockInterviewSession } from '@/types';
 import type { Badge as BadgeType } from '@/types';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -215,8 +215,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
       }));
     
     const practiceSessions = dashboardData.mockInterviews
-        .filter((ps: PracticeSession) => ps.userId === user.id && ps.status === 'in-progress' && isFuture(parseISO(ps.createdAt))) // Assuming 'in-progress' means scheduled for future
-        .map((ps: PracticeSession) => ({
+        .filter((ps: MockInterviewSession) => ps.userId === user.id && ps.status === 'in-progress' && isFuture(parseISO(ps.createdAt))) // Assuming 'in-progress' means scheduled for future
+        .map((ps: MockInterviewSession) => ({
             id: ps.id, date: parseISO(ps.createdAt), title: ps.topic, type: 'AI Mock Interview',
             with: 'AI Coach', link: '/interview-prep', isPractice: true,
         }));
