@@ -12,6 +12,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const posts = await db.blogPost.findMany({
       orderBy: { date: 'desc' },
+      include: { comments: true },
     });
     return posts as unknown as BlogPost[];
   } catch (error) {
@@ -19,6 +20,25 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     return [];
   }
 }
+
+/**
+ * Fetches a single blog post by its slug.
+ * @param slug The unique slug of the blog post.
+ * @returns The BlogPost object or null if not found.
+ */
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  try {
+    const post = await db.blogPost.findUnique({
+      where: { slug },
+      include: { comments: true },
+    });
+    return post as unknown as BlogPost | null;
+  } catch (error) {
+    console.error(`[BlogAction] Error fetching blog post by slug ${slug}:`, error);
+    return null;
+  }
+}
+
 
 /**
  * Creates a new blog post.
