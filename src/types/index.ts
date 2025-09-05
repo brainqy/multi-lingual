@@ -574,6 +574,15 @@ export interface SurveyStep {
   isLastStep?: boolean;
 }
 
+export interface Survey {
+  id: string;
+  name: string; // Unique name like 'initialFeedback'
+  description: string;
+  steps: SurveyStep[];
+  tenantId?: string; // Optional: for tenant-specific surveys
+  createdAt: string;
+}
+
 export interface SurveyResponse {
   id: string;
   userId: string;
