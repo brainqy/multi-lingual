@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -59,8 +58,8 @@ export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | '
     logAction('Creating community post', { userId: postData.userId, type: postData.type });
     try {
         const dataForDb: Prisma.CommunityPostCreateInput = {
-            tenantId: postData.tenantId,
-            userId: postData.userId,
+            user: { connect: { id: postData.userId } },
+            tenant: { connect: { id: postData.tenantId } },
             userName: postData.userName,
             userAvatar: postData.userAvatar,
             content: postData.content,
