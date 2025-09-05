@@ -20,7 +20,7 @@ export async function createMockInterviewSession(sessionData: Omit<MockInterview
         jobDescription: sessionData.jobDescription || null,
         timerPerQuestion: sessionData.timerPerQuestion || null,
         difficulty: sessionData.difficulty || null,
-        questionCategories: sessionData.questionCategories as any || [],
+        questionCategories: (sessionData.questionCategories as any) || [],
       },
     });
     return newSession as unknown as MockInterviewSession;
