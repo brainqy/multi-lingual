@@ -182,7 +182,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     if (!dashboardData || !user) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
 
     const userJobApps = dashboardData.jobApplications.filter((app: JobApplication) => app.userId === user.id);
-    const statusData = userJobApps.reduce((acc: { name: string; value: number }[], curr: JobApplication) => {
+    const statusData: { name: string; value: number }[] = userJobApps.reduce((acc: { name: string; value: number }[], curr: JobApplication) => {
         const status = curr.status;
         const existing = acc.find((item) => item.name === status);
         if (existing) existing.value += 1;
