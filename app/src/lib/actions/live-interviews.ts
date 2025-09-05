@@ -17,7 +17,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
     const newSession = await db.mockInterviewSession.create({
       data: {
         ...sessionData,
-        scheduledTime: new Date(sessionData.scheduledTime),
+        createdAt: new Date(sessionData.scheduledTime), // Use createdAt instead of scheduledTime
         // Ensure Prisma optional JSON fields are handled
         participants: sessionData.participants as any,
         preSelectedQuestions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
@@ -49,7 +49,7 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
         },
       },
       orderBy: {
-        scheduledTime: 'desc',
+        createdAt: 'desc', // Order by createdAt
       },
     });
     return sessions as unknown as LiveInterviewSession[];
@@ -86,11 +86,12 @@ export async function getLiveInterviewSessionById(sessionId: string): Promise<Li
 export async function updateLiveInterviewSession(sessionId: string, updateData: Partial<Omit<LiveInterviewSession, 'id'>>): Promise<LiveInterviewSession | null> {
   logAction('Updating live interview session', { sessionId });
   try {
+    const { scheduledTime, ...restUpdateData } = updateData;
     const updatedSession = await db.mockInterviewSession.update({
       where: { id: sessionId },
       data: {
-        ...updateData,
-        scheduledTime: updateData.scheduledTime ? new Date(updateData.scheduledTime) : undefined,
+        ...restUpdateData,
+        createdAt: scheduledTime ? new Date(scheduledTime) : undefined, // Use createdAt for updates
         // Handle JSON fields
         participants: updateData.participants ? updateData.participants as any : undefined,
         preSelectedQuestions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
