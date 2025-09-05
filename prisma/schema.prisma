@@ -651,10 +651,20 @@ model MockInterviewSession {
   difficulty          String?
   questionCategories  String[]
   recordingReferences Json?
-  interviewerScores    Json?
+  interviewerScores    InterviewerScore[]
   finalScore           Json?
 }
 
+model InterviewerScore {
+  id                      String   @id @default(cuid())
+  mockInterviewSessionId  String
+  mockInterviewSession    MockInterviewSession @relation(fields: [mockInterviewSessionId], references: [id], onDelete: Cascade)
+  questionId              String
+  correctnessPercentage   Int
+  notes                   String?
+
+  @@index([mockInterviewSessionId])
+}
 model ProductCompany {
   id            String  @id @default(cuid())
   name          String
