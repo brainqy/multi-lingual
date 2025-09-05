@@ -6,6 +6,12 @@ import type { ResumeBuilderData } from "@/types";
 
 interface TemplateProps {
   data: ResumeBuilderData;
+  styles?: {
+    headerColor?: string;
+    bodyColor?: string;
+    headerFontSize?: string;
+    textAlign?: 'left' | 'center' | 'right';
+  };
 }
 
 const ModernTemplate = ({ data }: TemplateProps) => {
