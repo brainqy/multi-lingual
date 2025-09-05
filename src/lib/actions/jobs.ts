@@ -2,36 +2,22 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { JobApplication, Interview, JobOpening, UserProfile, JobApplicationStatus } from '@/types';
-import { Prisma, type PrismaClient } from '@prisma/client';
-import { checkAndAwardBadges } from './gamification';
-import { logAction, logError } from '@/lib/logger';
+import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
 
 /**
- * Fetches job openings from the database, scoped to the user's tenant and platform-wide posts.
- * @param tenantId The ID of the user's tenant.
+ * Fetches all job openings from the database.
  * @returns A promise that resolves to an array of JobOpening objects.
  */
-export async function getJobOpenings(tenantId?: string): Promise<JobOpening[]> {
+export async function getJobOpenings(): Promise<JobOpening[]> {
   try {
-    const whereClause: Prisma.JobOpeningWhereInput = tenantId 
-      ? {
-          OR: [
-            { tenantId: tenantId },
-            { tenantId: 'platform' }
-          ]
-        }
-      : {}; // Admin sees all
-
     const openings = await db.jobOpening.findMany({
-      where: whereClause,
       orderBy: {
         datePosted: 'desc',
       },
     });
     return openings as unknown as JobOpening[];
   } catch (error) {
-    logError('[JobAction] Error fetching job openings', error);
+    console.error('[JobAction] Error fetching job openings:', error);
     return [];
   }
 }
@@ -46,23 +32,21 @@ export async function addJobOpening(
   jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
-  try {
-    const newOpeningData = {
-      ...jobData,
-      datePosted: new Date(),
-      postedByAlumniId: currentUser.id,
-      alumniName: currentUser.name,
-      tenantId: currentUser.tenantId, // Job is always associated with the user's tenant
-    };
+  const newOpeningData = {
+    ...jobData,
+    datePosted: new Date(),
+    postedByAlumniId: currentUser.id,
+    alumniName: currentUser.name,
+    tenantId: currentUser.tenantId,
+  };
 
+  try {
     const newOpening = await db.jobOpening.create({
       data: newOpeningData,
     });
-    logAction('Job opening created', { userId: currentUser.id, jobId: newOpening.id, title: newOpening.title });
-    await checkAndAwardBadges(currentUser.id);
     return newOpening as unknown as JobOpening;
   } catch (error) {
-    logError('[JobAction] Error creating job opening', error, { userId: currentUser.id });
+    console.error('[JobAction] Error creating job opening:', error);
     return null;
   }
 }
@@ -85,7 +69,7 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
     });
     return applications as unknown as JobApplication[];
   } catch (error) {
-    logError(`[JobAction] Error fetching job applications for user ${userId}`, error, { userId });
+    console.error(`[JobAction] Error fetching job applications for user ${userId}:`, error);
     return [];
   }
 }
@@ -95,34 +79,17 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @param applicationData The data for the new job application.
  * @returns The newly created JobApplication object or null if failed.
  */
-export async function createJobApplication(applicationData: Omit<JobApplication, 'id'>): Promise<JobApplication | null> {
+export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'interviews'>): Promise<JobApplication | null> {
   try {
-    const { interviews, ...restOfData } = applicationData;
     const newApplication = await db.jobApplication.create({
       data: {
-        ...restOfData,
-        dateApplied: new Date(restOfData.dateApplied), // Ensure date is in correct format
+        ...applicationData,
         notes: applicationData.notes || [],
-        interviews: interviews && interviews.length > 0 ? {
-          create: interviews.map(i => ({
-            date: new Date(i.date), // Ensure date is in correct format
-            type: i.type,
-            interviewer: i.interviewer,
-            interviewerEmail: i.interviewerEmail,
-            interviewerMobile: i.interviewerMobile,
-            notes: i.notes || [],
-          }))
-        } : undefined,
-      },
-      include: {
-        interviews: true,
       },
     });
-    logAction('Job application created', { userId: applicationData.userId, applicationId: newApplication.id, company: newApplication.companyName });
-    await checkAndAwardBadges(applicationData.userId);
     return newApplication as unknown as JobApplication;
   } catch (error) {
-    logError('[JobAction] Error creating job application', error, { userId: applicationData.userId });
+    console.error('[JobAction] Error creating job application:', error);
     return null;
   }
 }
@@ -133,46 +100,45 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
  * @param updateData The data to update.
  * @returns The updated JobApplication object or null if failed.
  */
-export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
+export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id' | 'interviews'>> & { interviews?: Interview[] }): Promise<JobApplication | null> {
     try {
         const { interviews, ...restOfUpdateData } = updateData;
-        
-        const updatedApp = await db.$transaction(async (prisma) => {
-            await prisma.jobApplication.update({
-                where: { id: applicationId },
-                data: {
-                    ...restOfUpdateData,
-                    notes: restOfUpdateData.notes ? { set: restOfUpdateData.notes } : undefined,
-                },
-            });
 
-            if (interviews !== undefined) {
-                await prisma.interview.deleteMany({
-                    where: { jobApplicationId: applicationId },
-                });
-
-                if (interviews.length > 0) {
-                    const interviewsToCreate = interviews.map(({ id, ...i }) => ({
-                        ...i,
-                        date: new Date(i.date),
-                        jobApplicationId: applicationId,
-                    }));
-                    await prisma.interview.createMany({
-                        data: interviewsToCreate,
-                    });
-                }
+        // Prisma requires a specific structure for updating related records.
+        // This example handles updating the main record. A more complex transaction
+        // would be needed to create/update/delete interviews simultaneously.
+        // For simplicity here, we'll just update the main application data.
+        const updatedApplication = await db.jobApplication.update({
+            where: { id: applicationId },
+            data: {
+                ...restOfUpdateData,
+                notes: restOfUpdateData.notes || undefined,
+            },
+            include: {
+                interviews: true,
             }
-
-            return prisma.jobApplication.findUnique({
-              where: { id: applicationId },
-              include: { interviews: true },
-            });
         });
+
+        // Handle interview updates separately if provided
+        if (interviews) {
+            // This is a simplified approach. A real app might need to handle
+            // creation, deletion, and updates of interviews within a transaction.
+            await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
+            if (interviews.length > 0) {
+                await db.interview.createMany({
+                    data: interviews.map(i => ({...i, jobApplicationId: applicationId}))
+                });
+            }
+        }
         
-        logAction('Job application updated', { applicationId, status: updatedApp?.status });
-        return updatedApp as unknown as JobApplication;
+        const finalApplication = await db.jobApplication.findUnique({
+            where: { id: applicationId },
+            include: { interviews: true },
+        });
+
+        return finalApplication as unknown as JobApplication;
     } catch (error) {
-        logError(`[JobAction] Error updating job application ${applicationId}`, error);
+        console.error(`[JobAction] Error updating job application ${applicationId}:`, error);
         return null;
     }
 }
@@ -184,14 +150,13 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   try {
-    await db.$transaction(async (prisma) => {
-        await prisma.interview.deleteMany({ where: { jobApplicationId: applicationId }});
-        await prisma.jobApplication.delete({ where: { id: applicationId } });
+    // Prisma will cascade delete related interviews if the schema is set up for it.
+    await db.jobApplication.delete({
+      where: { id: applicationId },
     });
-    logAction('Job application deleted', { applicationId });
     return true;
   } catch (error) {
-    logError(`[JobAction] Error deleting job application ${applicationId}`, error);
+    console.error(`[JobAction] Error deleting job application ${applicationId}:`, error);
     return false;
   }
 }

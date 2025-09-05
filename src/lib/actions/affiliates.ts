@@ -4,7 +4,8 @@
 import { db } from '@/lib/db';
 import type { Affiliate, AffiliateClick, AffiliateSignup, AffiliateStatus, CommissionTier } from '@/types';
 import { logAction, logError } from '@/lib/logger';
-import { createNotification } from './notifications';
+import { createNotification } from '@/lib/actions/notifications';
+
 
 /**
  * Fetches all affiliates, optionally scoped by tenant for managers.
