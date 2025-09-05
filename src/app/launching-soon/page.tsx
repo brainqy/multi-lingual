@@ -105,7 +105,7 @@ export default function LaunchingSoonPage() {
         tenantId: 'platform',
         role: 'user',
         currentJobTitle: '',
-        company: '',
+        currentOrganization: '',
         shortBio: '',
         university: '',
         skills: [],
