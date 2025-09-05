@@ -31,7 +31,7 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
     *   [ ] **Edit Application:** Test opening an existing job card, editing a field (like 'Notes'), saving, and verifying the change.
     *   [ ] **Delete Application:** Test deleting a job card and ensuring it is removed from the board.
 *   **Resume Analyzer (`/resume-analyzer`):**
-    *   [ ] **Submit for Analysis:** Test pasting resume text and a job description, clicking "Analyze", and verifying that the "Analysis Report" section becomes visible.
+    *   [x] **Submit for Analysis:** Test pasting resume text and a job description, clicking "Analyze", and verifying that the "Analysis Report" section becomes visible.
 *   **Alumni Connect (`/alumni-connect`):**
     *   [ ] **Search & Filter:** Test typing a name into the search bar and applying a filter (e.g., by company), then verifying that the displayed alumni cards update correctly.
 *   **Community Feed (`/community-feed`):**
