@@ -2,15 +2,26 @@
 'use server';
 
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
 
 /**
- * Fetches all job openings from the database.
+ * Fetches all job openings from the database, optionally filtered by tenant.
+ * @param tenantId - Optional ID of the tenant. If provided, returns jobs for that tenant and platform-wide jobs.
  * @returns A promise that resolves to an array of JobOpening objects.
  */
-export async function getJobOpenings(): Promise<JobOpening[]> {
+export async function getJobOpenings(tenantId?: string): Promise<JobOpening[]> {
   try {
+    const whereClause: Prisma.JobOpeningWhereInput = {};
+    if (tenantId) {
+      whereClause.OR = [
+        { tenantId: tenantId },
+        { tenantId: 'platform' }
+      ];
+    }
+
     const openings = await db.jobOpening.findMany({
+      where: whereClause,
       orderBy: {
         datePosted: 'desc',
       },
