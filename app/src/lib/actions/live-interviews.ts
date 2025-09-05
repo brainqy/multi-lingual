@@ -21,7 +21,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         status: 'in-progress',
         createdAt: new Date(sessionData.scheduledTime), // Use createdAt instead of scheduledTime
         // Ensure Prisma optional JSON fields are handled
-        preSelectedQuestions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
+        questions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: [],
         interviewerScores: [],
         finalScore: Prisma.JsonNull,
@@ -92,7 +92,7 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
         status: restUpdateData.status,
         createdAt: scheduledTime ? new Date(scheduledTime) : undefined, // Use createdAt for updates
         // Handle JSON fields
-        preSelectedQuestions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
+        questions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
         recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
         interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
         finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
