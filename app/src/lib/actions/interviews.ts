@@ -10,7 +10,7 @@ import { logAction, logError } from '@/lib/logger';
  * @param sessionData The data for the new session.
  * @returns The newly created MockInterviewSession object or null if failed.
  */
-export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'>): Promise<MockInterviewSession | null> {
+export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences' | 'interviewerScores'>): Promise<MockInterviewSession | null> {
   logAction('Creating mock interview session', { userId: sessionData.userId, topic: sessionData.topic });
   try {
     const newSession = await db.mockInterviewSession.create({
