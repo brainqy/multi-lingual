@@ -182,9 +182,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     if (!dashboardData || !user) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
 
     const userJobApps = dashboardData.jobApplications.filter((app: JobApplication) => app.userId === user.id);
-    const statusData = userJobApps.reduce((acc: any, curr: JobApplication) => {
+    const statusData = userJobApps.reduce((acc: { name: string; value: number }[], curr: JobApplication) => {
         const status = curr.status;
-        const existing = acc.find((item: any) => item.name === status);
+        const existing = acc.find((item) => item.name === status);
         if (existing) existing.value += 1;
         else acc.push({ name: status, value: 1 });
         return acc;
@@ -279,8 +279,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
   const handleCustomizeToggle = (widgetId: UserDashboardWidgetId, checked: boolean) => {
     setTempVisibleWidgetIds(prev => {
       const newSet = new Set(prev);
-      if (checked) newSet.add(widgetId);
-      else newSet.delete(widgetId);
+      if (checked) {
+        newSet.add(widgetId);
+      } else {
+        newSet.delete(widgetId);
+      }
       return newSet;
     });
   };
