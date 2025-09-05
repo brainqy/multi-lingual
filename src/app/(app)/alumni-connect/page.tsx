@@ -27,7 +27,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/hooks/use-i18n';
-import { createAppointment } from "@/lib/actions/appointments';
+import { createAppointment } from "@/lib/actions/appointments";
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
 
@@ -83,7 +83,7 @@ export default function AlumniConnectPage() {
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
   const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
-  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company).filter(Boolean))).sort(), [allAlumniData]);
+  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter(Boolean))).sort(), [allAlumniData]);
   const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
   const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
 
@@ -103,7 +103,7 @@ export default function AlumniConnectPage() {
       );
     }
     if (selectedCompanies.size > 0) {
-      results = results.filter(alumni => alumni.company && selectedCompanies.has(alumni.company));
+      results = results.filter(alumni => alumni.currentOrganization && selectedCompanies.has(alumni.currentOrganization));
     }
     if (selectedSkills.size > 0) {
       results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
@@ -298,7 +298,7 @@ export default function AlumniConnectPage() {
                         </Avatar>
                         <h3 className="text-md font-semibold text-foreground">{alumni.name}</h3>
                         <p className="text-xs text-primary">{alumni.currentJobTitle}</p>
-                        <p className="text-xs text-muted-foreground mb-2">{alumni.company}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{alumni.currentOrganization}</p>
                         <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.shortBio}</p>
                       </CardContent>
                       <CardFooter className="p-3 border-t mt-auto">
@@ -416,7 +416,7 @@ export default function AlumniConnectPage() {
                   </Avatar>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">{alumni.name}</h3>
-                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.company}</p>
+                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.currentOrganization}</p>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                         <Mail className="h-3 w-3 mr-1" /> {alumni.email}
                     </div>
