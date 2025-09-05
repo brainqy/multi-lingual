@@ -1,3 +1,4 @@
+
 import { test, expect } from '@playwright/test';
 
 test('should allow a user to search and filter the alumni directory', async ({ page }) => {
@@ -16,33 +17,41 @@ test('should allow a user to search and filter the alumni directory', async ({ p
   await page.goto('/alumni-connect');
   await expect(page.getByRole('heading', { name: /Alumni Directory/i })).toBeVisible();
 
-  // Initially, multiple alumni from the 'platform' tenant should be visible.
-  await expect(page.getByText('Alice Wonderland')).toBeVisible();
-  await page.getByRole('button', { name: /Filters/i }).click();
-  await page.getByLabel('Name or Job Title').fill('Bob');
+  // Define locators for the main sections
+  const distinguishedCarousel = page.getByTestId('distinguished-alumni-carousel');
+  const directoryGrid = page.getByTestId('alumni-directory-grid');
 
-  await expect(page.getByText('Bob Builder')).toBeVisible();
-  // Charlie should not be visible as he is in the 'brainqy' tenant.
-  await expect(page.getByText('Charlie Chocolate')).not.toBeVisible();
+  // Initially, both platform alumni should be visible in their respective sections.
+  await expect(distinguishedCarousel.getByText('Alice Wonderland')).toBeVisible();
+  await expect(directoryGrid.getByText('Alice Wonderland')).toBeVisible();
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).toBeVisible();
 
   // Step 3: Perform a search for a specific alumnus.
-  await page.getByLabel(/Name or Job Title/i).clear();
   await page.getByLabel(/Name or Job Title/i).fill('Alice');
 
-  // Step 4: Verify that only the searched alumnus is visible.
-  await expect(page.getByText('Alice Wonderland')).toBeVisible();
+  // Step 4: Verify that only the searched alumnus is visible in the main grid.
+  await expect(directoryGrid.getByText('Alice Wonderland')).toBeVisible();
+  await expect(directoryGrid.getByText('Bob Builder')).not.toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).not.toBeVisible();
+  // The distinguished carousel should remain unchanged by the filter.
+  await expect(distinguishedCarousel.getByText('Alice Wonderland')).toBeVisible();
 
-  // Step 5: Clear the search and apply a company filter (for a user in another tenant).
+  // Step 5: Clear the search and apply a company filter.
   await page.getByLabel(/Name or Job Title/i).clear();
-  // Ensure other cards are visible again after clearing.
-  await expect(page.getByText('Bob Builder')).toBeVisible();
-
-  // We can't test filtering for 'Microsoft' as that user is in a different tenant.
-  // Instead, let's filter by a 'platform' tenant company.
+  await page.getByRole('button', { name: /Filters/i }).click();
   await page.getByLabel('Company').getByRole('checkbox', { name: 'Google' }).check();
   
-  // Step 6: Verify that only the alumnus from that company is visible.
-  await expect(page.getByText('Bob Builder')).toBeVisible();
-  await expect(page.getByText('Alice Wonderland')).not.toBeVisible();
-  await expect(page.getByText('Charlie Chocolate')).not.toBeVisible();
+  // Step 6: Verify that only alumni from that company are visible in the main grid.
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).toBeVisible();
+  await expect(directoryGrid.getByText('Alice Wonderland')).not.toBeVisible();
+  
+  // Step 7: Perform a search within the filtered results.
+  await page.getByLabel(/Name or Job Title/i).fill('Bob');
+  
+  // Step 8: Verify only the searched and filtered user is visible.
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).not.toBeVisible();
+  await expect(directoryGrid.getByText('Alice Wonderland')).not.toBeVisible();
 });

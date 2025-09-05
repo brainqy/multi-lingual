@@ -27,7 +27,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from "@/hooks/use-i18n";
-import { createAppointment } from '@/lib/actions/appointments';
+import { createAppointment } from "@/lib/actions/appointments';
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
 
@@ -272,7 +272,7 @@ export default function AlumniConnectPage() {
       </div>
 
       {distinguishedAlumni.length > 0 && (
-        <Card className="shadow-lg bg-primary/5 border-primary/20">
+        <Card data-testid="distinguished-alumni-carousel" className="shadow-lg bg-primary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
               <Star className="h-6 w-6" /> {t("alumniConnect.distinguishedTitle", { default: "Most Distinguished Alumni" })}
@@ -402,7 +402,7 @@ export default function AlumniConnectPage() {
         </Card>
       ) : (
         <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-testid="alumni-directory-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedAlumni.map(alumni => (
             <Card key={alumni.id} className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
               <CardContent className="pt-6 flex-grow">
