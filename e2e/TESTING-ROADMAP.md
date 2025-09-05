@@ -57,18 +57,18 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 
 ---
 
-### Phase 4: Advanced User Flows & Edge Cases (In Progress)
+### Phase 4: Advanced User Flows & Edge Cases (Complete)
 
 **Objective:** Validate more complex, multi-step user interactions.
 
 *   [x] **Wallet & Referrals:**
     *   [x] Test that a user can successfully redeem a valid promo code and see their coin balance update.
-    *   [ ] Verify the referral history page displays correctly after a mock referral.
-*   [ ] **Settings:**
-    *   [ ] Test that a user can change a setting (e.g., a notification preference) and have it persist.
-*   [ ] **Multi-Tenancy Isolation:**
-    *   [ ] Create users in two different tenants (e.g., `brainqy` and `guruji`).
-    *   [ ] Log in as a user from `brainqy` and verify they cannot see alumni or community posts from the `guruji` tenant.
+    *   [x] Verify the referral history page displays correctly after a mock referral.
+*   [x] **Settings:**
+    *   [x] Test that a user can change a setting (e.g., a notification preference) and have it persist.
+*   [x] **Multi-Tenancy Isolation:**
+    *   [x] Create users in two different tenants (e.g., `brainqy` and `guruji`).
+    *   [x] Log in as a user from `brainqy` and verify they cannot see alumni or community posts from the `guruji` tenant.
 
 ---
 
