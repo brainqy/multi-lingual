@@ -109,7 +109,7 @@ export default function AwardsManagementPage() {
         votingStartDate: data.votingStartDate.toISOString(),
         votingEndDate: data.votingEndDate.toISOString(),
     };
-    const result = editingAward ? await updateAward(editingAward.id, dataForServer) : await createAward(dataForServer);
+    const result = editingAward ? await updateAward(editingAward.id, dataForServer as any) : await createAward(dataForServer as any);
     if (result) { fetchData(); toast({ title: editingAward ? "Award Updated" : "Award Created" }); }
     setIsAwardDialogOpen(false);
   };
