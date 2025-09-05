@@ -1,3 +1,4 @@
+
 import { test, expect } from '@playwright/test';
 
 test('should allow a user to create a new post', async ({ page }) => {
@@ -21,7 +22,7 @@ test('should allow a user to create a new post', async ({ page }) => {
 
   // Step 4: Fill in the post content with a unique message.
   const postContent = `This is a test post from Playwright, created at ${new Date().toISOString()}`;
-  await page.getByPlaceholder(/What's on your mind?/i).fill(postContent);
+  await page.getByPlaceholder(/Share updates, ask questions, or start a discussion.../i).fill(postContent);
   
   // Step 5: Submit the post.
   await page.getByRole('button', { name: /Post/i }).click();
