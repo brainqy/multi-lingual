@@ -1,4 +1,5 @@
 
+
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -420,9 +421,9 @@ export interface UserProfile extends AlumniProfile {
   }>;
   completedChallengeIds?: string[];
   completedFlipTaskIds?: string[];
-  currentFlipChallenge?: DailyChallenge;
-  flipChallengeAssignedAt?: string;
-  flipChallengeProgressStart?: Record<string, number>;
+  currentFlipChallenge?: DailyChallenge | null;
+  flipChallengeAssignedAt?: string | null;
+  flipChallengeProgressStart?: Record<string, number> | null;
   sessionId?: string;
   streakFreezes?: number;
 
@@ -1438,3 +1439,4 @@ export interface EmailTemplate {
   createdAt: string;
   updatedAt: string;
 }
+
