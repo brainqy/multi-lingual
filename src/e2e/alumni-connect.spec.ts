@@ -26,8 +26,7 @@ test('should allow a user to search and filter the alumni directory', async ({ p
 
   // Step 3: Apply a company filter first. This is more robust than checking the initial unfiltered list.
   await page.getByRole('button', { name: /Filters/i }).click();
-  // Use a more specific locator to find the checkbox within the "Company" filter section.
-  await page.locator('div').filter({ hasText: /^Company$/ }).getByRole('checkbox', { name: 'Google' }).check();
+  await page.getByRole('checkbox', { name: 'Google' }).check();
 
   // Step 4: Verify that only alumni from that company are visible in the main grid.
   await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
