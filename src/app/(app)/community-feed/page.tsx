@@ -175,9 +175,9 @@ export default function CommunityFeedPage() {
       type: 'text',
       imageUrl: '',
       pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }],
-      eventDate: z.string().optional(),
-      eventLocation: z.string().optional(),
-      eventTitle: z.string().optional(),
+      eventDate: '',
+      eventLocation: '',
+      eventTitle: '',
       attendees: 0,
       capacity: 0,
     }
