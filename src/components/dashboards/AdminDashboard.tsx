@@ -85,6 +85,12 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
 
+type TenantActivityData = Tenant & {
+  userCount: number;
+  newUsersThisPeriod: number;
+  activityScore: number;
+};
+
 export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { t } = useI18n();
   const [showAdminTour, setShowAdminTour] = useState(false);
@@ -203,7 +209,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       });
   }, [dashboardData]);
 
-  const chartData = currentTenantActivityData.map(tenant => ({
+  const chartData = currentTenantActivityData.map((tenant: TenantActivityData) => ({
       name: tenant.name.substring(0,15) + (tenant.name.length > 15 ? "..." : ""),
       Users: tenant.userCount,
       ActivityScore: tenant.activityScore,
