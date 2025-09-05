@@ -27,9 +27,9 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 
 *   **Job Tracker (`/job-tracker`):**
     *   [x] **Create Application:** Test opening the "Add Job" dialog, filling it out, and verifying the new job card appears in the 'Saved' column.
-    *   [ ] **Move Application:** Test dragging a job card from one column (e.g., 'Applied') to another (e.g., 'Interviewing').
-    *   [ ] **Edit Application:** Test opening an existing job card, editing a field (like 'Notes'), saving, and verifying the change.
-    *   [ ] **Delete Application:** Test deleting a job card and ensuring it is removed from the board.
+    *   [x] **Move Application:** Test dragging a job card from one column (e.g., 'Applied') to another (e.g., 'Interviewing').
+    *   [x] **Edit Application:** Test opening an existing job card, editing a field (like 'Notes'), saving, and verifying the change.
+    *   [x] **Delete Application:** Test deleting a job card and ensuring it is removed from the board.
 *   **Resume Analyzer (`/resume-analyzer`):**
     *   [x] **Submit for Analysis:** Test pasting resume text and a job description, clicking "Analyze", and verifying that the "Analysis Report" section becomes visible.
 *   **Alumni Connect (`/alumni-connect`):**
@@ -47,7 +47,7 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
     *   [x] Test the setup flow: filling out the topic, number of questions, and starting the session.
     *   [x] Verify that the user is successfully navigated to the interview interface after setup.
 *   **User Profile (`/profile`):**
-    *   [ ] **Edit and Save:** Test clicking "Edit Profile", changing a field (e.g., 'Bio'), saving the changes, and verifying the updated information is displayed.
+    *   [x] **Edit and Save:** Test clicking "Edit Profile", changing a field (e.g., 'Bio'), saving the changes, and verifying the updated information is displayed.
 
 ---
 
