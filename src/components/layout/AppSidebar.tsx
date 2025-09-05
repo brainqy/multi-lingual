@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
@@ -126,7 +127,7 @@ export function AppSidebar() {
          {effectiveHref ? (
            <Link href={effectiveHref} passHref legacyBehavior>
             <SidebarMenuButton 
-              as="a"
+              asChild
               isActive={isActive} 
               size={isSubItem ? "sm" : "default"} 
               className="w-full justify-start"
