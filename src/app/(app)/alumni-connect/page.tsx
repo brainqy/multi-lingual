@@ -26,7 +26,7 @@ import * as z from "zod";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
-import { useI18n } from "@/hooks/use-i18n";
+import { useI18n } from '@/hooks/use-i18n';
 import { createAppointment } from "@/lib/actions/appointments';
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
@@ -103,7 +103,7 @@ export default function AlumniConnectPage() {
       );
     }
     if (selectedCompanies.size > 0) {
-      results = results.filter(alumni => selectedCompanies.has(alumni.company));
+      results = results.filter(alumni => alumni.company && selectedCompanies.has(alumni.company));
     }
     if (selectedSkills.size > 0) {
       results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
@@ -325,7 +325,9 @@ export default function AlumniConnectPage() {
         <AccordionItem value="filters">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">
             <div className="flex items-center gap-2 text-lg font-semibold">
-              <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", { default: "Filters" })}
+              <Button variant="ghost" size="sm" className="gap-2">
+                <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", { default: "Filters" })}
+              </Button>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
@@ -344,6 +346,7 @@ export default function AlumniConnectPage() {
                           id={`comp-${company}`}
                           checked={selectedCompanies.has(company)}
                           onCheckedChange={() => handleFilterChange(selectedCompanies, company, setSelectedCompanies)}
+                          aria-label={company}
                         />
                         <Label htmlFor={`comp-${company}`} className="font-normal">{company}</Label>
                       </div>
