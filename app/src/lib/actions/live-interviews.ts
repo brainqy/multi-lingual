@@ -24,7 +24,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         questions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: [],
         finalScore: Prisma.JsonNull,
-        interviewerScores: [],
+        // interviewerScores are managed separately as a relation
       },
     });
     return newSession as unknown as LiveInterviewSession;
@@ -95,7 +95,7 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
         questions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
         recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
         finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
-        interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
+        // interviewerScores are managed separately
       },
     });
     return updatedSession as unknown as LiveInterviewSession;
