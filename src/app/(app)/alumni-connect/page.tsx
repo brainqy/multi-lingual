@@ -27,9 +27,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/hooks/use-i18n';
-import { createAppointment } from "@/lib/actions/appointments";
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
+import { createAppointment } from '@/lib/actions/appointments';
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
