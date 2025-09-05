@@ -34,7 +34,7 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 *   **Resume Analyzer (`/resume-analyzer`):**
     *   [x] **Submit for Analysis:** Test pasting resume text and a job description, clicking "Analyze", and verifying that the "Analysis Report" section becomes visible.
 *   **Alumni Connect (`/alumni-connect`):**
-    *   [ ] **Search & Filter:** Test typing a name into the search bar and applying a filter (e.g., by company), then verifying that the displayed alumni cards update correctly.
+    *   [x] **Search & Filter:** Test typing a name into the search bar and applying a filter (e.g., by company), then verifying that the displayed alumni cards update correctly.
 *   **Community Feed (`/community-feed`):**
     *   [x] **Create Post:** Test creating a new text post and verifying it appears at the top of the feed.
 
