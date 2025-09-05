@@ -1,3 +1,4 @@
+
 # E2E Testing Roadmap
 
 This document outlines the strategic roadmap for implementing end-to-end (E2E) tests for the JobMatch AI application using Playwright.
@@ -33,9 +34,9 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 *   **Resume Analyzer (`/resume-analyzer`):**
     *   [x] **Submit for Analysis:** Test pasting resume text and a job description, clicking "Analyze", and verifying that the "Analysis Report" section becomes visible.
 *   **Alumni Connect (`/alumni-connect`):**
-    *   [x] **Search & Filter:** Test typing a name into the search bar and applying a filter (e.g., by company), then verifying that the displayed alumni cards update correctly.
+    *   [ ] **Search & Filter:** Test typing a name into the search bar and applying a filter (e.g., by company), then verifying that the displayed alumni cards update correctly.
 *   **Community Feed (`/community-feed`):**
-    *   [x] **Create Post:** Test creating a new text post and verifying it appears at the top of the feed.
+    *   [ ] **Create Post:** Test creating a new text post and verifying it appears at the top of the feed.
 
 ---
 
@@ -44,8 +45,8 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 **Objective:** Validate the user flows for key AI-powered tools and more complex user interactions.
 
 *   **AI Mock Interview (`/ai-mock-interview`):**
-    *   [x] Test the setup flow: filling out the topic, number of questions, and starting the session.
-    *   [x] Verify that the user is successfully navigated to the interview interface after setup.
+    *   [ ] Test the setup flow: filling out the topic, number of questions, and starting the session.
+    *   [ ] Verify that the user is successfully navigated to the interview interface after setup.
 *   **User Profile (`/profile`):**
     *   [x] **Edit and Save:** Test clicking "Edit Profile", changing a field (e.g., 'Bio'), saving the changes, and verifying the updated information is displayed.
 
