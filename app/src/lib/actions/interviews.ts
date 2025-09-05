@@ -21,7 +21,6 @@ export async function createMockInterviewSession(sessionData: Omit<MockInterview
         timerPerQuestion: sessionData.timerPerQuestion || null,
         difficulty: sessionData.difficulty || null,
         questionCategories: (sessionData.questionCategories as any) || [],
-        interviewerScores: (sessionData.interviewerScores as any) || [],
         finalScore: (sessionData.finalScore as any) || undefined,
       },
     });
@@ -61,16 +60,16 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
 export async function updateMockInterviewSession(sessionId: string, updateData: Partial<Omit<MockInterviewSession, 'id'>>): Promise<MockInterviewSession | null> {
     logAction('Updating mock interview session', { sessionId });
     try {
+        const { interviewerScores, ...restOfUpdateData } = updateData;
         const updatedSession = await db.mockInterviewSession.update({
             where: { id: sessionId },
             data: {
-                ...updateData,
+                ...restOfUpdateData,
                 // Handle JSON fields if they are updated
                 questions: updateData.questions ? (updateData.questions as any) : undefined,
                 answers: updateData.answers ? (updateData.answers as any) : undefined,
                 overallFeedback: updateData.overallFeedback ? (updateData.overallFeedback as any) : undefined,
                 recordingReferences: updateData.recordingReferences ? (updateData.recordingReferences as any) : undefined,
-                interviewerScores: updateData.interviewerScores ? (updateData.interviewerScores as any) : undefined,
                 finalScore: updateData.finalScore ? (updateData.finalScore as any) : undefined,
             },
         });
