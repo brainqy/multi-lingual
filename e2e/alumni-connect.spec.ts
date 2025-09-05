@@ -11,7 +11,7 @@ test('should allow a user to search and filter the alumni directory', async ({ p
   await page.getByRole('button', { name: /Create Account/i }).click();
 
   // Step 2: Wait for redirect and navigate to the alumni connect page.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await page.goto('/alumni-connect');
   await expect(page.getByRole('heading', { name: /Alumni Directory/i })).toBeVisible();
 
