@@ -1,4 +1,5 @@
 
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient()
@@ -67,6 +68,7 @@ async function main() {
     { id: 'sample-user-3', name: 'Charlie Chocolate', email: 'charlie@example.com', tenantId: 'brainqy', xpPoints: 710, currentJobTitle: 'Product Manager', currentOrganization: 'Microsoft' },
     { id: 'sample-user-4', name: 'Diana Prince', email: 'diana@example.com', tenantId: 'guruji', xpPoints: 950, isDistinguished: true, currentJobTitle: 'UX Lead', currentOrganization: 'Apple' },
     { id: 'sample-user-5', name: 'Ethan Hunt', email: 'ethan@example.com', tenantId: 'guruji', xpPoints: 450, currentJobTitle: 'DevOps Specialist', currentOrganization: 'Amazon' },
+    { id: 'sample-user-6', name: 'Eve Engineer', email: 'eve@example.com', tenantId: 'platform', xpPoints: 550, currentJobTitle: 'Software Engineer', currentOrganization: 'Google' },
   ];
   
   const userPromises = sampleUsersData.map(userData => 
@@ -304,4 +306,5 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
+
 
