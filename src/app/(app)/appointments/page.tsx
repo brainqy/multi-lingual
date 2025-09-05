@@ -245,7 +245,7 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="appointments-page">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-8 w-8" /> {t("appointments.title", { default: "My Appointments" })}
@@ -309,7 +309,7 @@ export default function AppointmentsPage() {
       ) : (
         <>
           {filteredAppointments.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2" data-testid="appointments-list">
               {filteredAppointments.map((appt) => {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
@@ -319,7 +319,7 @@ export default function AppointmentsPage() {
                 const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
 
                 return (
-                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300" data-testid={`appointment-card-${appt.id}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{appt.title}</CardTitle>
@@ -465,5 +465,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-
-    

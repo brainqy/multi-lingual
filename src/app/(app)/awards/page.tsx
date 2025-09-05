@@ -161,7 +161,7 @@ export default function AwardsPage() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12" data-testid="awards-page">
       <div className="text-center">
           <AwardIcon className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Awards & Recognition</h1>

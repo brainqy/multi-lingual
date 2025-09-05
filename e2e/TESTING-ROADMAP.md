@@ -1,3 +1,4 @@
+
 # E2E Testing Roadmap
 
 This document outlines the strategic roadmap for implementing end-to-end (E2E) tests for the JobMatch AI application using Playwright.
@@ -20,7 +21,7 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
 
 ---
 
-### Phase 2: Core Feature CRUD & Interaction (In Progress)
+### Phase 2: Core Feature CRUD & Interaction (Complete)
 
 **Objective:** Test the primary functionalities that a standard logged-in user will interact with daily.
 
@@ -35,33 +36,33 @@ This document outlines the strategic roadmap for implementing end-to-end (E2E) t
     *   [x] **Create Post:** Test creating a new text post and verifying it appears at the top of the feed.
 *   [x] **Alumni Connect (`/alumni-connect`):**
     *   [x] **Search & Filter:** Test applying filters and searching the directory, then verifying results.
-*   [ ] **Appointments (`/appointments`):**
-    *   [ ] Test the flow for a user requesting an appointment with an alumnus from the directory.
-    *   [ ] Verify the user can see their pending and confirmed appointments on the appointments page.
-*   [ ] **Awards (`/awards`):**
-    *   [ ] Test the user flow for nominating another user for an active award.
+*   [x] **Appointments (`/appointments`):**
+    *   [x] Test the flow for a user requesting an appointment with an alumnus from the directory.
+    *   [x] Verify the user can see their pending and confirmed appointments on the appointments page.
+*   [x] **Awards (`/awards`):**
+    *   [x] Test the user flow for nominating another user for an active award.
 
 ---
 
-### Phase 3: Role-Based Access Control (Admin & Manager)
+### Phase 3: Role-Based Access Control (Admin & Manager) (Complete)
 
 **Objective:** Ensure that pages and features restricted to specific roles are properly protected.
 
-*   [ ] **Admin Access:**
-    *   [ ] Create a test that logs in as an `admin` user and successfully navigates to an admin-only page (e.g., `/admin/tenant-management`).
-*   [ ] **Manager Access:**
-    *   [ ] Create a test that logs in as a `manager` user and successfully navigates to a manager-specific page (e.g., `/admin/user-management`).
-*   [ ] **Access Denial:**
-    *   [ ] Create a test that logs in as a standard `user` and verifies they are blocked from accessing admin/manager pages.
+*   [x] **Admin Access:**
+    *   [x] Create a test that logs in as an `admin` user and successfully navigates to an admin-only page (e.g., `/admin/tenant-management`).
+*   [x] **Manager Access:**
+    *   [x] Create a test that logs in as a `manager` user and successfully navigates to a manager-specific page (e.g., `/admin/user-management`).
+*   [x] **Access Denial:**
+    *   [x] Create a test that logs in as a standard `user` and verifies they are blocked from accessing admin/manager pages.
 
 ---
 
-### Phase 4: Advanced User Flows & Edge Cases
+### Phase 4: Advanced User Flows & Edge Cases (In Progress)
 
 **Objective:** Validate more complex, multi-step user interactions.
 
-*   [ ] **Wallet & Referrals:**
-    *   [ ] Test that a user can successfully redeem a valid promo code and see their coin balance update.
+*   [x] **Wallet & Referrals:**
+    *   [x] Test that a user can successfully redeem a valid promo code and see their coin balance update.
     *   [ ] Verify the referral history page displays correctly after a mock referral.
 *   [ ] **Settings:**
     *   [ ] Test that a user can change a setting (e.g., a notification preference) and have it persist.
