@@ -23,7 +23,6 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         // Ensure Prisma optional JSON fields are handled
         questions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: [],
-        interviewerScores: [],
         finalScore: Prisma.JsonNull,
       },
     });
@@ -94,7 +93,6 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
         // Handle JSON fields
         questions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
         recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
-        interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
         finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
       },
     });
