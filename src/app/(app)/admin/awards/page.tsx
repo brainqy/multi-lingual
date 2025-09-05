@@ -102,7 +102,14 @@ export default function AwardsManagementPage() {
   };
   const onDeleteAward = async (id: string) => { if (await deleteAward(id)) { fetchData(); toast({ title: "Award Deleted" }); }};
   const onAwardSubmit = async (data: AwardFormData) => {
-    const result = editingAward ? await updateAward(editingAward.id, data) : await createAward(data);
+    const dataForServer = {
+        ...data,
+        nominationStartDate: data.nominationStartDate.toISOString(),
+        nominationEndDate: data.nominationEndDate.toISOString(),
+        votingStartDate: data.votingStartDate.toISOString(),
+        votingEndDate: data.votingEndDate.toISOString(),
+    };
+    const result = editingAward ? await updateAward(editingAward.id, dataForServer) : await createAward(dataForServer);
     if (result) { fetchData(); toast({ title: editingAward ? "Award Updated" : "Award Created" }); }
     setIsAwardDialogOpen(false);
   };
@@ -174,7 +181,7 @@ export default function AwardsManagementPage() {
                     <TableRow key={award.id}>
                       <TableCell className="font-medium">{award.title}</TableCell>
                       <TableCell>{categories.find(c => c.id === award.categoryId)?.name || 'N/A'}</TableCell>
-                      <TableCell><Badge>{award.status}</Badge></TableCell>
+                      <TableCell><Badge>{award.status}</TableCell>
                       <TableCell>{award.winner ? award.winner.name : 'N/A'}</TableCell>
                       <TableCell className="text-right space-x-2">
                          {votingEnded && !award.winnerId && award.status === 'Completed' && (
