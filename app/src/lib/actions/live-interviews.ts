@@ -16,10 +16,11 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
   try {
     const newSession = await db.mockInterviewSession.create({
       data: {
-        ...sessionData,
+        userId: sessionData.participants[0]?.userId, // Assuming the first participant is the owner
+        topic: sessionData.title,
+        status: 'in-progress',
         createdAt: new Date(sessionData.scheduledTime), // Use createdAt instead of scheduledTime
         // Ensure Prisma optional JSON fields are handled
-        participants: sessionData.participants as any,
         preSelectedQuestions: sessionData.preSelectedQuestions ? sessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: [],
         interviewerScores: [],
@@ -43,10 +44,7 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
   try {
     const sessions = await db.mockInterviewSession.findMany({
       where: {
-        participants: {
-          path: '$[*].userId',
-          array_contains: userId,
-        },
+        userId: userId
       },
       orderBy: {
         createdAt: 'desc', // Order by createdAt
@@ -90,10 +88,10 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
     const updatedSession = await db.mockInterviewSession.update({
       where: { id: sessionId },
       data: {
-        ...restUpdateData,
+        topic: restUpdateData.title,
+        status: restUpdateData.status,
         createdAt: scheduledTime ? new Date(scheduledTime) : undefined, // Use createdAt for updates
         // Handle JSON fields
-        participants: updateData.participants ? updateData.participants as any : undefined,
         preSelectedQuestions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
         recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
         interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
