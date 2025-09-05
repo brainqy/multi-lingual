@@ -115,7 +115,7 @@ export default function AdminBlogSettingsPage() {
         tenantId: 'platform',
         userId: currentUser.id,
         userName: 'JobMatch AI Writer',
-        userAvatar: currentUser.profilePictureUrl,
+        userAvatar: currentUser.profilePictureUrl ?? '',
         title: blogOutput.title,
         slug: generateSlug(blogOutput.title),
         author: 'JobMatch AI Writer',
