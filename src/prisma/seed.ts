@@ -22,6 +22,7 @@ async function main() {
   await prisma.wallet.deleteMany({});
   await prisma.surveyResponse.deleteMany({});
   await prisma.survey.deleteMany({});
+  await prisma.productCompany.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.tenant.deleteMany({});
   
@@ -48,6 +49,20 @@ async function main() {
      await prisma.tenant.upsert({ where: { id: tenant.id }, update: {}, create: tenant });
   }
   console.log('Seeded tenants.');
+  
+  // Seed Product Companies
+  await prisma.productCompany.createMany({
+    data: [
+      { name: 'Google', location: 'Pune', websiteUrl: 'https://careers.google.com/', domain: 'SaaS', hrName: 'John Doe', hrEmail: 'john.doe@google.com', contactNumber: '123-456-7890' },
+      { name: 'Microsoft', location: 'Hyderabad', websiteUrl: 'https://careers.microsoft.com/', domain: 'SaaS', hrName: 'Jane Smith', hrEmail: 'jane.smith@microsoft.com', contactNumber: '234-567-8901' },
+      { name: 'Apple', location: 'Bengaluru', websiteUrl: 'https://www.apple.com/careers/', domain: 'Hardware', hrName: 'Peter Jones', hrEmail: 'peter.jones@apple.com', contactNumber: '345-678-9012' },
+      { name: 'Amazon', location: 'Gurgaon', websiteUrl: 'https://www.amazon.jobs/', domain: 'E-commerce', hrName: 'Mary Johnson', hrEmail: 'mary.johnson@amazon.com', contactNumber: '456-789-0123' },
+      { name: 'Infosys', location: 'Pune', websiteUrl: 'https://www.infosys.com/careers/', domain: 'IT Services', hrName: 'David Williams', hrEmail: 'david.williams@infosys.com', contactNumber: '567-890-1234' },
+      { name: 'Wipro', location: 'Bengaluru', websiteUrl: 'https://careers.wipro.com/', domain: 'IT Services', hrName: 'Linda Brown', hrEmail: 'linda.brown@wipro.com', contactNumber: '678-901-2345' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded product companies.');
 
   // --- USERS ---
 
@@ -289,5 +304,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-    
