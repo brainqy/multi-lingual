@@ -62,7 +62,7 @@ export default function MessengerManagementPage() {
     setIsDataLoading(true);
     const [surveys, responses] = await Promise.all([
       getSurveys(), 
-      getSurveyResponses(currentUser.tenantId),
+      getSurveyResponses(),
     ]);
 
     setSurveyDefinitions(surveys);
@@ -117,11 +117,10 @@ export default function MessengerManagementPage() {
         toast({ title: "Error", description: "Survey must have at least one step.", variant: "destructive" });
         return;
     }
-    const newSurveyData: Omit<Survey, 'id' | 'createdAt'> = { 
+    const newSurveyData: Omit<Survey, 'id' | 'createdAt' | 'tenantId'> = { 
       name: newSurveyName, 
       description: newSurveyDescription, 
       steps: newSurveySteps,
-      tenantId: currentUser.role === 'manager' ? currentUser.tenantId : 'platform',
     };
     
     const createdSurvey = await createSurvey(newSurveyData);

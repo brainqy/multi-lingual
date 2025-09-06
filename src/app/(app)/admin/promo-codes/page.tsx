@@ -150,16 +150,16 @@ export default function PromoCodeManagementPage() {
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
 
-    // Remove the temporary 'isPlatformWide' field before sending to the server action.
+    // The server action will now derive the tenantId from headers.
     const { isPlatformWide, ...restOfData } = data;
 
-    const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
+    const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt' | 'tenantId'> = {
       ...restOfData,
       expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
-      tenantId: data.isPlatformWide ? 'platform' : currentUser.tenantId,
     };
 
     if (editingCode) {
+      // For updates, the server action does not need tenantId.
       const updatedCode = await updatePromoCode(editingCode.id, newCodeData);
       if (updatedCode) {
         setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
@@ -198,7 +198,7 @@ export default function PromoCodeManagementPage() {
     for (let i = 0; i < data.count; i++) {
       const uniquePart = Math.random().toString(36).substring(2, 10).toUpperCase();
       const code = `${data.prefix}-${uniquePart}`;
-      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
+      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt' | 'tenantId'> = {
         code,
         description: `One-time use code (${data.rewardValue} ${data.rewardType})`,
         rewardType: data.rewardType,
@@ -206,7 +206,6 @@ export default function PromoCodeManagementPage() {
         expiresAt: data.expiresAt?.toISOString(),
         usageLimit: 1,
         isActive: true,
-        tenantId: currentUser.tenantId, // Generated codes are for the current manager's tenant
       };
       const created = await createPromoCode(newPromoCodeData);
       if (created) {

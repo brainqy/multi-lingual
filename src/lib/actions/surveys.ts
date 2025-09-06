@@ -51,11 +51,7 @@ export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt' |
     const dataForDb: any = {
       ...surveyData,
       steps: surveyData.steps as any, // Cast steps to any to satisfy Prisma's JsonValue type
-      tenant: {
-        connect: {
-          id: tenantId
-        }
-      }
+      tenantId: tenantId,
     };
     
     const newSurvey = await db.survey.create({
@@ -107,9 +103,7 @@ export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'i
     const dataForDb: any = {
         ...responseData,
         data: responseData.data as any,
-        tenant: {
-            connect: { id: tenantId }
-        }
+        tenantId: tenantId,
     };
     
     const newResponse = await db.surveyResponse.create({
