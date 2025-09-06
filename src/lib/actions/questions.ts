@@ -64,7 +64,9 @@ export async function updateInterviewQuestion(questionId: string, updateData: Pa
       where: { id: questionId },
       data: {
         ...updateData,
-        mcqOptions: updateData.mcqOptions ? updateData.mcqOptions : Prisma.JsonNull,
+        mcqOptions: updateData.mcqOptions ? (updateData.mcqOptions as any) : Prisma.JsonNull,
+        userRatings: updateData.userRatings ? (updateData.userRatings as any) : Prisma.JsonNull,
+        userComments: updateData.userComments ? (updateData.userComments as any) : Prisma.JsonNull,
         tags: updateData.tags || [],
       },
     });
