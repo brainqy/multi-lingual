@@ -9,17 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Mail, Save, Loader2, Pilcrow } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { EmailTemplate } from "@/types";
+import type { EmailTemplate, Tenant } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@/hooks/use-auth";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getTenantEmailTemplates, updateEmailTemplate } from "@/lib/actions/email-templates";
+import { getTenants } from "@/lib/actions/tenants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useI18n } from "@/hooks/use-i18n";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const templateSchema = z.object({
   id: z.string(),
@@ -32,6 +34,8 @@ type TemplateFormData = z.infer<typeof templateSchema>;
 export default function EmailTemplatesPage() {
   const { user: currentUser } = useAuth();
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,26 +51,40 @@ export default function EmailTemplatesPage() {
     }
   });
 
+  useEffect(() => {
+    if (currentUser?.role === 'admin') {
+      getTenants().then(allTenants => {
+        setTenants(allTenants);
+        if (allTenants.length > 0) {
+          setSelectedTenantId(allTenants[0].id);
+        } else {
+          setIsLoading(false);
+        }
+      });
+    } else if (currentUser?.role === 'manager' && currentUser.tenantId) {
+      setSelectedTenantId(currentUser.tenantId);
+    }
+  }, [currentUser]);
+
   const fetchData = useCallback(async () => {
-    if (!currentUser || !currentUser.tenantId) return;
+    if (!selectedTenantId) return;
     setIsLoading(true);
-    const fetchedTemplates = await getTenantEmailTemplates(currentUser.tenantId);
+    const fetchedTemplates = await getTenantEmailTemplates(selectedTenantId);
     setTemplates(fetchedTemplates);
     if (fetchedTemplates.length > 0) {
       const firstTemplate = fetchedTemplates[0];
       setActiveTemplateId(firstTemplate.id);
       reset(firstTemplate);
+    } else {
+      setActiveTemplateId(null);
+      reset({ id: '', subject: '', body: '' });
     }
     setIsLoading(false);
-  }, [currentUser, reset]);
+  }, [selectedTenantId, reset]);
 
   useEffect(() => {
-    if (currentUser?.role === 'manager' ) {
-      fetchData();
-    } else {
-      setIsLoading(false);
-    }
-  }, [currentUser, fetchData]);
+    fetchData();
+  }, [fetchData]);
 
   const handleTabChange = (templateId: string) => {
     if (isDirty) {
@@ -105,20 +123,32 @@ export default function EmailTemplatesPage() {
   ];
 
   if (!currentUser || (currentUser.role !== 'manager' && currentUser.role !== 'admin')) {
-    return <AccessDeniedMessage message="This feature is available for Tenant Managers." />;
-  }
-  
-  if (currentUser.role === 'admin') {
-      return <AccessDeniedMessage title="Admin View" message="Admins must select a tenant to manage their email templates. This feature is currently available for Tenant Managers." />;
+    return <AccessDeniedMessage message="This feature is available for Tenant Managers and Admins." />;
   }
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Mail className="h-8 w-8" /> {t("emailTemplates.title")}
-      </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Mail className="h-8 w-8" /> {t("emailTemplates.title")}
+        </h1>
+        {currentUser.role === 'admin' && tenants.length > 0 && (
+          <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
+            <SelectTrigger className="w-full sm:w-[250px]">
+              <SelectValue placeholder="Select a tenant to manage" />
+            </SelectTrigger>
+            <SelectContent>
+              {tenants.map(tenant => (
+                <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
       <CardDescription>
-        {t("emailTemplates.description")}
+        {currentUser.role === 'admin' 
+            ? "As an admin, you can select and manage email templates for any tenant."
+            : t("emailTemplates.description")}
       </CardDescription>
       
       {isLoading || !activeTemplateId ? (
