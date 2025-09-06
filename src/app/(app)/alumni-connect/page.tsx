@@ -83,9 +83,9 @@ export default function AlumniConnectPage() {
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
   const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
-  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter(Boolean))).sort(), [allAlumniData]);
+  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
   const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
-  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
+  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter((uni): uni is string => !!uni))).sort(), [allAlumniData]);
 
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
