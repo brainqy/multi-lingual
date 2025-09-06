@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -87,5 +86,3 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|images|.*\\.png$).*)',
   ],
 };
-
-    
