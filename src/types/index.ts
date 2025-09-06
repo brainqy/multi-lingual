@@ -146,19 +146,18 @@ export interface PromotionalContent {
 }
 
 export interface Announcement {
-  id   ?    :      String    
-  title   :       String
-  content  :      String    
-  startDate :     string | null;
-  endDate   :     string | null;
-  status    :     String    // 'Draft', 'Published', 'Archived'
-  createdBy  :    String
-  createdAt  :    string | null; 
-  updatedAt  :    string | null;  
-  tenantId    :   string | null;
-  deletedAt   :   string | null;
-  targetTenantId :    string
-  targetRole :    UserRole | null;
+  id: string;
+  title: string;
+  content: string;
+  startDate: string;
+  endDate: string | null;
+  status: 'Draft' | 'Published' | 'Archived';
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+  tenantId: string | null;
+  targetTenantId: string | null;
+  targetRole: UserRole | null;
 }
 
 export interface CommunityPost {
@@ -579,6 +578,15 @@ export interface MockInterviewAnswer {
   areasForImprovement?: string[];
   suggestedImprovements?: string[];
 }
+
+export const EvaluateInterviewAnswerOutputSchema = z.object({
+  feedback: z.string().describe("Overall constructive feedback on the user's answer. Should be polite and helpful."),
+  strengths: z.array(z.string()).optional().describe("Specific strengths identified in the answer."),
+  areasForImprovement: z.array(z.string()).optional().describe("Specific areas where the answer could be improved."),
+  score: z.number().min(0).max(100).describe("A numerical score (0-100) evaluating the quality of the answer based on relevance, clarity, completeness, and correctness (if applicable)."),
+  suggestedImprovements: z.array(z.string()).optional().describe("Concrete suggestions for how the user could rephrase or add to their answer to make it stronger."),
+});
+export type EvaluateInterviewAnswerOutput = z.infer<typeof EvaluateInterviewAnswerOutputSchema>;
 
 export interface GenerateOverallInterviewFeedbackOutput {
     overallSummary: string;

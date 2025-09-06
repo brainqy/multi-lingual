@@ -11,7 +11,7 @@
 import { genkit } from 'genkit';
 import { z } from 'genkit';
 import { getGoogleAIPlugin } from '@/ai/genkit';
-import type { EvaluateInterviewAnswerOutput } from '@/types';
+import { EvaluateInterviewAnswerOutputSchema, type EvaluateInterviewAnswerOutput } from '@/types';
 import { AIError } from '@/lib/exceptions';
 
 const BaseInputSchema = z.object({
@@ -25,14 +25,6 @@ const EvaluateInterviewAnswerInputSchema = BaseInputSchema.extend({
   apiKey: z.string().optional(),
 });
 export type EvaluateInterviewAnswerInput = z.infer<typeof EvaluateInterviewAnswerInputSchema>;
-
-const EvaluateInterviewAnswerOutputSchema = z.object({
-  feedback: z.string().describe("Overall constructive feedback on the user's answer. Should be polite and helpful."),
-  strengths: z.array(z.string()).optional().describe("Specific strengths identified in the answer."),
-  areasForImprovement: z.array(z.string()).optional().describe("Specific areas where the answer could be improved."),
-  score: z.number().min(0).max(100).describe("A numerical score (0-100) evaluating the quality of the answer based on relevance, clarity, completeness, and correctness (if applicable)."),
-  suggestedImprovements: z.array(z.string()).optional().describe("Concrete suggestions for how the user could rephrase or add to their answer to make it stronger."),
-});
 
 export async function evaluateInterviewAnswer(
   input: EvaluateInterviewAnswerInput
