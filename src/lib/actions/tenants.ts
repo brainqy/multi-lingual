@@ -121,6 +121,7 @@ export async function createTenantWithAdmin(
                 placeholders: {
                     userName: newManager.name,
                     userEmail: newManager.email,
+                    tenantDomain: newTenant.domain || newTenant.id, // Pass the domain for the link
                 },
             });
              logAction('Welcome email sent to new tenant manager', { email: newManager.email });

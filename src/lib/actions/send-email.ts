@@ -10,6 +10,7 @@ interface EmailPlaceholders {
   userName?: string;
   userEmail?: string;
   tenantName?: string;
+  tenantDomain?: string;
   resetLink?: string;
   appointmentTitle?: string;
   partnerName?: string;
@@ -80,7 +81,8 @@ export async function sendEmail({
         // This is a simplified token generation for demonstration. 
         // In production, use a secure, single-use, expiring token (e.g., JWT, crypto).
         const resetToken = Buffer.from(recipientEmail).toString('base64');
-        const resetUrl = `http://${tenant.domain || 'platform'}.localhost:9002/auth/reset-password?token=${resetToken}`;
+        const subdomain = placeholders.tenantDomain || tenant.domain || tenant.id;
+        const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
         placeholders.resetLink = resetUrl;
     }
 
