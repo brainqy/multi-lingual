@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, X, Send } from 'lucide-react';
-import type { SurveyStep, SurveyOption, UserProfile } from '@/types';
+import type { SurveyStep, SurveyOption, UserProfile, Survey } from '@/types';
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/use-auth';
 import { getSurveyByName, getSurveyForUser, createSurveyResponse } from '@/lib/actions/surveys';
@@ -21,142 +21,188 @@ interface Message {
   content: React.ReactNode;
 }
 
-export default function FloatingMessenger() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeSurveyName, setActiveSurveyName] = useState<string>('');
-  const [currentSurveyDefinition, setCurrentSurveyDefinition] = useState<SurveyStep[]>([]);
-  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [surveyData, setSurveyData] = useState<Record<string, string>>({});
-  const [inputValue, setInputValue] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageIdCounter = useRef(0);
-  const { user } = useAuth();
-  const [isInitialized, setIsInitialized] = useState(false);
+const logger = {
+  log: (message: string, ...args: any[]) => console.log(`[FloatingMessenger] ${message}`, ...args),
+};
 
-  const currentSurveyStep = currentSurveyDefinition.find(step => step.id === currentStepId);
+export default function FloatingMessenger() {
+  logger.log('Component Render Start');
+  const [isOpen, setIsOpen] = useState(false);
+  logger.log('useState: isOpen', { isOpen });
+  const [activeSurvey, setActiveSurvey] = useState<Survey | null>(null);
+  logger.log('useState: activeSurvey', { activeSurvey });
+  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
+  logger.log('useState: currentStepId', { currentStepId });
+  const [messages, setMessages] = useState<Message[]>([]);
+  logger.log('useState: messages', { messages });
+  const [surveyData, setSurveyData] = useState<Record<string, string>>({});
+  logger.log('useState: surveyData', { surveyData });
+  const [inputValue, setInputValue] = useState('');
+  logger.log('useState: inputValue', { inputValue });
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  logger.log('useRef: messagesEndRef');
+  const messageIdCounter = useRef(0);
+  logger.log('useRef: messageIdCounter');
+  const { user } = useAuth();
+  logger.log('useAuth', { user });
+  const [isInitialized, setIsInitialized] = useState(false);
+  logger.log('useState: isInitialized', { isInitialized });
+
+  const currentSurveyStep = activeSurvey?.steps.find(step => step.id === currentStepId);
+  logger.log('derivedState: currentSurveyStep', { currentSurveyStep });
 
   const scrollToBottom = () => {
+    logger.log('scrollToBottom called');
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => {
+    logger.log('useEffect[messages] triggered');
+    scrollToBottom();
+  }, [messages]);
 
   const addMessage = useCallback((type: 'bot' | 'user', content: React.ReactNode) => {
+    logger.log('addMessage called', { type, content });
     setMessages(prev => {
+        logger.log('addMessage: updating messages state');
         const newId = `${Date.now()}-${messageIdCounter.current++}`;
-        return [...prev, { id: newId, type, content }];
+        const newMessages = [...prev, { id: newId, type, content }];
+        logger.log('addMessage: new messages array', { newMessages });
+        return newMessages;
     });
   }, []);
 
   const processStep = useCallback(async (stepId: string | undefined | null) => {
+    logger.log('processStep called', { stepId });
     if (!stepId) {
+      logger.log('processStep: No stepId, ending survey flow.');
       setCurrentStepId(null);
       return;
     }
   
-    const step = currentSurveyDefinition.find(s => s.id === stepId);
+    const step = activeSurvey?.steps.find(s => s.id === stepId);
+    logger.log('processStep: Found step definition', { step });
     if (!step) {
+      logger.log('processStep: Step definition not found, ending survey flow.');
       setCurrentStepId(null);
       return;
     }
   
     if (step.text) {
+      logger.log('processStep: Adding bot message to chat');
       addMessage('bot', step.text);
     }
   
     if (step.isLastStep) {
-      if (user && activeSurveyName) {
+      logger.log('processStep: This is the last step.');
+      if (user && activeSurvey) {
+        logger.log('processStep: Creating survey response in DB', { userId: user.id, surveyName: activeSurvey.name, surveyData });
         await createSurveyResponse({
           userId: user.id,
           userName: user.name,
-          surveyId: activeSurveyName, // This is the survey NAME
+          surveyName: activeSurvey.name,
           data: surveyData,
         });
+        logger.log('processStep: Survey response created.');
       }
       setCurrentStepId(null); // End of survey
       return;
     }
   
     if (step.type === 'botMessage' && step.nextStepId) {
-      // If it's a bot message and not the last step, immediately process the next one.
-      processStep(step.nextStepId);
+      logger.log('processStep: Bot message, processing next step immediately', { nextStepId: step.nextStepId });
+      // Use a small timeout to allow the current message to render first
+      setTimeout(() => processStep(step.nextStepId), 50);
     } else {
-      // If it's a step that requires user input, stop and wait.
+      logger.log('processStep: User input required, setting current step and waiting.', { stepId: step.id });
       setCurrentStepId(step.id);
     }
-  }, [currentSurveyDefinition, addMessage, user, activeSurveyName, surveyData]);
+  }, [activeSurvey, addMessage, user, surveyData]);
 
-  const resetSurvey = useCallback(async (surveyNameToLoad: string) => {
+  const resetSurvey = useCallback(async (surveyToLoad: Survey) => {
+    logger.log('resetSurvey called', { surveyToLoad });
     setMessages([]);
     setSurveyData({});
     setInputValue('');
     messageIdCounter.current = 0;
-    setActiveSurveyName(surveyNameToLoad);
+    setActiveSurvey(surveyToLoad);
     
-    const surveyToStart = await getSurveyByName(surveyNameToLoad);
-    
-    if (surveyToStart && surveyToStart.steps) {
-        setCurrentSurveyDefinition(surveyToStart.steps);
-        const firstStep = surveyToStart.steps[0];
+    if (surveyToLoad && surveyToLoad.steps) {
+        const firstStep = surveyToLoad.steps[0];
         if (firstStep) {
+            logger.log('resetSurvey: Processing first step', { firstStepId: firstStep.id });
             processStep(firstStep.id);
         } else {
+            logger.log('resetSurvey: No first step found.');
             setCurrentStepId(null); 
         }
     } else {
-        setCurrentSurveyDefinition([]);
+        logger.log('resetSurvey: Survey has no steps.');
         setCurrentStepId(null);
     }
   }, [processStep]);
 
   const loadInitialSurvey = useCallback(async () => {
+    logger.log('loadInitialSurvey called');
     if (user && !isInitialized) {
+      logger.log('loadInitialSurvey: User found and not initialized yet. Fetching survey.');
       setIsInitialized(true);
       const survey = await getSurveyForUser(user.id);
+      logger.log('loadInitialSurvey: Fetched survey for user', { survey });
       if (survey) {
-        await resetSurvey(survey.name);
+        await resetSurvey(survey);
+      } else {
+        logger.log('loadInitialSurvey: No survey available for user.');
       }
     }
   }, [user, isInitialized, resetSurvey]);
 
   useEffect(() => {
+    logger.log('useEffect[isOpen] triggered', { isOpen });
     if (isOpen) {
       loadInitialSurvey();
     } else {
-      // Reset initialization state when closed
+      logger.log('useEffect[isOpen]: Chat closed, resetting initialized state.');
       setIsInitialized(false);
     }
   }, [isOpen, loadInitialSurvey]);
 
   const handleOptionSelect = (option: SurveyOption) => {
+    logger.log('handleOptionSelect called', { option });
     addMessage('user', option.text);
     if (currentSurveyStep?.variableName) {
+      logger.log('handleOptionSelect: Saving data to surveyData state', { variableName: currentSurveyStep.variableName, value: option.value });
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
     }
     processStep(option.nextStepId);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    logger.log('handleInputChange called', { value: e.target.value });
     setInputValue(e.target.value);
   };
   
   const handleDropdownChange = (value: string) => {
+    logger.log('handleDropdownChange called', { value });
     if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
     
     const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
+    logger.log('handleDropdownChange: Found label for value', { selectedLabel });
 
     addMessage('user', selectedLabel);
     if (currentSurveyStep.variableName) {
+      logger.log('handleDropdownChange: Saving data to surveyData state', { variableName: currentSurveyStep.variableName, value });
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
     }
     processStep(currentSurveyStep.nextStepId);
   };
 
   const handleInputSubmit = () => {
+    logger.log('handleInputSubmit called', { inputValue });
     if (!inputValue.trim() || !currentSurveyStep) return;
     addMessage('user', inputValue);
     if (currentSurveyStep.variableName) {
+      logger.log('handleInputSubmit: Saving data to surveyData state', { variableName: currentSurveyStep.variableName, value: inputValue });
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
     }
     setInputValue('');
@@ -164,31 +210,43 @@ export default function FloatingMessenger() {
   };
   
   useEffect(() => {
-    const handleAdminSurveyChange = (event: Event) => {
+    const handleAdminSurveyChange = async (event: Event) => {
         const customEvent = event as CustomEvent<string>;
-        if (customEvent.detail && customEvent.detail !== activeSurveyName) {
+        logger.log('handleAdminSurveyChange: "changeActiveSurvey" event received', { detail: customEvent.detail });
+        if (customEvent.detail && customEvent.detail !== activeSurvey?.name) {
             setIsOpen(true); 
-            resetSurvey(customEvent.detail);
+            const surveyToLoad = await getSurveyByName(customEvent.detail);
+            logger.log('handleAdminSurveyChange: Fetched survey by name', { surveyToLoad });
+            if (surveyToLoad) {
+              await resetSurvey(surveyToLoad);
+            }
         }
     };
+    logger.log('useEffect[]: Adding "changeActiveSurvey" event listener');
     window.addEventListener('changeActiveSurvey', handleAdminSurveyChange);
     return () => {
+        logger.log('useEffect[] cleanup: Removing "changeActiveSurvey" event listener');
         window.removeEventListener('changeActiveSurvey', handleAdminSurveyChange);
     };
-  }, [activeSurveyName, resetSurvey]);
+  }, [activeSurvey?.name, resetSurvey]);
 
   if (!isOpen) {
+    logger.log('Render: Messenger is closed.');
     return (
       <Button
         className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50 bg-primary hover:bg-primary/90"
         size="icon"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+            logger.log('onClick: Opening messenger');
+            setIsOpen(true);
+        }}
       >
         <Bot className="h-7 w-7 text-primary-foreground" />
       </Button>
     );
   }
 
+  logger.log('Render: Messenger is open.');
   return (
     <div className="fixed bottom-6 right-6 z-50">
        <Card className="w-80 h-[450px] shadow-xl flex flex-col bg-card text-card-foreground rounded-lg overflow-hidden">
@@ -199,7 +257,10 @@ export default function FloatingMessenger() {
               Assistant
             </CardTitle>
           </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground hover:bg-primary/80" onClick={() => setIsOpen(false)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground hover:bg-primary/80" onClick={() => {
+              logger.log('onClick: Closing messenger');
+              setIsOpen(false);
+          }}>
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
@@ -269,9 +330,14 @@ export default function FloatingMessenger() {
                 </SelectContent>
               </Select>
           )}
-           {!currentSurveyStep && messages.length > 0 && ( 
+           {!currentSurveyStep && messages.length > 0 && activeSurvey && ( 
              <div className="flex flex-col items-center w-full space-y-2">
-                <Button variant="outline" size="sm" onClick={() => resetSurvey(activeSurveyName)} className="w-full">Restart Current Survey</Button>
+                <Button variant="outline" size="sm" onClick={async () => {
+                    logger.log('onClick: Restarting survey');
+                    if (activeSurvey) {
+                      await resetSurvey(activeSurvey);
+                    }
+                }} className="w-full">Restart Current Survey</Button>
                 <Button size="sm" onClick={() => setIsOpen(false)} className="w-full bg-primary hover:bg-primary/90">Close</Button>
              </div>
            )}
