@@ -218,16 +218,7 @@ async function main() {
   });
   console.log('Seeded a sample appointment.');
 
-  await prisma.announcement.create({
-    data: {
-      title: 'Old Event Announcement (for cron test)', content: 'This announcement is from an old event and should be cleaned up by the daily cron job.',
-      startDate: new Date(Date.now() - 86400000 * 40), endDate: new Date(Date.now() - 86400000 * 35),
-      audience: 'All Users', status: 'Archived', createdBy: adminUser.id, tenantId: 'platform',
-      deletedAt: new Date(Date.now() - 86400000 * 31)
-    }
-  });
-  console.log('Seeded a soft-deleted announcement.');
-
+ 
   await prisma.promotionalContent.createMany({
     data: [
       { isActive: true, title: 'Unlock Premium Features!', description: 'Upgrade your experience with advanced analytics, unlimited resume scans, and priority support.', imageUrl: 'https://placehold.co/300x200/008080/FFFFFF?text=Premium', imageAlt: 'Premium features', imageHint: 'premium upgrade', buttonText: 'Learn More', buttonLink: '#', gradientFrom: 'from-primary/80', gradientVia: 'via-primary', gradientTo: 'to-accent/80' },

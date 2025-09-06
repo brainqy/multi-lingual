@@ -143,29 +143,23 @@ export interface PromotionalContent {
   gradientTo?: string;
   targetTenantId?: string | null;
   targetRole?: UserRole | null;
-  createdAt: string;
-  updatedAt: string;
 }
-
-export type AnnouncementStatus = 'Draft' | 'Published' | 'Archived';
-export type AnnouncementAudience = 'All Users' | 'Specific Tenant' | 'Specific Role';
 
 export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  startDate: string;
-  endDate: string | null;
-  status: AnnouncementStatus;
-  createdByUserId: string;
-  createdAt: string;
-  updatedAt: string;
-  tenantId: string | null;
-  deletedAt?: string | null;
-  targetTenantId: string | null;
-  targetRole: UserRole | null;
+  id   ?    :      String    
+  title   :       String
+  content  :      String    
+  startDate :     string | null;
+  endDate   :     string | null;
+  status    :     String    // 'Draft', 'Published', 'Archived'
+  createdBy  :    String
+  createdAt  :    string | null; 
+  updatedAt  :    string | null;  
+  tenantId    :   string | null;
+  deletedAt   :   string | null;
+  targetTenantId :    string
+  targetRole :    UserRole | null;
 }
-
 
 export interface CommunityPost {
   id: string;
