@@ -56,6 +56,10 @@ const jobApplicationSchema = z.object({
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
+// This type represents the form data for a new interview before it's saved.
+type NewInterviewFormData = Omit<Interview, 'id' | 'jobApplicationId'>;
+
+
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -70,7 +74,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   const { t } = useI18n();
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
-  const [newInterview, setNewInterview] = useState<Omit<Interview, 'id'>>({ date: '', type: 'Phone Screen', interviewer: '' });
+  const [newInterview, setNewInterview] = useState<NewInterviewFormData>({ date: '', type: 'Phone Screen', interviewer: '' });
   const [currentNotes, setCurrentNotes] = useState<string[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
 
@@ -121,7 +125,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       return;
     }
     setCurrentInterviews(prev => {
-      const newInterviews = [...prev, { id: `int-${Date.now()}`, ...newInterview }];
+      const newInterviews = [...prev, { id: `int-${Date.now()}`, jobApplicationId: editingApplication?.id || 'temp', ...newInterview }];
       dialogLogger.log("handleAddInterview: updating interviews state.", { newInterviewsCount: newInterviews.length });
       return newInterviews;
     });
