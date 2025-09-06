@@ -1,0 +1,99 @@
+
+{
+  "jobBoard": {
+    "title": "Job Board",
+    "pageDescription": "Explore career opportunities posted by the community and our partners.",
+    "searchPlaceholder": "Search by title, company, or keyword...",
+    "postOpportunity": "Post an Opportunity",
+    "filters": {
+      "title": "Filters",
+      "jobType": "Job Type",
+      "location": "Location",
+      "company": "Company"
+    },
+    "aiRecs": {
+      "title": "AI Job Recommendations",
+      "description": "Get personalized job suggestions based on your profile and interests.",
+      "loading": "Finding jobs for you...",
+      "prompt": "Click \"Get AI Recommendations\" to see personalized suggestions.",
+      "noneFound": "No specific recommendations found at this time. Try adjusting your profile interests or check back later.",
+      "matchStrength": "Match Strength",
+      "reasoning": "Reasoning",
+      "noJobs": "No Jobs to Recommend From",
+      "getRecsButton": "Get AI Recommendations"
+    },
+    "applyButton": "Apply",
+    "interestButton": "Express Interest",
+    "editButton": "Edit",
+    "saveButton": "Save for Later",
+    "posted": "Posted",
+    "dialog": {
+      "editTitle": "Edit Opportunity",
+      "newTitle": "Post New Opportunity",
+      "titleLabel": "Title",
+      "companyLabel": "Company / Organization",
+      "locationLabel": "Location",
+      "typeLabel": "Type",
+      "descriptionLabel": "Description",
+      "linkOptional": "Application Link (Optional)",
+      "saveButton": "Save Changes",
+      "postButton": "Post Opportunity"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "companyRequired": "Company is required",
+      "locationRequired": "Location is required",
+      "descriptionMin": "Description must be at least 10 characters",
+      "invalidUrl": "Must be a valid URL"
+    },
+    "toast": {
+      "updateMock": {
+        "title": "Update Mocked",
+        "description": "Job opening update functionality is for demonstration."
+      },
+      "posted": {
+        "title": "Opportunity Posted",
+        "description": "{title} at {company} has been posted."
+      },
+      "postFailed": {
+        "title": "Posting Failed",
+        "description": "Could not post the opportunity."
+      },
+      "recsReady": {
+        "title": "Recommendations Ready",
+        "description": "AI has suggested some job openings for you."
+      },
+      "recsFailed": {
+        "title": "Recommendation Failed",
+        "description": "Could not fetch job recommendations."
+      },
+      "alreadyTracked": {
+        "title": "Already Tracked",
+        "description": "This job is already in your tracker as '{status}'."
+      },
+      "jobSaved": {
+        "title": "Job Saved!",
+        "description": "{title} at {company} has been saved to your Job Tracker."
+      },
+      "alreadyApplied": {
+        "title": "Already Applied",
+        "description": "You've already marked this job as 'Applied'."
+      },
+      "appTracked": {
+        "title": "Application Tracked",
+        "descriptionUpdate": "{title} status updated to 'Applied'.",
+        "descriptionNew": "{title} at {company} has been added as 'Applied'."
+      }
+    },
+    "loading": "Loading job openings...",
+    "noOpportunities": {
+      "title": "No Opportunities Found",
+      "description": "Try adjusting your search or filters, or be the first to post an opportunity!"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {currentPage} of {totalPages}"
+    }
+  }
+}

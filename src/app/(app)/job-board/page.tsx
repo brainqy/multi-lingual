@@ -24,17 +24,6 @@ import { personalizedJobRecommendations, type PersonalizedJobRecommendationsInpu
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 
-const jobOpeningSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(1, "Title is required"),
-  company: z.string().min(1, "Company is required"),
-  location: z.string().min(1, "Location is required"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  type: z.enum(['Full-time', 'Part-time', 'Internship', 'Contract', 'Mentorship']),
-  applicationLink: z.string().url("Must be a valid URL").optional().or(z.literal('')),
-});
-
-type JobOpeningFormData = z.infer<typeof jobOpeningSchema>;
 type RecommendedJob = PersonalizedJobRecommendationsOutput['recommendedJobs'][0];
 
 const JOB_TYPES: JobOpening['type'][] = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Mentorship'];
@@ -58,6 +47,19 @@ export default function JobBoardPage() {
   const postsPerPage = 9;
 
   const { toast } = useToast();
+
+  const jobOpeningSchema = z.object({
+    id: z.string().optional(),
+    title: z.string().min(1, t("jobBoard.validation.titleRequired")),
+    company: z.string().min(1, t("jobBoard.validation.companyRequired")),
+    location: z.string().min(1, t("jobBoard.validation.locationRequired")),
+    description: z.string().min(10, t("jobBoard.validation.descriptionMin")),
+    type: z.enum(['Full-time', 'Part-time', 'Internship', 'Contract', 'Mentorship']),
+    applicationLink: z.string().url(t("jobBoard.validation.invalidUrl")).optional().or(z.literal('')),
+  });
+
+  type JobOpeningFormData = z.infer<typeof jobOpeningSchema>;
+
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<JobOpeningFormData>({
     resolver: zodResolver(jobOpeningSchema),
     defaultValues: { type: 'Full-time' }
@@ -123,14 +125,14 @@ export default function JobBoardPage() {
     if (!currentUser) return;
     if (editingOpening) {
       // Logic for updating job openings would go here.
-      toast({ title: "Update Mocked", description: "Job opening update functionality is for demonstration."});
+      toast({ title: t("jobBoard.toast.updateMock.title"), description: t("jobBoard.toast.updateMock.description")});
     } else {
       const savedOpening = await addJobOpening(data, currentUser);
       if (savedOpening) {
         setOpenings(prev => [savedOpening, ...prev]);
-        toast({ title: "Opportunity Posted", description: `${data.title} at ${data.company} has been posted.` });
+        toast({ title: t("jobBoard.toast.posted.title"), description: t("jobBoard.toast.posted.description", { title: data.title, company: data.company }) });
       } else {
-        toast({ title: "Posting Failed", description: "Could not post the opportunity.", variant: "destructive" });
+        toast({ title: t("jobBoard.toast.postFailed.title"), description: t("jobBoard.toast.postFailed.description"), variant: "destructive" });
       }
     }
     setIsPostDialogOpen(false);
@@ -182,7 +184,7 @@ export default function JobBoardPage() {
       };
       const result = await personalizedJobRecommendations(input);
       setRecommendedJobs(result.recommendedJobs);
-      toast({ title: "Recommendations Ready", description: "AI has suggested some job openings for you." });
+      toast({ title: t("jobBoard.toast.recsReady.title"), description: t("jobBoard.toast.recsReady.description") });
     } catch (error) {
       console.error("Job recommendation error:", error);
       const errorMessage = (error as any).message || String(error);
@@ -194,7 +196,7 @@ export default function JobBoardPage() {
               duration: 9000,
           });
       } else {
-        toast({ title: "Recommendation Failed", description: "Could not fetch job recommendations.", variant: "destructive" });
+        toast({ title: t("jobBoard.toast.recsFailed.title"), description: t("jobBoard.toast.recsFailed.description"), variant: "destructive" });
       }
     } finally {
       setIsRecLoading(false);
@@ -208,7 +210,7 @@ export default function JobBoardPage() {
     );
 
     if (existingApplication) {
-      toast({ title: "Already Tracked", description: `This job is already in your tracker as '${existingApplication.status}'.`});
+      toast({ title: t("jobBoard.toast.alreadyTracked.title"), description: t("jobBoard.toast.alreadyTracked.description", { status: existingApplication.status })});
       return;
     }
 
@@ -228,7 +230,7 @@ export default function JobBoardPage() {
 
     if (newApplication) {
         setJobApplications(prev => [newApplication, ...prev]);
-        toast({ title: "Job Saved!", description: `${opening.title} at ${opening.company} has been saved to your Job Tracker.` });
+        toast({ title: t("jobBoard.toast.jobSaved.title"), description: t("jobBoard.toast.jobSaved.description", { title: opening.title, company: opening.company }) });
     } else {
         toast({ title: "Error", description: "Could not save job to tracker.", variant: "destructive" });
     }
@@ -246,7 +248,7 @@ export default function JobBoardPage() {
 
     if (existingApplication) {
       if (existingApplication.status === 'Applied') {
-        toast({ title: "Already Applied", description: `You've already marked this job as 'Applied'.` });
+        toast({ title: t("jobBoard.toast.alreadyApplied.title"), description: t("jobBoard.toast.alreadyApplied.description") });
         return;
       }
       const updatedApp = await updateJobApplication(existingApplication.id, {
@@ -256,7 +258,7 @@ export default function JobBoardPage() {
       });
       if (updatedApp) {
         setJobApplications(prev => prev.map(app => app.id === updatedApp.id ? updatedApp : app));
-        toast({ title: "Application Tracked", description: `${opening.title} status updated to 'Applied'.` });
+        toast({ title: t("jobBoard.toast.appTracked.title"), description: t("jobBoard.toast.appTracked.descriptionUpdate", { title: opening.title }) });
       }
     } else {
       const newApplication = await createJobApplication({
@@ -274,7 +276,7 @@ export default function JobBoardPage() {
       });
        if (newApplication) {
         setJobApplications(prev => [newApplication, ...prev]);
-        toast({ title: "Application Tracked", description: `${opening.title} at ${opening.company} has been added as 'Applied'.` });
+        toast({ title: t("jobBoard.toast.appTracked.title"), description: t("jobBoard.toast.appTracked.descriptionNew", { title: opening.title, company: opening.company }) });
        }
     }
   };
@@ -313,13 +315,13 @@ export default function JobBoardPage() {
         <AccordionItem value="filters">
           <AccordionTrigger className="px-6 py-4 hover:no-underline">
             <div className="flex items-center gap-2 text-lg font-semibold">
-              <FilterIcon className="h-5 w-5" /> Filters
+              <FilterIcon className="h-5 w-5" /> {t("jobBoard.filters.title")}
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
               <div>
-                <h4 className="font-medium mb-2">Job Type</h4>
+                <h4 className="font-medium mb-2">{t("jobBoard.filters.jobType")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {JOB_TYPES.map(type => (
@@ -336,7 +338,7 @@ export default function JobBoardPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Location</h4>
+                <h4 className="font-medium mb-2">{t("jobBoard.filters.location")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {uniqueLocations.map(location => (
@@ -353,7 +355,7 @@ export default function JobBoardPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Company</h4>
+                <h4 className="font-medium mb-2">{t("jobBoard.filters.company")}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
                     {uniqueCompanies.map(company => (
@@ -377,22 +379,22 @@ export default function JobBoardPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary"/> AI Job Recommendations
+            <Sparkles className="h-6 w-6 text-primary"/> {t("jobBoard.aiRecs.title")}
           </CardTitle>
-          <CardDescription>Get personalized job suggestions based on your profile and interests.</CardDescription>
+          <CardDescription>{t("jobBoard.aiRecs.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isRecLoading && (
             <div className="text-center py-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-              <p className="mt-2 text-muted-foreground">Finding jobs for you...</p>
+              <p className="mt-2 text-muted-foreground">{t("jobBoard.aiRecs.loading")}</p>
             </div>
           )}
           {!isRecLoading && recommendedJobs === null && !isRecLoading && openings.length > 0 && (
-            <p className="text-muted-foreground text-center py-4">Click "Get AI Recommendations" to see personalized suggestions.</p>
+            <p className="text-muted-foreground text-center py-4">{t("jobBoard.aiRecs.prompt")}</p>
           )}
           {!isRecLoading && recommendedJobs && recommendedJobs.length === 0 && (
-             <p className="text-muted-foreground text-center py-4">No specific recommendations found at this time. Try adjusting your profile interests or check back later.</p>
+             <p className="text-muted-foreground text-center py-4">{t("jobBoard.aiRecs.noneFound")}</p>
           )}
           {!isRecLoading && recommendedJobs && recommendedJobs.length > 0 && (
             <div className="space-y-3">
@@ -403,17 +405,17 @@ export default function JobBoardPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                         <div>
                             <h4 className="font-semibold text-foreground">{recJob.title} at {recJob.company}</h4>
-                            <p className="text-xs text-muted-foreground">Match Strength: <span className="text-primary font-bold">{recJob.matchStrength}%</span></p>
+                            <p className="text-xs text-muted-foreground">{t("jobBoard.aiRecs.matchStrength")}: <span className="text-primary font-bold">{recJob.matchStrength}%</span></p>
                         </div>
                          {originalJob?.applicationLink && (
                            <Button size="sm" asChild className="mt-2 sm:mt-0">
                              <Link href={originalJob.applicationLink} target="_blank" rel="noopener noreferrer">
-                               Apply <ExternalLink className="ml-1 h-3 w-3"/>
+                               {t("jobBoard.applyButton")} <ExternalLink className="ml-1 h-3 w-3"/>
                              </Link>
                            </Button>
                          )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1 italic">Reasoning: {recJob.reasoning}</p>
+                    <p className="text-sm text-muted-foreground mt-1 italic">{t("jobBoard.aiRecs.reasoning")}: {recJob.reasoning}</p>
                   </Card>
                  );
               })}
@@ -423,7 +425,7 @@ export default function JobBoardPage() {
         <CardFooter>
            <Button onClick={handleGetRecommendations} disabled={isRecLoading || openings.length === 0} className="w-full md:w-auto">
             {isRecLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ThumbsUp className="mr-2 h-4 w-4" />}
-            {openings.length === 0 ? "No Jobs to Recommend From" : "Get AI Recommendations"}
+            {openings.length === 0 ? t("jobBoard.aiRecs.noJobs") : t("jobBoard.aiRecs.getRecsButton")}
           </Button>
         </CardFooter>
       </Card>
@@ -438,26 +440,26 @@ export default function JobBoardPage() {
       }}>
         <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{editingOpening ? "Edit" : "Post New"} Opportunity</DialogTitle>
+            <DialogTitle className="text-2xl">{editingOpening ? t("jobBoard.dialog.editTitle") : t("jobBoard.dialog.newTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onPostSubmit)} className="space-y-4 py-4">
             <div>
-              <Label htmlFor="post-title">Title</Label>
+              <Label htmlFor="post-title">{t("jobBoard.dialog.titleLabel")}</Label>
               <Controller name="title" control={control} render={({ field }) => <Input id="post-title" {...field} />} />
               {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
             </div>
             <div>
-              <Label htmlFor="post-company">Company / Organization</Label>
+              <Label htmlFor="post-company">{t("jobBoard.dialog.companyLabel")}</Label>
               <Controller name="company" control={control} render={({ field }) => <Input id="post-company" {...field} />} />
               {errors.company && <p className="text-sm text-destructive mt-1">{errors.company.message}</p>}
             </div>
             <div>
-              <Label htmlFor="post-location">Location</Label>
+              <Label htmlFor="post-location">{t("jobBoard.dialog.locationLabel")}</Label>
               <Controller name="location" control={control} render={({ field }) => <Input id="post-location" {...field} />} />
               {errors.location && <p className="text-sm text-destructive mt-1">{errors.location.message}</p>}
             </div>
             <div>
-              <Label htmlFor="post-type">Type</Label>
+              <Label htmlFor="post-type">{t("jobBoard.dialog.typeLabel")}</Label>
               <Controller
                 name="type"
                 control={control}
@@ -475,18 +477,18 @@ export default function JobBoardPage() {
               {errors.type && <p className="text-sm text-destructive mt-1">{errors.type.message}</p>}
             </div>
             <div>
-              <Label htmlFor="post-description">Description</Label>
+              <Label htmlFor="post-description">{t("jobBoard.dialog.descriptionLabel")}</Label>
               <Controller name="description" control={control} render={({ field }) => <Textarea id="post-description" rows={5} {...field} />} />
               {errors.description && <p className="text-sm text-destructive mt-1">{errors.description.message}</p>}
             </div>
              <div>
-              <Label htmlFor="applicationLink">Application Link (Optional)</Label>
+              <Label htmlFor="applicationLink">{t("jobBoard.dialog.linkOptional")}</Label>
               <Controller name="applicationLink" control={control} render={({ field }) => <Input id="applicationLink" type="url" placeholder="https://example.com/apply" {...field} />} />
               {errors.applicationLink && <p className="text-sm text-destructive mt-1">{errors.applicationLink.message}</p>}
             </div>
             <DialogFooter>
-              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingOpening ? "Save Changes" : "Post Opportunity"}</Button>
+              <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{editingOpening ? t("jobBoard.dialog.saveButton") : t("jobBoard.dialog.postButton")}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -495,14 +497,14 @@ export default function JobBoardPage() {
       {isLoadingOpenings ? (
         <div className="text-center py-12">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="mt-2 text-muted-foreground">Loading job openings...</p>
+          <p className="mt-2 text-muted-foreground">{t("jobBoard.loading")}</p>
         </div>
       ) : filteredOpenings.length === 0 ? (
         <Card className="text-center py-12 shadow-lg">
           <CardHeader>
             <Aperture className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <CardTitle className="text-2xl">No Opportunities Found</CardTitle>
-            <CardDescription>Try adjusting your search or filters, or be the first to post an opportunity!</CardDescription>
+            <CardTitle className="text-2xl">{t("jobBoard.noOpportunities.title")}</CardTitle>
+            <CardDescription>{t("jobBoard.noOpportunities.description")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -544,22 +546,22 @@ export default function JobBoardPage() {
               </CardContent>
               <CardFooter className="border-t pt-4 mt-auto flex justify-between items-center">
                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" /> Posted: {new Date(opening.datePosted).toLocaleDateString()}
+                    <CalendarDays className="h-3 w-3" /> {t("jobBoard.posted")}: {new Date(opening.datePosted).toLocaleDateString()}
                 </p>
                 <div className="flex space-x-2">
                   {isOwnPosting && (
-                    <Button size="sm" variant="outline" onClick={() => openEditPostDialog(opening)} title="Edit Posting">
+                    <Button size="sm" variant="outline" onClick={() => openEditPostDialog(opening)} title={t("jobBoard.editButton")}>
                       <Edit3 className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => handleSaveJob(opening)} title="Save for Later">
+                  <Button size="sm" variant="outline" onClick={() => handleSaveJob(opening)} title={t("jobBoard.saveButton")}>
                      <Bookmark className="h-4 w-4" />
                   </Button>
                   <Button size="sm" variant="default" onClick={() => handleApplyJob(opening)} className="bg-primary hover:bg-primary/90">
                     {opening.applicationLink ? (
-                       <> {opening.type === 'Mentorship' ? 'Express Interest' : 'Apply'} <ExternalLink className="ml-1 h-3 w-3"/> </>
+                       <> {opening.type === 'Mentorship' ? t("jobBoard.interestButton") : t("jobBoard.applyButton")} <ExternalLink className="ml-1 h-3 w-3"/> </>
                     ) : (
-                      opening.type === 'Mentorship' ? 'Express Interest' : 'Apply'
+                      opening.type === 'Mentorship' ? t("jobBoard.interestButton") : t("jobBoard.applyButton")
                     )}
                   </Button>
                 </div>
@@ -576,10 +578,10 @@ export default function JobBoardPage() {
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4" /> Previous
+              <ChevronLeft className="h-4 w-4" /> {t("jobBoard.pagination.previous")}
             </Button>
             <span className="mx-4 text-sm text-muted-foreground">
-              Page {currentPage} of {totalPages}
+              {t("jobBoard.pagination.pageInfo", { currentPage, totalPages })}
             </span>
             <Button
               variant="outline"
@@ -587,7 +589,7 @@ export default function JobBoardPage() {
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
-              Next <ChevronRight className="h-4 w-4" />
+              {t("jobBoard.pagination.next")} <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         )}

@@ -43,6 +43,7 @@ import enJobTracker from '@/locales/en/pages/job-tracker.json';
 import enManagerDashboard from '@/locales/en/pages/manager-dashboard.json';
 import enAdminAnalytics from '@/locales/en/pages/admin-analytics.json';
 import enPromotionalContent from '@/locales/en/pages/promotional-content.json';
+import enJobBoard from '@/locales/en/pages/job-board.json';
 
 import hiAdminDashboard from '@/locales/hi/pages/admin-dashboard.json';
 import hiAffiliates from '@/locales/hi/pages/affiliates.json';
@@ -67,6 +68,7 @@ import hiJobTracker from '@/locales/hi/pages/job-tracker.json';
 import hiManagerDashboard from '@/locales/hi/pages/manager-dashboard.json';
 import hiAdminAnalytics from '@/locales/hi/pages/admin-analytics.json';
 import hiPromotionalContent from '@/locales/hi/pages/promotional-content.json';
+import hiJobBoard from '@/locales/hi/pages/job-board.json';
 
 import mrAdminDashboard from '@/locales/mr/pages/admin-dashboard.json';
 import mrAffiliates from '@/locales/mr/pages/affiliates.json';
@@ -91,6 +93,7 @@ import mrJobTracker from '@/locales/mr/pages/job-tracker.json';
 import mrManagerDashboard from '@/locales/mr/pages/manager-dashboard.json';
 import mrAdminAnalytics from '@/locales/mr/pages/admin-analytics.json';
 import mrPromotionalContent from '@/locales/mr/pages/promotional-content.json';
+import mrJobBoard from '@/locales/mr/pages/job-board.json';
 
 // Merge all page translations
 const enPages = {
@@ -100,7 +103,7 @@ const enPages = {
   ...enFeatureRequests, ...enReferrals, ...enUserSettings, ...enDailyChallenge,
   ...enTranslateTool, ...enAlumniConnect, ...enNumberMatchGame, ...enKbcGame,
   ...enPromoCodes, ...enJobTracker, ...enManagerDashboard, ...enAdminAnalytics,
-  ...enPromotionalContent
+  ...enPromotionalContent, ...enJobBoard
 };
 const hiPages = {
   ...hiAdminDashboard, ...hiAffiliates, ...hiGamification, ...hiMain,
@@ -109,7 +112,7 @@ const hiPages = {
   ...hiFeatureRequests, ...hiReferrals, ...hiUserSettings, ...hiDailyChallenge,
   ...hiTranslateTool, ...hiAlumniConnect, ...hiNumberMatchGame, ...hiKbcGame,
   ...hiPromoCodes, ...hiJobTracker, ...hiManagerDashboard, ...hiAdminAnalytics,
-  ...hiPromotionalContent
+  ...hiPromotionalContent, ...hiJobBoard
 };
 const mrPages = {
   ...mrAdminDashboard, ...mrAffiliates, ...mrGamification, ...mrMain,
@@ -118,7 +121,7 @@ const mrPages = {
   ...mrFeatureRequests, ...mrReferrals, ...mrUserSettings, ...mrDailyChallenge,
   ...mrTranslateTool, ...mrAlumniConnect, ...mrNumberMatchGame, ...mrKbcGame,
   ...mrPromoCodes, ...mrJobTracker, ...mrManagerDashboard, ...mrAdminAnalytics,
-  ...mrPromotionalContent
+  ...mrPromotionalContent, ...mrJobBoard
 };
 
 const enMergedTranslations: Translations = {
