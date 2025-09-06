@@ -54,45 +54,59 @@ export default function FloatingMessenger() {
   }, [isOpen, user, messages.length]);
 
 
-  const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
+  const addMessage = (type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []): Message[] => {
     const newId = `${Date.now()}-${messageIdCounter.current++}`;
-    setMessages(prev => [...prev, { id: newId, type, content }]);
+    batch.push({ id: newId, type, content });
+    return batch;
   };
   
-  const processStep = (step: SurveyStep | undefined) => {
-    if (!step) {
-      setCurrentStepId(null); 
+  const processStep = (stepId: string | undefined | null) => {
+    if (!stepId) {
+      setCurrentStepId(null);
       return;
     }
 
-    if (step.type === 'botMessage') {
-      if (step.text) addMessage('bot', step.text);
-      if (step.isLastStep) {
-        setCurrentStepId(null); 
+    let nextStep: SurveyStep | undefined = currentSurveyDefinition.find(s => s.id === stepId);
+    let messageBatch: Message[] = [];
+
+    // Loop through consecutive bot messages to batch them
+    while (nextStep && nextStep.type === 'botMessage') {
+      if (nextStep.text) {
+        messageBatch = addMessage('bot', nextStep.text, messageBatch);
+      }
+      if (nextStep.isLastStep) {
+        setCurrentStepId(null);
         if (user && activeSurveyName) {
-            createSurveyResponse({
-                userId: user.id,
-                userName: user.name,
-                surveyId: activeSurveyName, // In a real app, you'd link by ID
-                surveyName: activeSurveyName,
-                data: surveyData,
-            });
+          createSurveyResponse({
+            userId: user.id,
+            userName: user.name,
+            surveyId: activeSurveyName,
+            surveyName: activeSurveyName,
+            data: surveyData,
+          });
         }
-      } else if (step.nextStepId) {
-        const nextStep = currentSurveyDefinition.find(s => s.id === step.nextStepId);
-        if (nextStep && nextStep.type === 'botMessage') {
-           processStep(nextStep); 
-        } else {
-           setCurrentStepId(step.nextStepId || null);
-        }
+        nextStep = undefined; // End the loop
       } else {
-         setCurrentStepId(null); 
+        const nextStepId = nextStep.nextStepId;
+        nextStep = nextStepId ? currentSurveyDefinition.find(s => s.id === nextStepId) : undefined;
       }
-    } else {
-      if (step.text) { 
-        addMessage('bot', step.text);
+    }
+
+    // Add all batched bot messages to state at once
+    if (messageBatch.length > 0) {
+      setMessages(prev => [...prev, ...messageBatch]);
+    }
+
+    // If the loop ended on a user input step, set it as the current step
+    if (nextStep && nextStep.type !== 'botMessage') {
+      if (nextStep.text) {
+        // This is the prompt for the user input, so add it.
+        setMessages(prev => [...prev, ...addMessage('bot', nextStep.text)]);
       }
-      setCurrentStepId(step.id);
+      setCurrentStepId(nextStep.id);
+    } else if (!nextStep) {
+      // Loop ended because there are no more steps
+      setCurrentStepId(null);
     }
   };
 
@@ -102,8 +116,7 @@ export default function FloatingMessenger() {
     if (currentSurveyStep?.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
     }
-    const nextStep = currentSurveyDefinition.find(s => s.id === option.nextStepId);
-    processStep(nextStep);
+    processStep(option.nextStepId);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -119,8 +132,7 @@ export default function FloatingMessenger() {
      if (currentSurveyStep.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
     }
-    const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
-    processStep(nextStep);
+    processStep(currentSurveyStep.nextStepId);
   };
 
   const handleInputSubmit = () => {
@@ -130,8 +142,7 @@ export default function FloatingMessenger() {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
     }
     setInputValue('');
-    const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
-    processStep(nextStep);
+    processStep(currentSurveyStep.nextStepId);
   };
   
   const resetSurvey = async (surveyNameToLoad: string) => {
@@ -147,12 +158,7 @@ export default function FloatingMessenger() {
         setCurrentSurveyDefinition(surveyToStart.steps);
         const firstStep = surveyToStart.steps[0];
         if (firstStep) {
-            setCurrentStepId(firstStep.id);
-            if(firstStep.type === 'botMessage') {
-                processStep(firstStep);
-            } else if (firstStep.text) { 
-                addMessage('bot', firstStep.text);
-            }
+            processStep(firstStep.id);
         } else {
             setCurrentStepId(null); 
         }
