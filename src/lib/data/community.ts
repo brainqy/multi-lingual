@@ -1,5 +1,4 @@
-
-// This file is now obsolete and its contents have been migrated to the database.
+// This file is now obsolete as community data is managed in the database via prisma/seed.ts.
 // It can be removed.
 
     
