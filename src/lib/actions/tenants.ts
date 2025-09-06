@@ -74,21 +74,24 @@ export async function createTenantWithAdmin(
             return { success: false, tenant: null, error: 'An account with this admin email already exists.' };
         }
 
-        // Check if the tenant domain is already in use
-        if (tenantData.domain) {
-            const existingTenantDomain = await db.tenant.findUnique({
-                where: { domain: tenantData.domain },
+        const tenantIdentifier = tenantData.domain?.trim() ? tenantData.domain.trim().toLowerCase() : undefined;
+
+        // Check if the tenant domain/id is already in use
+        if (tenantIdentifier) {
+            const existingTenant = await db.tenant.findFirst({
+                where: { OR: [{ id: tenantIdentifier }, { domain: tenantIdentifier }] }
             });
-            if (existingTenantDomain) {
-                logError('[TenantAction] Tenant domain already exists', {}, { domain: tenantData.domain });
-                return { success: false, tenant: null, error: 'This tenant domain is already taken. Please choose another.' };
+            if (existingTenant) {
+                logError('[TenantAction] Tenant domain/ID already exists', {}, { identifier: tenantIdentifier });
+                return { success: false, tenant: null, error: 'This tenant domain or ID is already taken. Please choose another.' };
             }
         }
         
         const newTenant = await db.tenant.create({
             data: {
+                id: tenantIdentifier, // Use domain as ID if provided, otherwise Prisma generates one
                 name: tenantData.name,
-                domain: tenantData.domain,
+                domain: tenantIdentifier,
                 settings: {
                     create: {
                         allowPublicSignup: tenantData.settings.allowPublicSignup,
@@ -114,9 +117,8 @@ export async function createTenantWithAdmin(
         });
         
         if (newManager) {
-            const resetToken = Buffer.from(newManager.email).toString('base64');
-            const subdomain = newTenant.domain || newTenant.id;
-            const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
+            // Use the tenant's actual ID (which could be the domain) for the subdomain
+            const subdomain = newTenant.id;
             
             await sendEmail({
                 tenantId: newTenant.id,
@@ -125,7 +127,7 @@ export async function createTenantWithAdmin(
                 placeholders: {
                     userName: newManager.name,
                     userEmail: newManager.email,
-                    resetLink: resetUrl,
+                    tenantDomain: subdomain, // Pass the correct identifier for link generation
                 },
             });
              logAction('Welcome email sent to new tenant manager', { email: newManager.email });
@@ -137,8 +139,8 @@ export async function createTenantWithAdmin(
         logError('[TenantAction] Error creating tenant with admin', error, { tenantName: tenantData.name });
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             // P2002 is the unique constraint violation code
-            if (error.code === 'P2002' && (error.meta?.target as string[])?.includes('domain')) {
-                return { success: false, tenant: null, error: 'This tenant domain is already taken. Please choose another.' };
+            if (error.code === 'P2002') {
+                return { success: false, tenant: null, error: 'This tenant domain or ID is already taken. Please choose another.' };
             }
         }
         return { success: false, tenant: null, error: 'An unexpected error occurred.' };

@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { getTenantEmailTemplates } from './email-templates';
 import nodemailer from 'nodemailer';
+import { EmailTemplateType } from '@prisma/client';
 
 interface EmailPlaceholders {
   userName?: string;
@@ -36,7 +37,7 @@ export async function sendEmail({
 }: {
   tenantId: string;
   recipientEmail: string;
-  type: 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
+  type: EmailTemplateType;
   placeholders: EmailPlaceholders;
 }) {
   logAction('Attempting to send email via Gmail', { recipientEmail, type, tenantId });
@@ -76,17 +77,10 @@ export async function sendEmail({
     let subject = template.subject;
     let body = template.body;
     
-    // For WELCOME email, we must generate a password reset link
-    if (type === 'WELCOME' && !placeholders.resetLink) {
-        // This is a simplified token generation for demonstration. 
-        // In production, use a secure, single-use, expiring token (e.g., JWT, crypto).
+    // For WELCOME email, we must generate a password reset link from the provided placeholder
+    if (type === 'TENANT_WELCOME' && placeholders.tenantDomain) {
         const resetToken = Buffer.from(recipientEmail).toString('base64');
-        // The `tenantDomain` placeholder is correctly set in `createTenantWithAdmin` to be either the domain or the ID.
         const subdomain = placeholders.tenantDomain; 
-        if (!subdomain) {
-            logError('[SendEmail] Subdomain for reset link is missing in placeholders.', new Error('Missing tenantDomain placeholder'), { tenantId, type });
-            return;
-        }
         const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
         placeholders.resetLink = resetUrl;
     }
