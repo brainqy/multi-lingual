@@ -145,17 +145,20 @@ export interface PromotionalContent {
   targetRole?: UserRole | null;
 }
 
+export const ANNOUNCEMENT_STATUSES = ['Draft', 'Published', 'Archived'] as const;
+export type AnnouncementStatus = (typeof ANNOUNCEMENT_STATUSES)[number];
+
 export interface Announcement {
   id: string;
   title: string;
   content: string;
   startDate: string;
   endDate?: string | null;
-  status: 'Draft' | 'Published' | 'Archived';
+  status: AnnouncementStatus;
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;
-  tenantId: string;
+  tenantId: string | null;
   targetTenantId?: string | null;
   targetRole?: UserRole | null;
 }
