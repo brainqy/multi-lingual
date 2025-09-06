@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Tenant-Id', tenantId);
 
   // Redirect root path of subdomains to login
-  if (potentialSubdomain && (pathname === '/' || pathname === '/landing')) {
+  if (potentialSubdomain && (pathname === '/')) {
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
