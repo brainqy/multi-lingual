@@ -36,8 +36,8 @@ const promoSchema = z.object({
   gradientFrom: z.string().optional(),
   gradientVia: z.string().optional(),
   gradientTo: z.string().optional(),
-  audience: z.enum(['All Users', 'Specific Tenant', 'Specific Role']),
-  audienceTarget: z.string().optional(),
+  targetTenantId: z.string().optional(),
+  targetRole: z.string().optional(),
 });
 type PromoFormData = z.infer<typeof promoSchema>;
 
@@ -55,8 +55,6 @@ export default function PromotionalContentPage() {
     resolver: zodResolver(promoSchema),
   });
   
-  const watchedAudience = watch("audience");
-
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -79,8 +77,8 @@ export default function PromotionalContentPage() {
     setEditingContent(content);
     reset({
         ...content,
-        audience: content.audience || 'All Users',
-        audienceTarget: content.audienceTarget || '',
+        targetTenantId: content.targetTenantId || 'all',
+        targetRole: content.targetRole || 'all',
     });
     setIsDialogOpen(true);
   };
@@ -98,16 +96,19 @@ export default function PromotionalContentPage() {
       gradientFrom: 'from-primary/80',
       gradientVia: 'via-primary',
       gradientTo: 'to-accent/80',
-      audience: 'All Users',
-      audienceTarget: '',
+      targetTenantId: 'all',
+      targetRole: 'all',
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = async (data: PromoFormData) => {
-    const audienceTarget = data.audience === 'All Users' ? null : data.audienceTarget;
-    const finalData = { ...data, audienceTarget };
-
+    const finalData = {
+      ...data,
+      targetTenantId: data.targetTenantId === 'all' ? null : data.targetTenantId,
+      targetRole: data.targetRole === 'all' ? null : data.targetRole as UserRole,
+    };
+    
     if (editingContent) {
       const updated = await updatePromotionalContent(editingContent.id, finalData);
       if (updated) {
@@ -135,13 +136,9 @@ export default function PromotionalContentPage() {
   };
   
   const getAudienceDisplay = (item: PromotionalContent) => {
-    if (item.audience === 'Specific Tenant') {
-      return tenants.find(t => t.id === item.audienceTarget)?.name || item.audienceTarget;
-    }
-    if (item.audience === 'Specific Role') {
-      return item.audienceTarget;
-    }
-    return 'All Users';
+    const tenantName = item.targetTenantId ? tenants.find(t => t.id === item.targetTenantId)?.name || item.targetTenantId : 'All Tenants';
+    const roleName = item.targetRole ? item.targetRole.charAt(0).toUpperCase() + item.targetRole.slice(1) : 'All Roles';
+    return `${tenantName} / ${roleName}`;
   };
 
   return (
@@ -173,7 +170,6 @@ export default function PromotionalContentPage() {
                       <TableRow>
                           <TableHead>{t("promotionalContent.table.title")}</TableHead>
                           <TableHead>Audience</TableHead>
-                          <TableHead>Target</TableHead>
                           <TableHead>{t("promotionalContent.table.status")}</TableHead>
                           <TableHead className="text-right">{t("promotionalContent.table.actions")}</TableHead>
                       </TableRow>
@@ -182,7 +178,6 @@ export default function PromotionalContentPage() {
                       {contentItems.map(item => (
                           <TableRow key={item.id}>
                               <TableCell className="font-medium">{item.title}</TableCell>
-                              <TableCell>{item.audience || 'All Users'}</TableCell>
                               <TableCell className="capitalize">{getAudienceDisplay(item)}</TableCell>
                               <TableCell>
                                 <span className={`px-2 py-0.5 text-xs rounded-full ${item.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
@@ -236,26 +231,13 @@ export default function PromotionalContentPage() {
                       </div>
                   </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="audience">Audience</Label>
-                        <Controller name="audience" control={control} render={({ field }) => (
-                           <Select onValueChange={field.onChange} value={field.value || 'All Users'}>
-                              <SelectTrigger><SelectValue/></SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="All Users">All Users</SelectItem>
-                                  <SelectItem value="Specific Tenant">Specific Tenant</SelectItem>
-                                  <SelectItem value="Specific Role">Specific Role</SelectItem>
-                              </SelectContent>
-                           </Select>
-                        )} />
-                      </div>
-                      {watchedAudience === 'Specific Tenant' && (
                         <div>
-                          <Label htmlFor="audienceTarget">Target Tenant</Label>
-                          <Controller name="audienceTarget" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value || ''}>
-                               <SelectTrigger><SelectValue placeholder="Select a tenant"/></SelectTrigger>
+                          <Label htmlFor="targetTenantId">Target Tenant</Label>
+                          <Controller name="targetTenantId" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                               <SelectTrigger><SelectValue/></SelectTrigger>
                                <SelectContent>
+                                   <SelectItem value="all">All Tenants</SelectItem>
                                    {tenants.map(tenant => (
                                        <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
                                    ))}
@@ -263,14 +245,13 @@ export default function PromotionalContentPage() {
                             </Select>
                           )} />
                         </div>
-                      )}
-                      {watchedAudience === 'Specific Role' && (
                         <div>
-                          <Label htmlFor="audienceTarget">Target Role</Label>
-                          <Controller name="audienceTarget" control={control} render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value || ''}>
-                               <SelectTrigger><SelectValue placeholder="Select a role"/></SelectTrigger>
+                          <Label htmlFor="targetRole">Target Role</Label>
+                          <Controller name="targetRole" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                               <SelectTrigger><SelectValue/></SelectTrigger>
                                <SelectContent>
+                                   <SelectItem value="all">All Roles</SelectItem>
                                    <SelectItem value="user">User</SelectItem>
                                    <SelectItem value="manager">Manager</SelectItem>
                                    <SelectItem value="admin">Admin</SelectItem>
@@ -278,7 +259,6 @@ export default function PromotionalContentPage() {
                             </Select>
                           )} />
                         </div>
-                      )}
                   </div>
                   <div className="flex items-center space-x-2 pt-2">
                     <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />

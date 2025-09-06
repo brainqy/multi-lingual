@@ -141,8 +141,8 @@ export interface PromotionalContent {
   gradientFrom?: string;
   gradientVia?: string;
   gradientTo?: string;
-  audienceTarget?: string | null;
-  audience?: string | null;
+  targetTenantId?: string | null;
+  targetRole?: UserRole | null;
 }
 
 export interface CommunityPost {
