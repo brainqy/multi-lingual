@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit3, Trash2, Megaphone, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Announcement, AnnouncementStatus, AnnouncementAudience, Tenant } from "@/types";
+import type { Announcement, AnnouncementStatus, Tenant, UserRole } from "@/types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,8 +30,8 @@ const announcementSchemaBase = z.object({
   content: z.string().min(10, "Content must be at least 10 characters.").max(2000, "Content cannot exceed 2000 characters."),
   startDate: z.date({ required_error: "Start date is required" }),
   endDate: z.date().optional(),
-  audience: z.enum(['All Users', 'Specific Tenant', 'Specific Role']),
-  audienceTarget: z.string().optional(),
+  targetTenantId: z.string().optional(),
+  targetRole: z.string().optional(),
   status: z.enum(['Draft', 'Published', 'Archived']),
 });
 
@@ -73,19 +73,9 @@ export default function AnnouncementManagementPage() {
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<AnnouncementFormData>({
     resolver: zodResolver(translatedAnnouncementSchema),
-    defaultValues: { status: 'Draft', audience: currentUser?.role === 'manager' ? 'Specific Tenant' : 'All Users' }
+    defaultValues: { status: 'Draft', targetTenantId: 'all', targetRole: 'all' }
   });
-
-  const watchedAudience = watch("audience");
   
-  useEffect(() => {
-    if (currentUser?.role === 'manager') {
-      setValue('audience', 'Specific Tenant');
-      setValue('audienceTarget', currentUser.tenantId || '');
-    }
-  }, [currentUser?.role, currentUser?.tenantId, setValue]);
-
-
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
     return <AccessDeniedMessage />;
   }
@@ -96,14 +86,14 @@ export default function AnnouncementManagementPage() {
       content: data.content,
       startDate: data.startDate.toISOString(),
       endDate: data.endDate ? data.endDate.toISOString() : undefined,
-      audience: data.audience as AnnouncementAudience,
-      audienceTarget: data.audience === 'Specific Tenant' ? data.audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
+      targetTenantId: data.targetTenantId === 'all' ? null : data.targetTenantId,
+      targetRole: data.targetRole === 'all' ? null : data.targetRole as UserRole,
       status: data.status as AnnouncementStatus,
-      createdBy: currentUser.id,
+      createdByUserId: currentUser.id,
     };
 
     if (editingAnnouncement) {
-      if (currentUser.role === 'manager' && editingAnnouncement.createdBy !== currentUser.id && editingAnnouncement.tenantId !== currentUser.tenantId && editingAnnouncement.audience !== 'All Users') {
+      if (currentUser.role === 'manager' && editingAnnouncement.createdByUserId !== currentUser.id && editingAnnouncement.tenantId !== currentUser.tenantId) {
         toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
         return;
       }
@@ -120,18 +110,18 @@ export default function AnnouncementManagementPage() {
       }
     }
     setIsFormDialogOpen(false);
-    reset({ title: '', content: '', audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users', audienceTarget: currentUser.role === 'manager' ? currentUser.tenantId : '', status: 'Draft' });
+    reset({ title: '', content: '', targetTenantId: 'all', targetRole: 'all', status: 'Draft' });
     setEditingAnnouncement(null);
   };
 
   const openNewAnnouncementDialog = () => {
     setEditingAnnouncement(null);
-    reset({ title: '', content: '', startDate: new Date(), audience: currentUser.role === 'manager' ? 'Specific Tenant' : 'All Users', audienceTarget: currentUser.role === 'manager' ? currentUser.tenantId : '', status: 'Draft' });
+    reset({ title: '', content: '', startDate: new Date(), targetTenantId: 'all', targetRole: 'all', status: 'Draft' });
     setIsFormDialogOpen(true);
   };
 
   const openEditAnnouncementDialog = (announcement: Announcement) => {
-     if (currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users') {
+     if (currentUser.role === 'manager' && announcement.createdByUserId !== currentUser.id && announcement.tenantId !== currentUser.tenantId) {
       toast({ title: t("announcementsAdmin.toast.permissionDeniedEdit.title"), description: t("announcementsAdmin.toast.permissionDeniedEdit.description"), variant: "destructive" });
       return;
     }
@@ -140,15 +130,15 @@ export default function AnnouncementManagementPage() {
     setValue('content', announcement.content);
     setValue('startDate', new Date(announcement.startDate));
     if (announcement.endDate) setValue('endDate', new Date(announcement.endDate));
-    setValue('audience', announcement.audience);
-    setValue('audienceTarget', announcement.audienceTarget || (currentUser.role === 'manager' && announcement.audience === 'Specific Tenant' ? currentUser.tenantId : ''));
+    setValue('targetTenantId', announcement.targetTenantId || 'all');
+    setValue('targetRole', announcement.targetRole || 'all');
     setValue('status', announcement.status);
     setIsFormDialogOpen(true);
   };
 
   const handleDeleteAnnouncement = async (announcementId: string) => {
     const announcementToDelete = announcements.find(a => a.id === announcementId);
-     if (currentUser.role === 'manager' && announcementToDelete && announcementToDelete.createdBy !== currentUser.id && announcementToDelete.tenantId !== currentUser.tenantId && announcementToDelete.audience !== 'All Users') {
+     if (currentUser.role === 'manager' && announcementToDelete && announcementToDelete.createdByUserId !== currentUser.id && announcementToDelete.tenantId !== currentUser.tenantId) {
       toast({ title: t("announcementsAdmin.toast.permissionDeniedDelete.title"), description: t("announcementsAdmin.toast.permissionDeniedDelete.description"), variant: "destructive" });
       return;
     }
@@ -165,7 +155,6 @@ export default function AnnouncementManagementPage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <Megaphone className="h-8 w-8" /> 
           {t("announcementsAdmin.title", { default: "Announcements Management" })} 
-          {currentUser.role === 'manager' && ` (${t("announcementsAdmin.manageTenant", { default: "Manage announcements for {tenantId}", tenantId: currentUser.tenantId || "Your Tenant" })})`}
         </h1>
         <Button onClick={openNewAnnouncementDialog} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <PlusCircle className="mr-2 h-5 w-5" /> {t("announcementsAdmin.createNewButton", { default: "Create New Announcement" })}
@@ -212,45 +201,27 @@ export default function AnnouncementManagementPage() {
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="announcement-audience">{t("announcementsAdmin.dialog.audienceLabel", { default: "Audience" })}</Label>
-                <Controller name="audience" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={currentUser.role === 'manager' && editingAnnouncement?.audience !== 'Specific Tenant'}>
-                    <SelectTrigger id="announcement-audience"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {currentUser.role === 'admin' && <SelectItem value="All Users">{t("announcementsAdmin.dialog.audienceAllUsers", { default: "All Users (Platform-wide)" })}</SelectItem>}
-                      <SelectItem value="Specific Tenant">{t("announcementsAdmin.dialog.audienceSpecificTenant", { default: "Specific Tenant" })}</SelectItem>
-                      {currentUser.role === 'admin' && <SelectItem value="Specific Role">{t("announcementsAdmin.dialog.audienceSpecificRole", { default: "Specific Role" })}</SelectItem>}
-                    </SelectContent>
-                  </Select>
-                )} />
-              </div>
-              {watchedAudience === 'Specific Tenant' && (
-                <div>
-                  <Label htmlFor="announcement-audienceTarget">{t("announcementsAdmin.dialog.targetTenantLabel", { default: "Target Tenant" })}</Label>
-                  <Controller name="audienceTarget" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={currentUser.role === 'manager'}>
-                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder={t("announcementsAdmin.dialog.selectTenantPlaceholder", { default: "Select a tenant" })} /></SelectTrigger>
+               <div>
+                  <Label htmlFor="targetTenantId">{t("announcementsAdmin.dialog.targetTenantLabel", { default: "Target Tenant" })}</Label>
+                  <Controller name="targetTenantId" control={control} render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value || 'all'} disabled={currentUser.role === 'manager'}>
+                      <SelectTrigger id="targetTenantId"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {currentUser.role === 'manager' ? (
-                           <SelectItem value={currentUser.tenantId!}>{tenants.find(t=>t.id === currentUser.tenantId)?.name || currentUser.tenantId}</SelectItem>
-                        ) : (
-                            tenants.map(tenant => (
-                                <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
-                            ))
-                        )}
+                        <SelectItem value="all">{t("announcementsAdmin.dialog.audienceAllUsers", { default: "All Users (Platform-wide)" })}</SelectItem>
+                        {tenants.map(tenant => (
+                          <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )} />
                 </div>
-              )}
-              {currentUser.role === 'admin' && watchedAudience === 'Specific Role' && (
-                 <div>
-                  <Label htmlFor="announcement-audienceTarget">{t("announcementsAdmin.dialog.targetRoleLabel", { default: "Target Role" })}</Label>
-                  <Controller name="audienceTarget" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="announcement-audienceTarget"><SelectValue placeholder={t("announcementsAdmin.dialog.selectRolePlaceholder", { default: "Select a role" })} /></SelectTrigger>
+                <div>
+                  <Label htmlFor="targetRole">{t("announcementsAdmin.dialog.targetRoleLabel", { default: "Target Role" })}</Label>
+                  <Controller name="targetRole" control={control} render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                      <SelectTrigger id="targetRole"><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="all">{t("announcementsAdmin.dialog.audienceAllRoles", { default: "All Roles" })}</SelectItem>
                         <SelectItem value="user">{t("announcementsAdmin.dialog.roleUser", { default: "User" })}</SelectItem>
                         <SelectItem value="manager">{t("announcementsAdmin.dialog.roleManager", { default: "Manager" })}</SelectItem>
                         <SelectItem value="admin">{t("announcementsAdmin.dialog.roleAdmin", { default: "Admin" })}</SelectItem>
@@ -258,7 +229,6 @@ export default function AnnouncementManagementPage() {
                     </Select>
                   )} />
                 </div>
-              )}
             </div>
             <div>
               <Label htmlFor="announcement-status">{t("announcementsAdmin.dialog.statusLabel", { default: "Status" })}</Label>
@@ -320,17 +290,16 @@ export default function AnnouncementManagementPage() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {t(`announcementsAdmin.dialog.audience${announcement.audience.replace(/\s/g, '')}` as any, { default: announcement.audience })}
-                      {announcement.audienceTarget && ` ${t("announcementsAdmin.audienceTargetDisplay", { default: "(Target: {target})", target: (announcement.audience === 'Specific Tenant' ? tenants.find(t=>t.id === announcement.audienceTarget)?.name || announcement.audienceTarget : announcement.audienceTarget) })}`}
-                      {announcement.audience === 'All Users' && ` ${t("announcementsAdmin.audiencePlatformWide", { default: "(Platform-wide)" })}`}
+                       {announcement.targetTenantId ? tenants.find(t=>t.id === announcement.targetTenantId)?.name || announcement.targetTenantId : "Platform-wide"}
+                       {announcement.targetRole && ` / ${announcement.targetRole}`}
                     </TableCell>
                     <TableCell>{format(new Date(announcement.startDate), "MMM dd, yyyy")}</TableCell>
                     <TableCell>{announcement.endDate ? format(new Date(announcement.endDate), "MMM dd, yyyy") : t("announcementsAdmin.endDateOngoing", { default: "Ongoing" })}</TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => openEditAnnouncementDialog(announcement)} disabled={currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users'}>
+                      <Button variant="outline" size="sm" onClick={() => openEditAnnouncementDialog(announcement)} disabled={currentUser.role === 'manager' && announcement.createdByUserId !== currentUser.id && announcement.tenantId !== currentUser.tenantId}>
                         <Edit3 className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteAnnouncement(announcement.id)} disabled={currentUser.role === 'manager' && announcement.createdBy !== currentUser.id && announcement.tenantId !== currentUser.tenantId && announcement.audience !== 'All Users'}>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteAnnouncement(announcement.id)} disabled={currentUser.role === 'manager' && announcement.createdByUserId !== currentUser.id && announcement.tenantId !== currentUser.tenantId}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

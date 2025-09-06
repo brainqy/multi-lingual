@@ -143,9 +143,12 @@ export interface PromotionalContent {
   gradientTo?: string;
   targetTenantId?: string | null;
   targetRole?: UserRole | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type AnnouncementStatus = 'Draft' | 'Published' | 'Archived';
+export type AnnouncementAudience = 'All Users' | 'Specific Tenant' | 'Specific Role';
 
 export interface Announcement {
   id: string;
@@ -158,9 +161,11 @@ export interface Announcement {
   createdAt: string;
   updatedAt: string;
   tenantId: string | null;
+  deletedAt?: string | null;
   targetTenantId: string | null;
   targetRole: UserRole | null;
 }
+
 
 export interface CommunityPost {
   id: string;
@@ -1019,5 +1024,3 @@ export interface BlogGenerationSettings {
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
   lastGenerated?: string;
 }
-
-    

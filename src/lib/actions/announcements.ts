@@ -30,15 +30,12 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
         ],
         AND: {
             OR: [
-              { audience: 'All Users' },
-              {
-                audience: 'Specific Tenant',
-                audienceTarget: currentUser.tenantId,
-              },
-              {
-                audience: 'Specific Role',
-                audienceTarget: currentUser.role,
-              },
+              { targetTenantId: null }, // Platform-wide
+              { targetTenantId: currentUser.tenantId },
+            ],
+            OR: [
+              { targetRole: null }, // All roles
+              { targetRole: currentUser.role },
             ],
         }
       },
@@ -65,7 +62,7 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
     if (tenantId) {
         whereClause.OR = [
             { tenantId: tenantId },
-            { audience: 'All Users' } 
+            { targetTenantId: null } // Managers can see platform-wide announcements
         ];
     }
     
@@ -91,11 +88,11 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
 export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
   const headersList = headers();
   const tenantId = headersList.get('X-Tenant-Id') || 'platform';
-  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy, tenantId });
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdByUserId, tenantId });
   try {
     const dataForDb = {
       ...announcementData,
-      tenantId: announcementData.audience === 'Specific Tenant' ? announcementData.audienceTarget : tenantId,
+      tenantId: announcementData.targetTenantId || tenantId, // Assign to target tenant or creator's tenant
     };
     const newAnnouncement = await db.announcement.create({
       data: dataForDb,
