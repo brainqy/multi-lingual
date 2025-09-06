@@ -44,8 +44,20 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
  */
 export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
   try {
+    const { tenantId, ...restOfData } = surveyData;
+    const dataForDb: any = {
+      ...restOfData,
+      steps: restOfData.steps as any, // Cast steps to any to satisfy Prisma's JsonValue type
+    };
+    if (tenantId) {
+      dataForDb.tenant = {
+        connect: {
+          id: tenantId
+        }
+      };
+    }
     const newSurvey = await db.survey.create({
-      data: surveyData,
+      data: dataForDb,
     });
     return newSurvey as unknown as Survey;
   } catch (error) {
@@ -53,6 +65,7 @@ export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>)
     return null;
   }
 }
+
 
 /**
  * Fetches all survey responses, optionally scoped by tenant.
@@ -83,8 +96,18 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
  */
 export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate'>): Promise<SurveyResponse | null> {
   try {
+    const { tenantId, ...restOfData } = responseData;
+
+    const dataForDb: any = {
+        ...restOfData,
+        data: responseData.data as any,
+        tenant: {
+            connect: { id: tenantId }
+        }
+    };
+    
     const newResponse = await db.surveyResponse.create({
-      data: responseData,
+      data: dataForDb,
     });
     return newResponse as unknown as SurveyResponse;
   } catch (error) {
