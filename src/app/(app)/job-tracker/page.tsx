@@ -108,7 +108,6 @@ export default function JobTrackerPage() {
       const dataToCreate = {
         ...dataForServer,
         userId: currentUser.id,
-        tenantId: currentUser.tenantId,
       };
       result = await createJobApplication(dataToCreate as Omit<JobApplication, 'id'>);
       if (result) {

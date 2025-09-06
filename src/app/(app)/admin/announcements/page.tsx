@@ -113,7 +113,7 @@ export default function AnnouncementManagementPage() {
         toast({ title: t("announcementsAdmin.toast.announcementUpdated.title"), description: t("announcementsAdmin.toast.announcementUpdated.description", { title: data.title }) });
       }
     } else {
-      const created = await createAnnouncement(announcementData as Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>);
+      const created = await createAnnouncement(announcementData as Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>);
       if (created) {
         setAnnouncements(prev => [created, ...prev]);
         toast({ title: t("announcementsAdmin.toast.announcementCreated.title"), description: t("announcementsAdmin.toast.announcementCreated.description", { title: data.title }) });

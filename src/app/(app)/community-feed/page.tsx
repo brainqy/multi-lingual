@@ -256,7 +256,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'> = {
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
@@ -350,7 +350,7 @@ export default function CommunityFeedPage() {
     if (updatedPost) {
       setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
       
-      const newAppointmentData: Omit<Appointment, 'id' | 'tenantId'> = {
+      const newAppointmentData: Omit<Appointment, 'id'> = {
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
           title: `Assigned Request: ${postToUpdate.content?.substring(0, 30)}...`,

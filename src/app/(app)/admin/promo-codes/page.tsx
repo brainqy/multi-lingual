@@ -65,7 +65,6 @@ export default function PromoCodeManagementPage() {
   const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const codes = await getPromoCodes();
     setPromoCodes(codes);
     setIsLoading(false);
@@ -150,16 +149,12 @@ export default function PromoCodeManagementPage() {
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
 
-    // The server action will now derive the tenantId from headers.
-    const { isPlatformWide, ...restOfData } = data;
-
-    const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt' | 'tenantId'> = {
-      ...restOfData,
+    const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
+      ...data,
       expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
     };
 
     if (editingCode) {
-      // For updates, the server action does not need tenantId.
       const updatedCode = await updatePromoCode(editingCode.id, newCodeData);
       if (updatedCode) {
         setPromoCodes(prev => prev.map(c => c.id === editingCode.id ? updatedCode : c));
@@ -198,7 +193,7 @@ export default function PromoCodeManagementPage() {
     for (let i = 0; i < data.count; i++) {
       const uniquePart = Math.random().toString(36).substring(2, 10).toUpperCase();
       const code = `${data.prefix}-${uniquePart}`;
-      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt' | 'tenantId'> = {
+      const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
         code,
         description: `One-time use code (${data.rewardValue} ${data.rewardType})`,
         rewardType: data.rewardType,

@@ -70,7 +70,7 @@ export default function JobBoardPage() {
     setIsLoadingOpenings(true);
     try {
       const [openingsData, applicationsData] = await Promise.all([
-        getJobOpenings(currentUser.tenantId),
+        getJobOpenings(),
         getUserJobApplications(currentUser.id),
       ]);
       setOpenings(openingsData);
@@ -215,7 +215,6 @@ export default function JobBoardPage() {
     }
 
     const newApplication = await createJobApplication({
-      tenantId: opening.tenantId,
       userId: currentUser.id,
       companyName: opening.company,
       jobTitle: opening.title,
@@ -262,7 +261,6 @@ export default function JobBoardPage() {
       }
     } else {
       const newApplication = await createJobApplication({
-        tenantId: opening.tenantId,
         userId: currentUser.id,
         companyName: opening.company,
         jobTitle: opening.title,
