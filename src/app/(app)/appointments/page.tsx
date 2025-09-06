@@ -88,7 +88,7 @@ export default function AppointmentsPage() {
     const [userAppointments, users, posts] = await Promise.all([
       getAppointments(currentUser.id),
       getUsers(),
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
     ]);
     setAppointments(userAppointments);
     setAllUsers(users as UserProfile[]);

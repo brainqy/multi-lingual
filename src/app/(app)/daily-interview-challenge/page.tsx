@@ -76,7 +76,7 @@ export default function DailyInterviewChallengePage() {
     if (!user) return;
     setIsLoading(true);
     const [dashboardData, dynamicFlipChallenge] = await Promise.all([
-      getDashboardData(user.tenantId, user.id, user.role),
+      getDashboardData(user.id, user.role),
       getDynamicFlipChallenge(user.id),
     ]);
     
@@ -155,7 +155,7 @@ export default function DailyInterviewChallengePage() {
         const updatedUser = await updateUser(user.id, { xpPoints: (user.xpPoints || 0) + xpGained });
         if (updatedUser) {
           await login(updatedUser.email); // Re-login to update auth context
-          await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
+          await createActivity({ userId: user.id, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
           toast({
             title: `+${xpGained} XP! Correct Answer!`,
             description: `You've successfully completed the challenge.`,

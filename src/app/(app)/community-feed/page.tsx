@@ -27,6 +27,7 @@ import Image from 'next/image';
 import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost, togglePollVote, toggleEventRegistration, toggleFlagPost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { createAppointment } from '@/lib/actions/appointments';
 
 
 const postSchema = z.object({
@@ -189,7 +190,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     setIsLoading(true);
     const [fetchedPosts, fetchedUsers] = await Promise.all([
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
       getUsers()
     ]);
     setPosts(fetchedPosts);
@@ -255,8 +256,7 @@ export default function CommunityFeedPage() {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
-      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
-        tenantId: currentUser.tenantId || 'platform',
+      const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'> = {
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
@@ -350,8 +350,7 @@ export default function CommunityFeedPage() {
     if (updatedPost) {
       setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
       
-      const newAppointmentData = {
-          tenantId: postToUpdate.tenantId,
+      const newAppointmentData: Omit<Appointment, 'id' | 'tenantId'> = {
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
           title: `Assigned Request: ${postToUpdate.content?.substring(0, 30)}...`,
@@ -362,6 +361,8 @@ export default function CommunityFeedPage() {
           costInCoins: 0,
       };
       
+      await createAppointment(newAppointmentData);
+
       toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
     }
   };
@@ -964,4 +965,3 @@ export default function CommunityFeedPage() {
     </>
   );
 }
-

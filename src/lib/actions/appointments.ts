@@ -6,6 +6,7 @@ import type { Appointment } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
 import { getDashboardData } from './dashboard';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -38,8 +39,10 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
  * @param appointmentData The data for the new appointment.
  * @returns The newly created Appointment object or null if failed.
  */
-export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
-  logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
+export async function createAppointment(appointmentData: Omit<Appointment, 'id' | 'tenantId'>): Promise<Appointment | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId, tenantId });
   try {
     const dashboardData = await getDashboardData();
     const requesterUser = dashboardData.users.find(u => u.id === appointmentData.requesterUserId);
@@ -51,6 +54,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
     const newAppointment = await db.appointment.create({
       data: {
         ...appointmentData,
+        tenantId,
         dateTime: new Date(appointmentData.dateTime),
       },
     });

@@ -5,14 +5,17 @@ import { db } from '@/lib/db';
 import type { LiveInterviewSession } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
+import { headers } from 'next/headers';
 
 /**
  * Creates a new live interview session.
  * @param sessionData The data for the new session.
  * @returns The newly created LiveInterviewSession object or null.
  */
-export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id'>): Promise<LiveInterviewSession | null> {
-  logAction('Creating live interview session', { title: sessionData.title });
+export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id' | 'tenantId'>): Promise<LiveInterviewSession | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating live interview session', { title: sessionData.title, tenantId });
   try {
     const { interviewerScores, ...restOfSessionData } = sessionData;
     const newSession = await db.mockInterviewSession.create({

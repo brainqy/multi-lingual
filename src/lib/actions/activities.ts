@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { Activity } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { getUserByEmail } from '../data-services/users';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all activities, optionally scoped by user.
@@ -35,9 +36,11 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  * @param activityData Data for the new activity.
  * @returns The newly created Activity object or null.
  */
-export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
-    const { userId, tenantId, ...restOfData } = activityData;
-    logAction('Creating activity', { userId, description: restOfData.description });
+export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp' | 'tenantId'>): Promise<Activity | null> {
+    const { userId, ...restOfData } = activityData;
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    logAction('Creating activity', { userId, description: restOfData.description, tenantId });
     try {
         const dataForDb: any = {
             ...restOfData,
