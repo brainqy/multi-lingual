@@ -222,10 +222,13 @@ export default function UserManagementPage() {
 
         for (let i = 1; i < rows.length; i++) {
           const values = rows[i].split(',').map(v => v.trim());
+          const roleFromCsv = values[roleIndex] as UserRole;
+          const isValidRole = ['user', 'manager', 'admin'].includes(roleFromCsv);
+
           const newUserCsv: Partial<CsvUser> = {
             name: values[nameIndex],
             email: values[emailIndex],
-            role: values[roleIndex] as UserRole,
+            role: isValidRole ? roleFromCsv : 'user', // Default to 'user' if role is invalid or missing
             tenantId: values[tenantIdIndex],
           };
 
@@ -233,7 +236,7 @@ export default function UserManagementPage() {
             creationPromises.push(createUser({
               name: newUserCsv.name,
               email: newUserCsv.email,
-              role: newUserCsv.role,
+              role: newUserCsv.role!,
               tenantId: newUserCsv.tenantId,
               status: 'active'
             }));
