@@ -1433,7 +1433,8 @@ export type Vote = {
     createdAt: string;
 }
 
-export type EmailTemplateType = 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET' | 'TENANT_WELCOME';
+export const EmailTemplateTypes = ['WELCOME', 'APPOINTMENT_CONFIRMATION', 'PASSWORD_RESET', 'TENANT_WELCOME'] as const;
+export type EmailTemplateType = typeof EmailTemplateTypes[number];
 
 export interface EmailTemplate {
   id: string;
