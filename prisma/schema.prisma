@@ -569,8 +569,8 @@ model PromotionalContent {
   gradientVia  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  audience       String?    // 'All Users', 'Specific Tenant', 'Specific Role'
-  audienceTarget String?
+  targetTenantId     String?
+  targetRole     UserRole?
 }
 
 model PromoCode {
@@ -754,6 +754,12 @@ enum EmailTemplateType {
   PASSWORD_RESET
   TENANT_WELCOME
 }
+enum UserRole {
+  user
+  manager
+  admin
+}
+
 model EmailTemplate {
   id        String            @id @default(cuid())
   tenantId  String
