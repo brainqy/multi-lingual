@@ -23,18 +23,16 @@ function BlogLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col min-h-screen bg-background">
       <header className="bg-card text-card-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" legacyBehavior>
-            <a className="flex items-center gap-2 text-2xl font-bold">
-              <FileText className="h-7 w-7 text-primary" />
-              <span className="hidden sm:inline">{platformName}</span>
-            </a>
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
+            <FileText className="h-7 w-7 text-primary" />
+            <span className="hidden sm:inline">{platformName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             {isAuthenticated ? (
-              <Link href="/dashboard">
-                <Button variant="outline">Go to Dashboard</Button>
-              </Link>
+              <Button asChild variant="outline">
+                <Link href="/dashboard">Go to Dashboard</Link>
+              </Button>
             ) : (
               <div className="flex gap-2">
                 <Button asChild variant="ghost">
