@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Announcement, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches announcements visible to the current user.
@@ -87,11 +88,17 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @param announcementData The data for the new announcement.
  * @returns The newly created Announcement object or null if failed.
  */
-export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
-  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy });
+export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>): Promise<Announcement | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy, tenantId });
   try {
+    const dataForDb = {
+      ...announcementData,
+      tenantId: announcementData.audience === 'Specific Tenant' ? announcementData.audienceTarget : tenantId,
+    };
     const newAnnouncement = await db.announcement.create({
-      data: announcementData,
+      data: dataForDb,
     });
     return newAnnouncement as unknown as Announcement;
   } catch (error) {

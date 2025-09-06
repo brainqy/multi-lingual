@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { FeatureRequest } from '@/types';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all feature requests.
@@ -25,11 +26,15 @@ export async function getFeatureRequests(): Promise<FeatureRequest[]> {
  * @param requestData The data for the new request.
  * @returns The newly created FeatureRequest object or null.
  */
-export async function createFeatureRequest(requestData: Omit<FeatureRequest, 'id' | 'timestamp' | 'upvotes'>): Promise<FeatureRequest | null> {
+export async function createFeatureRequest(requestData: Omit<FeatureRequest, 'id' | 'timestamp' | 'upvotes' | 'tenantId'>): Promise<FeatureRequest | null> {
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    
     const newRequest = await db.featureRequest.create({
       data: {
         ...requestData,
+        tenantId,
         upvotes: 0,
       },
     });

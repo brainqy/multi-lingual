@@ -28,7 +28,6 @@ const userSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   role: z.enum(['user', 'manager', 'admin']),
-  tenantId: z.string().min(1, "Tenant is required."),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
   password: z.string().optional(), // Password is now optional
 });
@@ -68,9 +67,8 @@ export default function UserManagementPage() {
   const fetchAllData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const [usersFromDb, tenantsFromDb] = await Promise.all([
-      getUsers(tenantIdToFetch),
+      getUsers(),
       getTenants()
     ]);
     setAllUsers(usersFromDb);
@@ -113,7 +111,6 @@ export default function UserManagementPage() {
         email: '', 
         role: 'user', 
         status: 'active', 
-        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : '', 
         password: '' 
     });
     setIsFormDialogOpen(true);
@@ -127,7 +124,6 @@ export default function UserManagementPage() {
       email: user.email,
       role: user.role,
       status: user.status || 'active',
-      tenantId: user.tenantId,
       password: '', // Don't expose password
     });
     setIsFormDialogOpen(true);
@@ -140,7 +136,6 @@ export default function UserManagementPage() {
         email: data.email,
         role: data.role as UserRole,
         status: data.status as UserStatus,
-        tenantId: data.tenantId,
       });
       if (updatedUser) {
         toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
@@ -148,13 +143,10 @@ export default function UserManagementPage() {
       }
     } else {
       // Password is no longer required when an admin creates a user
-      const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
-
       const newUser = await createUser({
         name: data.name,
         email: data.email,
         role: data.role as UserRole,
-        tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
         password: data.password, // Pass it if provided, can be used for initial setup
       });
@@ -237,7 +229,6 @@ export default function UserManagementPage() {
               name: newUserCsv.name,
               email: newUserCsv.email,
               role: newUserCsv.role!,
-              tenantId: newUserCsv.tenantId,
               status: 'active'
             }));
             addedCount++;
@@ -521,22 +512,6 @@ export default function UserManagementPage() {
                 )} />
               </div>
             </div>
-            {currentUser.role === 'admin' && (
-              <div>
-                <Label htmlFor="tenantId">{t("userManagement.form.tenantLabel")}</Label>
-                <Controller name="tenantId" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
-                    <SelectTrigger id="tenantId"><SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} /></SelectTrigger>
-                    <SelectContent>
-                      {tenants.map(tenant => (
-                        <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )} />
-                {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
-              </div>
-            )}
 
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>

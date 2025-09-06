@@ -91,21 +91,15 @@ export default function AnnouncementManagementPage() {
   }
 
   const onSubmitForm = async (data: AnnouncementFormData) => {
-    let audienceTarget = data.audienceTarget;
-    if (currentUser.role === 'manager' && data.audience === 'Specific Tenant') {
-        audienceTarget = currentUser.tenantId; 
-    }
-
     const announcementData = {
       title: data.title,
       content: data.content,
       startDate: data.startDate.toISOString(),
       endDate: data.endDate ? data.endDate.toISOString() : undefined,
       audience: data.audience as AnnouncementAudience,
-      audienceTarget: data.audience === 'Specific Tenant' ? audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
+      audienceTarget: data.audience === 'Specific Tenant' ? data.audienceTarget : data.audience === 'Specific Role' ? data.audienceTarget : undefined,
       status: data.status as AnnouncementStatus,
       createdBy: currentUser.id,
-      tenantId: data.audience === 'Specific Tenant' ? audienceTarget : (data.audience === 'All Users' ? 'platform' : currentUser.tenantId) 
     };
 
     if (editingAnnouncement) {
@@ -119,7 +113,7 @@ export default function AnnouncementManagementPage() {
         toast({ title: t("announcementsAdmin.toast.announcementUpdated.title"), description: t("announcementsAdmin.toast.announcementUpdated.description", { title: data.title }) });
       }
     } else {
-      const created = await createAnnouncement(announcementData as Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>);
+      const created = await createAnnouncement(announcementData as Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>);
       if (created) {
         setAnnouncements(prev => [created, ...prev]);
         toast({ title: t("announcementsAdmin.toast.announcementCreated.title"), description: t("announcementsAdmin.toast.announcementCreated.description", { title: data.title }) });

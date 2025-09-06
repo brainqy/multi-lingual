@@ -67,12 +67,16 @@ export async function getVisibleGalleryEvents(currentUser: UserProfile): Promise
  * @param eventData The data for the new event.
  * @returns The newly created GalleryEvent object or null.
  */
-export async function createGalleryEvent(eventData: Omit<GalleryEvent, 'id'>): Promise<GalleryEvent | null> {
+export async function createGalleryEvent(eventData: Omit<GalleryEvent, 'id' | 'tenantId'>): Promise<GalleryEvent | null> {
+  const headersList = headers();
+  const tenantIdHeader = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating gallery event', { title: eventData.title, createdBy: eventData.createdByUserId });
   try {
+    const tenantForEvent = eventData.isPlatformGlobal ? 'platform' : tenantIdHeader;
     const newEvent = await db.galleryEvent.create({
       data: {
         ...eventData,
+        tenantId: tenantForEvent,
         date: new Date(eventData.date),
         imageUrls: eventData.imageUrls || [],
         attendeeUserIds: eventData.attendeeUserIds || [],
@@ -125,5 +129,3 @@ export async function deleteGalleryEvent(eventId: string): Promise<boolean> {
     return false;
   }
 }
-
-    
