@@ -73,6 +73,17 @@ export async function createTenantWithAdmin(
             logError('[TenantAction] Admin email already exists', {}, { adminEmail: adminUserData.email });
             return { success: false, tenant: null, error: 'An account with this admin email already exists.' };
         }
+
+        // Check if the tenant domain is already in use
+        if (tenantData.domain) {
+            const existingTenantDomain = await db.tenant.findUnique({
+                where: { domain: tenantData.domain },
+            });
+            if (existingTenantDomain) {
+                logError('[TenantAction] Tenant domain already exists', {}, { domain: tenantData.domain });
+                return { success: false, tenant: null, error: 'This tenant domain is already taken. Please choose another.' };
+            }
+        }
         
         const newTenant = await db.tenant.create({
             data: {
@@ -119,6 +130,12 @@ export async function createTenantWithAdmin(
         return { success: true, tenant: newTenant as unknown as Tenant };
     } catch (error) {
         logError('[TenantAction] Error creating tenant with admin', error, { tenantName: tenantData.name });
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // P2002 is the unique constraint violation code
+            if (error.code === 'P2002' && (error.meta?.target as string[])?.includes('domain')) {
+                return { success: false, tenant: null, error: 'This tenant domain is already taken. Please choose another.' };
+            }
+        }
         return { success: false, tenant: null, error: 'An unexpected error occurred.' };
     }
 }
