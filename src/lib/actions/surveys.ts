@@ -14,7 +14,11 @@ export async function getSurveys(): Promise<Survey[]> {
     const surveys = await db.survey.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return surveys.map(s => ({ ...s, steps: s.steps as any[] })) as unknown as Survey[];
+    // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
+    return surveys.map(s => ({
+      ...s,
+      steps: (s.steps as any)?.set || [],
+    })) as unknown as Survey[];
   } catch (error) {
     console.error('[SurveyAction] Error fetching surveys:', error);
     return [];
@@ -32,10 +36,8 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
       where: { name },
     });
     if (survey && survey.steps) {
-      // The 'steps' field is stored as a JSON object in the DB.
-      // We need to ensure it's treated as an array of objects.
-      // The type assertion here handles cases where Prisma returns a generic JsonValue.
-      return { ...survey, steps: survey.steps as any[] } as unknown as Survey;
+      // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
+      return { ...survey, steps: (survey.steps as any)?.set || [] } as unknown as Survey;
     }
     return survey as unknown as Survey | null;
   } catch (error) {
@@ -64,9 +66,9 @@ export async function getSurveyForUser(userId: string): Promise<Survey | null> {
 
         for (const survey of allSurveys) {
             if (!completedSurveyIds.has(survey.name)) {
-                // Ensure steps are correctly typed as an array
                 if (survey.steps) {
-                    return { ...survey, steps: survey.steps as any[] } as unknown as Survey;
+                    // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
+                    return { ...survey, steps: (survey.steps as any)?.set || [] } as unknown as Survey;
                 }
                 return survey as unknown as Survey; // Return the first survey not completed
             }
@@ -89,16 +91,18 @@ export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>)
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
 
+    // Wrap the steps array in the { "set": [...] } object structure to match the seed data.
     const dataForDb: any = {
       ...surveyData,
-      steps: surveyData.steps as any, // Cast steps to any to satisfy Prisma's JsonValue type
+      steps: { set: surveyData.steps },
       tenantId: tenantId,
     };
     
     const newSurvey = await db.survey.create({
       data: dataForDb,
     });
-    return newSurvey as unknown as Survey;
+    // Parse it back on return to be consistent
+    return { ...newSurvey, steps: (newSurvey.steps as any)?.set || [] } as unknown as Survey;
   } catch (error) {
     console.error('[SurveyAction] Error creating survey:', error);
     return null;
