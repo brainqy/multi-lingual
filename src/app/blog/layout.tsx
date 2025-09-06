@@ -1,5 +1,5 @@
 
-'use client';
+"use client";
 
 import type React from 'react';
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
