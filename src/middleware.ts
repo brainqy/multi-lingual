@@ -23,8 +23,8 @@ export async function middleware(request: NextRequest) {
   // Set a header with the resolved tenant ID (or domain)
   response.headers.set('X-Tenant-Id', tenantId);
 
-  // Redirect root path of subdomains to login
-  if (potentialSubdomain && (pathname === '/' || pathname === '/landing')) {
+  // Redirect root path of subdomains to login, but exclude the main platform domain
+  if (potentialSubdomain && potentialSubdomain !== 'platform' && (pathname === '/' || pathname === '/landing')) {
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
