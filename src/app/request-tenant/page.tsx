@@ -11,9 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Layers3, Building2, User, Mail, Send, Loader2, CheckCircle } from "lucide-react";
-import { createTenantWithAdmin } from "@/lib/actions/tenants";
 import Link from "next/link";
-import type { TenantSettings } from "@/types";
+import { handleTenantRequest } from "@/lib/actions/request-tenant";
 
 const requestSchema = z.object({
   tenantName: z.string().min(3, "Organization name must be at least 3 characters."),
@@ -43,25 +42,9 @@ export default function RequestTenantPage() {
   const onSubmit = async (data: RequestFormData) => {
     setIsSubmitting(true);
     
-    const tenantSettings: Omit<TenantSettings, 'id'> = {
-      allowPublicSignup: true, // Default to true for new tenants
-      // Other settings can have defaults in the backend
-    };
+    const result = await handleTenantRequest(data);
     
-    const tenantData = {
-      name: data.tenantName,
-      domain: data.tenantDomain,
-      settings: tenantSettings,
-    };
-
-    const adminUserData = {
-      name: data.adminName,
-      email: data.adminEmail,
-    };
-
-    const result = await createTenantWithAdmin(tenantData, adminUserData);
-    
-    if (result.success && result.tenant) {
+    if (result.success) {
       toast({
         title: "Request Submitted!",
         description: `Tenant "${data.tenantName}" has been created. A welcome email has been sent to the administrator.`,
