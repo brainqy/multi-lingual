@@ -50,8 +50,8 @@ export async function getUserByEmail(email: string): Promise<UserProfile | null>
 }
 
 /**
- * Creates a new user in the database.
- * @param userData The data for the new user.
+ * Creates a new user in the database. Requires an explicit tenantId.
+ * @param userData The data for the new user, including the tenantId.
  * @returns The newly created user profile or null.
  */
 export async function createUser(userData: {
@@ -60,10 +60,9 @@ export async function createUser(userData: {
   role: UserRole;
   password?: string;
   status?: UserStatus;
+  tenantId: string; // tenantId is now required
 }): Promise<UserProfile | null> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
-  logAction('Creating user', { email: userData.email, tenantId });
+  logAction('Creating user', { email: userData.email, tenantId: userData.tenantId });
   try {
     const newUser = await db.user.create({
       data: {
@@ -71,7 +70,7 @@ export async function createUser(userData: {
         email: userData.email,
         password: userData.password, // In a real app, this should be hashed
         role: userData.role,
-        tenantId: tenantId,
+        tenantId: userData.tenantId, // Use the provided tenantId
         status: userData.status || 'active',
         sessionId: `session-${Date.now()}`, // Generate an initial session ID
       },
@@ -86,6 +85,7 @@ export async function createUser(userData: {
     return null;
   }
 }
+
 
 /**
  * Updates an existing user's profile.
