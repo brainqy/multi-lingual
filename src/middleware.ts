@@ -23,7 +23,8 @@ export async function middleware(request: NextRequest) {
   if (potentialSubdomain && potentialSubdomain !== 'platform') {
       try {
         // First, check if the subdomain matches a custom 'tenantDomain'.
-        const tenantByDomain = await db.tenant.findUnique({
+        // Use findFirst instead of findUnique for non-unique fields.
+        const tenantByDomain = await db.tenant.findFirst({
             where: { domain: potentialSubdomain },
         });
 
