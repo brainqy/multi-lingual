@@ -45,7 +45,7 @@ export const DegreePrograms = [
   "Master of Arts (M.A)",
   "Doctor of Philosophy (Ph.D)",
   "Master of Business Administration (MBA)",
-  "Bachelor of Business Administration (BBA)", // <-- Add this line
+  "Bachelor of Business Administration (BBA)",
   "Diploma",
   "Other"
 ] as const;
@@ -58,9 +58,9 @@ export type DegreeProgram =
   | "Master of Arts (M.A)"
   | "Doctor of Philosophy (Ph.D)"
   | "Master of Business Administration (MBA)"
-  | "Bachelor of Business Administration (BBA)" // <-- Add this line
-  | "Diploma"                // <-- Add this
-  | "Other"                  // <-- And this
+  | "Bachelor of Business Administration (BBA)"
+  | "Diploma"
+  | "Other"
   | undefined;
 export type RecentPageItem = {
   path: string;
@@ -162,7 +162,7 @@ export interface AlumniProfile {
   name: string;
   profilePictureUrl?: string;
   currentJobTitle: string;
-  currentOrganization: string;
+  currentOrganization?: string;
   shortBio: string;
   university: string;
   skills: string[];
