@@ -517,7 +517,7 @@ export interface ResumeScanHistoryItem {
 export type KanbanColumnId = 'Saved' | 'Applied' | 'Interviewing' | 'Offer';
 
 export interface TenantSettings {
-  id: string;
+  id?: string;
   allowPublicSignup: boolean;
   customLogoUrl?: string;
   primaryColor?: string;
@@ -1444,3 +1444,5 @@ export interface EmailTemplate {
   createdAt: string;
   updatedAt: string;
 }
+
+export type NotificationType = 'system' | 'mention' | 'event' | 'reward';
