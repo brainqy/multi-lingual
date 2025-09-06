@@ -40,7 +40,7 @@ export default function KBCGamePage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [lockedAnswer, setLockedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [gameMessage, setGameMessage] = useState("Select an answer and lock it!");
+  const [gameMessage, setGameMessage] = useState(t("kbcGame.initialMessage"));
   const [lifelines, setLifelines] = useState({ fiftyFifty: true, audiencePoll: true, expertAdvice: true });
   const [fiftyFiftyOptions, setFiftyFiftyOptions] = useState<string[] | null>(null);
   const [audiencePollData, setAudiencePollData] = useState<{ name: string; votes: number }[] | null>(null);
@@ -75,14 +75,14 @@ export default function KBCGamePage() {
 
   const startNewGame = async () => {
     if (!wallet) {
-      toast({ title: "Wallet not loaded", description: "Please wait a moment for your wallet to load.", variant: "destructive" });
+      toast({ title: t("kbcGame.toast.walletNotLoaded.title"), description: t("kbcGame.toast.walletNotLoaded.description"), variant: "destructive" });
       return;
     }
 
     if (wallet.coins < GAME_COST) {
         toast({
-            title: "Insufficient Coins",
-            description: `You need ${GAME_COST} coins to play. Earn more through referrals or other activities!`,
+            title: t("kbcGame.toast.insufficientCoins.title"),
+            description: t("kbcGame.toast.insufficientCoins.description", { cost: GAME_COST }),
             variant: "destructive",
         });
         return;
@@ -94,8 +94,8 @@ export default function KBCGamePage() {
       
     if (filteredQuestions.length < 5) {
         toast({
-            title: "Not Enough Questions",
-            description: `There aren't enough questions tagged with "${selectedTopic}" to start a game. Please select another topic or 'All'.`,
+            title: t("kbcGame.toast.notEnoughQuestions.title"),
+            description: t("kbcGame.toast.notEnoughQuestions.description", { topic: selectedTopic }),
             variant: "destructive",
             duration: 5000,
         });
@@ -113,8 +113,8 @@ export default function KBCGamePage() {
     await refreshWallet(); // Refresh wallet state in context
 
     toast({
-        title: `-${GAME_COST} Coins`,
-        description: "Good luck in the game!",
+        title: t("kbcGame.toast.gameStart.title", { cost: GAME_COST }),
+        description: t("kbcGame.toast.gameStart.description"),
     });
 
 
@@ -127,13 +127,13 @@ export default function KBCGamePage() {
     setLifelines({ fiftyFifty: true, audiencePoll: true, expertAdvice: true });
     setFiftyFiftyOptions(null);
     setAudiencePollData(null);
-    setGameMessage("Select an answer and lock it!");
+    setGameMessage(t("kbcGame.initialMessage"));
     setGameState('playing');
     
     if (gameContainerRef.current && !document.fullscreenElement) {
         gameContainerRef.current.requestFullscreen().catch(err => {
             console.error("Fullscreen request failed:", err);
-            toast({ title: "Fullscreen Mode", description: "Could not enter fullscreen automatically. You can try it manually.", variant: "default" });
+            toast({ title: t("kbcGame.toast.fullscreenError.title"), description: t("kbcGame.toast.fullscreenError.description"), variant: "default" });
         });
     }
   };
@@ -145,7 +145,7 @@ export default function KBCGamePage() {
 
   const handleLockAnswer = async () => {
     if (!selectedAnswer || !user) {
-      toast({ title: "No Answer Selected", description: "Please select an answer before locking.", variant: 'destructive' });
+      toast({ title: t("kbcGame.toast.noAnswer.title"), description: t("kbcGame.toast.noAnswer.description"), variant: 'destructive' });
       return;
     }
     setLockedAnswer(selectedAnswer);
@@ -160,18 +160,18 @@ export default function KBCGamePage() {
         await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Won the KBC game and earned ${totalXPWon} XP!` });
         // In a real app: await updateUser(user.id, { xpPoints: user.xpPoints + totalXPWon });
         
-        setGameMessage(`Congratulations! You've won the game with ${nextXpLevel} XP!`);
+        setGameMessage(t("kbcGame.winMessage", { xp: nextXpLevel }));
         toast({
-          title: "You've Won!",
-          description: "You've answered all questions correctly!",
+          title: t("kbcGame.toast.gameWon.title"),
+          description: t("kbcGame.toast.gameWon.description"),
           duration: 5000,
         });
         setGameState('gameOver');
       } else {
-        setGameMessage("Correct! Click 'Next Question' to continue.");
+        setGameMessage(t("kbcGame.correctMessage"));
          toast({
-          title: "Correct Answer!",
-          description: `You've secured ${nextXpLevel} XP!`,
+          title: t("kbcGame.toast.correctAnswer.title"),
+          description: t("kbcGame.toast.correctAnswer.description", { xp: nextXpLevel }),
         });
       }
     } else {
@@ -185,7 +185,7 @@ export default function KBCGamePage() {
         explanation: currentQuestion.answerOrTip
       });
       setIsGameOverDialogOpen(true);
-      setGameMessage(`Wrong Answer! You walk away with ${totalXPWon} XP.`);
+      setGameMessage(t("kbcGame.wrongMessage", { xp: totalXPWon }));
       setGameState('gameOver');
     }
   };
@@ -198,7 +198,7 @@ export default function KBCGamePage() {
       setShowResult(false);
       setFiftyFiftyOptions(null);
       setAudiencePollData(null);
-      setGameMessage("Select an answer and lock it!");
+      setGameMessage(t("kbcGame.initialMessage"));
     }
   };
   
@@ -238,7 +238,7 @@ export default function KBCGamePage() {
   const useExpertAdvice = () => {
     if (!lifelines.expertAdvice || lockedAnswer) return;
     toast({
-      title: "Expert Advice",
+      title: t("kbcGame.toast.expertAdvice.title"),
       description: currentQuestion.answerOrTip,
       duration: 10000
     });
@@ -264,7 +264,7 @@ export default function KBCGamePage() {
         </div>
         <div className="flex items-center gap-2">
             <div className="text-right">
-            <p className="text-sm text-slate-400">Next Reward</p>
+            <p className="text-sm text-slate-400">{t("kbcGame.nextReward")}</p>
             <p className="text-xl font-bold text-yellow-400 flex items-center gap-1 justify-end"><Zap className="h-5 w-5"/> {nextXpLevel?.toLocaleString()} XP</p>
             </div>
             <Button onClick={toggleFullScreen} variant="ghost" size="icon" className="text-white">
@@ -276,7 +276,7 @@ export default function KBCGamePage() {
       <div className="flex-grow flex flex-col justify-center items-center text-center">
         {audiencePollData ? (
           <div className="w-full h-48">
-            <h3 className="text-lg font-bold mb-2">Audience Poll Results</h3>
+            <h3 className="text-lg font-bold mb-2">{t("kbcGame.audiencePollResults")}</h3>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={audiencePollData} layout="vertical">
                 <XAxis type="number" hide />
@@ -285,11 +285,11 @@ export default function KBCGamePage() {
                 <Bar dataKey="votes" fill="#fbbf24" background={{ fill: '#475569' }} />
               </BarChart>
             </ResponsiveContainer>
-            <Button size="sm" onClick={() => setAudiencePollData(null)} className="mt-2">Back to Question</Button>
+            <Button size="sm" onClick={() => setAudiencePollData(null)} className="mt-2">{t("kbcGame.backToQuestion")}</Button>
           </div>
         ) : (
           <>
-            <p className="text-slate-400 mb-2">Question {currentQuestionIndex + 1} for {nextXpLevel?.toLocaleString()} XP</p>
+            <p className="text-slate-400 mb-2">{t("kbcGame.questionForXP", { number: currentQuestionIndex + 1, xp: nextXpLevel?.toLocaleString() })}</p>
             <div className="p-4 bg-black/20 rounded-lg min-h-[80px] flex items-center justify-center">
               <p className="text-lg font-semibold">{currentQuestion?.questionText}</p>
             </div>
@@ -331,11 +331,11 @@ export default function KBCGamePage() {
         </p>
         <div className="mt-2">
           {!lockedAnswer ? (
-            <Button onClick={handleLockAnswer} disabled={!selectedAnswer} size="lg" className="bg-blue-600 hover:bg-blue-500">Lock Answer</Button>
+            <Button onClick={handleLockAnswer} disabled={!selectedAnswer} size="lg" className="bg-blue-600 hover:bg-blue-500">{t("kbcGame.lockAnswer")}</Button>
           ) : gameState !== 'gameOver' ? (
-            <Button onClick={handleNextQuestion} size="lg" className="bg-green-600 hover:bg-green-500">Next Question <ChevronsRight /></Button>
+            <Button onClick={handleNextQuestion} size="lg" className="bg-green-600 hover:bg-green-500">{t("kbcGame.nextQuestion")} <ChevronsRight /></Button>
           ) : (
-            <Button onClick={handleEndGameAndRestart} size="lg" className="bg-yellow-500 hover:bg-yellow-400 text-black">Play Again <Repeat className="ml-2"/></Button>
+            <Button onClick={handleEndGameAndRestart} size="lg" className="bg-yellow-500 hover:bg-yellow-400 text-black">{t("kbcGame.playAgain")} <Repeat className="ml-2"/></Button>
           )}
         </div>
       </div>
@@ -367,17 +367,17 @@ export default function KBCGamePage() {
     <Dialog open={isGameOverDialogOpen} onOpenChange={setIsGameOverDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="text-destructive flex items-center gap-2"><XCircle className="h-6 w-6"/>Incorrect Answer</DialogTitle>
+                <DialogTitle className="text-destructive flex items-center gap-2"><XCircle className="h-6 w-6"/>{t("kbcGame.gameOver.title")}</DialogTitle>
                 <DialogUIDescription>
-                    The correct answer was: <strong className="text-foreground">{feedbackMessage?.correctAnswer}</strong>
+                    {t("kbcGame.gameOver.correctAnswerWas")} <strong className="text-foreground">{feedbackMessage?.correctAnswer}</strong>
                 </DialogUIDescription>
             </DialogHeader>
             <div className="py-4">
-                <h4 className="font-semibold mb-2 text-primary">Explanation:</h4>
+                <h4 className="font-semibold mb-2 text-primary">{t("kbcGame.gameOver.explanation")}:</h4>
                 <p className="text-sm text-muted-foreground">{feedbackMessage?.explanation}</p>
             </div>
             <DialogFooter>
-                <Button onClick={handleEndGameAndRestart} className="w-full">Play Again</Button>
+                <Button onClick={handleEndGameAndRestart} className="w-full">{t("kbcGame.playAgain")}</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
@@ -385,8 +385,8 @@ export default function KBCGamePage() {
     {gameState === 'setup' && (
       <Card className="max-w-2xl mx-auto text-center">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">Choose Your Topic</CardTitle>
-          <CardDescription>Select a category to start the KBC quiz game. It costs {GAME_COST} coins to play.</CardDescription>
+          <CardTitle className="text-3xl font-bold">{t("kbcGame.setup.title")}</CardTitle>
+          <CardDescription>{t("kbcGame.setup.description", { cost: GAME_COST })}</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
            <Button
@@ -394,7 +394,7 @@ export default function KBCGamePage() {
                 onClick={() => setSelectedTopic('All')}
                 className="h-16 text-md"
             >
-                All Topics
+                {t("kbcGame.setup.allTopics")}
             </Button>
             {techTopics.map(topic => (
             <Button
@@ -409,7 +409,7 @@ export default function KBCGamePage() {
         </CardContent>
         <CardFooter>
           <Button onClick={startNewGame} size="lg" className="w-full bg-primary hover:bg-primary/90">
-            Start Game
+            {t("kbcGame.setup.startButton")}
           </Button>
         </CardFooter>
       </Card>
@@ -424,7 +424,7 @@ export default function KBCGamePage() {
         <div className="space-y-8">
           <Card className="shadow-lg bg-slate-800 text-white">
             <CardHeader>
-              <CardTitle className="text-xl text-center text-yellow-400">XP Ladder</CardTitle>
+              <CardTitle className="text-xl text-center text-yellow-400">{t("kbcGame.xpLadder")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-1 flex flex-col-reverse">
@@ -442,11 +442,11 @@ export default function KBCGamePage() {
           </Card>
            <Card>
                 <CardHeader>
-                    <CardTitle>Other Games</CardTitle>
+                    <CardTitle>{t("kbcGame.otherGames")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Button asChild className="w-full">
-                        <Link href="/number-match-game">Play Number Match Game</Link>
+                        <Link href="/number-match-game">{t("kbcGame.playNumberMatch")}</Link>
                     </Button>
                 </CardContent>
             </Card>
