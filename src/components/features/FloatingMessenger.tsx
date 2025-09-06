@@ -70,8 +70,7 @@ export default function FloatingMessenger() {
         await createSurveyResponse({
           userId: user.id,
           userName: user.name,
-          surveyId: activeSurveyName,
-          surveyName: activeSurveyName,
+          surveyId: activeSurveyName, // This is the survey NAME
           data: surveyData,
         });
       }

@@ -65,12 +65,11 @@ export async function getSurveyForUser(userId: string): Promise<Survey | null> {
         const completedSurveyIds = new Set(userResponses.map(res => res.surveyId));
 
         for (const survey of allSurveys) {
-            if (!completedSurveyIds.has(survey.name)) {
+            if (!completedSurveyIds.has(survey.id)) { // Check against the actual ID
                 if (survey.steps) {
-                    // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
                     return { ...survey, steps: (survey.steps as any)?.set || [] } as unknown as Survey;
                 }
-                return survey as unknown as Survey; // Return the first survey not completed
+                return survey as unknown as Survey;
             }
         }
 
@@ -135,18 +134,24 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
 
 /**
  * Creates a new survey response.
- * @param responseData The data for the new response.
+ * @param responseData The data for the new response. The surveyId here is the *name* of the survey.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId'>): Promise<SurveyResponse | null> {
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId' | 'surveyName'> & { surveyId: string }): Promise<SurveyResponse | null> {
   try {
     const user = await db.user.findUnique({ where: { id: responseData.userId }});
     if (!user) throw new Error("User not found for survey response");
+
+    const survey = await db.survey.findUnique({ where: { name: responseData.surveyId }});
+    if (!survey) throw new Error(`Survey with name "${responseData.surveyId}" not found.`);
     
     const tenantId = user.tenantId;
 
     const dataForDb: any = {
-        ...responseData,
+        userId: responseData.userId,
+        userName: responseData.userName,
+        surveyId: survey.id, // Use the correct foreign key
+        surveyName: survey.name,
         data: responseData.data as any,
         tenantId: tenantId,
     };
