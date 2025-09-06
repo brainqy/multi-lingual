@@ -529,6 +529,9 @@ export interface TenantSettings {
     walletEnabled?: boolean;
     eventRegistrationEnabled?: boolean;
   };
+  emailTemplates?: {
+    welcomeEmail?: string;
+  };
 }
 
 export interface Tenant {
