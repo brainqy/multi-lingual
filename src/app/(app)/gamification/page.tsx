@@ -4,7 +4,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Award, Flame, Star, CheckCircle, Trophy, UserCircle, Loader2, Share2 } from "lucide-react"; 
-import { sampleBadges } from "@/lib/sample-data"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -36,7 +35,7 @@ function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.Lucide
 export default function GamificationPage() {
   const { t } = useI18n();
   const { user, isLoading: isUserLoading } = useAuth();
-  const [badges, setBadges] = useState(sampleBadges);
+  const [badges, setBadges] = useState<BadgeType[]>([]);
   const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();

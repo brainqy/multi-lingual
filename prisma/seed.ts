@@ -20,6 +20,9 @@ async function main() {
   await prisma.jobApplication.deleteMany({});
   await prisma.walletTransaction.deleteMany({});
   await prisma.wallet.deleteMany({});
+  await prisma.surveyResponse.deleteMany({});
+  await prisma.survey.deleteMany({});
+  await prisma.productCompany.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.tenant.deleteMany({});
   
@@ -46,6 +49,20 @@ async function main() {
      await prisma.tenant.upsert({ where: { id: tenant.id }, update: {}, create: tenant });
   }
   console.log('Seeded tenants.');
+  
+  // Seed Product Companies
+  await prisma.productCompany.createMany({
+    data: [
+      { name: 'Google', location: 'Pune', websiteUrl: 'https://careers.google.com/', domain: 'SaaS', hrName: 'John Doe', hrEmail: 'john.doe@google.com', contactNumber: '123-456-7890' },
+      { name: 'Microsoft', location: 'Hyderabad', websiteUrl: 'https://careers.microsoft.com/', domain: 'SaaS', hrName: 'Jane Smith', hrEmail: 'jane.smith@microsoft.com', contactNumber: '234-567-8901' },
+      { name: 'Apple', location: 'Bengaluru', websiteUrl: 'https://www.apple.com/careers/', domain: 'Hardware', hrName: 'Peter Jones', hrEmail: 'peter.jones@apple.com', contactNumber: '345-678-9012' },
+      { name: 'Amazon', location: 'Gurgaon', websiteUrl: 'https://www.amazon.jobs/', domain: 'E-commerce', hrName: 'Mary Johnson', hrEmail: 'mary.johnson@amazon.com', contactNumber: '456-789-0123' },
+      { name: 'Infosys', location: 'Pune', websiteUrl: 'https://www.infosys.com/careers/', domain: 'IT Services', hrName: 'David Williams', hrEmail: 'david.williams@infosys.com', contactNumber: '567-890-1234' },
+      { name: 'Wipro', location: 'Bengaluru', websiteUrl: 'https://careers.wipro.com/', domain: 'IT Services', hrName: 'Linda Brown', hrEmail: 'linda.brown@wipro.com', contactNumber: '678-901-2345' },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded product companies.');
 
   // --- USERS ---
 
@@ -155,6 +172,42 @@ async function main() {
   });
   console.log('Seeded Nominations and Votes.');
 
+  // --- Surveys ---
+  await prisma.survey.create({
+    data: {
+      name: 'initialFeedbackSurvey',
+      description: 'Gathers initial feedback from new users.',
+      tenantId: 'platform',
+      steps: {
+        "set": [
+          {"id":"welcome","type":"botMessage","text":"Welcome to the platform! We'd love to get your feedback. How would you rate your onboarding experience?","nextStepId":"rating"},
+          {"id":"rating","type":"userOptions","variableName":"onboardingRating","options":[{"text":"⭐","value":"1","nextStepId":"thanks"},{"text":"⭐⭐","value":"2","nextStepId":"thanks"},{"text":"⭐⭐⭐","value":"3","nextStepId":"thanks"},{"text":"⭐⭐⭐⭐","value":"4","nextStepId":"thanks"},{"text":"⭐⭐⭐⭐⭐","value":"5","nextStepId":"thanks"}]},
+          {"id":"thanks","type":"botMessage","text":"Thanks for your feedback! We appreciate you helping us improve.","isLastStep":true}
+        ]
+      }
+    }
+  });
+   await prisma.survey.create({
+    data: {
+      name: 'profileCompletionSurvey',
+      description: 'Helps users complete their profile step-by-step.',
+      tenantId: 'platform',
+      steps: {
+        "set": [
+          {"id":"start","type":"botMessage","text":"Let's complete your profile to get the most out of the platform! First, what is your current job title?","nextStepId":"getJobTitle"},
+          {"id":"getJobTitle","type":"userInput","variableName":"jobTitle","placeholder":"e.g., Software Engineer","nextStepId":"getCompany"},
+          {"id":"getCompany","type":"botMessage","text":"Great! And where do you currently work?","nextStepId":"getCompanyInput"},
+          {"id":"getCompanyInput","type":"userInput","variableName":"company","placeholder":"e.g., Google","nextStepId":"getSkills"},
+          {"id":"getSkills","type":"botMessage","text":"What are some of your top skills? (comma-separated)","nextStepId":"getSkillsInput"},
+          {"id":"getSkillsInput","type":"userInput","variableName":"skills","placeholder":"e.g., React, Node.js, Project Management","nextStepId":"end"},
+          {"id":"end","type":"botMessage","text":"Awesome! Your profile is updated. You can add more details on your profile page anytime.","isLastStep":true}
+        ]
+      }
+    }
+  });
+  console.log('Seeded sample surveys.');
+
+
   // --- OTHER FEATURES ---
   await prisma.appointment.create({
     data: {
@@ -251,5 +304,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-    

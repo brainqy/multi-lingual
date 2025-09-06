@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift, Loader2 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import {
-    managerDashboardTourSteps,
-} from "@/lib/sample-data";
+import { managerDashboardTourSteps } from "@/lib/tour-steps";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -307,5 +305,3 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
     </>
   );
 }
-
-    

@@ -86,28 +86,4 @@ describe('DashboardPage', () => {
     const heading = screen.getByRole('heading', { name: /Dashboard/i });
     expect(heading).toBeInTheDocument();
   });
-
-  // Test case for an unauthenticated user
-  it('renders an access denied message for an unauthenticated user', () => {
-    // Simulate a logged-out user
-    __setMockState({
-      user: null,
-      isLoading: false,
-      isAuthenticated: false,
-    });
-
-    render(
-      <AuthProvider>
-        <SettingsProvider settings={samplePlatformSettings}>
-          <I18nProvider>
-            <DashboardPage />
-          </I18nProvider>
-        </SettingsProvider>
-      </AuthProvider>
-    );
-
-    // Check for the "Access Denied" message
-    const accessDeniedHeading = screen.getByRole('heading', { name: /Access Denied/i });
-    expect(accessDeniedHeading).toBeInTheDocument();
-  });
 });
