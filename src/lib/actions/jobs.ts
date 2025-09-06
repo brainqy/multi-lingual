@@ -92,20 +92,32 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
 }
 
 /**
- * Creates a new job application.
+ * Creates a new job application, including any associated interviews.
  * @param applicationData The data for the new job application.
  * @returns The newly created JobApplication object or null if failed.
  */
-export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'interviews' | 'tenantId'>): Promise<JobApplication | null> {
+export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'tenantId'>): Promise<JobApplication | null> {
   try {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    const { interviews, ...restOfData } = applicationData;
 
     const newApplication = await db.jobApplication.create({
       data: {
-        ...applicationData,
+        ...restOfData,
         tenantId,
         notes: applicationData.notes || [],
+        interviews: interviews && interviews.length > 0 ? {
+          create: interviews.map(i => ({
+            date: i.date,
+            type: i.type,
+            interviewer: i.interviewer,
+            notes: i.notes,
+          }))
+        } : undefined,
+      },
+      include: {
+        interviews: true,
       },
     });
     return newApplication as unknown as JobApplication;
@@ -116,19 +128,15 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
 }
 
 /**
- * Updates an existing job application.
+ * Updates an existing job application, including its interviews.
  * @param applicationId The ID of the application to update.
  * @param updateData The data to update.
  * @returns The updated JobApplication object or null if failed.
  */
-export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id' | 'interviews'>> & { interviews?: Interview[] }): Promise<JobApplication | null> {
+export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
     try {
         const { interviews, ...restOfUpdateData } = updateData;
 
-        // Prisma requires a specific structure for updating related records.
-        // This example handles updating the main record. A more complex transaction
-        // would be needed to create/update/delete interviews simultaneously.
-        // For simplicity here, we'll just update the main application data.
         const updatedApplication = await db.jobApplication.update({
             where: { id: applicationId },
             data: {
@@ -139,7 +147,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                 interviews: true,
             }
         });
-
+        
         // Handle interview updates separately if provided
         if (interviews) {
             // This is a simplified approach. A real app might need to handle
@@ -147,7 +155,13 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
             await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
             if (interviews.length > 0) {
                 await db.interview.createMany({
-                    data: interviews.map(i => ({...i, jobApplicationId: applicationId}))
+                    data: interviews.map(i => ({
+                        date: new Date(i.date),
+                        type: i.type,
+                        interviewer: i.interviewer,
+                        notes: i.notes,
+                        jobApplicationId: applicationId
+                    }))
                 });
             }
         }
