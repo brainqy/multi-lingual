@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { PromotionalContent, UserProfile, UserRole } from '@/types';
+import type { PromotionalContent, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 
 /**
@@ -66,10 +66,21 @@ export async function getActivePromotionalContent(currentUser: UserProfile): Pro
 export async function createPromotionalContent(contentData: Omit<PromotionalContent, 'id' | 'createdAt' | 'updatedAt'>): Promise<PromotionalContent | null> {
   logAction('Creating promotional content', { title: contentData.title });
   try {
-    const dataForDb: any = { ...contentData };
-    if (dataForDb.audience === 'All Users') {
-      dataForDb.audienceTarget = null;
-    }
+    const dataForDb: any = {
+      isActive: contentData.isActive,
+      title: contentData.title,
+      description: contentData.description,
+      imageUrl: contentData.imageUrl,
+      imageAlt: contentData.imageAlt,
+      imageHint: contentData.imageHint,
+      buttonText: contentData.buttonText,
+      buttonLink: contentData.buttonLink,
+      gradientFrom: contentData.gradientFrom,
+      gradientVia: contentData.gradientVia,
+      gradientTo: contentData.gradientTo,
+      audience: contentData.audience,
+      audienceTarget: contentData.audience === 'All Users' ? null : contentData.audienceTarget,
+    };
     
     const newItem = await db.promotionalContent.create({
       data: dataForDb,
@@ -90,13 +101,25 @@ export async function createPromotionalContent(contentData: Omit<PromotionalCont
 export async function updatePromotionalContent(contentId: string, updateData: Partial<Omit<PromotionalContent, 'id'>>): Promise<PromotionalContent | null> {
   logAction('Updating promotional content', { contentId });
   try {
-    // Destructure to remove the 'id' and other non-updatable fields if they're present in updateData from the form
-    const { id, createdAt, updatedAt, ...restOfUpdateData } = updateData as any;
+    // Construct a clean data object with only the fields that are part of the model.
+    // This prevents passing invalid fields like 'id', 'createdAt', etc., in the data payload.
+    const dataForDb: Partial<PromotionalContent> = {
+      isActive: updateData.isActive,
+      title: updateData.title,
+      description: updateData.description,
+      imageUrl: updateData.imageUrl,
+      imageAlt: updateData.imageAlt,
+      imageHint: updateData.imageHint,
+      buttonText: updateData.buttonText,
+      buttonLink: updateData.buttonLink,
+      gradientFrom: updateData.gradientFrom,
+      gradientVia: updateData.gradientVia,
+      gradientTo: updateData.gradientTo,
+      audience: updateData.audience,
+      // Set audienceTarget to null if audience is 'All Users', otherwise use the provided value.
+      audienceTarget: updateData.audience === 'All Users' ? null : updateData.audienceTarget,
+    };
 
-    const dataForDb: any = { ...restOfUpdateData };
-    if (dataForDb.audience === 'All Users') {
-      dataForDb.audienceTarget = null;
-    }
 
     const updatedItem = await db.promotionalContent.update({
       where: { id: contentId },
