@@ -39,6 +39,37 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
 }
 
 /**
+ * Fetches the next available survey for a user that they haven't completed.
+ * @param userId The ID of the user.
+ * @returns The Survey object or null if all surveys are completed or none exist.
+ */
+export async function getSurveyForUser(userId: string): Promise<Survey | null> {
+    try {
+        const allSurveys = await db.survey.findMany({
+            orderBy: { createdAt: 'asc' } // Start with the oldest survey
+        });
+
+        const userResponses = await db.surveyResponse.findMany({
+            where: { userId },
+            select: { surveyId: true }
+        });
+
+        const completedSurveyIds = new Set(userResponses.map(res => res.surveyId));
+
+        for (const survey of allSurveys) {
+            if (!completedSurveyIds.has(survey.name)) {
+                return survey as unknown as Survey; // Return the first survey not completed
+            }
+        }
+
+        return null; // User has completed all available surveys
+    } catch (error) {
+        console.error(`[SurveyAction] Error fetching next survey for user ${userId}:`, error);
+        return null;
+    }
+}
+
+/**
  * Creates a new survey definition.
  * @param surveyData The data for the new survey.
  * @returns The newly created Survey object or null.

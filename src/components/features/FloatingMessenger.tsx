@@ -10,9 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, X, Send } from 'lucide-react';
-import type { SurveyStep, SurveyOption } from '@/types';
+import type { SurveyStep, SurveyOption, UserProfile } from '@/types';
 import { cn } from "@/lib/utils";
-
+import { useAuth } from '@/hooks/use-auth';
+import { getSurveyByName, getSurveyForUser, createSurveyResponse } from '@/lib/actions/surveys';
 
 interface Message {
   id: string;
@@ -22,7 +23,7 @@ interface Message {
 
 export default function FloatingMessenger() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeSurveyId, setActiveSurveyId] = useState<string>(''); // No default survey
+  const [activeSurveyName, setActiveSurveyName] = useState<string>('');
   const [currentSurveyDefinition, setCurrentSurveyDefinition] = useState<SurveyStep[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -30,6 +31,7 @@ export default function FloatingMessenger() {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
+  const { user } = useAuth();
 
   const currentSurveyStep = currentSurveyDefinition.find(step => step.id === currentStepId);
 
@@ -40,13 +42,16 @@ export default function FloatingMessenger() {
   useEffect(scrollToBottom, [messages]);
   
   useEffect(() => {
-    if (isOpen && messages.length === 0 && currentSurveyDefinition.length > 0) {
-      const firstStep = currentSurveyDefinition[0];
-      if (firstStep) {
-        resetSurvey(activeSurveyId);
-      }
-    }
-  }, [isOpen, messages.length, currentSurveyDefinition, activeSurveyId]);
+    const loadInitialSurvey = async () => {
+        if (isOpen && user && messages.length === 0) {
+            const survey = await getSurveyForUser(user.id);
+            if (survey) {
+                resetSurvey(survey.name);
+            }
+        }
+    };
+    loadInitialSurvey();
+  }, [isOpen, user, messages.length]);
 
 
   const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
@@ -64,7 +69,15 @@ export default function FloatingMessenger() {
       if (step.text) addMessage('bot', step.text);
       if (step.isLastStep) {
         setCurrentStepId(null); 
-        console.log("Survey Completed. Data:", surveyData);
+        if (user && activeSurveyName) {
+            createSurveyResponse({
+                userId: user.id,
+                userName: user.name,
+                surveyId: activeSurveyName, // In a real app, you'd link by ID
+                surveyName: activeSurveyName,
+                data: surveyData,
+            });
+        }
       } else if (step.nextStepId) {
         const nextStep = currentSurveyDefinition.find(s => s.id === step.nextStepId);
         if (nextStep && nextStep.type === 'botMessage') {
@@ -121,37 +134,38 @@ export default function FloatingMessenger() {
     processStep(nextStep);
   };
   
-  const resetSurvey = (surveyIdToLoad: string) => {
-    // In a real app, you'd fetch the survey definition here based on surveyIdToLoad
-    // For now, this function just resets the state.
+  const resetSurvey = async (surveyNameToLoad: string) => {
     setMessages([]);
     setSurveyData({});
     setInputValue('');
     messageIdCounter.current = 0;
-    setActiveSurveyId(surveyIdToLoad);
+    setActiveSurveyName(surveyNameToLoad);
     
-    // This part would be replaced by a fetch call
-    const surveyToStart: SurveyStep[] = []; // Fetch from DB here
-    setCurrentSurveyDefinition(surveyToStart);
-
-    const firstStep = surveyToStart[0];
-
-    if (firstStep) {
-       setCurrentStepId(firstStep.id);
-       if(firstStep.type === 'botMessage') {
-         processStep(firstStep);
-       } else if (firstStep.text) { 
-         addMessage('bot', firstStep.text);
-       }
+    const surveyToStart = await getSurveyByName(surveyNameToLoad);
+    
+    if (surveyToStart && surveyToStart.steps) {
+        setCurrentSurveyDefinition(surveyToStart.steps);
+        const firstStep = surveyToStart.steps[0];
+        if (firstStep) {
+            setCurrentStepId(firstStep.id);
+            if(firstStep.type === 'botMessage') {
+                processStep(firstStep);
+            } else if (firstStep.text) { 
+                addMessage('bot', firstStep.text);
+            }
+        } else {
+            setCurrentStepId(null); 
+        }
     } else {
-       setCurrentStepId(null); 
+        setCurrentSurveyDefinition([]);
+        setCurrentStepId(null);
     }
   };
 
   useEffect(() => {
     const handleAdminSurveyChange = (event: Event) => {
         const customEvent = event as CustomEvent<string>;
-        if (customEvent.detail && customEvent.detail !== activeSurveyId) {
+        if (customEvent.detail && customEvent.detail !== activeSurveyName) {
             setIsOpen(true); 
             resetSurvey(customEvent.detail);
         }
@@ -160,7 +174,7 @@ export default function FloatingMessenger() {
     return () => {
         window.removeEventListener('changeActiveSurvey', handleAdminSurveyChange);
     };
-  }, [activeSurveyId]);
+  }, [activeSurveyName]);
 
 
   if (!isOpen) {
@@ -257,7 +271,7 @@ export default function FloatingMessenger() {
           )}
            {!currentSurveyStep && messages.length > 0 && ( 
              <div className="flex flex-col items-center w-full space-y-2">
-                <Button variant="outline" size="sm" onClick={() => resetSurvey(activeSurveyId)} className="w-full">Restart Current Survey</Button>
+                <Button variant="outline" size="sm" onClick={() => resetSurvey(activeSurveyName)} className="w-full">Restart Current Survey</Button>
                 <Button size="sm" onClick={() => setIsOpen(false)} className="w-full bg-primary hover:bg-primary/90">Close</Button>
              </div>
            )}
