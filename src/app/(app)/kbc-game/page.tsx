@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as 
 import { useAuth } from '@/hooks/use-auth';
 import { createActivity } from '@/lib/actions/activities';
 import { getInterviewQuestions } from '@/lib/actions/questions';
+import { updateWallet, getWallet } from '@/lib/actions/wallet';
 
 
 const KBC_QUESTION_COUNT = 10;
@@ -107,7 +108,7 @@ export default function KBCGamePage() {
     // Deduct cost and add transaction via the new auth context method
     // In a real app, this should be a single server action like `startGame(userId, cost)`
     // For now, we simulate by directly calling updateWallet from the imported actions.
-    const { updateWallet } = await import('@/lib/actions/wallet');
+    
     await updateWallet(user!.id, { coins: wallet.coins - GAME_COST }, `Fee for KBC Game (${selectedTopic})`);
     await refreshWallet(); // Refresh wallet state in context
 
