@@ -145,6 +145,23 @@ export interface PromotionalContent {
   targetRole?: UserRole | null;
 }
 
+export type AnnouncementStatus = 'Draft' | 'Published' | 'Archived';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  startDate: string;
+  endDate: string | null;
+  status: AnnouncementStatus;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+  tenantId: string | null;
+  targetTenantId: string | null;
+  targetRole: UserRole | null;
+}
+
 export interface CommunityPost {
   id: string;
   tenantId: string;
@@ -1002,3 +1019,5 @@ export interface BlogGenerationSettings {
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
   lastGenerated?: string;
 }
+
+    
