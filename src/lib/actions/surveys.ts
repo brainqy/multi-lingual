@@ -3,7 +3,6 @@
 
 import { db } from '@/lib/db';
 import type { Survey, SurveyResponse } from '@/types';
-import { headers } from 'next/headers';
 
 /**
  * Fetches all survey definitions.
@@ -87,8 +86,7 @@ export async function getSurveyForUser(userId: string): Promise<Survey | null> {
  */
 export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    const tenantId = 'platform'; // Assuming surveys are platform-wide for now
 
     // Wrap the steps array in the { "set": [...] } object structure to match the seed data.
     const dataForDb: any = {
@@ -118,7 +116,9 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
   try {
     const whereClause: any = {};
     if (tenantId && tenantId !== 'platform') {
-      whereClause.tenantId = tenantId;
+      const usersInTenant = await db.user.findMany({ where: { tenantId }, select: { id: true } });
+      const userIds = usersInTenant.map(u => u.id);
+      whereClause.userId = { in: userIds };
     }
     
     const responses = await db.surveyResponse.findMany({
@@ -134,16 +134,16 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
 
 /**
  * Creates a new survey response.
- * @param responseData The data for the new response. The surveyId here is the *name* of the survey.
+ * @param responseData The data for the new response.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId' | 'surveyName'> & { surveyId: string }): Promise<SurveyResponse | null> {
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'surveyId'>): Promise<SurveyResponse | null> {
   try {
     const user = await db.user.findUnique({ where: { id: responseData.userId }});
     if (!user) throw new Error("User not found for survey response");
 
-    const survey = await db.survey.findUnique({ where: { name: responseData.surveyId }});
-    if (!survey) throw new Error(`Survey with name "${responseData.surveyId}" not found.`);
+    const survey = await db.survey.findUnique({ where: { name: responseData.surveyName }});  
+    if (!survey) throw new Error(`Survey with name "${responseData.surveyName}" not found.`);
     
     const tenantId = user.tenantId;
 
