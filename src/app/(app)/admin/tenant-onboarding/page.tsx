@@ -141,13 +141,13 @@ export default function TenantOnboardingPage() {
         email: data.adminEmail,
     };
 
-    const newTenant = await createTenantWithAdmin(tenantData, adminUserData);
+    const result = await createTenantWithAdmin(tenantData, adminUserData);
 
-    if (newTenant) {
+    if (result.success && result.tenant) {
         toast({ title: t("tenantOnboarding.toast.tenantCreated.title", { default: "Tenant Created!" }), description: t("tenantOnboarding.toast.tenantCreated.description", { default: "{tenantName} has been successfully onboarded.", tenantName: data.tenantName}) });
         router.push('/admin/tenants');
     } else {
-        toast({ title: "Error", description: "Failed to create the new tenant.", variant: "destructive"});
+        toast({ title: "Error", description: result.error || "Failed to create the new tenant.", variant: "destructive"});
         setIsSubmitting(false);
     }
   };

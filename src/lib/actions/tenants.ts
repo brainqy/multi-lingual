@@ -4,7 +4,7 @@
 import { db } from '@/lib/db';
 import type { Tenant, TenantSettings } from '@/types';
 import { Prisma } from '@prisma/client';
-import { createUser } from '@/lib/data-services/users';
+import { createUser, getUserByEmail } from '@/lib/data-services/users';
 import { logAction, logError } from '@/lib/logger';
 import { sendEmail } from './send-email';
 
@@ -64,9 +64,16 @@ export async function getTenantByIdentifier(identifier: string): Promise<Tenant 
 export async function createTenantWithAdmin(
     tenantData: Omit<Tenant, 'id' | 'createdAt' | 'settings'> & { settings: Omit<TenantSettings, 'id'> },
     adminUserData: { name: string; email: string; }
-): Promise<Tenant | null> {
+): Promise<{ success: boolean; tenant: Tenant | null; error?: string }> {
     logAction('Creating tenant with admin', { tenantName: tenantData.name, adminEmail: adminUserData.email });
     try {
+        // Check if the admin email is already in use
+        const existingUser = await getUserByEmail(adminUserData.email);
+        if (existingUser) {
+            logError('[TenantAction] Admin email already exists', {}, { adminEmail: adminUserData.email });
+            return { success: false, tenant: null, error: 'An account with this admin email already exists.' };
+        }
+        
         const newTenant = await db.tenant.create({
             data: {
                 name: tenantData.name,
@@ -109,10 +116,10 @@ export async function createTenantWithAdmin(
         }
 
 
-        return newTenant as unknown as Tenant;
+        return { success: true, tenant: newTenant as unknown as Tenant };
     } catch (error) {
         logError('[TenantAction] Error creating tenant with admin', error, { tenantName: tenantData.name });
-        return null;
+        return { success: false, tenant: null, error: 'An unexpected error occurred.' };
     }
 }
 
