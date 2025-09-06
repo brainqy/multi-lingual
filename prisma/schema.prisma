@@ -570,7 +570,7 @@ model PromotionalContent {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   tenantId     String?
-  targetRole   UserRole?
+  audience     String?
 }
 
 model PromoCode {
@@ -653,8 +653,20 @@ model MockInterviewSession {
   difficulty          String?
   questionCategories  String[]
   recordingReferences Json?
+  interviewerScores    InterviewerScore[]
+  finalScore           Json?
 }
 
+model InterviewerScore {
+  id                      String   @id @default(cuid())
+  mockInterviewSessionId  String
+  mockInterviewSession    MockInterviewSession @relation(fields: [mockInterviewSessionId], references: [id], onDelete: Cascade)
+  questionId              String
+  correctnessPercentage   Int
+  notes                   String?
+
+  @@index([mockInterviewSessionId])
+}
 model ProductCompany {
   id            String  @id @default(cuid())
   name          String
@@ -740,6 +752,7 @@ enum EmailTemplateType {
   WELCOME
   APPOINTMENT_CONFIRMATION
   PASSWORD_RESET
+  TENANT_WELCOME
 }
 model EmailTemplate {
   id        String            @id @default(cuid())
