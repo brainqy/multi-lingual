@@ -104,6 +104,8 @@ export let samplePracticeSessions: PracticeSession[] = [
     language: "English",
     status: "SCHEDULED",
     notes: "AI interview focusing on React concepts.",
+    topic: "React Hooks & State Management",
+    createdAt: new Date().toISOString(),
     aiTopicOrRole: "React Developer",
     aiNumQuestions: 5,
     aiDifficulty: 'medium',
@@ -119,6 +121,8 @@ export let samplePracticeSessions: PracticeSession[] = [
     language: "English",
     status: "SCHEDULED",
     notes: "Session to discuss team leadership strategies and conflict resolution.",
+    topic: "Leadership & Management",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "ps-friend-1",
@@ -129,6 +133,8 @@ export let samplePracticeSessions: PracticeSession[] = [
     language: "English",
     status: "SCHEDULED",
     notes: "Practice with Alice Wonderland for upcoming PM interview.",
+    topic: "Product Management Case Study",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "ps1",
@@ -139,6 +145,8 @@ export let samplePracticeSessions: PracticeSession[] = [
     language: "English",
     status: "SCHEDULED",
     notes: "Focus on advanced component architecture and state management for the candidate.",
+    topic: "Angular Frontend",
+    createdAt: new Date().toISOString(),
   },
    {
     id: "ps2",
@@ -149,6 +157,8 @@ export let samplePracticeSessions: PracticeSession[] = [
     language: "English",
     status: "SCHEDULED",
     notes: "Candidate wants to practice system design for a large-scale e-commerce platform.",
+    topic: "System Design Interview",
+    createdAt: new Date().toISOString(),
   },
 ];
 
