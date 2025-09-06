@@ -7,28 +7,41 @@ import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 
 /**
- * Handles user login, scoped to a specific tenant.
+ * Handles user login, scoped to a specific tenant. It can identify tenants by ID or custom domain.
  * @param email The user's email address.
  * @param password The user's password.
- * @param tenantId The ID of the tenant from the URL subdomain.
+ * @param identifier The tenant's ID or custom domain from the URL subdomain.
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string, password?: string, tenantId?: string): Promise<UserProfile | null> {
+export async function loginUser(email: string, password?: string, identifier?: string): Promise<UserProfile | null> {
   try {
     const user = await db.user.findFirst({
-      where: {
-        email: email,
-      },
+      where: { email: email },
     });
 
     if (user) {
-      const isPlatformLogin = !tenantId || tenantId === 'platform';
+      const isPlatformLogin = !identifier || identifier === 'platform';
       
+      let tenant = null;
+      if (identifier && !isPlatformLogin) {
+        // First try to find tenant by custom domain, then by ID as a fallback.
+        tenant = await db.tenant.findFirst({
+          where: { OR: [{ domain: identifier }, { id: identifier }] },
+        });
+        if (!tenant) {
+            logError('Login failed: Tenant not found by identifier', { email, identifier });
+            return null; // The specified tenant subdomain does not exist.
+        }
+      }
+      
+      const tenantId = tenant ? tenant.id : 'platform';
+
       if (user.role === 'admin' && !isPlatformLogin) {
-        logError('Admin login attempt failed on tenant subdomain', { email, tenantId });
+        logError('Admin login attempt failed on tenant subdomain', { email, identifier });
         return null;
       }
       
+      // A user's tenantId must match the resolved tenantId from the subdomain.
       if (user.role !== 'admin' && user.tenantId !== tenantId) {
         logError('User login attempt failed due to tenant mismatch', { email, userTenant: user.tenantId, loginTenant: tenantId });
         return null;

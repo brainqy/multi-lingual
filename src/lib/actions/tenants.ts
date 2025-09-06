@@ -31,6 +31,30 @@ export async function getTenants(): Promise<Tenant[]> {
 }
 
 /**
+ * Fetches a single tenant by its ID or custom domain.
+ * @param identifier The tenant's ID or unique custom domain.
+ * @returns The Tenant object or null if not found.
+ */
+export async function getTenantByIdentifier(identifier: string): Promise<Tenant | null> {
+    logAction('Fetching tenant by identifier', { identifier });
+    try {
+        const tenant = await db.tenant.findFirst({
+            where: {
+                OR: [
+                    { id: identifier },
+                    { domain: identifier },
+                ]
+            }
+        });
+        return tenant as unknown as Tenant | null;
+    } catch (error) {
+        logError('[TenantAction] Error fetching tenant by identifier', error, { identifier });
+        return null;
+    }
+}
+
+
+/**
  * Creates a new tenant and its initial admin user.
  * Sends a welcome email to the new manager with a password reset link.
  * @param tenantData The data for the new tenant.
