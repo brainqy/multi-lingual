@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { PromotionalContent, UserProfile } from '@/types';
+import type { PromotionalContent, UserProfile, UserRole } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 
 /**
@@ -35,21 +35,19 @@ export async function getActivePromotionalContent(currentUser: UserProfile): Pro
       where: {
         isActive: true,
         OR: [
-          // Content for all tenants
-          { tenantId: null },
+          // Content for all users
+          { audience: 'All Users' },
           // Content for the user's specific tenant
-          { tenantId: currentUser.tenantId },
-        ],
-        AND: [
           {
-            OR: [
-              // Content for all roles
-              { targetRole: null },
-              // Content for the user's specific role
-              { targetRole: currentUser.role },
-            ]
-          }
-        ]
+            audience: 'Specific Tenant',
+            audienceTarget: currentUser.tenantId,
+          },
+          // Content for the user's specific role
+          {
+            audience: 'Specific Role',
+            audienceTarget: currentUser.role,
+          },
+        ],
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -68,12 +66,13 @@ export async function getActivePromotionalContent(currentUser: UserProfile): Pro
 export async function createPromotionalContent(contentData: Omit<PromotionalContent, 'id' | 'createdAt' | 'updatedAt'>): Promise<PromotionalContent | null> {
   logAction('Creating promotional content', { title: contentData.title });
   try {
+    const dataForDb: any = { ...contentData };
+    if (dataForDb.audience === 'All Users') {
+      dataForDb.audienceTarget = null;
+    }
+    
     const newItem = await db.promotionalContent.create({
-      data: {
-          ...contentData,
-          tenantId: contentData.tenantId === 'all' ? null : contentData.tenantId,
-          targetRole: contentData.targetRole === 'all' ? null : contentData.targetRole,
-      },
+      data: dataForDb,
     });
     return newItem as unknown as PromotionalContent;
   } catch (error) {
@@ -91,16 +90,17 @@ export async function createPromotionalContent(contentData: Omit<PromotionalCont
 export async function updatePromotionalContent(contentId: string, updateData: Partial<Omit<PromotionalContent, 'id'>>): Promise<PromotionalContent | null> {
   logAction('Updating promotional content', { contentId });
   try {
-    // Destructure to remove the 'id' if it's present in updateData from the form
-    const { id, ...restOfUpdateData } = updateData;
+    // Destructure to remove the 'id' and other non-updatable fields if they're present in updateData from the form
+    const { id, createdAt, updatedAt, ...restOfUpdateData } = updateData as any;
+
+    const dataForDb: any = { ...restOfUpdateData };
+    if (dataForDb.audience === 'All Users') {
+      dataForDb.audienceTarget = null;
+    }
 
     const updatedItem = await db.promotionalContent.update({
       where: { id: contentId },
-      data: {
-        ...restOfUpdateData,
-        tenantId: updateData.tenantId === 'all' ? null : updateData.tenantId,
-        targetRole: updateData.targetRole === 'all' ? null : updateData.targetRole,
-      },
+      data: dataForDb,
     });
     return updatedItem as unknown as PromotionalContent;
   } catch (error) {

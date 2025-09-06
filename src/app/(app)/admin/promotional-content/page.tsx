@@ -36,8 +36,8 @@ const promoSchema = z.object({
   gradientFrom: z.string().optional(),
   gradientVia: z.string().optional(),
   gradientTo: z.string().optional(),
-  tenantId: z.string().optional(),
-  targetRole: z.string().optional(),
+  audience: z.enum(['All Users', 'Specific Tenant', 'Specific Role']),
+  audienceTarget: z.string().optional(),
 });
 type PromoFormData = z.infer<typeof promoSchema>;
 
@@ -51,10 +51,12 @@ export default function PromotionalContentPage() {
   const { user: currentUser } = useAuth();
   const { t } = useI18n();
 
-  const { control, handleSubmit, reset } = useForm<PromoFormData>({
+  const { control, handleSubmit, reset, watch } = useForm<PromoFormData>({
     resolver: zodResolver(promoSchema),
   });
   
+  const watchedAudience = watch("audience");
+
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -77,8 +79,8 @@ export default function PromotionalContentPage() {
     setEditingContent(content);
     reset({
         ...content,
-        tenantId: content.tenantId || 'all',
-        targetRole: content.targetRole || 'all',
+        audience: content.audience || 'All Users',
+        audienceTarget: content.audienceTarget || '',
     });
     setIsDialogOpen(true);
   };
@@ -96,21 +98,24 @@ export default function PromotionalContentPage() {
       gradientFrom: 'from-primary/80',
       gradientVia: 'via-primary',
       gradientTo: 'to-accent/80',
-      tenantId: 'all',
-      targetRole: 'all',
+      audience: 'All Users',
+      audienceTarget: '',
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = async (data: PromoFormData) => {
+    const audienceTarget = data.audience === 'All Users' ? null : data.audienceTarget;
+    const finalData = { ...data, audienceTarget };
+
     if (editingContent) {
-      const updated = await updatePromotionalContent(editingContent.id, data);
+      const updated = await updatePromotionalContent(editingContent.id, finalData);
       if (updated) {
         setContentItems(prev => prev.map(item => item.id === editingContent.id ? updated : item));
         toast({ title: t("promotionalContent.toast.updated.title"), description: t("promotionalContent.toast.updated.description", { title: data.title }) });
       }
     } else {
-      const created = await createPromotionalContent(data as Omit<PromotionalContent, 'id'>);
+      const created = await createPromotionalContent(finalData as Omit<PromotionalContent, 'id'>);
       if (created) {
         setContentItems(prev => [created, ...prev]);
         toast({ title: t("promotionalContent.toast.created.title"), description: t("promotionalContent.toast.created.description", { title: data.title }) });
@@ -129,6 +134,16 @@ export default function PromotionalContentPage() {
     }
   };
   
+  const getAudienceDisplay = (item: PromotionalContent) => {
+    if (item.audience === 'Specific Tenant') {
+      return tenants.find(t => t.id === item.audienceTarget)?.name || item.audienceTarget;
+    }
+    if (item.audience === 'Specific Role') {
+      return item.audienceTarget;
+    }
+    return 'All Users';
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -157,8 +172,8 @@ export default function PromotionalContentPage() {
                   <TableHeader>
                       <TableRow>
                           <TableHead>{t("promotionalContent.table.title")}</TableHead>
-                          <TableHead>Target Tenant</TableHead>
-                          <TableHead>Target Role</TableHead>
+                          <TableHead>Audience</TableHead>
+                          <TableHead>Target</TableHead>
                           <TableHead>{t("promotionalContent.table.status")}</TableHead>
                           <TableHead className="text-right">{t("promotionalContent.table.actions")}</TableHead>
                       </TableRow>
@@ -167,8 +182,8 @@ export default function PromotionalContentPage() {
                       {contentItems.map(item => (
                           <TableRow key={item.id}>
                               <TableCell className="font-medium">{item.title}</TableCell>
-                              <TableCell>{item.tenantId ? tenants.find(t => t.id === item.tenantId)?.name || item.tenantId : 'All Tenants'}</TableCell>
-                              <TableCell className="capitalize">{item.targetRole || 'All Roles'}</TableCell>
+                              <TableCell>{item.audience || 'All Users'}</TableCell>
+                              <TableCell className="capitalize">{getAudienceDisplay(item)}</TableCell>
                               <TableCell>
                                 <span className={`px-2 py-0.5 text-xs rounded-full ${item.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                                   {item.isActive ? t("promotionalContent.status.active") : t("promotionalContent.status.inactive")}
@@ -222,33 +237,48 @@ export default function PromotionalContentPage() {
                   </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="tenantId">Target Tenant</Label>
-                        <Controller name="tenantId" control={control} render={({ field }) => (
-                           <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                        <Label htmlFor="audience">Audience</Label>
+                        <Controller name="audience" control={control} render={({ field }) => (
+                           <Select onValueChange={field.onChange} value={field.value || 'All Users'}>
                               <SelectTrigger><SelectValue/></SelectTrigger>
                               <SelectContent>
-                                  <SelectItem value="all">All Tenants</SelectItem>
-                                  {tenants.map(tenant => (
-                                      <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
-                                  ))}
+                                  <SelectItem value="All Users">All Users</SelectItem>
+                                  <SelectItem value="Specific Tenant">Specific Tenant</SelectItem>
+                                  <SelectItem value="Specific Role">Specific Role</SelectItem>
                               </SelectContent>
                            </Select>
                         )} />
                       </div>
-                      <div>
-                        <Label htmlFor="targetRole">Target Role</Label>
-                        <Controller name="targetRole" control={control} render={({ field }) => (
-                           <Select onValueChange={field.onChange} value={field.value || 'all'}>
-                              <SelectTrigger><SelectValue/></SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="all">All Roles</SelectItem>
-                                  <SelectItem value="user">User</SelectItem>
-                                  <SelectItem value="manager">Manager</SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                           </Select>
-                        )} />
-                      </div>
+                      {watchedAudience === 'Specific Tenant' && (
+                        <div>
+                          <Label htmlFor="audienceTarget">Target Tenant</Label>
+                          <Controller name="audienceTarget" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                               <SelectTrigger><SelectValue placeholder="Select a tenant"/></SelectTrigger>
+                               <SelectContent>
+                                   {tenants.map(tenant => (
+                                       <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
+                                   ))}
+                               </SelectContent>
+                            </Select>
+                          )} />
+                        </div>
+                      )}
+                      {watchedAudience === 'Specific Role' && (
+                        <div>
+                          <Label htmlFor="audienceTarget">Target Role</Label>
+                          <Controller name="audienceTarget" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || ''}>
+                               <SelectTrigger><SelectValue placeholder="Select a role"/></SelectTrigger>
+                               <SelectContent>
+                                   <SelectItem value="user">User</SelectItem>
+                                   <SelectItem value="manager">Manager</SelectItem>
+                                   <SelectItem value="admin">Admin</SelectItem>
+                               </SelectContent>
+                            </Select>
+                          )} />
+                        </div>
+                      )}
                   </div>
                   <div className="flex items-center space-x-2 pt-2">
                     <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />
