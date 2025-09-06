@@ -40,46 +40,31 @@ export default function FloatingMessenger() {
   };
 
   useEffect(scrollToBottom, [messages]);
-  
-  const loadInitialSurvey = useCallback(async () => {
-    if (user && messages.length === 0) {
-      const survey = await getSurveyForUser(user.id);
-      if (survey) {
-        resetSurvey(survey.name);
-      }
-    }
-  }, [user, messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (isOpen) {
-      loadInitialSurvey();
-    }
-  }, [isOpen, loadInitialSurvey]);
-
-
-  const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
+  const addMessage = useCallback((type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []) => {
     const newId = `${Date.now()}-${messageIdCounter.current++}`;
-    setMessages(prev => [...prev, { id: newId, type, content }]);
-  };
-  
-  const processStep = (stepId: string | undefined | null) => {
+    batch.push({ id: newId, type, content });
+  }, []);
+
+  const processStep = useCallback(async (stepId: string | undefined | null) => {
     if (!stepId) {
       setCurrentStepId(null);
       return;
     }
 
     let nextStep: SurveyStep | undefined = currentSurveyDefinition.find(s => s.id === stepId);
-    
-    // This loop handles consecutive bot messages without user interaction.
+    const messageBatch: Message[] = [];
+
     while (nextStep && nextStep.type === 'botMessage') {
       if (nextStep.text) {
-        addMessage('bot', nextStep.text);
+        addMessage('bot', nextStep.text, messageBatch);
       }
       
       if (nextStep.isLastStep) {
+        setMessages(prev => [...prev, ...messageBatch]);
         setCurrentStepId(null);
         if (user && activeSurveyName) {
-          createSurveyResponse({
+          await createSurveyResponse({
             userId: user.id,
             userName: user.name,
             surveyId: activeSurveyName,
@@ -87,60 +72,25 @@ export default function FloatingMessenger() {
             data: surveyData,
           });
         }
-        return; // End of conversation
+        return;
       }
       
       const nextStepId = nextStep.nextStepId;
       nextStep = nextStepId ? currentSurveyDefinition.find(s => s.id === nextStepId) : undefined;
     }
 
-    // If the loop finished and there's a next step that requires user input, set it.
     if (nextStep) {
-        if (nextStep.text) {
-            addMessage('bot', nextStep.text);
-        }
-        setCurrentStepId(nextStep.id);
+      if (nextStep.text) {
+        addMessage('bot', nextStep.text, messageBatch);
+      }
+      setCurrentStepId(nextStep.id);
     } else {
-        setCurrentStepId(null);
+      setCurrentStepId(null);
     }
-  };
+    setMessages(prev => [...prev, ...messageBatch]);
+  }, [currentSurveyDefinition, addMessage, user, activeSurveyName, surveyData]);
 
-
-  const handleOptionSelect = (option: SurveyOption) => {
-    addMessage('user', option.text);
-    if (currentSurveyStep?.variableName) {
-      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
-    }
-    processStep(option.nextStepId);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setInputValue(e.target.value);
-  };
-  
-  const handleDropdownChange = (value: string) => {
-    if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
-    
-    const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
-
-    addMessage('user', selectedLabel);
-     if (currentSurveyStep.variableName) {
-      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
-    }
-    processStep(currentSurveyStep.nextStepId);
-  };
-
-  const handleInputSubmit = () => {
-    if (!inputValue.trim() || !currentSurveyStep) return;
-    addMessage('user', inputValue);
-    if (currentSurveyStep.variableName) {
-      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
-    }
-    setInputValue('');
-    processStep(currentSurveyStep.nextStepId);
-  };
-  
-  const resetSurvey = async (surveyNameToLoad: string) => {
+  const resetSurvey = useCallback(async (surveyNameToLoad: string) => {
     setMessages([]);
     setSurveyData({});
     setInputValue('');
@@ -161,8 +111,60 @@ export default function FloatingMessenger() {
         setCurrentSurveyDefinition([]);
         setCurrentStepId(null);
     }
+  }, [processStep]);
+
+  const loadInitialSurvey = useCallback(async () => {
+    if (user && messages.length === 0) {
+      const survey = await getSurveyForUser(user.id);
+      if (survey) {
+        await resetSurvey(survey.name);
+      }
+    }
+  }, [user, messages.length, resetSurvey]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadInitialSurvey();
+    }
+  }, [isOpen, loadInitialSurvey]);
+
+  const handleOptionSelect = (option: SurveyOption) => {
+    addMessage('user', option.text, messages); // Add directly to messages to avoid batching issues
+    setMessages([...messages]); // Force re-render
+    if (currentSurveyStep?.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
+    }
+    processStep(option.nextStepId);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+  };
+  
+  const handleDropdownChange = (value: string) => {
+    if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
+    
+    const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
+
+    addMessage('user', selectedLabel, messages);
+    setMessages([...messages]);
+    if (currentSurveyStep.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
+    }
+    processStep(currentSurveyStep.nextStepId);
+  };
+
+  const handleInputSubmit = () => {
+    if (!inputValue.trim() || !currentSurveyStep) return;
+    addMessage('user', inputValue, messages);
+    setMessages([...messages]);
+    if (currentSurveyStep.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
+    }
+    setInputValue('');
+    processStep(currentSurveyStep.nextStepId);
+  };
+  
   useEffect(() => {
     const handleAdminSurveyChange = (event: Event) => {
         const customEvent = event as CustomEvent<string>;
@@ -175,8 +177,7 @@ export default function FloatingMessenger() {
     return () => {
         window.removeEventListener('changeActiveSurvey', handleAdminSurveyChange);
     };
-  }, [activeSurveyName]);
-
+  }, [activeSurveyName, resetSurvey]);
 
   if (!isOpen) {
     return (
