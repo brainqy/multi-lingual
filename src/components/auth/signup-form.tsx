@@ -23,7 +23,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { User, KeyRound, Mail, Gift, Eye, EyeOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { samplePlatformSettings } from "@/lib/sample-data";
 
 export function SignupForm() {
   const { signup } = useAuth();

@@ -11,12 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Sparkles, Save, FileText, Edit, Copy } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateResumeVariant, type GenerateResumeVariantInput } from '@/ai/flows/generate-resume-variant';
-import { sampleResumeProfiles } from '@/lib/sample-data';
 import type { ResumeProfile } from '@/types';
 import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { useAuth } from '@/hooks/use-auth';
 import { useSettings } from '@/contexts/settings-provider';
+import { getResumeProfiles, createResumeProfile } from '@/lib/actions/resumes';
 
 export default function AiResumeWriterPage() {
   const [baseResumeText, setBaseResumeText] = useState('');
@@ -40,15 +40,13 @@ export default function AiResumeWriterPage() {
 
 
   useEffect(() => {
-    if (currentUser) {
-        // Filter resumes for the current user
-        const currentUserResumes = sampleResumeProfiles.filter(r => r.userId === currentUser.id);
-        setUserResumes(currentUserResumes);
-        if (currentUserResumes.length > 0) {
-        // setSelectedResumeId(currentUserResumes[0].id);
-        // setBaseResumeText(currentUserResumes[0].resumeText);
+    async function loadResumes() {
+        if (currentUser) {
+            const currentUserResumes = await getResumeProfiles(currentUser.id);
+            setUserResumes(currentUserResumes);
         }
     }
+    loadResumes();
   }, [currentUser]);
 
   useEffect(() => {
@@ -121,29 +119,29 @@ export default function AiResumeWriterPage() {
   };
 
 
-  const handleSaveGeneratedResume = () => {
+  const handleSaveGeneratedResume = async () => {
     if (!currentUser) return;
     if (!newResumeName.trim()) {
       toast({ title: "Name Required", description: "Please provide a name for the resume profile.", variant: "destructive" });
       return;
     }
-    const newResume: ResumeProfile = {
-      id: `resume-${Date.now()}`,
+    const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
       tenantId: currentUser.tenantId,
       userId: currentUser.id,
       name: newResumeName,
       resumeText: generatedResumeText,
-      lastAnalyzed: new Date().toISOString().split('T')[0],
     };
     
-    // Add to the main sample data array for app-wide persistence in demo
-    sampleResumeProfiles.unshift(newResume);
-    // Update local state to re-render dropdown
-    setUserResumes(prev => [newResume, ...prev]); 
+    const newResume = await createResumeProfile(newResumeData);
     
-    toast({ title: "Resume Saved", description: `"${newResumeName}" has been saved to 'My Resumes'.` });
-    setIsSaveDialogOpen(false);
-    setNewResumeName(''); // Clear for next time
+    if(newResume) {
+        setUserResumes(prev => [newResume, ...prev]); 
+        toast({ title: "Resume Saved", description: `"${newResumeName}" has been saved to 'My Resumes'.` });
+        setIsSaveDialogOpen(false);
+        setNewResumeName('');
+    } else {
+        toast({ title: "Save Failed", description: "Could not save the resume.", variant: "destructive" });
+    }
   };
   
   const handleCopyToClipboard = () => {
