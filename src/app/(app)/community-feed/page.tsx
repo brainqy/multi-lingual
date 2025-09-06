@@ -203,8 +203,17 @@ export default function CommunityFeedPage() {
 
   const mostActiveUsers = useMemo(() => {
     if (!allUsers.length || !currentUser) return [];
-    return [...allUsers]
-      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active' && (currentUser.role === 'admin' || user.tenantId === currentUser.tenantId || user.tenantId === 'platform'))
+
+    let usersToFilter = allUsers;
+
+    // If the current user is a manager, only show users from their tenant.
+    if (currentUser.role === 'manager') {
+        usersToFilter = allUsers.filter(user => user.tenantId === currentUser.tenantId);
+    }
+    // Admins will see users from all tenants by default (no filtering here).
+
+    return usersToFilter
+      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active')
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
       .slice(0, 5);
   }, [allUsers, currentUser]);
@@ -956,4 +965,3 @@ export default function CommunityFeedPage() {
   );
 }
 
-    
