@@ -162,7 +162,7 @@ export interface AlumniProfile {
   name: string;
   profilePictureUrl?: string;
   currentJobTitle: string;
-  currentOrganization: string;
+  currentOrganization?: string;
   shortBio: string;
   university: string;
   skills: string[];
