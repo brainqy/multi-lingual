@@ -2,7 +2,7 @@
 "use client";
 
 import type React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,17 +41,18 @@ export default function FloatingMessenger() {
 
   useEffect(scrollToBottom, [messages]);
   
-  useEffect(() => {
-    const loadInitialSurvey = async () => {
-        if (isOpen && user && messages.length === 0) {
-            const survey = await getSurveyForUser(user.id);
-            if (survey) {
-                resetSurvey(survey.name);
-            }
+  const loadInitialSurvey = useCallback(async () => {
+    if (isOpen && user && messages.length === 0) {
+        const survey = await getSurveyForUser(user.id);
+        if (survey) {
+            resetSurvey(survey.name);
         }
-    };
-    loadInitialSurvey();
+    }
   }, [isOpen, user, messages.length]);
+
+  useEffect(() => {
+    loadInitialSurvey();
+  }, [isOpen, user, messages.length, loadInitialSurvey]);
 
 
   const addMessage = (type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []): Message[] => {
