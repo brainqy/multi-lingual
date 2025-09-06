@@ -141,7 +141,7 @@ export interface PromotionalContent {
   gradientFrom?: string;
   gradientVia?: string;
   gradientTo?: string;
-  tenantId?: string | null;
+  audienceTarget?: string | null;
   audience?: string | null;
 }
 
