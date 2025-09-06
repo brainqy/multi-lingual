@@ -3,6 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Survey, SurveyResponse } from '@/types';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all survey definitions.
@@ -42,20 +43,21 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
  * @param surveyData The data for the new survey.
  * @returns The newly created Survey object or null.
  */
-export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
+export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt' | 'tenantId'>): Promise<Survey | null> {
   try {
-    const { tenantId, ...restOfData } = surveyData;
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+
     const dataForDb: any = {
-      ...restOfData,
-      steps: restOfData.steps as any, // Cast steps to any to satisfy Prisma's JsonValue type
-    };
-    if (tenantId) {
-      dataForDb.tenant = {
+      ...surveyData,
+      steps: surveyData.steps as any, // Cast steps to any to satisfy Prisma's JsonValue type
+      tenant: {
         connect: {
           id: tenantId
         }
-      };
-    }
+      }
+    };
+    
     const newSurvey = await db.survey.create({
       data: dataForDb,
     });
@@ -69,17 +71,20 @@ export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>)
 
 /**
  * Fetches all survey responses, optionally scoped by tenant.
- * @param tenantId Optional tenant ID to filter responses.
  * @returns A promise that resolves to an array of SurveyResponse objects.
  */
-export async function getSurveyResponses(tenantId?: string): Promise<SurveyResponse[]> {
+export async function getSurveyResponses(): Promise<SurveyResponse[]> {
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id');
+
     const whereClause: any = {};
-    // This assumes a relation or a tenantId field on the user who responded.
-    // Let's assume for now we filter based on a tenantId on the response itself.
-    // This would require adding a tenantId to the SurveyResponse model.
+    if (tenantId && tenantId !== 'platform') {
+      whereClause.tenantId = tenantId;
+    }
     
     const responses = await db.surveyResponse.findMany({
+      where: whereClause,
       orderBy: { responseDate: 'desc' },
     });
     return responses as unknown as SurveyResponse[];
@@ -94,12 +99,13 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
  * @param responseData The data for the new response.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate'>): Promise<SurveyResponse | null> {
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId'>): Promise<SurveyResponse | null> {
   try {
-    const { tenantId, ...restOfData } = responseData;
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
 
     const dataForDb: any = {
-        ...restOfData,
+        ...responseData,
         data: responseData.data as any,
         tenant: {
             connect: { id: tenantId }
