@@ -144,10 +144,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
   useEffect(() => {
     async function loadData() {
+        if (!user) return;
         setIsLoading(true);
         const [data, promotions] = await Promise.all([
             getDashboardData(user.tenantId, user.id),
-            getActivePromotionalContent()
+            getActivePromotionalContent(user)
         ]);
         setDashboardData(data);
         setActivePromotions(promotions);
@@ -668,5 +669,3 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     </>
   );
 }
-
-    

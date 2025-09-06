@@ -2,11 +2,11 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { PromotionalContent } from '@/types';
+import type { PromotionalContent, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 
 /**
- * Fetches all promotional content items.
+ * Fetches all promotional content items for the admin view.
  * @returns A promise that resolves to an array of PromotionalContent objects.
  */
 export async function getPromotionalContent(): Promise<PromotionalContent[]> {
@@ -23,19 +23,39 @@ export async function getPromotionalContent(): Promise<PromotionalContent[]> {
 }
 
 /**
- * Fetches only the active promotional content items.
+ * Fetches active promotional content items relevant to the current user.
+ * It filters based on the user's tenant and role.
+ * @param currentUser The profile of the user viewing the content.
  * @returns A promise that resolves to an array of active PromotionalContent objects.
  */
-export async function getActivePromotionalContent(): Promise<PromotionalContent[]> {
-  logAction('Fetching active promotional content');
+export async function getActivePromotionalContent(currentUser: UserProfile): Promise<PromotionalContent[]> {
+  logAction('Fetching active promotional content for user', { userId: currentUser.id });
   try {
     const activeContent = await db.promotionalContent.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        OR: [
+          // Content for all tenants
+          { tenantId: null },
+          // Content for the user's specific tenant
+          { tenantId: currentUser.tenantId },
+        ],
+        AND: [
+          {
+            OR: [
+              // Content for all roles
+              { targetRole: null },
+              // Content for the user's specific role
+              { targetRole: currentUser.role },
+            ]
+          }
+        ]
+      },
       orderBy: { createdAt: 'desc' },
     });
     return activeContent as unknown as PromotionalContent[];
   } catch (error) {
-    logError('[PromoAction] Error fetching active promotional content', error);
+    logError('[PromoAction] Error fetching active promotional content', error, { userId: currentUser.id });
     return [];
   }
 }
@@ -49,7 +69,11 @@ export async function createPromotionalContent(contentData: Omit<PromotionalCont
   logAction('Creating promotional content', { title: contentData.title });
   try {
     const newItem = await db.promotionalContent.create({
-      data: contentData,
+      data: {
+          ...contentData,
+          tenantId: contentData.tenantId === 'all' ? null : contentData.tenantId,
+          targetRole: contentData.targetRole === 'all' ? null : contentData.targetRole,
+      },
     });
     return newItem as unknown as PromotionalContent;
   } catch (error) {
@@ -69,7 +93,11 @@ export async function updatePromotionalContent(contentId: string, updateData: Pa
   try {
     const updatedItem = await db.promotionalContent.update({
       where: { id: contentId },
-      data: updateData,
+      data: {
+          ...updateData,
+          tenantId: updateData.tenantId === 'all' ? null : updateData.tenantId,
+          targetRole: updateData.targetRole === 'all' ? null : updateData.targetRole,
+      },
     });
     return updatedItem as unknown as PromotionalContent;
   } catch (error) {
