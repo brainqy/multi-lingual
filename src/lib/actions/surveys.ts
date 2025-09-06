@@ -14,7 +14,7 @@ export async function getSurveys(): Promise<Survey[]> {
     const surveys = await db.survey.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return surveys as unknown as Survey[];
+    return surveys.map(s => ({ ...s, steps: s.steps as any[] })) as unknown as Survey[];
   } catch (error) {
     console.error('[SurveyAction] Error fetching surveys:', error);
     return [];
@@ -22,7 +22,7 @@ export async function getSurveys(): Promise<Survey[]> {
 }
 
 /**
- * Fetches a single survey definition by its unique name.
+ * Fetches a single survey definition by its unique name and parses its steps.
  * @param name The unique name of the survey.
  * @returns The Survey object or null.
  */
@@ -31,6 +31,12 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
     const survey = await db.survey.findUnique({
       where: { name },
     });
+    if (survey && survey.steps) {
+      // The 'steps' field is stored as a JSON object in the DB.
+      // We need to ensure it's treated as an array of objects.
+      // The type assertion here handles cases where Prisma returns a generic JsonValue.
+      return { ...survey, steps: survey.steps as any[] } as unknown as Survey;
+    }
     return survey as unknown as Survey | null;
   } catch (error) {
     console.error(`[SurveyAction] Error fetching survey by name ${name}:`, error);
@@ -58,6 +64,10 @@ export async function getSurveyForUser(userId: string): Promise<Survey | null> {
 
         for (const survey of allSurveys) {
             if (!completedSurveyIds.has(survey.name)) {
+                // Ensure steps are correctly typed as an array
+                if (survey.steps) {
+                    return { ...survey, steps: survey.steps as any[] } as unknown as Survey;
+                }
                 return survey as unknown as Survey; // Return the first survey not completed
             }
         }
