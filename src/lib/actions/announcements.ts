@@ -28,19 +28,19 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
           { endDate: { gte: now } },
           { endDate: null },
         ],
-        AND: { // This is the corrected structure
-          OR: [
-            { audience: 'All Users' },
-            {
-              audience: 'Specific Tenant',
-              audienceTarget: currentUser.tenantId,
-            },
-            {
-              audience: 'Specific Role',
-              audienceTarget: currentUser.role,
-            },
-          ],
-        },
+        AND: {
+            OR: [
+              { audience: 'All Users' },
+              {
+                audience: 'Specific Tenant',
+                audienceTarget: currentUser.tenantId,
+              },
+              {
+                audience: 'Specific Role',
+                audienceTarget: currentUser.role,
+              },
+            ],
+        }
       },
       orderBy: {
         createdAt: 'desc',
