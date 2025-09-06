@@ -1,7 +1,7 @@
 
 import type { Locale } from '@/locales';
 import { z } from 'zod';
-import { type UserRole as PrismaUserRole } from '@prisma/client';
+import { type UserRole as PrismaUserRole, type EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
 
 export type { Locale };
 export type Translations = Record<string, string | NestedTranslations>;
@@ -1036,4 +1036,16 @@ export interface Activity {
     tenantId: string;
     description: string;
     timestamp: string;
+}
+
+export type EmailTemplateType = PrismaEmailTemplateType;
+
+export interface EmailTemplate {
+  id: string;
+  tenantId: string;
+  type: EmailTemplateType;
+  subject: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
 }
