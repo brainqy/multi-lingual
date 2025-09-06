@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { Tenant, TenantSettings } from '@/types';
-import { Prisma } from '@prisma/client';
+import { Prisma, EmailTemplateType } from '@prisma/client';
 import { createUser, getUserByEmail } from '@/lib/data-services/users';
 import { logAction, logError } from '@/lib/logger';
 import { sendEmail } from './send-email';
@@ -114,14 +114,18 @@ export async function createTenantWithAdmin(
         });
         
         if (newManager) {
+            const resetToken = Buffer.from(newManager.email).toString('base64');
+            const subdomain = newTenant.domain || newTenant.id;
+            const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
+            
             await sendEmail({
                 tenantId: newTenant.id,
                 recipientEmail: newManager.email,
-                type: 'TENANT_WELCOME',
+                type: EmailTemplateType.TENANT_WELCOME,
                 placeholders: {
                     userName: newManager.name,
                     userEmail: newManager.email,
-                    tenantDomain: newTenant.domain || newTenant.id, // Pass the domain for the link
+                    resetLink: resetUrl,
                 },
             });
              logAction('Welcome email sent to new tenant manager', { email: newManager.email });
