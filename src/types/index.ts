@@ -924,7 +924,7 @@ export interface PracticeSession {
 }
 
 export const PREDEFINED_INTERVIEW_TOPICS: string[] = Array.from(new Set([
-    "Java", "Python", "DSA", "Angular", "Javascript", "Microservices",
+    "Java", "Python", "DSA", "Angular", "React", "SpringBoot",
     "System Design", "Product Management", "Data Science",
 ]));
 
@@ -1433,7 +1433,7 @@ export type Vote = {
     createdAt: string;
 }
 
-export type EmailTemplateType = 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
+export type EmailTemplateType = 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET' | 'TENANT_WELCOME';
 
 export interface EmailTemplate {
   id: string;

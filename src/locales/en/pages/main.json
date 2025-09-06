@@ -67,6 +67,7 @@
     "saveButton": "Save Changes",
     "types": {
         "WELCOME": "Welcome Email",
+        "TENANT_WELCOME": "Tenant Welcome (Manager)",
         "APPOINTMENT_CONFIRMATION": "Appointment Confirmation",
         "PASSWORD_RESET": "Password Reset"
     },

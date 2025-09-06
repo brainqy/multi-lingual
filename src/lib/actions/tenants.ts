@@ -117,7 +117,7 @@ export async function createTenantWithAdmin(
             await sendEmail({
                 tenantId: newTenant.id,
                 recipientEmail: newManager.email,
-                type: 'WELCOME',
+                type: 'TENANT_WELCOME',
                 placeholders: {
                     userName: newManager.name,
                     userEmail: newManager.email,
