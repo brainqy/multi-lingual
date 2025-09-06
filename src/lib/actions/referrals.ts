@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { ReferralHistoryItem } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
+import { headers } from 'next/headers';
 
 /**
  * Fetches the referral history for a specific user.
@@ -33,15 +34,17 @@ export async function getReferralHistory(userId: string): Promise<ReferralHistor
  * @param referredEmailOrName The name or email of the new user.
  */
 export async function createReferral(referrerUserId: string, referredUserId: string, referredEmailOrName: string) {
-  logAction('Creating referral record', { referrerUserId, referredUserId });
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating referral record', { referrerUserId, referredUserId, tenantId });
   try {
     await db.referralHistory.create({
       data: {
         referrerUserId,
-        // The referredUserId is not a field in the model, it's just passed for context
         referredEmailOrName,
         status: 'Signed Up',
         referralDate: new Date(),
+        tenantId: tenantId,
       },
     });
 
