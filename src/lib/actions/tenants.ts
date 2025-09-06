@@ -72,11 +72,6 @@ export async function createTenantWithAdmin(
         });
         
         if (newManager) {
-            // Send welcome email with password reset link
-            // In a real app, generate a secure, single-use token. For this app, we'll just link to the standard reset page.
-            // This is a simplified approach. A real token would be generated and validated.
-            const resetLink = `http://${newTenant.domain || 'platform'}.localhost:9002/auth/forgot-password`;
-
             await sendEmail({
                 tenantId: newTenant.id,
                 recipientEmail: newManager.email,
@@ -84,7 +79,6 @@ export async function createTenantWithAdmin(
                 placeholders: {
                     userName: newManager.name,
                     userEmail: newManager.email,
-                    resetLink: resetLink,
                 },
             });
              logAction('Welcome email sent to new tenant manager', { email: newManager.email });
@@ -104,12 +98,18 @@ export async function createTenantWithAdmin(
  * @param updateData The data to update (e.g., name, domain).
  * @returns The updated Tenant object or null if failed.
  */
-export async function updateTenant(tenantId: string, updateData: Partial<Pick<Tenant, 'name' | 'domain'>>): Promise<Tenant | null> {
+export async function updateTenant(tenantId: string, updateData: Partial<Pick<Tenant, 'name' | 'domain' | 'settings'>>): Promise<Tenant | null> {
     logAction('Updating tenant', { tenantId });
     try {
+        const { settings, ...tenantInfo } = updateData;
+
+        if (settings) {
+            await updateTenantSettings(tenantId, settings);
+        }
+
         const updatedTenant = await db.tenant.update({
             where: { id: tenantId },
-            data: updateData,
+            data: tenantInfo,
             include: { settings: true },
         });
         return updatedTenant as unknown as Tenant;
@@ -130,7 +130,10 @@ export async function updateTenantSettings(tenantId: string, settingsData: Parti
     try {
         const updatedSettings = await db.tenantSettings.update({
             where: { tenantId: tenantId },
-            data: settingsData,
+            data: {
+              ...settingsData,
+              features: settingsData.features ? (settingsData.features as Prisma.JsonObject) : undefined,
+            },
         });
         return updatedSettings as unknown as TenantSettings;
     } catch (error) {
