@@ -90,10 +90,10 @@ export default function AlumniConnectPage() {
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
 
-    // Filter alumni to show only those from the same tenant or the 'platform' tenant
+    // Filter alumni to show only those from the same tenant.
     let results = allAlumniData.filter(alumni => 
       alumni.id !== currentUser.id && 
-      (alumni.tenantId === currentUser.tenantId || alumni.tenantId === 'platform')
+      alumni.tenantId === currentUser.tenantId
     );
 
     if (searchTerm) {
@@ -573,3 +573,5 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
+
+    

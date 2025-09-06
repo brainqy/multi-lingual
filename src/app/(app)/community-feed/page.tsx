@@ -478,7 +478,8 @@ export default function CommunityFeedPage() {
     const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
     
     return posts.filter(post => {
-      const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
+      // A user should only see posts from their own tenant.
+      const isVisibleForTenant = post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
 
       const isRemoved = post.moderationStatus === 'removed';
@@ -954,3 +955,5 @@ export default function CommunityFeedPage() {
     </>
   );
 }
+
+    
