@@ -42,30 +42,24 @@ export default function FloatingMessenger() {
   useEffect(scrollToBottom, [messages]);
   
   const loadInitialSurvey = useCallback(async () => {
-    if (isOpen && user && messages.length === 0) {
-        const survey = await getSurveyForUser(user.id);
-        if (survey) {
-            resetSurvey(survey.name);
-        }
+    if (user && messages.length === 0) {
+      const survey = await getSurveyForUser(user.id);
+      if (survey) {
+        resetSurvey(survey.name);
+      }
     }
-  }, [isOpen, user, messages.length]);
+  }, [user, messages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    loadInitialSurvey();
-  }, [isOpen, user, messages.length, loadInitialSurvey]);
-
-
-  const addMessage = (type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []): Message[] => {
-    const newId = `${Date.now()}-${messageIdCounter.current++}`;
-    const newMessage = { id: newId, type, content };
-    const newMessages = [...batch, newMessage];
-
-    // If not batching, update state directly.
-    if (batch.length === 0) {
-      setMessages(prev => [...prev, newMessage]);
+    if (isOpen) {
+      loadInitialSurvey();
     }
-    
-    return newMessages;
+  }, [isOpen, loadInitialSurvey]);
+
+
+  const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
+    const newId = `${Date.now()}-${messageIdCounter.current++}`;
+    setMessages(prev => [...prev, { id: newId, type, content }]);
   };
   
   const processStep = (stepId: string | undefined | null) => {
@@ -75,14 +69,13 @@ export default function FloatingMessenger() {
     }
 
     let nextStep: SurveyStep | undefined = currentSurveyDefinition.find(s => s.id === stepId);
-    let messageBatch: Message[] = [];
-
-    // Loop through consecutive bot messages to batch them
+    
+    // This loop handles consecutive bot messages without user interaction.
     while (nextStep && nextStep.type === 'botMessage') {
       if (nextStep.text) {
-        const newId = `${Date.now()}-${messageIdCounter.current++}`;
-        messageBatch.push({ id: newId, type: 'bot', content: nextStep.text });
+        addMessage('bot', nextStep.text);
       }
+      
       if (nextStep.isLastStep) {
         setCurrentStepId(null);
         if (user && activeSurveyName) {
@@ -94,28 +87,21 @@ export default function FloatingMessenger() {
             data: surveyData,
           });
         }
-        nextStep = undefined; // End the loop
-      } else {
-        const nextStepId = nextStep.nextStepId;
-        nextStep = nextStepId ? currentSurveyDefinition.find(s => s.id === nextStepId) : undefined;
+        return; // End of conversation
       }
+      
+      const nextStepId = nextStep.nextStepId;
+      nextStep = nextStepId ? currentSurveyDefinition.find(s => s.id === nextStepId) : undefined;
     }
 
-    // Add all batched bot messages to state at once
-    if (messageBatch.length > 0) {
-      setMessages(prev => [...prev, ...messageBatch]);
-    }
-
-    // If the loop ended on a user input step, set it as the current step
-    if (nextStep && nextStep.type !== 'botMessage') {
-      if (nextStep.text) {
-        // This is the prompt for the user input, so add it.
-        addMessage('bot', nextStep.text);
-      }
-      setCurrentStepId(nextStep.id);
-    } else if (!nextStep) {
-      // Loop ended because there are no more steps
-      setCurrentStepId(null);
+    // If the loop finished and there's a next step that requires user input, set it.
+    if (nextStep) {
+        if (nextStep.text) {
+            addMessage('bot', nextStep.text);
+        }
+        setCurrentStepId(nextStep.id);
+    } else {
+        setCurrentStepId(null);
     }
   };
 
