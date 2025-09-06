@@ -6,6 +6,7 @@ import type { Tenant, TenantSettings } from '@/types';
 import { Prisma } from '@prisma/client';
 import { createUser } from '@/lib/data-services/users';
 import { logAction, logError } from '@/lib/logger';
+import { sendEmail } from './send-email';
 
 /**
  * Fetches all tenants from the database.
@@ -31,6 +32,7 @@ export async function getTenants(): Promise<Tenant[]> {
 
 /**
  * Creates a new tenant and its initial admin user.
+ * Sends a welcome email to the new manager with a password reset link.
  * @param tenantData The data for the new tenant.
  * @param adminUserData The data for the initial admin user.
  * @returns The newly created Tenant object or null if failed.
@@ -60,14 +62,34 @@ export async function createTenantWithAdmin(
             },
         });
 
-        // Create the initial admin user for this tenant
-        await createUser({
+        // Create the initial admin user for this tenant without a password
+        const newManager = await createUser({
             name: adminUserData.name,
             email: adminUserData.email,
             role: 'manager', // Initial tenant creator is a manager
             tenantId: newTenant.id,
             status: 'active',
         });
+        
+        if (newManager) {
+            // Send welcome email with password reset link
+            // In a real app, generate a secure, single-use token. For this app, we'll just link to the standard reset page.
+            // This is a simplified approach. A real token would be generated and validated.
+            const resetLink = `http://${newTenant.domain || 'platform'}.localhost:9002/auth/forgot-password`;
+
+            await sendEmail({
+                tenantId: newTenant.id,
+                recipientEmail: newManager.email,
+                type: 'WELCOME',
+                placeholders: {
+                    userName: newManager.name,
+                    userEmail: newManager.email,
+                    resetLink: resetLink,
+                },
+            });
+             logAction('Welcome email sent to new tenant manager', { email: newManager.email });
+        }
+
 
         return newTenant as unknown as Tenant;
     } catch (error) {

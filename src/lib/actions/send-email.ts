@@ -42,11 +42,22 @@ export async function sendEmail({
 
   if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
     logError('[SendEmail] Gmail credentials are not configured in .env file. Email sending is disabled.', new Error('GMAIL_EMAIL or GMAIL_APP_PASSWORD missing'));
+    
+    const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
+    
     // Log the intended email to the console as a fallback
     console.log(`--- FALLBACK: EMAIL NOT SENT (NO GMAIL CREDS) ---`);
     console.log(`To: ${recipientEmail}`);
     console.log(`Type: ${type}`);
-    console.log(`Placeholders: ${JSON.stringify(placeholders)}`);
+    console.log(`Tenant: ${tenant?.name || tenantId}`);
+    
+    // Manually replace placeholders for the log
+    const allPlaceholders: EmailPlaceholders = {
+        tenantName: tenant?.name,
+        ...placeholders,
+    };
+    
+    console.log(`Placeholders: ${JSON.stringify(allPlaceholders)}`);
     console.log(`-------------------------------------------`);
     return;
   }
@@ -64,6 +75,16 @@ export async function sendEmail({
     let subject = template.subject;
     let body = template.body;
     
+    // For WELCOME email, we must generate a password reset link
+    if (type === 'WELCOME' && !placeholders.resetLink) {
+        // This is a simplified token generation for demonstration. 
+        // In production, use a secure, single-use, expiring token (e.g., JWT, crypto).
+        const resetToken = Buffer.from(recipientEmail).toString('base64');
+        const resetUrl = `http://${tenant.domain || 'platform'}.localhost:9002/auth/reset-password?token=${resetToken}`;
+        placeholders.resetLink = resetUrl;
+    }
+
+
     const allPlaceholders: EmailPlaceholders = {
         tenantName: tenant.name,
         ...placeholders,

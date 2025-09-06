@@ -235,6 +235,9 @@ export default function TenantOnboardingPage() {
               <Label htmlFor="adminEmail">{t("tenantOnboarding.formLabels.adminEmail", { default: "Admin Email" })}</Label>
               <Controller name="adminEmail" control={control} render={({ field }) => <Input id="adminEmail" type="email" {...field} />} />
               {errors.adminEmail && <p className="text-sm text-destructive mt-1">{errors.adminEmail.message}</p>}
+               <p className="text-xs text-muted-foreground mt-1">
+                The new manager will receive a welcome email with instructions to set their own password.
+              </p>
             </div>
           </div>
         );
