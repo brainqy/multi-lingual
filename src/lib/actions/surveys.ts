@@ -138,10 +138,12 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
  * @param responseData The data for the new response.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate'>): Promise<SurveyResponse | null> {
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId'>): Promise<SurveyResponse | null> {
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    const user = await db.user.findUnique({ where: { id: responseData.userId }});
+    if (!user) throw new Error("User not found for survey response");
+    
+    const tenantId = user.tenantId;
 
     const dataForDb: any = {
         ...responseData,
