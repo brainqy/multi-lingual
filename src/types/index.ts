@@ -490,8 +490,9 @@ export type WalletTransaction = {
 export type Wallet = {
   id: string;
   userId: string;
+  tenantId: string;
   coins: number;
-  flashCoins: FlashCoinBatch[];
+  flashCoins?: FlashCoinBatch[];
   transactions: WalletTransaction[];
 };
 

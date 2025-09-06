@@ -5,15 +5,16 @@ const MOCK_USER_ID = 'alumni1';
 const MOCK_TENANT_ID = 'Brainqy';
 
 export let sampleWalletBalance: Wallet = {
+    id: 'wallet1',
     tenantId: MOCK_TENANT_ID,
     userId: MOCK_USER_ID,
     coins: 150,
     transactions: [
-        { id: 'txn-ref2', tenantId: 'managerUser1', userId: 'managerUser1', date: new Date(Date.now() - 86400000 * 5).toISOString(), description: 'Reward for referral: colleague@example.com', amount: 25, type: 'credit' },
-        { id: 'txn1', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), description: 'Reward for profile completion', amount: 50, type: 'credit' },
-        { id: 'txn2', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), description: 'Used for premium report', amount: -20, type: 'debit' },
-        { id: 'txn3', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), description: 'Appointment booking fee (Bob B.)', amount: -10, type: 'debit' },
-        { id: 'txn4', tenantId: MOCK_TENANT_ID, userId: MOCK_USER_ID, date: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(), description: 'Daily login bonus', amount: 5, type: 'credit' },
+        { id: 'txn-ref2', walletId: 'wallet-managerUser1', date: new Date(Date.now() - 86400000 * 5).toISOString(), description: 'Reward for referral: colleague@example.com', amount: 25, type: 'credit', currency: 'coins' },
+        { id: 'txn1', walletId: 'wallet1', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), description: 'Reward for profile completion', amount: 50, type: 'credit', currency: 'coins' },
+        { id: 'txn2', walletId: 'wallet1', date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), description: 'Used for premium report', amount: -20, type: 'debit', currency: 'coins' },
+        { id: 'txn3', walletId: 'wallet1', date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), description: 'Appointment booking fee (Bob B.)', amount: -10, type: 'debit', currency: 'coins' },
+        { id: 'txn4', walletId: 'wallet1', date: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(), description: 'Daily login bonus', amount: 5, type: 'credit', currency: 'coins' },
     ]
 };
 
