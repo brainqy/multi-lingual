@@ -5,31 +5,34 @@ import { getUserByEmail, createUser, updateUser } from '@/lib/data-services/user
 import type { UserProfile } from '@/types';
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
- * Handles user login, scoped to a specific tenant. It can identify tenants by ID or custom domain.
+ * Handles user login, scoped to a specific tenant identified by the request headers.
  * @param email The user's email address.
  * @param password The user's password.
- * @param identifier The tenant's ID or custom domain from the URL subdomain.
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string, password?: string, identifier?: string): Promise<UserProfile | null> {
+export async function loginUser(email: string, password?: string): Promise<UserProfile | null> {
   try {
+    const headersList = headers();
+    const identifier = headersList.get('X-Tenant-Id') || 'platform';
+    
     const user = await db.user.findFirst({
       where: { email: email },
     });
 
     if (user) {
-      const isPlatformLogin = !identifier || identifier === 'platform';
+      const isPlatformLogin = identifier === 'platform';
       
       let tenant = null;
-      if (identifier && !isPlatformLogin) {
-        // First try to find tenant by custom domain, then by ID as a fallback.
+      if (!isPlatformLogin) {
+        // Find tenant by ID or custom domain from the identifier.
         tenant = await db.tenant.findFirst({
           where: { OR: [{ domain: identifier }, { id: identifier }] },
         });
         if (!tenant) {
-            logError('Login failed: Tenant not found by identifier', { email, identifier });
+            logError('Login failed: Tenant not found by identifier from header', { email, identifier });
             return null; // The specified tenant subdomain does not exist.
         }
       }
@@ -81,8 +84,21 @@ export async function signupUser(userData: { name: string; email: string; role: 
         error: "Account Exists",
       };
     }
+    
+    const headersList = headers();
+    const identifier = headersList.get('X-Tenant-Id') || 'platform';
+    
+    let effectiveTenantId = 'platform';
+    if (identifier !== 'platform') {
+        const tenant = await db.tenant.findFirst({
+            where: { OR: [{ domain: identifier }, { id: identifier }] }
+        });
+        if (tenant) {
+            effectiveTenantId = tenant.id;
+        }
+    }
 
-    const newUser = await createUser(userData);
+    const newUser = await createUser({ ...userData, tenantId: effectiveTenantId });
 
     if (newUser) {
       logAction('New user signup successful', { userId: newUser.id, email: newUser.email, tenantId: newUser.tenantId, sessionId: newUser.sessionId });
