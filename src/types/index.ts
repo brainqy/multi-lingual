@@ -744,6 +744,7 @@ export interface InterviewQuestion {
   difficulty?: InterviewQuestionDifficulty;
   rating?: number;
   ratingsCount?: number;
+  userRatings?: InterviewQuestionUserRating[];
   userComments?: InterviewQuestionUserComment[];
   createdBy?: string;
   approved?: boolean;
@@ -1354,7 +1355,6 @@ export type AdminDashboardWidgetId =
   | 'affiliateProgramStat'
   | 'featureUsage';
 
-export type NotificationType = 'mention' | 'event' | 'system';
 export interface Notification {
     id: string;
     userId: string;
