@@ -91,12 +91,15 @@ export async function createPromotionalContent(contentData: Omit<PromotionalCont
 export async function updatePromotionalContent(contentId: string, updateData: Partial<Omit<PromotionalContent, 'id'>>): Promise<PromotionalContent | null> {
   logAction('Updating promotional content', { contentId });
   try {
+    // Destructure to remove the 'id' if it's present in updateData from the form
+    const { id, ...restOfUpdateData } = updateData;
+
     const updatedItem = await db.promotionalContent.update({
       where: { id: contentId },
       data: {
-          ...updateData,
-          tenantId: updateData.tenantId === 'all' ? null : updateData.tenantId,
-          targetRole: updateData.targetRole === 'all' ? null : updateData.targetRole,
+        ...restOfUpdateData,
+        tenantId: updateData.tenantId === 'all' ? null : updateData.tenantId,
+        targetRole: updateData.targetRole === 'all' ? null : updateData.targetRole,
       },
     });
     return updatedItem as unknown as PromotionalContent;
