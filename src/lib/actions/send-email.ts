@@ -81,7 +81,12 @@ export async function sendEmail({
         // This is a simplified token generation for demonstration. 
         // In production, use a secure, single-use, expiring token (e.g., JWT, crypto).
         const resetToken = Buffer.from(recipientEmail).toString('base64');
-        const subdomain = placeholders.tenantDomain || tenant.domain || tenant.id;
+        // The `tenantDomain` placeholder is correctly set in `createTenantWithAdmin` to be either the domain or the ID.
+        const subdomain = placeholders.tenantDomain; 
+        if (!subdomain) {
+            logError('[SendEmail] Subdomain for reset link is missing in placeholders.', new Error('Missing tenantDomain placeholder'), { tenantId, type });
+            return;
+        }
         const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
         placeholders.resetLink = resetUrl;
     }
