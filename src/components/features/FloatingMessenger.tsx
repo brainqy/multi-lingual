@@ -32,6 +32,7 @@ export default function FloatingMessenger() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
   const { user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const currentSurveyStep = currentSurveyDefinition.find(step => step.id === currentStepId);
 
@@ -41,9 +42,11 @@ export default function FloatingMessenger() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const addMessage = useCallback((type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []) => {
-    const newId = `${Date.now()}-${messageIdCounter.current++}`;
-    batch.push({ id: newId, type, content });
+  const addMessage = useCallback((type: 'bot' | 'user', content: React.ReactNode) => {
+    setMessages(prev => {
+        const newId = `${Date.now()}-${messageIdCounter.current++}`;
+        return [...prev, { id: newId, type, content }];
+    });
   }, []);
 
   const processStep = useCallback(async (stepId: string | undefined | null) => {
@@ -51,43 +54,38 @@ export default function FloatingMessenger() {
       setCurrentStepId(null);
       return;
     }
-
-    let nextStep: SurveyStep | undefined = currentSurveyDefinition.find(s => s.id === stepId);
-    const messageBatch: Message[] = [];
-
-    while (nextStep && nextStep.type === 'botMessage') {
-      if (nextStep.text) {
-        addMessage('bot', nextStep.text, messageBatch);
-      }
-      
-      if (nextStep.isLastStep) {
-        setMessages(prev => [...prev, ...messageBatch]);
-        setCurrentStepId(null);
-        if (user && activeSurveyName) {
-          await createSurveyResponse({
-            userId: user.id,
-            userName: user.name,
-            surveyId: activeSurveyName,
-            surveyName: activeSurveyName,
-            data: surveyData,
-          });
-        }
-        return;
-      }
-      
-      const nextStepId = nextStep.nextStepId;
-      nextStep = nextStepId ? currentSurveyDefinition.find(s => s.id === nextStepId) : undefined;
-    }
-
-    if (nextStep) {
-      if (nextStep.text) {
-        addMessage('bot', nextStep.text, messageBatch);
-      }
-      setCurrentStepId(nextStep.id);
-    } else {
+  
+    const step = currentSurveyDefinition.find(s => s.id === stepId);
+    if (!step) {
       setCurrentStepId(null);
+      return;
     }
-    setMessages(prev => [...prev, ...messageBatch]);
+  
+    if (step.text) {
+      addMessage('bot', step.text);
+    }
+  
+    if (step.isLastStep) {
+      if (user && activeSurveyName) {
+        await createSurveyResponse({
+          userId: user.id,
+          userName: user.name,
+          surveyId: activeSurveyName,
+          surveyName: activeSurveyName,
+          data: surveyData,
+        });
+      }
+      setCurrentStepId(null); // End of survey
+      return;
+    }
+  
+    if (step.type === 'botMessage' && step.nextStepId) {
+      // If it's a bot message and not the last step, immediately process the next one.
+      processStep(step.nextStepId);
+    } else {
+      // If it's a step that requires user input, stop and wait.
+      setCurrentStepId(step.id);
+    }
   }, [currentSurveyDefinition, addMessage, user, activeSurveyName, surveyData]);
 
   const resetSurvey = useCallback(async (surveyNameToLoad: string) => {
@@ -114,23 +112,26 @@ export default function FloatingMessenger() {
   }, [processStep]);
 
   const loadInitialSurvey = useCallback(async () => {
-    if (user && messages.length === 0) {
+    if (user && !isInitialized) {
+      setIsInitialized(true);
       const survey = await getSurveyForUser(user.id);
       if (survey) {
         await resetSurvey(survey.name);
       }
     }
-  }, [user, messages.length, resetSurvey]);
+  }, [user, isInitialized, resetSurvey]);
 
   useEffect(() => {
     if (isOpen) {
       loadInitialSurvey();
+    } else {
+      // Reset initialization state when closed
+      setIsInitialized(false);
     }
   }, [isOpen, loadInitialSurvey]);
 
   const handleOptionSelect = (option: SurveyOption) => {
-    addMessage('user', option.text, messages); // Add directly to messages to avoid batching issues
-    setMessages([...messages]); // Force re-render
+    addMessage('user', option.text);
     if (currentSurveyStep?.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
     }
@@ -146,8 +147,7 @@ export default function FloatingMessenger() {
     
     const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
 
-    addMessage('user', selectedLabel, messages);
-    setMessages([...messages]);
+    addMessage('user', selectedLabel);
     if (currentSurveyStep.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
     }
@@ -156,8 +156,7 @@ export default function FloatingMessenger() {
 
   const handleInputSubmit = () => {
     if (!inputValue.trim() || !currentSurveyStep) return;
-    addMessage('user', inputValue, messages);
-    setMessages([...messages]);
+    addMessage('user', inputValue);
     if (currentSurveyStep.variableName) {
       setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
     }
