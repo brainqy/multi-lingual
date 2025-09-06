@@ -1,5 +1,4 @@
 
-
 import * as z from "zod";
 import type { Locale } from '@/locales';
 
@@ -758,7 +757,7 @@ export type BankQuestionFilterView = 'all' | 'myBookmarks' | 'needsApproval';
 
 
 export interface BlogGenerationSettings {
-  id:string;
+  id?: string;
   generationIntervalHours: number;
   topics: string[];
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
