@@ -40,12 +40,6 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
-  devIndicators: {
-    allowedDevOrigins: [
-      'http://brainqy.localhost:9002',
-      'http://cpp.localhost:9002',
-    ],
-  },
 };
 
 export default nextConfig;
