@@ -82,7 +82,11 @@ export default function AlumniConnectPage() {
     setCurrentPage(1);
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
-  const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
+  const distinguishedAlumni = useMemo(() => {
+    if (!currentUser) return [];
+    return allAlumniData.filter(a => a.isDistinguished && a.tenantId === currentUser.tenantId);
+  }, [allAlumniData, currentUser]);
+
   const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
   const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
   const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter((uni): uni is string => !!uni))).sort(), [allAlumniData]);
@@ -573,5 +577,3 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
-
-    
