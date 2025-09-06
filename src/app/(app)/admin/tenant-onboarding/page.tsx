@@ -285,7 +285,7 @@ export default function TenantOnboardingPage() {
           </div>
           <Progress value={((currentStep + 1) / STEPS_CONFIG.length) * 100} className="w-full h-2 [&>div]:bg-primary" />
         </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form>
           <CardContent className="min-h-[300px]">
             {renderStepContent()}
           </CardContent>
@@ -298,7 +298,7 @@ export default function TenantOnboardingPage() {
                 {t("tenantOnboarding.buttons.next", { default: "Next" })} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
+              <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.finish", { default: "Finish" })}
               </Button>
