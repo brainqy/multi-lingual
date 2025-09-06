@@ -82,7 +82,6 @@ export async function checkChallengeProgressAndAwardXP(userId: string): Promise<
                     newChallengesCompleted = true;
                     await createActivity({
                         userId: user.id,
-                        tenantId: user.tenantId,
                         description: `Flip Challenge complete! You earned ${challenge.xpReward} XP for '${challenge.title}'.`
                     });
                     await createNotification({
@@ -162,13 +161,11 @@ export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
           newlyAwardedBadges.push(badge);
           await createActivity({
             userId: user.id,
-            tenantId: user.tenantId,
             description: `Earned a new badge: "${badge.name}"!`
           });
           if (badge.streakFreezeReward && badge.streakFreezeReward > 0) {
             await createActivity({
               userId: user.id,
-              tenantId: user.tenantId,
               description: `Earned ${badge.streakFreezeReward} streak freeze(s) from the "${badge.name}" badge.`,
             });
           }
