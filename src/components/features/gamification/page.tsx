@@ -1,199 +1,266 @@
-
 "use client";
-import { useI18n } from "@/hooks/use-i18n";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Award, Flame, Star, CheckCircle, Trophy, UserCircle } from "lucide-react"; 
-import { sampleUserProfile, sampleBadges } from "@/lib/sample-data"; 
-import { samplePlatformUsers } from "@/lib/data/users";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+import type React from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Bot, X, Send } from 'lucide-react';
+import type { SurveyStep, SurveyOption } from '@/types';
 import { cn } from "@/lib/utils";
-import * as React from "react";
-import * as LucideIcons from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect, useMemo } from "react"; 
-import { UserProfile } from "@/types";
 
-type IconName = keyof typeof LucideIcons;
 
-function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.LucideProps) {
-  const IconComponent = LucideIcons[name] as React.ElementType;
-
-  if (!IconComponent) {
-    return <LucideIcons.HelpCircle {...props} />;
-  }
-
-  return <IconComponent {...props} />;
+interface Message {
+  id: string;
+  type: 'bot' | 'user';
+  content: React.ReactNode;
 }
 
+export default function FloatingMessenger() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeSurveyId, setActiveSurveyId] = useState<string>(''); // No default survey
+  const [currentSurveyDefinition, setCurrentSurveyDefinition] = useState<SurveyStep[]>([]);
+  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [surveyData, setSurveyData] = useState<Record<string, string>>({});
+  const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageIdCounter = useRef(0);
 
-export default function GamificationPage() {
-  const { t } = useI18n();
-  const user = sampleUserProfile;
-  const badges = sampleBadges;
+  const currentSurveyStep = currentSurveyDefinition.find(step => step.id === currentStepId);
 
-  const earnedBadges = badges.filter(badge => user.earnedBadges?.includes(badge.id));
-  const notEarnedBadges = badges.filter(badge => !user.earnedBadges?.includes(badge.id));
-
-  const xpPerLevel = 1000;
-  const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
-  const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
-  const xpForNextLevel = xpLevel * xpPerLevel;
-  const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
-  const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
-
-  const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
-
-  useEffect(() => {
-    const sortedUsers = [...samplePlatformUsers]
-      .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
-      .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
-    setLeaderboardUsers(sortedUsers.slice(0, 10)); // Show top 10
-  }, []);
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
-    if (rank === 2) return <Award className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Star className="h-5 w-5 text-orange-400" />;
-    return <span className="text-sm font-medium w-5 text-center">{rank}</span>;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  useEffect(scrollToBottom, [messages]);
+  
+  useEffect(() => {
+    if (isOpen && messages.length === 0 && currentSurveyDefinition.length > 0) {
+      const firstStep = currentSurveyDefinition[0];
+      if (firstStep) {
+        resetSurvey(activeSurveyId);
+      }
+    }
+  }, [isOpen, messages.length, currentSurveyDefinition, activeSurveyId]);
+
+
+  const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
+    const newId = `${Date.now()}-${messageIdCounter.current++}`;
+    setMessages(prev => [...prev, { id: newId, type, content }]);
+  };
+  
+  const processStep = (step: SurveyStep | undefined) => {
+    if (!step) {
+      setCurrentStepId(null); 
+      return;
+    }
+
+    if (step.type === 'botMessage') {
+      if (step.text) addMessage('bot', step.text);
+      if (step.isLastStep) {
+        setCurrentStepId(null); 
+        console.log("Survey Completed. Data:", surveyData);
+      } else if (step.nextStepId) {
+        const nextStep = currentSurveyDefinition.find(s => s.id === step.nextStepId);
+        if (nextStep && nextStep.type === 'botMessage') {
+           processStep(nextStep); 
+        } else {
+           setCurrentStepId(step.nextStepId || null);
+        }
+      } else {
+         setCurrentStepId(null); 
+      }
+    } else {
+      if (step.text) { 
+        addMessage('bot', step.text);
+      }
+      setCurrentStepId(step.id);
+    }
+  };
+
+
+  const handleOptionSelect = (option: SurveyOption) => {
+    addMessage('user', option.text);
+    if (currentSurveyStep?.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: option.value }));
+    }
+    const nextStep = currentSurveyDefinition.find(s => s.id === option.nextStepId);
+    processStep(nextStep);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+  };
+  
+  const handleDropdownChange = (value: string) => {
+    if (!currentSurveyStep || currentSurveyStep.type !== 'userDropdown') return;
+    
+    const selectedLabel = currentSurveyStep.dropdownOptions?.find(opt => opt.value === value)?.label || value;
+
+    addMessage('user', selectedLabel);
+     if (currentSurveyStep.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: value }));
+    }
+    const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
+    processStep(nextStep);
+  };
+
+  const handleInputSubmit = () => {
+    if (!inputValue.trim() || !currentSurveyStep) return;
+    addMessage('user', inputValue);
+    if (currentSurveyStep.variableName) {
+      setSurveyData(prev => ({ ...prev, [currentSurveyStep.variableName!]: inputValue }));
+    }
+    setInputValue('');
+    const nextStep = currentSurveyDefinition.find(s => s.id === currentSurveyStep.nextStepId);
+    processStep(nextStep);
+  };
+  
+  const resetSurvey = (surveyIdToLoad: string) => {
+    // In a real app, you'd fetch the survey definition here based on surveyIdToLoad
+    // For now, this function just resets the state.
+    setMessages([]);
+    setSurveyData({});
+    setInputValue('');
+    messageIdCounter.current = 0;
+    setActiveSurveyId(surveyIdToLoad);
+    
+    // This part would be replaced by a fetch call
+    const surveyToStart: SurveyStep[] = []; // Fetch from DB here
+    setCurrentSurveyDefinition(surveyToStart);
+
+    const firstStep = surveyToStart[0];
+
+    if (firstStep) {
+       setCurrentStepId(firstStep.id);
+       if(firstStep.type === 'botMessage') {
+         processStep(firstStep);
+       } else if (firstStep.text) { 
+         addMessage('bot', firstStep.text);
+       }
+    } else {
+       setCurrentStepId(null); 
+    }
+  };
+
+  useEffect(() => {
+    const handleAdminSurveyChange = (event: Event) => {
+        const customEvent = event as CustomEvent<string>;
+        if (customEvent.detail && customEvent.detail !== activeSurveyId) {
+            setIsOpen(true); 
+            resetSurvey(customEvent.detail);
+        }
+    };
+    window.addEventListener('changeActiveSurvey', handleAdminSurveyChange);
+    return () => {
+        window.removeEventListener('changeActiveSurvey', handleAdminSurveyChange);
+    };
+  }, [activeSurveyId]);
+
+
+  if (!isOpen) {
+    return (
+      <Button
+        className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50 bg-primary hover:bg-primary/90"
+        size="icon"
+        onClick={() => setIsOpen(true)}
+      >
+        <Bot className="h-7 w-7 text-primary-foreground" />
+      </Button>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-        <Award className="h-8 w-8" /> {t("gamification.title")}
-      </h1>
-      <CardDescription>{t("gamification.pageDescription")}</CardDescription>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-primary"/>XP & Level</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground">Level</p>
-            <p className="text-5xl font-bold text-primary">{xpLevel}</p>
-            <Progress value={progressPercentage} className="w-full h-3 my-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{xpProgressInLevel} XP</span>
-              <span>{xpForNextLevel - (user.xpPoints || 0)} XP to Level {xpLevel + 1}</span>
-            </div>
-            <p className="text-sm font-semibold mt-4">{user.xpPoints || 0} Total XP</p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Flame className="h-5 w-5 text-primary"/>Daily Streak</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-4xl font-bold text-primary">{user.dailyStreak || 0}</p>
-            <p className="text-lg text-muted-foreground">Day Streak</p>
-          </CardContent>
-        </Card>
-         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5 text-primary"/>Badges Earned</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-4xl font-bold text-primary">{earnedBadges.length}</p>
-            <p className="text-lg text-muted-foreground">Total Badges</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>{t("gamification.yourBadges")}</CardTitle>
-          <CardDescription>
-            {t("gamification.badgesDescription")}
-          </CardDescription>
+    <div className="fixed bottom-6 right-6 z-50">
+       <Card className="w-80 h-[450px] shadow-xl flex flex-col bg-card text-card-foreground rounded-lg overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between p-3 bg-primary text-primary-foreground border-b border-primary/50">
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5" />
+            <CardTitle className="text-md font-semibold">
+              Assistant
+            </CardTitle>
+          </div>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground hover:bg-primary/80" onClick={() => setIsOpen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
         </CardHeader>
-        <CardContent>
-          <TooltipProvider>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {earnedBadges.map((badge) => (
-                <Tooltip key={badge.id}>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center p-3 border rounded-lg bg-primary/10 text-center transition-transform hover:scale-105">
-                      <DynamicIcon name={badge.icon as IconName} className="h-10 w-10 text-primary mb-2" />
-                      <p className="text-xs font-medium text-foreground">{badge.name}</p>
-                      <CheckCircle className="h-4 w-4 text-green-500 absolute top-1 right-1" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-semibold">{badge.name}</p>
-                    <p className="text-xs text-muted-foreground">{badge.description}</p>
-                    {badge.xpReward && <p className="text-xs text-yellow-500">+{badge.xpReward} XP</p>}
-                  </TooltipContent>
-                </Tooltip>
+
+        <CardContent className="p-0 flex-grow overflow-hidden">
+           <ScrollArea className="h-[calc(450px-60px-70px)] p-3">
+            <div className="space-y-3">
+              {messages.map((msg) => (
+                <div key={msg.id} className={cn("flex", msg.type === 'user' ? 'justify-end' : 'justify-start')}>
+                  <div className={cn(
+                      "max-w-[85%] p-2.5 rounded-lg text-sm shadow",
+                      msg.type === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                  )}>
+                    {msg.content}
+                  </div>
+                </div>
               ))}
-              {notEarnedBadges.map((badge) => (
-                 <Tooltip key={badge.id}>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center p-3 border rounded-lg bg-secondary/50 text-center opacity-50 cursor-help">
-                      <DynamicIcon name={badge.icon as IconName} className="h-10 w-10 text-muted-foreground mb-2" />
-                      <p className="text-xs font-medium text-muted-foreground">{badge.name}</p>
-                    </div>
-                  </TooltipTrigger>
-                   <TooltipContent>
-                    <p className="font-semibold">{badge.name}</p>
-                    <p className="text-xs text-muted-foreground">{badge.description}</p>
-                    {badge.xpReward && <p className="text-xs text-yellow-500">+{badge.xpReward} XP</p>}
-                     <p className="text-xs text-red-500 mt-1">(Not Yet Earned)</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              <div ref={messagesEndRef} />
             </div>
-          </TooltipProvider>
+          </ScrollArea>
         </CardContent>
-      </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Trophy className="h-6 w-6 text-primary"/>{t("gamification.leaderboard")}</CardTitle>
-          <CardDescription>{t("gamification.leaderboardDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {leaderboardUsers.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Leaderboard data is currently being calculated. Check back soon!</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">Rank</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead className="text-right">XP Points</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaderboardUsers.map((lbUser, index) => (
-                  <TableRow key={lbUser.id} className={cn(index < 3 && "bg-secondary/50 font-semibold", lbUser.id === user.id && "bg-primary/10 border-l-2 border-primary")}>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center h-full">
-                        {getRankIcon(index + 1)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={lbUser.profilePictureUrl} alt={lbUser.name} data-ai-hint="person face"/>
-                          <AvatarFallback>
-                            {lbUser.name ? lbUser.name.substring(0, 1).toUpperCase() : <UserCircle />}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className={cn("font-medium", index < 3 && "text-primary")}>{lbUser.name} {lbUser.id === user.id && "(You)"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-lg">
-                      {lbUser.xpPoints?.toLocaleString() || 0}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+        <CardFooter className="p-2 border-t border-border min-h-[70px]">
+          {currentSurveyStep && currentSurveyStep.type === 'userOptions' && currentSurveyStep.options && (
+            <div className="flex flex-col space-y-1.5 w-full">
+              {currentSurveyStep.options.map(option => (
+                <Button key={option.value} variant="outline" size="sm" className="w-full justify-start text-sm" onClick={() => handleOptionSelect(option)}>
+                  {option.text}
+                </Button>
+              ))}
+            </div>
           )}
-        </CardContent>
+          {currentSurveyStep && currentSurveyStep.type === 'userInput' && (
+            <div className="flex items-center w-full gap-1.5">
+              {currentSurveyStep.inputType === 'textarea' ? (
+                <Textarea
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  placeholder={currentSurveyStep.placeholder || "Type your response..."}
+                  rows={3}
+                  className="flex-grow resize-none text-sm p-2"
+                />
+              ) : (
+                <Input
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  type={currentSurveyStep.inputType || 'text'}
+                  placeholder={currentSurveyStep.placeholder || "Type your response..."}
+                  className="flex-grow text-sm h-10"
+                  onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInputSubmit(); }}}
+                />
+              )}
+              <Button size="icon" onClick={handleInputSubmit} disabled={!inputValue.trim()} className="h-9 w-9 shrink-0 self-end">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {currentSurveyStep && currentSurveyStep.type === 'userDropdown' && currentSurveyStep.dropdownOptions && (
+              <Select onValueChange={handleDropdownChange}>
+                <SelectTrigger className="w-full text-sm">
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentSurveyStep.dropdownOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-sm">{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+          )}
+           {!currentSurveyStep && messages.length > 0 && ( 
+             <div className="flex flex-col items-center w-full space-y-2">
+                <Button variant="outline" size="sm" onClick={() => resetSurvey(activeSurveyId)} className="w-full">Restart Current Survey</Button>
+                <Button size="sm" onClick={() => setIsOpen(false)} className="w-full bg-primary hover:bg-primary/90">Close</Button>
+             </div>
+           )}
+        </CardFooter>
       </Card>
     </div>
   );

@@ -11,18 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, X, Send } from 'lucide-react';
 import type { SurveyStep, SurveyOption } from '@/types';
-import { cn } from '@/lib/utils';
-import { initialFeedbackSurvey, profileCompletionSurveyDefinition } from '@/lib/sample-data';
-
-
-// A map of available survey definitions
-const surveyDefinitions: Record<string, SurveyStep[]> = {
-  initialFeedbackSurvey: initialFeedbackSurvey,
-  profileCompletionSurvey: profileCompletionSurveyDefinition, // Add the new survey
-};
-
-// Default survey if no specific survey is chosen or found
-const defaultSurveyId = 'initialFeedbackSurvey';
+import { cn } from "@/lib/utils";
 
 
 interface Message {
@@ -33,7 +22,8 @@ interface Message {
 
 export default function FloatingMessenger() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeSurveyId, setActiveSurveyId] = useState<string>(defaultSurveyId); // ID of the currently active survey
+  const [activeSurveyId, setActiveSurveyId] = useState<string>(''); // No default survey
+  const [currentSurveyDefinition, setCurrentSurveyDefinition] = useState<SurveyStep[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [surveyData, setSurveyData] = useState<Record<string, string>>({});
@@ -41,7 +31,6 @@ export default function FloatingMessenger() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageIdCounter = useRef(0);
 
-  const currentSurveyDefinition = surveyDefinitions[activeSurveyId] || surveyDefinitions[defaultSurveyId];
   const currentSurveyStep = currentSurveyDefinition.find(step => step.id === currentStepId);
 
   const scrollToBottom = () => {
@@ -50,21 +39,14 @@ export default function FloatingMessenger() {
 
   useEffect(scrollToBottom, [messages]);
   
-  // Effect to load and potentially start the survey when messenger opens or active survey changes
   useEffect(() => {
-    if (isOpen) {
-      const surveyToLoad = surveyDefinitions[activeSurveyId] || surveyDefinitions[defaultSurveyId];
-      const firstStep = surveyToLoad[0];
+    if (isOpen && messages.length === 0 && currentSurveyDefinition.length > 0) {
+      const firstStep = currentSurveyDefinition[0];
       if (firstStep) {
-        // Only reset and start if messages are empty (new session) or survey changed
-        if (messages.length === 0 || (currentSurveyStep && currentSurveyStep.id !== firstStep.id && !currentSurveyDefinition.some(s => s.id === currentSurveyStep.id) )) {
-          resetSurvey(activeSurveyId); 
-        }
-      } else {
-        setCurrentStepId(null); // No steps in current survey
+        resetSurvey(activeSurveyId);
       }
     }
-  }, [isOpen, activeSurveyId]); // Rerun if activeSurveyId changes
+  }, [isOpen, messages.length, currentSurveyDefinition, activeSurveyId]);
 
 
   const addMessage = (type: 'bot' | 'user', content: React.ReactNode) => {
@@ -82,7 +64,6 @@ export default function FloatingMessenger() {
       if (step.text) addMessage('bot', step.text);
       if (step.isLastStep) {
         setCurrentStepId(null); 
-        // TODO: Here you could submit `surveyData`
         console.log("Survey Completed. Data:", surveyData);
       } else if (step.nextStepId) {
         const nextStep = currentSurveyDefinition.find(s => s.id === step.nextStepId);
@@ -140,14 +121,18 @@ export default function FloatingMessenger() {
     processStep(nextStep);
   };
   
-  const resetSurvey = (surveyIdToLoad = defaultSurveyId) => {
+  const resetSurvey = (surveyIdToLoad: string) => {
+    // In a real app, you'd fetch the survey definition here based on surveyIdToLoad
+    // For now, this function just resets the state.
     setMessages([]);
     setSurveyData({});
     setInputValue('');
     messageIdCounter.current = 0;
+    setActiveSurveyId(surveyIdToLoad);
     
-    const surveyToStart = surveyDefinitions[surveyIdToLoad] || surveyDefinitions[defaultSurveyId];
-    setActiveSurveyId(surveyIdToLoad); 
+    // This part would be replaced by a fetch call
+    const surveyToStart: SurveyStep[] = []; // Fetch from DB here
+    setCurrentSurveyDefinition(surveyToStart);
 
     const firstStep = surveyToStart[0];
 
@@ -183,9 +168,7 @@ export default function FloatingMessenger() {
       <Button
         className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50 bg-primary hover:bg-primary/90"
         size="icon"
-        onClick={() => {
-            setIsOpen(true);
-        }}
+        onClick={() => setIsOpen(true)}
       >
         <Bot className="h-7 w-7 text-primary-foreground" />
       </Button>
@@ -199,7 +182,7 @@ export default function FloatingMessenger() {
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
             <CardTitle className="text-md font-semibold">
-              {activeSurveyId === 'profileCompletionSurvey' ? 'Profile Setup Assistant' : 'Feedback Assistant'}
+              Assistant
             </CardTitle>
           </div>
           <Button variant="ghost" size="icon" className="h-7 w-7 text-primary-foreground hover:bg-primary/80" onClick={() => setIsOpen(false)}>
@@ -283,5 +266,3 @@ export default function FloatingMessenger() {
     </div>
   );
 }
-
-    
