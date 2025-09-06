@@ -150,14 +150,14 @@ export interface Announcement {
   title: string;
   content: string;
   startDate: string;
-  endDate: string | null;
+  endDate?: string | null;
   status: 'Draft' | 'Published' | 'Archived';
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;
-  tenantId: string | null;
-  targetTenantId: string | null;
-  targetRole: UserRole | null;
+  tenantId: string;
+  targetTenantId?: string | null;
+  targetRole?: UserRole | null;
 }
 
 export interface CommunityPost {
@@ -1025,4 +1025,12 @@ export interface BlogGenerationSettings {
   topics: string[];
   style?: 'informative' | 'casual' | 'formal' | 'technical' | 'storytelling';
   lastGenerated?: string;
+}
+
+export interface Activity {
+    id: string;
+    userId?: string;
+    tenantId: string;
+    description: string;
+    timestamp: string;
 }
