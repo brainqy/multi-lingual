@@ -85,20 +85,7 @@ export async function signupUser(userData: { name: string; email: string; role: 
       };
     }
     
-    const headersList = headers();
-    const identifier = headersList.get('X-Tenant-Id') || 'platform';
-    
-    let effectiveTenantId = 'platform';
-    if (identifier !== 'platform') {
-        const tenant = await db.tenant.findFirst({
-            where: { OR: [{ domain: identifier }, { id: identifier }] }
-        });
-        if (tenant) {
-            effectiveTenantId = tenant.id;
-        }
-    }
-
-    const newUser = await createUser({ ...userData, tenantId: effectiveTenantId });
+    const newUser = await createUser({ ...userData });
 
     if (newUser) {
       logAction('New user signup successful', { userId: newUser.id, email: newUser.email, tenantId: newUser.tenantId, sessionId: newUser.sessionId });

@@ -125,7 +125,7 @@ export default function AiResumeWriterPage() {
       toast({ title: "Name Required", description: "Please provide a name for the resume profile.", variant: "destructive" });
       return;
     }
-    const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed' | 'tenantId'> = {
+    const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
       userId: currentUser.id,
       name: newResumeName,
       resumeText: generatedResumeText,
