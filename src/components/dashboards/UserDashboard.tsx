@@ -4,7 +4,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame, Trophy, User as UserIcon, Star } from "lucide-react";
-import { userDashboardTourSteps } from "@/lib/sample-data";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { getActivePromotionalContent } from "@/lib/actions/promotional-content";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -35,8 +34,9 @@ import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@
 import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { updateUser } from "@/lib/data-services/users";
+import { updateUser } from "@/lib/actions/users";
 import AiMentorSuggestions from "@/components/dashboards/AiMentorSuggestions";
+import { userDashboardTourSteps } from "@/lib/tour-steps";
 
 interface UserDashboardProps {
   user: UserProfile;
