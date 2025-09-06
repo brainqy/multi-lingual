@@ -22,8 +22,11 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   console.log("L17", { domainParts: hostname.split('.') });
   const domainParts = hostname.split('.');
-  console.log("L19", { potentialSubdomain: (domainParts.length > 1 && domainParts[0] !== 'www' && domainParts[0] !== 'localhost') ? domainParts[0] : null });
-  const potentialSubdomain = (domainParts.length > 1 && domainParts[0] !== 'www' && domainParts[0] !== 'localhost') ? domainParts[0] : null;
+  
+  // Adjusted regex to better handle localhost with ports
+  const localhostMatch = hostname.match(/^(.*?)\.localhost(:\d+)?$/);
+  const potentialSubdomain = localhostMatch ? localhostMatch[1] : (domainParts.length > 2 && domainParts[0] !== 'www') ? domainParts[0] : null;
+  console.log("L19", { potentialSubdomain });
 
   console.log("L20");
   const response = NextResponse.next();
@@ -60,8 +63,6 @@ export async function middleware(request: NextRequest) {
         // Fallback to 'platform' on any database error to avoid crashing.
         console.log("L49 - Falling back to platform tenantId due to error.");
         tenantId = 'platform';
-      } finally {
-        await prismaEdge.$disconnect();
       }
   }
 
@@ -87,5 +88,3 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|images|.*\\.png$).*)',
   ],
 };
-
-    
