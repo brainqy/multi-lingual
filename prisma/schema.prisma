@@ -750,6 +750,7 @@ enum EmailTemplateType {
   WELCOME
   APPOINTMENT_CONFIRMATION
   PASSWORD_RESET
+  TENANT_WELCOME
 }
 model EmailTemplate {
   id        String            @id @default(cuid())
