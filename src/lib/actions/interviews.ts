@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { MockInterviewSession } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { Prisma } from '@prisma/client';
 
 /**
  * Creates a new mock interview session in the database.
@@ -13,14 +14,16 @@ import { logAction, logError } from '@/lib/logger';
 export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'>): Promise<MockInterviewSession | null> {
   logAction('Creating mock interview session', { userId: sessionData.userId, topic: sessionData.topic });
   try {
+    const { interviewerScores, ...restOfSessionData } = sessionData;
     const newSession = await db.mockInterviewSession.create({
       data: {
-        ...sessionData,
+        ...restOfSessionData,
         // Ensure Prisma optional fields are handled correctly
         jobDescription: sessionData.jobDescription || null,
         timerPerQuestion: sessionData.timerPerQuestion || null,
         difficulty: sessionData.difficulty || null,
         questionCategories: sessionData.questionCategories || [],
+        finalScore: (sessionData.finalScore as any) || Prisma.JsonNull,
       },
     });
     return newSession as unknown as MockInterviewSession;
@@ -41,7 +44,7 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
         const sessions = await db.mockInterviewSession.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
-            include: { answers: true } // Include answers if needed
+            include: { answers: true, interviewerScores: true }
         });
         return sessions as unknown as MockInterviewSession[];
     } catch (error) {
@@ -59,15 +62,17 @@ export async function getMockInterviewSessions(userId: string): Promise<MockInte
 export async function updateMockInterviewSession(sessionId: string, updateData: Partial<Omit<MockInterviewSession, 'id'>>): Promise<MockInterviewSession | null> {
     logAction('Updating mock interview session', { sessionId });
     try {
+        const { interviewerScores, ...restOfUpdateData } = updateData;
         const updatedSession = await db.mockInterviewSession.update({
             where: { id: sessionId },
             data: {
-                ...updateData,
+                ...restOfUpdateData,
                 // Handle JSON fields if they are updated
-                questions: updateData.questions ? { set: updateData.questions as any } : undefined,
-                answers: updateData.answers ? { set: updateData.answers as any } : undefined,
-                overallFeedback: updateData.overallFeedback ? updateData.overallFeedback as any : undefined,
-                recordingReferences: updateData.recordingReferences ? { set: updateData.recordingReferences as any } : undefined,
+                questions: updateData.questions ? (updateData.questions as any) : undefined,
+                answers: updateData.answers ? (updateData.answers as any) : undefined,
+                overallFeedback: updateData.overallFeedback ? (updateData.overallFeedback as any) : undefined,
+                recordingReferences: updateData.recordingReferences ? (updateData.recordingReferences as any) : undefined,
+                finalScore: updateData.finalScore ? (updateData.finalScore as any) : undefined,
             },
         });
         return updatedSession as unknown as MockInterviewSession;
