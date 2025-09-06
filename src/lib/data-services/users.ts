@@ -8,12 +8,11 @@ import { getWallet } from '../actions/wallet';
 import { headers } from 'next/headers';
 
 /**
- * Fetches users from the database, scoped by the tenant from the request headers.
+ * Fetches users from the database, scoped by the tenant ID.
+ * @param tenantId The ID of the tenant to fetch users for. If null/undefined, fetches all users (admin action).
  * @returns A promise that resolves to an array of UserProfile objects.
  */
-export async function getUsers(): Promise<UserProfile[]> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id');
+export async function getUsers(tenantId?: string | null): Promise<UserProfile[]> {
   logAction('Fetching users', { tenantId });
   try {
     const whereClause: any = {};

@@ -10,7 +10,7 @@ import * as React from "react";
 import * as LucideIcons from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect, useMemo } from "react"; 
+import { useState, useEffect, useMemo, useCallback } from "react"; 
 import type { UserProfile, Badge as BadgeType, CommunityPost } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getBadges } from "@/lib/actions/gamification";
@@ -40,24 +40,27 @@ export default function GamificationPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const [allUsers, allBadges] = await Promise.all([
-        getUsers(),
-        getBadges()
-      ]);
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    const tenantIdForLeaderboard = user.role === 'admin' ? undefined : user.tenantId;
+    const [allUsers, allBadges] = await Promise.all([
+      getUsers(tenantIdForLeaderboard),
+      getBadges()
+    ]);
 
-      const sortedUsers = allUsers
-        .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
-        .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
-      setLeaderboardUsers(sortedUsers.slice(0, 10));
-      
-      setBadges(allBadges);
-      setIsLoading(false);
-    }
+    const sortedUsers = allUsers
+      .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
+      .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
+    setLeaderboardUsers(sortedUsers.slice(0, 10));
+    
+    setBadges(allBadges);
+    setIsLoading(false);
+  }, [user]);
+
+  useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const earnedBadges = useMemo(() => {
     if (!user) return [];
@@ -74,7 +77,7 @@ export default function GamificationPage() {
 
     const postContent = `🏆 I just earned the "${badge.name}" badge on ${t("appName")}!\n\n${badge.description}\n\n#AchievementUnlocked #${t("appName").replace(/\s+/g, '')}`;
 
-    const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
+    const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' > = {
       tenantId: user.tenantId,
       userId: user.id,
       userName: user.name,
