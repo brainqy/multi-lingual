@@ -127,6 +127,7 @@ export default function AiResumeWriterPage() {
     }
     const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
       userId: currentUser.id,
+      tenantId: currentUser.tenantId,
       name: newResumeName,
       resumeText: generatedResumeText,
     };
