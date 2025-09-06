@@ -18,6 +18,11 @@ import type { JobApplication, JobApplicationStatus, KanbanColumnId } from "@/typ
 import { useI18n } from "@/hooks/use-i18n";
 import { format, parseISO } from "date-fns";
 
+const logger = (component: string) => ({
+  log: (message: string, ...args: any[]) => console.log(`[JobCard][${component}] ${message}`, ...args),
+});
+const cardLogger = logger("MainCard");
+
 const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; titleKey: string; acceptedStatuses: JobApplicationStatus[] }[] = [
   { id: 'Saved', titleKey: 'jobTracker.kanban.Saved.title', acceptedStatuses: ['Saved'] },
   { id: 'Applied', titleKey: 'jobTracker.kanban.Applied.title', acceptedStatuses: ['Applied'] },
@@ -33,9 +38,13 @@ interface JobCardProps {
 }
 
 export default function JobCard({ application, onEdit, onDelete, onMove }: JobCardProps) {
+  cardLogger.log("Component rendering for application:", application.id);
   const { t } = useI18n();
   return (
-    <Card className="mb-3 shadow-md bg-card hover:shadow-lg transition-shadow duration-200 cursor-pointer" onClick={() => onEdit(application)}>
+    <Card className="mb-3 shadow-md bg-card hover:shadow-lg transition-shadow duration-200 cursor-pointer" onClick={() => {
+      cardLogger.log("Card clicked, calling onEdit.", { appId: application.id });
+      onEdit(application);
+    }}>
       <CardContent className="p-3 space-y-1">
         <div className="flex justify-between items-start">
           <div>
@@ -45,12 +54,18 @@ export default function JobCard({ application, onEdit, onDelete, onMove }: JobCa
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => {
+                cardLogger.log("Dropdown menu triggered.");
+                e.stopPropagation();
+              }}>
                 <GripVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={() => onEdit(application)}>
+              <DropdownMenuItem onClick={() => {
+                cardLogger.log("Edit option clicked.", { appId: application.id });
+                onEdit(application);
+              }}>
                 <Edit3 className="mr-2 h-4 w-4" /> {t("jobTracker.dialog.edit", { default: "Edit" })}
               </DropdownMenuItem>
               <DropdownMenuSub>
@@ -59,18 +74,27 @@ export default function JobCard({ application, onEdit, onDelete, onMove }: JobCa
                   <DropdownMenuSubContent>
                     {KANBAN_COLUMNS_CONFIG.map(col => (
                        col.acceptedStatuses[0] !== application.status &&
-                        <DropdownMenuItem key={col.id} onClick={() => onMove(application.id, col.acceptedStatuses[0])}>
+                        <DropdownMenuItem key={col.id} onClick={() => {
+                          cardLogger.log("Move option clicked.", { appId: application.id, newStatus: col.acceptedStatuses[0] });
+                          onMove(application.id, col.acceptedStatuses[0]);
+                        }}>
                           {t(col.titleKey, { default: col.id })}
                         </DropdownMenuItem>
                     ))}
                     {application.status !== 'Rejected' &&
-                        <DropdownMenuItem onClick={() => onMove(application.id, 'Rejected')}>{t("jobTracker.statuses.Rejected", { default: "Rejected" })}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          cardLogger.log("Move to Rejected clicked.", { appId: application.id });
+                          onMove(application.id, 'Rejected');
+                        }}>{t("jobTracker.statuses.Rejected", { default: "Rejected" })}</DropdownMenuItem>
                     }
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onDelete(application.id)} className="text-destructive">
+              <DropdownMenuItem onClick={() => {
+                cardLogger.log("Delete option clicked.", { appId: application.id });
+                onDelete(application.id);
+              }} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" /> {t("jobTracker.dialog.delete", { default: "Delete" })}
               </DropdownMenuItem>
             </DropdownMenuContent>

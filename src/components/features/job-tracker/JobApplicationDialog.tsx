@@ -34,6 +34,12 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
+const logger = (component: string) => ({
+  log: (message: string, ...args: any[]) => console.log(`[JobApplicationDialog][${component}] ${message}`, ...args),
+  error: (message: string, ...args: any[]) => console.error(`[JobApplicationDialog][${component}] ${message}`, ...args),
+});
+const dialogLogger = logger("MainDialog");
+
 const jobApplicationSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   jobTitle: z.string().min(1, "Job title is required"),
@@ -60,6 +66,7 @@ interface JobApplicationDialogProps {
 }
 
 export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete, editingApplication, resumes }: JobApplicationDialogProps) {
+  dialogLogger.log("Component rendering or re-rendering.", { isOpen, editingApplicationId: editingApplication?.id });
   const { t } = useI18n();
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
@@ -72,55 +79,79 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   });
 
   useEffect(() => {
+    dialogLogger.log("useEffect triggered for editingApplication change.", { editingApplicationId: editingApplication?.id });
     if (editingApplication) {
       const dateApplied = editingApplication.dateApplied;
       const dateToFormat = typeof dateApplied === 'string'
         ? parseISO(dateApplied)
         : dateApplied;
 
-      reset({
+      const formData = {
         ...editingApplication,
         dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
         notes: editingApplication.notes || [],
-      });
+      };
+      reset(formData);
       setCurrentInterviews(editingApplication.interviews || []);
       setCurrentNotes(editingApplication.notes || []);
+      dialogLogger.log("Form reset with existing application data.", { formData });
     } else {
-      reset({
+      const defaultData = {
         companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
         notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
-      });
+      };
+      reset(defaultData);
       setCurrentInterviews([]);
       setCurrentNotes([]);
+      dialogLogger.log("Form reset with default data for new application.", { defaultData });
     }
   }, [editingApplication, reset]);
 
   const onSubmit = (data: JobApplicationFormData) => {
+    dialogLogger.log("onSubmit called with form data.", { data });
     onSave({ ...data, notes: currentNotes }, currentInterviews);
+    dialogLogger.log("onSubmit finished, onSave prop called.");
   };
 
   const handleAddInterview = () => {
+    dialogLogger.log("handleAddInterview called.", { newInterview });
     if (!newInterview.date || !newInterview.interviewer) {
       toast({ title: t("jobTracker.toast.missingInterviewInfo.title"), description: t("jobTracker.toast.missingInterviewInfo.description"), variant: "destructive" });
+      dialogLogger.error("handleAddInterview failed: missing info.");
       return;
     }
-    setCurrentInterviews(prev => [...prev, { id: `int-${Date.now()}`, ...newInterview }]);
+    setCurrentInterviews(prev => {
+      const newInterviews = [...prev, { id: `int-${Date.now()}`, ...newInterview }];
+      dialogLogger.log("handleAddInterview: updating interviews state.", { newInterviewsCount: newInterviews.length });
+      return newInterviews;
+    });
     setNewInterview({ date: '', type: 'Phone Screen', interviewer: '' });
+    dialogLogger.log("handleAddInterview finished, cleared new interview form.");
   };
 
   const handleRemoveInterview = (interviewId: string) => {
+    dialogLogger.log("handleRemoveInterview called.", { interviewId });
     setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
+    dialogLogger.log("handleRemoveInterview finished.");
   };
   
   const handleAddNote = () => {
+    dialogLogger.log("handleAddNote called.", { newNoteContent });
     if (newNoteContent.trim()) {
-      setCurrentNotes(prev => [newNoteContent.trim(), ...prev]);
+      setCurrentNotes(prev => {
+        const newNotes = [newNoteContent.trim(), ...prev];
+        dialogLogger.log("handleAddNote: updating notes state.", { newNotesCount: newNotes.length });
+        return newNotes;
+      });
       setNewNoteContent('');
+      dialogLogger.log("handleAddNote finished, cleared new note input.");
     }
   };
 
   const handleRemoveNote = (index: number) => {
+    dialogLogger.log("handleRemoveNote called.", { index });
     setCurrentNotes(prev => prev.filter((_, i) => i !== index));
+    dialogLogger.log("handleRemoveNote finished.");
   };
 
   return (
