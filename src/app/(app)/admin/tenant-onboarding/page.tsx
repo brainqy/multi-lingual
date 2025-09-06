@@ -79,8 +79,8 @@ export default function TenantOnboardingPage() {
       gamificationEnabled: true,
       walletEnabled: true,
       eventRegistrationEnabled: true,
-      primaryColor: 'hsl(180 100% 25%)', 
-      accentColor: 'hsl(180 100% 30%)',
+      primaryColor: '', 
+      accentColor: '',
     }
   });
   
@@ -300,7 +300,7 @@ export default function TenantOnboardingPage() {
             ) : (
               <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.createTenant", { default: "Create Tenant" })}
+                {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.finish", { default: "Finish" })}
               </Button>
             )}
           </CardFooter>

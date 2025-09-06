@@ -1,2 +1,76 @@
 
-{}
+{
+  "tenantManagement": {
+    "title": "किरायेदार प्रबंधन",
+    "description": "प्लेटफॉर्म पर सभी संगठनात्मक किरायेदारों का पर्यवेक्षण और प्रबंधन करें।",
+    "createNewButton": "नया किरायेदार बनाएं",
+    "tenantListTitle": "वर्तमान किरायेदार",
+    "noTenantsFound": "अभी तक कोई किरायेदार ऑनबोर्ड नहीं किया गया है। आरंभ करने के लिए 'नया किरायेदार बनाएं' पर क्लिक करें।",
+    "editActionMock": "किरायेदार {tenantId} के लिए संपादन कार्रवाई एक मॉक है।",
+    "deleteActionToast": "किरायेदार '{tenantName}' और उसका सारा डेटा हटा दिया गया है।",
+    "table": {
+      "name": "किरायेदार का नाम",
+      "id": "किरायेदार आईडी",
+      "createdAt": "बनाने की तिथि",
+      "publicSignup": "सार्वजनिक साइनअप",
+      "actions": "कार्रवाइयाँ"
+    }
+  },
+  "tenantOnboarding": {
+    "title": "किरायेदार ऑनबोर्डिंग विज़ार्ड",
+    "toast": {
+      "tenantCreated": {
+        "title": "किरायेदार बनाया गया!",
+        "description": "{tenantName} को सफलतापूर्वक ऑनबोर्ड किया गया है।"
+      }
+    },
+    "steps": {
+      "basicInfo": "बुनियादी जानकारी",
+      "branding": "ब्रांडिंग",
+      "features": "विशेषताएँ",
+      "adminUser": "व्यवस्थापक उपयोगकर्ता",
+      "review": "समीक्षा और बनाएँ"
+    },
+    "currentStep": "चरण {current} का {total}",
+    "formLabels": {
+      "tenantName": "किरायेदार का नाम (उदा., विश्वविद्यालय का नाम, कंपनी)",
+      "tenantDomain": "किरायेदार डोमेन (वैकल्पिक)",
+      "tenantDomainPlaceholder": "उदा., myuni.JobMatch.ai",
+      "customLogoUrl": "कस्टम लोगो यूआरएल (वैकल्पिक)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (HSL या Hex)",
+      "primaryColorPlaceholder": "उदा., hsl(180 100% 25%) या #008080",
+      "accentColor": "उच्चारण रंग (HSL या Hex)",
+      "accentColorPlaceholder": "उदा., hsl(180 100% 30%) या #009999",
+      "coreFeaturesTitle": "मुख्य विशेषताएँ",
+      "featureCommunityFeed": "सामुदायिक फ़ीड",
+      "featureJobBoard": "नौकरी बोर्ड",
+      "featureGamification": "गेमिफिकेशन (XP और बैज)",
+      "featureWallet": "डिजिटल वॉलेट (सिक्के)",
+      "featureEventRegistration": "इवेंट पंजीकरण",
+      "signupTitle": "साइनअप सेटिंग्स",
+      "allowPublicSignup": "सार्वजनिक साइनअप की अनुमति दें",
+      "adminFullName": "प्रारंभिक व्यवस्थापक का पूरा नाम",
+      "adminEmail": "व्यवस्थापक ईमेल",
+      "adminPassword": "व्यवस्थापक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "विवरण की समीक्षा करें",
+      "nameLabel": "नाम:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो यूआरएल:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "उच्चारण रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "सक्षम विशेषताएँ:",
+      "initialAdminUserTitle": "प्रारंभिक व्यवस्थापक उपयोगकर्ता",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "पिछला",
+      "next": "अगला",
+      "createTenant": "किरायेदार बनाएं",
+      "finish": "समाप्त करें"
+    }
+  }
+}
