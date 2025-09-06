@@ -60,9 +60,10 @@ export default function MessengerManagementPage() {
   const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setIsDataLoading(true);
+    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const [surveys, responses] = await Promise.all([
       getSurveys(), 
-      getSurveyResponses(),
+      getSurveyResponses(tenantIdToFetch),
     ]);
 
     setSurveyDefinitions(surveys);

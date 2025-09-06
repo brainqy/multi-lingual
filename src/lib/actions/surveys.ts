@@ -112,13 +112,11 @@ export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>)
 
 /**
  * Fetches all survey responses, optionally scoped by tenant.
+ * @param tenantId Optional tenant ID. If not provided, fetches for the entire platform (admin view).
  * @returns A promise that resolves to an array of SurveyResponse objects.
  */
-export async function getSurveyResponses(): Promise<SurveyResponse[]> {
+export async function getSurveyResponses(tenantId?: string): Promise<SurveyResponse[]> {
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id');
-
     const whereClause: any = {};
     if (tenantId && tenantId !== 'platform') {
       whereClause.tenantId = tenantId;
