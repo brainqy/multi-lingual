@@ -1,19 +1,38 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { BarChart, Briefcase, Users, Zap, FileText, Edit, MessageSquare, Brain, Layers3, Award, CalendarCheck2, ArrowRight, Code2, CalendarDays, User as UserIcon, Tag } from "lucide-react";
+import { BarChart, Briefcase, Users, Zap, FileText, Edit, MessageSquare, Brain, Layers3, Award, CalendarCheck2, ArrowRight, Code2, CalendarDays, User as UserIcon, Tag, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
-import { samplePlatformSettings, sampleBlogPosts } from "@/lib/sample-data";
 import { format, parseISO } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import CustomerReviewsSection from "@/components/features/landing/CustomerReviewsSection";
+import type { PlatformSettings, BlogPost } from "@/types";
+import { getPlatformSettings } from "@/lib/actions/platform-settings";
+import { getBlogPosts } from "@/lib/actions/blog";
 
 export default function LandingPage() {
-  const platformName = samplePlatformSettings.platformName;
+  const [platformName, setPlatformName] = useState("Bhasha Setu");
+  const [latestBlogPosts, setLatestBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [settings, posts] = await Promise.all([
+        getPlatformSettings(),
+        getBlogPosts(),
+      ]);
+      setPlatformName(settings.platformName);
+      setLatestBlogPosts(posts.slice(0, 5));
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
 
   const stats = [
     { name: "Resumes Analyzed", value: "10,000+", icon: FileText },
@@ -42,13 +61,19 @@ export default function LandingPage() {
   ];
 
   const faqs = [
-    { question: "What is JobMatch AI?", answer: "JobMatch AI is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks." },
+    { question: `What is ${platformName}?`, answer: `${platformName} is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks.` },
     { question: "How does AI Mock Interview work?", answer: "AI Mock Interview generates questions based on your job role and evaluates your answers with detailed feedback." },
-    { question: "Is JobMatch AI free?", answer: "Yes, you can start using JobMatch AI for free. Premium features are available with subscription plans." },
+    { question: `Is ${platformName} free?`, answer: `Yes, you can start using ${platformName} for free. Premium features are available with subscription plans.` },
     { question: "Can I customize my resume templates?", answer: "Absolutely! JobMatch AI provides customizable templates to suit your needs." },
   ];
   
-  const latestBlogPosts = sampleBlogPosts.slice(0, 5);
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -290,3 +315,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
