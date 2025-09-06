@@ -155,3 +155,32 @@ export async function changePassword(data: { userId: string; currentPassword?: s
     return { success: false, error: "An unexpected error occurred." };
   }
 }
+
+/**
+ * Resets a user's password using a token (base64 email).
+ * @param data Object containing the token and the new password.
+ * @returns A success or error object.
+ */
+export async function resetPassword(data: { token: string; newPassword?: string }): Promise<{ success: boolean; error?: string }> {
+  logAction('Attempting to reset password', { token: data.token });
+  try {
+    const email = Buffer.from(data.token, 'base64').toString('ascii');
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      logError('[AuthAction] User not found for password reset', {}, { email });
+      return { success: false, error: "Invalid token or user not found." };
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: { password: data.newPassword },
+    });
+
+    logAction('Password reset successfully', { userId: user.id });
+    return { success: true };
+  } catch (error) {
+    logError('[AuthAction] Exception during password reset', error, { token: data.token });
+    return { success: false, error: "An unexpected error occurred during password reset." };
+  }
+}
