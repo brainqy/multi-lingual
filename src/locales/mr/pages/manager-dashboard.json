@@ -1,2 +1,66 @@
 
-{}
+{
+  "managerDashboard": {
+    "title": "व्यवस्थापक डॅशबोर्ड ({tenantName})",
+    "description": "तुमच्या भाडेकरूसाठी सहभागाचे निरीक्षण करा आणि वैशिष्ट्ये व्यवस्थापित करा.",
+    "customizeButton": "सानुकूलित करा",
+    "stats": {
+      "activeUsers": {
+        "title": "सक्रिय वापरकर्ते (मागील ७ दिवस)",
+        "description": "भाडेकरूमध्ये एकूण {count} वापरकर्ते"
+      },
+      "resumesAnalyzed": {
+        "title": "विश्लेषित रेझ्युमे",
+        "description": "तुमच्या भाडेकरूमधील एकूण स्कॅन"
+      },
+      "communityPosts": {
+        "title": "समुदाय पोस्ट",
+        "description": "तुमच्या सदस्यांद्वारे एकूण पोस्ट"
+      },
+      "pendingApprovals": {
+        "title": "प्रलंबित मंजूरी",
+        "description": "पुनरावलोकनाची आवश्यकता असलेले इव्हेंट सबमिशन"
+      }
+    },
+    "charts": {
+      "tenantEngagement": {
+        "title": "भाडेकरू सहभाग विहंगावलोकन",
+        "description": "तुमच्या भाडेकरूमधील प्रमुख क्रियाकलापांचा एक स्नॅपशॉट.",
+        "legendPosts": "समुदाय पोस्ट",
+        "legendResumesAnalyzed": "विश्लेषित रेझ्युमे",
+        "legendAppointments": "सक्रिय भेटी",
+        "activityCount": "क्रियाकलाप संख्या"
+      }
+    },
+    "quickActions": {
+      "title": "भाडेकरू व्यवस्थापन क्रिया",
+      "description": "तुमच्या भाडेकरूचा समुदाय आणि सेटिंग्ज व्यवस्थापित करण्यासाठी द्रुत दुवे.",
+      "manageTenantUsers": "भाडेकरू वापरकर्ते व्यवस्थापित करा",
+      "moderateTenantFeed": "भाडेकरू फीड नियंत्रित करा",
+      "manageEventGallery": "इव्हेंट गॅलरी व्यवस्थापित करा",
+      "reviewEventSubmissions": "इव्हेंट सबमिशनचे पुनरावलोकन करा",
+      "manageAnnouncements": "घोषणा व्यवस्थापित करा",
+      "promoCodeMgt": "प्रोमो कोड"
+    },
+    "toast": {
+      "dashboardUpdated": {
+        "title": "डॅशबोर्ड अद्यतनित केले",
+        "description": "तुमची विजेट प्राधान्ये जतन केली आहेत."
+      }
+    },
+    "customizeDialog": {
+      "title": "व्यवस्थापक डॅशबोर्ड सानुकूलित करा",
+      "description": "तुम्ही पाहू इच्छित असलेले विजेट निवडा.",
+      "cancelButton": "रद्द करा",
+      "saveButton": "जतन करा"
+    },
+    "widgets": {
+      "activeUsersStat": "सक्रिय वापरकर्ते आकडेवारी",
+      "resumesAnalyzedStat": "विश्लेषित रेझ्युमे आकडेवारी",
+      "communityPostsStat": "समुदाय पोस्ट आकडेवारी",
+      "pendingApprovalsStat": "प्रलंबित मंजूरी आकडेवारी",
+      "tenantEngagementOverview": "भाडेकरू सहभाग विहंगावलोकन",
+      "tenantManagementActions": "भाडेकरू व्यवस्थापन क्रिया"
+    }
+  }
+}
