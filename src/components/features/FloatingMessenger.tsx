@@ -56,8 +56,15 @@ export default function FloatingMessenger() {
 
   const addMessage = (type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []): Message[] => {
     const newId = `${Date.now()}-${messageIdCounter.current++}`;
-    batch.push({ id: newId, type, content });
-    return batch;
+    const newMessage = { id: newId, type, content };
+    
+    // If not batching, update state directly. If batching, just return the new array.
+    if (batch.length === 0) {
+        setMessages(prev => [...prev, newMessage]);
+    } else {
+        batch.push(newMessage);
+    }
+    return [...batch, newMessage];
   };
   
   const processStep = (stepId: string | undefined | null) => {
@@ -72,7 +79,8 @@ export default function FloatingMessenger() {
     // Loop through consecutive bot messages to batch them
     while (nextStep && nextStep.type === 'botMessage') {
       if (nextStep.text) {
-        messageBatch = addMessage('bot', nextStep.text, messageBatch);
+        const newId = `${Date.now()}-${messageIdCounter.current++}`;
+        messageBatch.push({ id: newId, type: 'bot', content: nextStep.text });
       }
       if (nextStep.isLastStep) {
         setCurrentStepId(null);
@@ -101,7 +109,7 @@ export default function FloatingMessenger() {
     if (nextStep && nextStep.type !== 'botMessage') {
       if (nextStep.text) {
         // This is the prompt for the user input, so add it.
-        setMessages(prev => [...prev, ...addMessage('bot', nextStep.text)]);
+        addMessage('bot', nextStep.text);
       }
       setCurrentStepId(nextStep.id);
     } else if (!nextStep) {
