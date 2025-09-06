@@ -47,7 +47,9 @@ export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSe
  * @param isNew Whether to create a new quiz.
  * @returns The created/updated MockInterviewSession object or null.
  */
-export async function updateQuiz(quizId: string, quizData: Omit<MockInterviewSession, 'id'>, isNew: boolean): Promise<MockInterviewSession | null> {
+export async function updateQuiz(quizId: string, quizData: Omit<MockInterviewSession, 'id' | 'tenantId'>, isNew: boolean): Promise<MockInterviewSession | null> {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
     logAction(isNew ? 'Creating quiz' : 'Updating quiz', { quizId });
     try {
         const dataForDb = {
@@ -59,6 +61,7 @@ export async function updateQuiz(quizId: string, quizData: Omit<MockInterviewSes
             questions: quizData.questions as any,
             answers: quizData.answers as any,
             difficulty: quizData.difficulty || null,
+            tenantId: tenantId
         };
 
         if (isNew) {
@@ -78,5 +81,3 @@ export async function updateQuiz(quizId: string, quizData: Omit<MockInterviewSes
         return null;
     }
 }
-
-    

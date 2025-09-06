@@ -5,19 +5,23 @@ import { db } from '@/lib/db';
 import type { MockInterviewSession } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
+import { headers } from 'next/headers';
 
 /**
  * Creates a new mock interview session in the database.
  * @param sessionData The data for the new session.
  * @returns The newly created MockInterviewSession object or null if failed.
  */
-export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences'>): Promise<MockInterviewSession | null> {
+export async function createMockInterviewSession(sessionData: Omit<MockInterviewSession, 'id' | 'questions' | 'answers' | 'overallFeedback' | 'overallScore' | 'recordingReferences' | 'tenantId'>): Promise<MockInterviewSession | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating mock interview session', { userId: sessionData.userId, topic: sessionData.topic });
   try {
     const { interviewerScores, ...restOfSessionData } = sessionData;
     const newSession = await db.mockInterviewSession.create({
       data: {
         ...restOfSessionData,
+        tenantId: tenantId,
         // Ensure Prisma optional fields are handled correctly
         jobDescription: sessionData.jobDescription || null,
         timerPerQuestion: sessionData.timerPerQuestion || null,

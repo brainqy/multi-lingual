@@ -33,7 +33,7 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
  * @param resumeData The data for the new resume profile.
  * @returns The newly created ResumeProfile object or null if failed.
  */
-export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed' | 'tenantId'>): Promise<ResumeProfile | null> {
+export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'>): Promise<ResumeProfile | null> {
   const headersList = headers();
   const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating resume profile', { userId: resumeData.userId, name: resumeData.name });
@@ -116,7 +116,7 @@ export async function getScanHistory(userId: string): Promise<ResumeScanHistoryI
  * @param scanData The data for the new scan history entry.
  * @returns The newly created ResumeScanHistoryItem object or null if failed.
  */
-export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate' | 'tenantId'>): Promise<ResumeScanHistoryItem | null> {
+export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'>): Promise<ResumeScanHistoryItem | null> {
   const headersList = headers();
   const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating scan history entry', { userId: scanData.userId, jobTitle: scanData.jobTitle });

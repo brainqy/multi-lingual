@@ -43,7 +43,7 @@ export async function getJobOpenings(): Promise<JobOpening[]> {
  * @returns The newly created JobOpening object or null if failed.
  */
 export async function addJobOpening(
-  jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
+  jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
   const headersList = headers();
@@ -96,11 +96,15 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @param applicationData The data for the new job application.
  * @returns The newly created JobApplication object or null if failed.
  */
-export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'interviews'>): Promise<JobApplication | null> {
+export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'interviews' | 'tenantId'>): Promise<JobApplication | null> {
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+
     const newApplication = await db.jobApplication.create({
       data: {
         ...applicationData,
+        tenantId,
         notes: applicationData.notes || [],
       },
     });
@@ -177,5 +181,3 @@ export async function deleteJobApplication(applicationId: string): Promise<boole
     return false;
   }
 }
-
-    

@@ -12,7 +12,9 @@ import { headers } from 'next/headers';
  * @param sessionData The data for the new session.
  * @returns The newly created LiveInterviewSession object or null.
  */
-export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id'>): Promise<LiveInterviewSession | null> {
+export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id' | 'tenantId'>): Promise<LiveInterviewSession | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating live interview session', { title: sessionData.title });
   try {
     const { interviewerScores, ...restOfSessionData } = sessionData;
@@ -33,6 +35,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
     return {
       ...newSession,
       ...restOfSessionData,
+      tenantId,
     } as unknown as LiveInterviewSession;
   } catch (error) {
     logError('[LiveInterviewAction] Error creating session', error, { title: sessionData.title });

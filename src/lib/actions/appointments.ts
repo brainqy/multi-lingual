@@ -39,7 +39,7 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
  * @param appointmentData The data for the new appointment.
  * @returns The newly created Appointment object or null if failed.
  */
-export async function createAppointment(appointmentData: Omit<Appointment, 'id' | 'tenantId'>): Promise<Appointment | null> {
+export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
   const headersList = headers();
   const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId, tenantId });

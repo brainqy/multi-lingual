@@ -57,7 +57,7 @@ export async function getCommunityPosts(currentUserId: string): Promise<Communit
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'>): Promise<CommunityPost | null> {
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'>): Promise<CommunityPost | null> {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
     logAction('Creating community post', { userId: postData.userId, type: postData.type, tenantId });
@@ -423,5 +423,3 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         return null;
     }
 }
-
-    

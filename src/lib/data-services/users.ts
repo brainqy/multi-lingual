@@ -59,10 +59,11 @@ export async function createUser(userData: {
   email: string;
   role: UserRole;
   password?: string;
-  tenantId?: string;
   status?: UserStatus;
 }): Promise<UserProfile | null> {
-  logAction('Creating user', { email: userData.email, tenantId: userData.tenantId });
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating user', { email: userData.email, tenantId });
   try {
     const newUser = await db.user.create({
       data: {
@@ -70,7 +71,7 @@ export async function createUser(userData: {
         email: userData.email,
         password: userData.password, // In a real app, this should be hashed
         role: userData.role,
-        tenantId: userData.tenantId || 'platform', // Default to platform if not specified
+        tenantId: tenantId,
         status: userData.status || 'active',
         sessionId: `session-${Date.now()}`, // Generate an initial session ID
       },
@@ -133,5 +134,3 @@ export async function deleteUser(userId: string): Promise<boolean> {
     return false;
   }
 }
-
-    

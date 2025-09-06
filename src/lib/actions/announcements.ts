@@ -88,7 +88,7 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @param announcementData The data for the new announcement.
  * @returns The newly created Announcement object or null if failed.
  */
-export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>): Promise<Announcement | null> {
+export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
   const headersList = headers();
   const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy, tenantId });

@@ -36,7 +36,7 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  * @param activityData Data for the new activity.
  * @returns The newly created Activity object or null.
  */
-export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp' | 'tenantId'>): Promise<Activity | null> {
+export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
     const { userId, ...restOfData } = activityData;
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
@@ -44,9 +44,7 @@ export async function createActivity(activityData: Omit<Activity, 'id' | 'timest
     try {
         const dataForDb: any = {
             ...restOfData,
-            tenant: {
-                connect: { id: tenantId },
-            },
+            tenantId: tenantId,
         };
 
         if (userId) {

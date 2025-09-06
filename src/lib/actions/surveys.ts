@@ -43,7 +43,7 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
  * @param surveyData The data for the new survey.
  * @returns The newly created Survey object or null.
  */
-export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt' | 'tenantId'>): Promise<Survey | null> {
+export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
   try {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
@@ -95,7 +95,7 @@ export async function getSurveyResponses(): Promise<SurveyResponse[]> {
  * @param responseData The data for the new response.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'tenantId'>): Promise<SurveyResponse | null> {
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate'>): Promise<SurveyResponse | null> {
   try {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
