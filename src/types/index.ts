@@ -7,7 +7,7 @@ export type Translations = {
 };
 
 export type NestedTranslations = {
-  [key: string]: string | NestedTranslations | Array<string | NestedTranslations>;
+  [key:string]: string | NestedTranslations | Array<string | NestedTranslations>;
 };
 
 export interface User {
