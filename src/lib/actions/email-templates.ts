@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/db';
 import type { EmailTemplate } from '@/types';
-import { EmailTemplateType } from '@/types';
+import { EmailTemplateType } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
 
 const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
