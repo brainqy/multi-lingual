@@ -1,6 +1,7 @@
 
 import * as z from "zod";
 import type { Locale } from '@/locales';
+import { EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
 
 export type Translations = {
   [key: string]: string | NestedTranslations;
@@ -1433,8 +1434,8 @@ export type Vote = {
     createdAt: string;
 }
 
-export const EmailTemplateTypes = ['WELCOME', 'APPOINTMENT_CONFIRMATION', 'PASSWORD_RESET', 'TENANT_WELCOME'] as const;
-export type EmailTemplateType = typeof EmailTemplateTypes[number];
+export const EmailTemplateType = PrismaEmailTemplateType;
+export type EmailTemplateType = PrismaEmailTemplateType;
 
 export interface EmailTemplate {
   id: string;
