@@ -5,17 +5,19 @@ import { db } from '@/lib/db';
 import type { UserProfile, UserRole, UserStatus } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { getWallet } from '../actions/wallet';
+import { headers } from 'next/headers';
 
 /**
- * Fetches all users from the database.
- * @param tenantId Optional tenant ID to scope the results.
+ * Fetches users from the database, scoped by the tenant from the request headers.
  * @returns A promise that resolves to an array of UserProfile objects.
  */
-export async function getUsers(tenantId?: string): Promise<UserProfile[]> {
+export async function getUsers(): Promise<UserProfile[]> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id');
   logAction('Fetching users', { tenantId });
   try {
     const whereClause: any = {};
-    if (tenantId) {
+    if (tenantId && tenantId !== 'platform') {
       whereClause.tenantId = tenantId;
     }
     const users = await db.user.findMany({
@@ -131,3 +133,5 @@ export async function deleteUser(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+    

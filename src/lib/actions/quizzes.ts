@@ -5,9 +5,10 @@ import { db } from '@/lib/db';
 import type { MockInterviewSession } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
+import { headers } from 'next/headers';
 
 /**
- * Fetches all quizzes created by a specific user.
+ * Fetches all quizzes created by a specific user or system quizzes.
  * In this schema, quizzes are stored as MockInterviewSession records.
  * @param userId The ID of the user who created the quizzes.
  * @returns A promise that resolves to an array of MockInterviewSession objects.
@@ -15,10 +16,12 @@ import { Prisma } from '@prisma/client';
 export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSession[]> {
   logAction('Fetching created quizzes', { userId });
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id');
+
     const quizzes = await db.mockInterviewSession.findMany({
       where: {
-        // You might add another filter here if you have a way to distinguish
-        // quizzes from regular mock interview sessions, e.g., a specific tag or status.
+        // This can be expanded if quizzes need tenant-scoping
       },
       orderBy: {
         createdAt: 'desc',
@@ -27,7 +30,7 @@ export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSe
         answers: true,
       },
     });
-    // Filter quizzes that are owned by the user or are system-level (no userId)
+    // Filter quizzes that are owned by the user or are system-level
     // and those that have questions (are quizzes)
     const userQuizzes = quizzes.filter(q => (q.userId === userId || !q.userId) && q.questions && (q.questions as any[]).length > 0);
     return userQuizzes as unknown as MockInterviewSession[];
@@ -75,3 +78,5 @@ export async function updateQuiz(quizId: string, quizData: Omit<MockInterviewSes
         return null;
     }
 }
+
+    

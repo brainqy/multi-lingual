@@ -4,16 +4,19 @@
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
+import { headers } from 'next/headers';
 
 /**
- * Fetches all job openings from the database, optionally filtered by tenant.
- * @param tenantId - Optional ID of the tenant. If provided, returns jobs for that tenant and platform-wide jobs.
+ * Fetches all job openings from the database, filtered by the tenant from the request headers.
  * @returns A promise that resolves to an array of JobOpening objects.
  */
-export async function getJobOpenings(tenantId?: string): Promise<JobOpening[]> {
+export async function getJobOpenings(): Promise<JobOpening[]> {
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id');
+
     const whereClause: Prisma.JobOpeningWhereInput = {};
-    if (tenantId) {
+    if (tenantId && tenantId !== 'platform') {
       whereClause.OR = [
         { tenantId: tenantId },
         { tenantId: 'platform' }
@@ -34,7 +37,7 @@ export async function getJobOpenings(tenantId?: string): Promise<JobOpening[]> {
 }
 
 /**
- * Adds a new job opening to the database.
+ * Adds a new job opening to the database within the current tenant context.
  * @param jobData The data for the new job opening.
  * @param currentUser The user who is posting the job.
  * @returns The newly created JobOpening object or null if failed.
@@ -43,12 +46,15 @@ export async function addJobOpening(
   jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || currentUser.tenantId;
+
   const newOpeningData = {
     ...jobData,
     datePosted: new Date(),
     postedByAlumniId: currentUser.id,
     alumniName: currentUser.name,
-    tenantId: currentUser.tenantId,
+    tenantId: tenantId,
   };
 
   try {
@@ -171,3 +177,5 @@ export async function deleteJobApplication(applicationId: string): Promise<boole
     return false;
   }
 }
+
+    

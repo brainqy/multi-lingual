@@ -8,17 +8,20 @@ import { checkAndAwardBadges } from './gamification';
 import { createNotification } from './notifications';
 import { AppError } from '../exceptions';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
- * @param tenantId The current user's tenant ID. If null, it implies an admin viewing all posts.
+ * The tenant is determined from the request headers.
  * @param currentUserId The current user's ID.
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
-export async function getCommunityPosts(tenantId: string | null, currentUserId: string): Promise<CommunityPost[]> {
+export async function getCommunityPosts(currentUserId: string): Promise<CommunityPost[]> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id');
   logAction('Fetching community posts', { tenantId, currentUserId });
   try {
-    const whereClause: Prisma.CommunityPostWhereInput = tenantId
+    const whereClause: Prisma.CommunityPostWhereInput = tenantId && tenantId !== 'platform'
       ? {
           OR: [
             { tenantId: tenantId },
@@ -50,16 +53,18 @@ export async function getCommunityPosts(tenantId: string | null, currentUserId: 
 }
 
 /**
- * Creates a new community post.
+ * Creates a new community post within the tenant context from the request headers.
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'>): Promise<CommunityPost | null> {
-    logAction('Creating community post', { userId: postData.userId, type: postData.type });
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'>): Promise<CommunityPost | null> {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    logAction('Creating community post', { userId: postData.userId, type: postData.type, tenantId });
     try {
         const dataForDb: Prisma.CommunityPostCreateInput = {
             user: { connect: { id: postData.userId } },
-            tenant: { connect: { id: postData.tenantId } },
+            tenant: { connect: { id: tenantId } },
             userName: postData.userName,
             userAvatar: postData.userAvatar,
             content: postData.content,
@@ -418,3 +423,5 @@ export async function toggleFlagPost(postId: string, userId: string, reason: str
         return null;
     }
 }
+
+    

@@ -22,16 +22,18 @@ import type {
   Wallet,
   WalletTransaction
 } from '@/types';
+import { headers } from 'next/headers';
 
 /**
  * This is the primary data fetching function for all dashboards.
  * It retrieves comprehensive data from the database.
- * @param tenantId Optional tenant ID to scope some data.
  * @param userId Optional user ID for user-specific data.
  * @param role Optional user role for permission checks.
  * @returns A promise that resolves to an object containing various dashboard data points.
  */
-export async function getDashboardData(tenantId?: string | null, userId?: string | null, role?: string) {
+export async function getDashboardData(userId?: string | null, role?: string) {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id');
   console.log(`[DashboardAction] Fetching data for tenant: ${tenantId}, user: ${userId}`);
   
   try {
@@ -130,3 +132,5 @@ export async function getDashboardData(tenantId?: string | null, userId?: string
     };
   }
 }
+
+    

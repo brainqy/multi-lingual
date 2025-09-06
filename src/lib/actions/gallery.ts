@@ -4,17 +4,19 @@
 import { db } from '@/lib/db';
 import type { GalleryEvent, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all gallery events for an admin/manager view.
- * @param tenantId Optional tenantId to scope events for managers.
  * @returns A promise that resolves to an array of GalleryEvent objects.
  */
-export async function getAllGalleryEvents(tenantId?: string): Promise<GalleryEvent[]> {
+export async function getAllGalleryEvents(): Promise<GalleryEvent[]> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id');
   logAction('Fetching all gallery events', { tenantId });
   try {
     const whereClause: any = {};
-    if (tenantId) {
+    if (tenantId && tenantId !== 'platform') {
       whereClause.OR = [{ tenantId }, { isPlatformGlobal: true }];
     }
     const events = await db.galleryEvent.findMany({
@@ -123,3 +125,5 @@ export async function deleteGalleryEvent(eventId: string): Promise<boolean> {
     return false;
   }
 }
+
+    
