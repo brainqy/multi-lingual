@@ -20,23 +20,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { isServer }) => {
-    // This is to fix the HMR websocket connection issue with local subdomains
-    if (!isServer) {
-      config.watchOptions.poll = 300;
-    }
-    
-    // This is to suppress the 'require.extensions' warning from handlebars
-    config.module.rules.push({
-      test: /handlebars/,
-      loader: 'null-loader',
-    });
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      handlebars: 'handlebars/dist/handlebars.js',
-    };
-    return config;
-  },
+
 };
 
 export default nextConfig;
