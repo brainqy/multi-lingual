@@ -21,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { useAuth } from "@/hooks/use-auth";
 import { getSurveys, createSurvey, getSurveyResponses } from "@/lib/actions/surveys";
-import { profileCompletionSurveyDefinition, initialFeedbackSurvey } from '@/lib/sample-data'; // Keep these as templates
+
 
 interface NewSurveyOption extends SurveyOptionType {
   tempId: string; 
@@ -62,7 +62,7 @@ export default function MessengerManagementPage() {
     setIsDataLoading(true);
     const tenantId = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const [surveys, responses] = await Promise.all([
-      getSurveys(), // For now, let's say managers can see all surveys
+      getSurveys(tenantId), 
       getSurveyResponses(tenantId),
     ]);
 
