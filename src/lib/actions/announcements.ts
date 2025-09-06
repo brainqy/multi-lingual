@@ -4,6 +4,7 @@
 import { db } from '@/lib/db';
 import type { Announcement, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches announcements visible to the current user.
@@ -27,21 +28,16 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
           { endDate: { gte: now } },
           { endDate: null },
         ],
-        AND: [
-          {
+        AND: {
             OR: [
-              { audience: 'All Users' },
-              {
-                audience: 'Specific Tenant',
-                audienceTarget: currentUser.tenantId,
-              },
-              {
-                audience: 'Specific Role',
-                audienceTarget: currentUser.role,
-              },
+              { targetTenantId: null }, // Platform-wide
+              { targetTenantId: currentUser.tenantId },
             ],
-          },
-        ],
+            OR: [
+              { targetRole: null }, // All roles
+              { targetRole: currentUser.role },
+            ],
+        }
       },
       orderBy: {
         createdAt: 'desc',
@@ -66,7 +62,7 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
     if (tenantId) {
         whereClause.OR = [
             { tenantId: tenantId },
-            { audience: 'All Users' } 
+            { targetTenantId: null } // Managers can see platform-wide announcements
         ];
     }
     
@@ -90,10 +86,16 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @returns The newly created Announcement object or null if failed.
  */
 export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
-  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy });
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdByUserId, tenantId });
   try {
+    const dataForDb = {
+      ...announcementData,
+      tenantId: announcementData.targetTenantId || tenantId, // Assign to target tenant or creator's tenant
+    };
     const newAnnouncement = await db.announcement.create({
-      data: announcementData,
+      data: dataForDb,
     });
     return newAnnouncement as unknown as Announcement;
   } catch (error) {

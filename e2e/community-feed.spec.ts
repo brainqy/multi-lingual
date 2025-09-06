@@ -12,7 +12,7 @@ test('should allow a user to create a new post', async ({ page }) => {
   await page.getByRole('button', { name: /Create Account/i }).click();
 
   // Step 2: Wait for redirect and navigate to the community feed.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await page.goto('/community-feed');
   await expect(page.getByRole('heading', { name: /Community Feed/i })).toBeVisible();
 

@@ -5,11 +5,13 @@ import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { getTenantEmailTemplates } from './email-templates';
 import nodemailer from 'nodemailer';
+import { EmailTemplateType } from '@prisma/client';
 
 interface EmailPlaceholders {
   userName?: string;
   userEmail?: string;
   tenantName?: string;
+  tenantDomain?: string;
   resetLink?: string;
   appointmentTitle?: string;
   partnerName?: string;
@@ -35,18 +37,29 @@ export async function sendEmail({
 }: {
   tenantId: string;
   recipientEmail: string;
-  type: 'WELCOME' | 'APPOINTMENT_CONFIRMATION' | 'PASSWORD_RESET';
+  type: EmailTemplateType;
   placeholders: EmailPlaceholders;
 }) {
   logAction('Attempting to send email via Gmail', { recipientEmail, type, tenantId });
 
   if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
     logError('[SendEmail] Gmail credentials are not configured in .env file. Email sending is disabled.', new Error('GMAIL_EMAIL or GMAIL_APP_PASSWORD missing'));
+    
+    const tenant = await db.tenant.findUnique({ where: { id: tenantId } });
+    
     // Log the intended email to the console as a fallback
     console.log(`--- FALLBACK: EMAIL NOT SENT (NO GMAIL CREDS) ---`);
     console.log(`To: ${recipientEmail}`);
     console.log(`Type: ${type}`);
-    console.log(`Placeholders: ${JSON.stringify(placeholders)}`);
+    console.log(`Tenant: ${tenant?.name || tenantId}`);
+    
+    // Manually replace placeholders for the log
+    const allPlaceholders: EmailPlaceholders = {
+        tenantName: tenant?.name,
+        ...placeholders,
+    };
+    
+    console.log(`Placeholders: ${JSON.stringify(allPlaceholders)}`);
     console.log(`-------------------------------------------`);
     return;
   }
@@ -64,6 +77,15 @@ export async function sendEmail({
     let subject = template.subject;
     let body = template.body;
     
+    // For WELCOME email, we must generate a password reset link from the provided placeholder
+    if (type === 'TENANT_WELCOME' && placeholders.tenantDomain) {
+        const resetToken = Buffer.from(recipientEmail).toString('base64');
+        const subdomain = placeholders.tenantDomain; 
+        const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;
+        placeholders.resetLink = resetUrl;
+    }
+
+
     const allPlaceholders: EmailPlaceholders = {
         tenantName: tenant.name,
         ...placeholders,

@@ -13,13 +13,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Mic, Video as VideoIcon, ScreenShare, PhoneOff, Send, Bot, ListChecks, Loader2, AlertTriangle, ThumbsUp, ChevronDown, Square, Play, Download as DownloadIcon, VideoOff, MessageSquare as ChatIcon, Users as ParticipantsIcon, HelpCircle, Maximize, Minimize, Radio, CheckSquareIcon, RotateCcw, Star, ThumbsDown, Save, Mail as MailIcon } from 'lucide-react';
-import { sampleUserProfile, sampleLiveInterviewSessions, sampleInterviewQuestions } from '@/lib/sample-data';
+import { Mic, Video as VideoIcon, ScreenShare, PhoneOff, Send, Bot, ListChecks, Loader2, AlertTriangle, ThumbsUp, ChevronDown, Square, Play, Download as DownloadIcon, VideoOff, MessageSquare as ChatIcon, Users as ParticipantsIcon, HelpCircle, Maximize, Minimize, Radio, CheckSquare as CheckSquareIcon, RotateCcw, Star, ThumbsDown, Save, Mail as MailIcon } from 'lucide-react';
 import type { LiveInterviewSession, LiveInterviewParticipant, RecordingReference, MockInterviewQuestion, InterviewerScore } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { useAuth } from "@/hooks/use-auth";
+import { getLiveInterviewSessionById, updateLiveInterviewSession } from "@/lib/actions/live-interviews";
 
 const logger = {
   debug: (message: string, ...args: any[]) => console.debug(`[LiveInterviewPage] ${message}`, ...args),
@@ -75,48 +76,51 @@ export default function LiveInterviewClientView() {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
 
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
 
   const isInterviewer = useMemo(() => {
-    if (!sessionDetails) return false;
+    if (!sessionDetails || !currentUser) return false;
     const participant = sessionDetails.participants.find(p => p.userId === currentUser.id);
     return participant?.role === 'interviewer';
-  }, [sessionDetails, currentUser.id]);
+  }, [sessionDetails, currentUser]);
 
 
   useEffect(() => {
     logger.info("[LiveInterviewPage] useEffect for session loading, sessionId:", sessionId);
-    if (sessionId) {
-      const foundSession = sampleLiveInterviewSessions.find(s => s.id === sessionId);
-      if (foundSession) {
-        setSessionDetails(prev => ({...prev, ...foundSession, interviewerScores: foundSession.interviewerScores || []}));
-        setLocalRecordingReferences(foundSession.recordingReferences || []);
-        if(foundSession.interviewerScores) {
-            const initialScores: Record<string, InterviewerScore> = {};
-            foundSession.interviewerScores.forEach(score => {
-                initialScores[score.questionId] = score;
-            });
-            setCurrentQuestionScores(initialScores);
+    async function loadSession() {
+      if (sessionId) {
+        const foundSession = await getLiveInterviewSessionById(sessionId);
+        if (foundSession) {
+          setSessionDetails(foundSession);
+          setLocalRecordingReferences(foundSession.recordingReferences || []);
+          if(foundSession.interviewerScores) {
+              const initialScores: Record<string, InterviewerScore> = {};
+              foundSession.interviewerScores.forEach(score => {
+                  initialScores[score.questionId] = score;
+              });
+              setCurrentQuestionScores(initialScores);
+          }
+          logger.info("[LiveInterviewPage] Session details loaded:", foundSession.title);
+          setIsLoadingSession(false);
+        } else {
+          setSessionDetails(null); // Explicitly set to null if not found
+          logger.warn("[LiveInterviewPage] Session not found with ID:", sessionId);
+          toast({
+            title: "Session Not Found",
+            description: `Could not find an interview session with ID: ${sessionId}`,
+            variant: "destructive",
+          });
+          router.push('/interview-prep');
         }
-        logger.info("[LiveInterviewPage] Session details loaded:", foundSession.title);
-        setIsLoadingSession(false);
       } else {
-        setSessionDetails(null); // Explicitly set to null if not found
-        logger.warn("[LiveInterviewPage] Session not found with ID:", sessionId);
-        toast({
-          title: "Session Not Found",
-          description: `Could not find an interview session with ID: ${sessionId}`,
-          variant: "destructive",
-        });
+        setSessionDetails(null);
+        setIsLoadingSession(false);
+        logger.warn("[LiveInterviewPage] No session ID provided.");
+        toast({ title: "Invalid Session", description: "No session ID provided.", variant: "destructive"});
         router.push('/interview-prep');
       }
-    } else {
-      setSessionDetails(null);
-      setIsLoadingSession(false);
-      logger.warn("[LiveInterviewPage] No session ID provided.");
-      toast({ title: "Invalid Session", description: "No session ID provided.", variant: "destructive"});
-      router.push('/interview-prep');
     }
+    loadSession();
   }, [sessionId, toast, router]);
 
   useEffect(() => {
@@ -347,7 +351,7 @@ export default function LiveInterviewClientView() {
   };
 
 
-  const handleEndCallAndGenerateReport = () => {
+  const handleEndCallAndGenerateReport = async () => {
     if (isRecording) stopRecording();
     stopCameraStream();
     stopScreenShareStream();
@@ -372,34 +376,24 @@ export default function LiveInterviewClientView() {
     });
     
     const percentage = totalPossibleScore > 0 ? (achievedScore / totalPossibleScore) * 100 : 0;
-
-    setSessionDetails(prev => prev ? {
-      ...prev,
-      interviewerScores: Object.values(currentQuestionScores),
-      finalScore: {
+    
+    const finalScoreData = {
         achievedScore: parseFloat(achievedScore.toFixed(2)),
         totalPossibleScore,
         percentage: parseFloat(percentage.toFixed(2)),
         reportNotes: overallReportNotes 
-      },
-      status: 'Completed'
-    } : null);
-    
-    const sessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionId);
-    if(sessionIndex !== -1) {
-        sampleLiveInterviewSessions[sessionIndex] = {
-            ...sampleLiveInterviewSessions[sessionIndex],
-            interviewerScores: Object.values(currentQuestionScores),
-            finalScore: {
-                achievedScore: parseFloat(achievedScore.toFixed(2)),
-                totalPossibleScore,
-                percentage: parseFloat(percentage.toFixed(2)),
-                reportNotes: overallReportNotes 
-            },
-            status: 'Completed'
-        };
-    }
+    };
 
+    const updatedSession = await updateLiveInterviewSession(sessionId, {
+        interviewerScores: Object.values(currentQuestionScores),
+        finalScore: finalScoreData,
+        status: 'Completed'
+    });
+
+    if (updatedSession) {
+        setSessionDetails(updatedSession);
+    }
+    
     setShowReportView(true); 
     toast({ title: "Interview Ended", description: "Report generated. Please review and send." });
     if (document.fullscreenElement) {
@@ -407,7 +401,7 @@ export default function LiveInterviewClientView() {
     }
   };
 
-  const handleSendReport = () => {
+  const handleSendReport = async () => {
     if (!sessionDetails || !sessionDetails.finalScore) {
       toast({ title: "Error", description: "No report generated to send.", variant: "destructive" });
       return;
@@ -419,11 +413,8 @@ export default function LiveInterviewClientView() {
     }
 
     const updatedFinalScore = {...sessionDetails.finalScore, reportNotes: overallReportNotes};
-    setSessionDetails(prev => prev ? {...prev, finalScore: updatedFinalScore} : null);
-    const sessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionId);
-    if(sessionIndex !== -1 && sampleLiveInterviewSessions[sessionIndex].finalScore) {
-        sampleLiveInterviewSessions[sessionIndex].finalScore!.reportNotes = overallReportNotes;
-    }
+    
+    await updateLiveInterviewSession(sessionId, { finalScore: updatedFinalScore });
 
     logger.info(`Mock Send Report: For session "${sessionDetails?.title}". To: ${emails.join(', ') || 'Candidate Only'}. Report Notes: ${overallReportNotes}`);
     toast({ title: "Report Sent (Mock)", description: `Report for ${sessionDetails?.title} would be sent to: ${emails.join(', ') || 'participants'}.`});
@@ -432,8 +423,8 @@ export default function LiveInterviewClientView() {
   };
 
   const handleSendChatMessage = () => {
-    if (chatInput.trim() && sessionDetails) {
-      const newMsg = { user: selfParticipant.name, text: chatInput.trim(), id: Date.now().toString() };
+    if (chatInput.trim() && sessionDetails && currentUser) {
+      const newMsg = { user: currentUser.name, text: chatInput.trim(), id: Date.now().toString() };
       setChatMessages(prev => [...prev, newMsg]);
       logger.debug("Chat message sent (local):", newMsg);
       setChatInput('');
@@ -519,7 +510,7 @@ export default function LiveInterviewClientView() {
         }
       };
 
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const finalMimeType = mediaRecorderRef.current?.mimeType || (recordingType === 'video' ? 'video/webm' : 'audio/webm');
         const recordedBlob = new Blob(recordedChunksRef.current, { type: finalMimeType });
         const url = URL.createObjectURL(recordedBlob);
@@ -537,12 +528,7 @@ export default function LiveInterviewClientView() {
                 fileName: `recording_${sessionDetails.id}_${new Date().toISOString().replace(/:/g,'-')}.${finalMimeType.split('/')[1].split(';')[0]}`
             };
             setLocalRecordingReferences(prev => [...prev, newRecordingRef]);
-            const sessionIndex = sampleLiveInterviewSessions.findIndex(s => s.id === sessionDetails.id);
-            if (sessionIndex !== -1) {
-                const updatedSession = {...sampleLiveInterviewSessions[sessionIndex]};
-                updatedSession.recordingReferences = [...(updatedSession.recordingReferences || []), newRecordingRef];
-                sampleLiveInterviewSessions[sessionIndex] = updatedSession;
-            }
+            await updateLiveInterviewSession(sessionId, { recordingReferences: [...localRecordingReferences, newRecordingRef] });
         }
         logger.info("Recording stopped. Blob URL created:", url);
         toast({ title: "Recording Stopped", description: "Recording available for playback/download.", duration: 5000 });
@@ -582,16 +568,18 @@ export default function LiveInterviewClientView() {
   };
 
 
-  const selfParticipant = useMemo(() =>
-    sessionDetails?.participants.find(p => p.userId === currentUser.id) ||
-    { name: currentUser.name, role: isInterviewer ? "interviewer" : "candidate", profilePictureUrl: currentUser.profilePictureUrl, userId: currentUser.id },
-    [sessionDetails, currentUser, isInterviewer]
+  const selfParticipant = useMemo(() => {
+    if (!currentUser) return { name: 'You', role: 'candidate', profilePictureUrl: '', userId: ''};
+    return sessionDetails?.participants.find(p => p.userId === currentUser.id) ||
+    { name: currentUser.name, role: isInterviewer ? "interviewer" : "candidate", profilePictureUrl: currentUser.profilePictureUrl, userId: currentUser.id };
+   }, [sessionDetails, currentUser, isInterviewer]
   );
 
-  const otherParticipant = useMemo(() =>
-    sessionDetails?.participants.find(p => p.userId !== currentUser.id) ||
-    { name: "Participant Placeholder", role: isInterviewer ? "candidate" : "interviewer", profilePictureUrl: `https://avatar.vercel.sh/participantB.png`, userId: 'participant-placeholder-B' },
-    [sessionDetails, currentUser, isInterviewer]
+  const otherParticipant = useMemo(() => {
+    if (!currentUser) return { name: 'Participant', role: 'interviewer', profilePictureUrl: '', userId: ''};
+    return sessionDetails?.participants.find(p => p.userId !== currentUser.id) ||
+    { name: "Participant Placeholder", role: isInterviewer ? "candidate" : "interviewer", profilePictureUrl: `https://avatar.vercel.sh/participantB.png`, userId: 'participant-placeholder-B' };
+   }, [sessionDetails, currentUser, isInterviewer]
   );
 
 
@@ -665,7 +653,6 @@ export default function LiveInterviewClientView() {
                             <Input 
                                 id="reportRecipients"
                                 type="email"
-                                multiple
                                 placeholder="e.g., candidate@example.com, hr@example.com"
                                 value={reportRecipientEmails}
                                 onChange={(e) => setReportRecipientEmails(e.target.value)}

@@ -172,16 +172,18 @@ export default function ResumeAnalyzerPage() {
       )}
 
       {analysisReport && (
-        <AnalysisReport
-          analysisReport={analysisReport}
-          resumeText={currentResumeText}
-          jobDescription={currentJobDescription}
-          jobTitle={scanHistory[0]?.jobTitle || ''}
-          companyName={scanHistory[0]?.companyName || ''}
-          onRewriteComplete={handleRewriteComplete}
-          onStartNewAnalysis={() => setAnalysisReport(null)}
-          onRescan={handleAnalysisSubmit}
-        />
+        <div data-testid="analysis-report-section">
+          <AnalysisReport
+            analysisReport={analysisReport}
+            resumeText={currentResumeText}
+            jobDescription={currentJobDescription}
+            jobTitle={scanHistory[0]?.jobTitle || ''}
+            companyName={scanHistory[0]?.companyName || ''}
+            onRewriteComplete={handleRewriteComplete}
+            onStartNewAnalysis={() => setAnalysisReport(null)}
+            onRescan={handleAnalysisSubmit}
+          />
+        </div>
       )}
 
       <ScanHistory

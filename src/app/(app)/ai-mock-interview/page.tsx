@@ -169,6 +169,39 @@ export default function AiMockInterviewPage() {
     if (recognitionRef.current?.state === 'recording') recognitionRef.current.stop(); // Ensure speech recognition is stopped
   }, [cameraStream]);
 
+  const startVideoStream = useCallback(async () => {
+    logger.info("Attempting to start video stream...");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setHasCameraPermission(false);
+      setIsVideoActive(false);
+      toast({ title: t("aiMockInterview.toast.cameraError.title"), description: t("aiMockInterview.toast.cameraError.description"), variant: "destructive" });
+      return null;
+    }
+    try {
+      if (cameraStream) {
+          cameraStream.getTracks().forEach(track => track.stop());
+          logger.debug("Stopped existing camera stream before starting new one.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: !isMicMuted });
+      setCameraStream(stream);
+      if (selfVideoRef.current) {
+           selfVideoRef.current.srcObject = stream;
+           logger.debug("Camera stream assigned to selfVideoRef.");
+      } else {
+           logger.warn("selfVideoRef.current is null when trying to assign stream.");
+      }
+      setHasCameraPermission(true);
+      setIsVideoActive(true);
+      logger.info("Video stream started successfully.");
+      return stream;
+    } catch (err) {
+      logger.error("Error accessing camera:", err);
+      setHasCameraPermission(false);
+      setIsVideoActive(false);
+      toast({ title: t("aiMockInterview.toast.cameraDenied.title"), description: t("aiMockInterview.toast.cameraDenied.description"), variant: "destructive" });
+      return null;
+    }
+  }, [isMicMuted, toast, cameraStream, t]);
 
   const handleSetupComplete = useCallback(async (config: GenerateMockInterviewQuestionsInput, sessionId: string) => {
     if (!currentUser || !settings) return;
@@ -318,40 +351,6 @@ export default function AiMockInterviewPage() {
     }
     return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current); };
   }, [timeLeft, session?.timerPerQuestion, isEvaluatingAnswer, currentUiStepId, currentQuestion, toast, t]);
-
-  const startVideoStream = useCallback(async () => {
-    logger.info("Attempting to start video stream...");
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setHasCameraPermission(false);
-      setIsVideoActive(false);
-      toast({ title: t("aiMockInterview.toast.cameraError.title"), description: t("aiMockInterview.toast.cameraError.description"), variant: "destructive" });
-      return null;
-    }
-    try {
-      if (cameraStream) {
-          cameraStream.getTracks().forEach(track => track.stop());
-          logger.debug("Stopped existing camera stream before starting new one.");
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: !isMicMuted });
-      setCameraStream(stream);
-      if (selfVideoRef.current) {
-           selfVideoRef.current.srcObject = stream;
-           logger.debug("Camera stream assigned to selfVideoRef.");
-      } else {
-           logger.warn("selfVideoRef.current is null when trying to assign stream.");
-      }
-      setHasCameraPermission(true);
-      setIsVideoActive(true);
-      logger.info("Video stream started successfully.");
-      return stream;
-    } catch (err) {
-      logger.error("Error accessing camera:", err);
-      setHasCameraPermission(false);
-      setIsVideoActive(false);
-      toast({ title: t("aiMockInterview.toast.cameraDenied.title"), description: t("aiMockInterview.toast.cameraDenied.description"), variant: "destructive" });
-      return null;
-    }
-  }, [isMicMuted, toast, cameraStream, t]);
 
   const handleAnswerSubmit = async () => {
     if (!session || !currentQuestion || !userAnswer.trim() || isEvaluatingAnswer || !settings || !currentUser) return;

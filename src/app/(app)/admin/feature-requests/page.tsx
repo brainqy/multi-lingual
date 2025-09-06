@@ -70,7 +70,6 @@ export default function FeatureRequestsPage() {
       }
     } else {
       const newRequestData = {
-        tenantId: currentUser.tenantId, 
         userId: currentUser.id, 
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,

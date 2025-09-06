@@ -39,7 +39,7 @@ export default function AiMentorSuggestions({ currentUser, allAlumni }: AiMentor
                     id: a.id,
                     name: a.name,
                     currentJobTitle: a.currentJobTitle || 'N/A',
-                    company: a.company || 'N/A',
+                    company: a.currentOrganization || 'N/A',
                     skills: a.skills || [],
                     offersHelpWith: a.offersHelpWith,
                 }));

@@ -69,7 +69,8 @@
     "buttons": {
       "previous": "Previous",
       "next": "Next",
-      "createTenant": "Create Tenant"
+      "createTenant": "Create Tenant",
+      "finish": "Finish"
     }
   }
 }

@@ -65,7 +65,6 @@ export default function PromoCodeManagementPage() {
   const fetchData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const codes = await getPromoCodes();
     setPromoCodes(codes);
     setIsLoading(false);
@@ -150,13 +149,9 @@ export default function PromoCodeManagementPage() {
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
 
-    // Remove the temporary 'isPlatformWide' field before sending to the server action.
-    const { isPlatformWide, ...restOfData } = data;
-
     const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
-      ...restOfData,
+      ...data,
       expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
-      tenantId: data.isPlatformWide ? 'platform' : currentUser.tenantId,
     };
 
     if (editingCode) {
@@ -206,7 +201,6 @@ export default function PromoCodeManagementPage() {
         expiresAt: data.expiresAt?.toISOString(),
         usageLimit: 1,
         isActive: true,
-        tenantId: currentUser.tenantId, // Generated codes are for the current manager's tenant
       };
       const created = await createPromoCode(newPromoCodeData);
       if (created) {

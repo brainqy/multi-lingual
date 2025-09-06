@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { BarChart, Users, Settings, Activity, Building2, FileText, MessageSquare, Zap as ZapIcon, ShieldQuestion, UserPlus, Briefcase, Handshake, Mic, ListChecks, Clock, TrendingUp, Megaphone, CalendarDays, Edit3 as CustomizeIcon, PieChartIcon, ShieldAlert, ServerIcon, Info, AlertTriangle, CheckCircle as CheckCircleIcon, Loader2, Coins, ThumbsUp, ThumbsDown, Target } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import {
-  adminDashboardTourSteps,
-} from "@/lib/sample-data";
+import { adminDashboardTourSteps } from "@/lib/tour-steps";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -84,6 +82,12 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
   { id: 'systemAlerts', titleKey: 'adminDashboard.widgets.systemAlerts', defaultVisible: true }, 
   { id: 'adminQuickActions', titleKey: 'adminDashboard.widgets.adminQuickActions', defaultVisible: true },
 ];
+
+type TenantActivityData = Tenant & {
+  userCount: number;
+  newUsersThisPeriod: number;
+  activityScore: number;
+};
 
 export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { t } = useI18n();
@@ -203,7 +207,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       });
   }, [dashboardData]);
 
-  const chartData = currentTenantActivityData.map(tenant => ({
+  const chartData = currentTenantActivityData.map((tenant: TenantActivityData) => ({
       name: tenant.name.substring(0,15) + (tenant.name.length > 15 ? "..." : ""),
       Users: tenant.userCount,
       ActivityScore: tenant.activityScore,

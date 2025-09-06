@@ -41,7 +41,7 @@ export default function BookmarksPage() {
       if (!user) return;
       setIsLoading(true);
       const [posts, blogs, questions, scans] = await Promise.all([
-        getCommunityPosts(user.tenantId, user.id),
+        getCommunityPosts(user.id),
         getBlogPosts(),
         getInterviewQuestions(),
         getScanHistory(user.id)

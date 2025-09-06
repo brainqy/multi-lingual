@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -68,9 +69,9 @@ export async function getDynamicFlipChallenge(userId: string, forceRefresh = fal
     if (forceRefresh && user.currentFlipChallenge) {
         logAction('[FlipChallenge] Step: Force refresh requested. Clearing existing challenge.', { userId });
         await updateUser(userId, {
-            currentFlipChallenge: null,
+            currentFlipChallenge: Prisma.JsonNull as any,
             flipChallengeAssignedAt: null,
-            flipChallengeProgressStart: null,
+            flipChallengeProgressStart: Prisma.JsonNull as any,
         });
         // Nullify user's challenge data to proceed with new generation
         user.currentFlipChallenge = null;
@@ -167,3 +168,4 @@ export async function getDynamicFlipChallenge(userId: string, forceRefresh = fal
     return null;
   }
 }
+

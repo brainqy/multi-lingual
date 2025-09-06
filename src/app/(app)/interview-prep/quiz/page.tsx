@@ -1,15 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { AlertCircle, Bookmark, Check, ChevronLeft, ChevronRight, Clock, Send, X, PieChart as PieChartIcon, BarChart2 as BarChart2Icon, ListChecks, Maximize, Minimize, Info, CheckSquare as CheckSquareIcon, Circle, Radio, Lightbulb } from 'lucide-react';
-import { sampleInterviewQuestions, sampleCreatedQuizzes, sampleUserProfile } from '@/lib/sample-data';
-import type { InterviewQuestion, MockInterviewSession } from '@/types';
+import { AlertCircle, Bookmark, Check, ChevronLeft, ChevronRight, Clock, Send, X, PieChart as PieChartIcon, BarChart2 as BarChart2Icon, ListChecks, Maximize, Minimize, Info, CheckSquare as CheckSquareIcon, Circle, Radio, Lightbulb, Loader2 } from 'lucide-react';
+import type { InterviewQuestion, MockInterviewSession, UserProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend as RechartsLegend, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, Bar } from 'recharts';
@@ -18,6 +17,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle as DialogUITitle, Dial
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
+import { getInterviewQuestions } from '@/lib/actions/questions';
+import { getCreatedQuizzes } from '@/lib/actions/quizzes';
+
 
 const QUIZ_TIME_SECONDS_PER_QUESTION = 90; 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8442FF', '#FF42A5', '#42FFA5'];
@@ -39,6 +42,7 @@ export default function QuizPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -57,16 +61,22 @@ export default function QuizPage() {
   const quizContainerRef = useRef<HTMLDivElement>(null);
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  const loadQuizData = useCallback(async () => {
+    if (!currentUser) return;
+    setIsLoading(true);
 
-  useEffect(() => {
     const questionIdsParam = searchParams.get('questions');
     const quizIdParam = searchParams.get('quizId');
     let loadedQuestions: InterviewQuestion[] = [];
     let loadedMetadata: Pick<MockInterviewSession, 'id' | 'topic' | 'description' | 'difficulty' | 'timerPerQuestion'> | null = null;
 
+    const allQuestions = await getInterviewQuestions();
+    
     if (quizIdParam) {
-        const foundQuiz = sampleCreatedQuizzes.find(q => q.id === quizIdParam);
+        const allQuizzes = await getCreatedQuizzes(currentUser.id);
+        const foundQuiz = allQuizzes.find(q => q.id === quizIdParam);
         if (foundQuiz) {
             loadedMetadata = { 
                 id: foundQuiz.id,
@@ -77,9 +87,9 @@ export default function QuizPage() {
             };
             if (foundQuiz.questions) {
               loadedQuestions = foundQuiz.questions.map(qRef => {
-                  const fullQuestion = sampleInterviewQuestions.find(sq => sq.id === qRef.id);
+                  const fullQuestion = allQuestions.find(sq => sq.id === qRef.id);
                   return (fullQuestion && fullQuestion.isMCQ && fullQuestion.mcqOptions) ? fullQuestion : null;
-              }).filter(q => q !== null && (q.approved !== false || q.createdBy === sampleUserProfile.id)) as InterviewQuestion[];
+              }).filter(q => q !== null && (q.approved !== false || q.createdBy === currentUser.id)) as InterviewQuestion[];
             }
             if (loadedQuestions.length === 0) {
                 toast({title: "Invalid Quiz", description: `Quiz "${foundQuiz.topic}" has no usable MCQ questions.`, variant: "destructive", duration: 5000});
@@ -93,7 +103,7 @@ export default function QuizPage() {
         }
     } else if (questionIdsParam) {
       const questionIds = questionIdsParam.split(',');
-      loadedQuestions = sampleInterviewQuestions.filter(q => questionIds.includes(q.id) && q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === sampleUserProfile.id));
+      loadedQuestions = allQuestions.filter(q => questionIds.includes(q.id) && q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === currentUser.id));
        if (loadedQuestions.length === 0) {
           toast({title: "No Valid Questions", description: "None of the selected questions are valid for a quiz (must be MCQ, approved, with options).", variant: "destructive", duration: 5000});
           setTimeout(() => router.push('/interview-prep'), 500);
@@ -101,7 +111,7 @@ export default function QuizPage() {
        }
        loadedMetadata = { id: `custom-${Date.now()}`, topic: 'Custom Quiz', description: `Quiz with ${loadedQuestions.length} selected questions.`, timerPerQuestion: QUIZ_TIME_SECONDS_PER_QUESTION };
     } else {
-      loadedQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === sampleUserProfile.id)).slice(0,5); 
+      loadedQuestions = allQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (q.approved !== false || q.createdBy === currentUser.id)).slice(0,5); 
       if (loadedQuestions.length === 0) {
          toast({title: "No Default Questions", description: "No default MCQ questions available for a quiz.", variant: "destructive", duration: 5000});
          setTimeout(() => router.push('/interview-prep'), 500);
@@ -113,11 +123,14 @@ export default function QuizPage() {
     setQuestions(loadedQuestions);
     setQuizMetadata(loadedMetadata);
     setShowStartQuizDialog(true);
-
     const calculatedTotalTime = loadedQuestions.length * (loadedMetadata?.timerPerQuestion || QUIZ_TIME_SECONDS_PER_QUESTION);
     setTotalQuizTime(calculatedTotalTime);
-    
-  }, [searchParams, router, toast]);
+    setIsLoading(false);
+  }, [searchParams, router, toast, currentUser]);
+
+  useEffect(() => {
+    loadQuizData();
+  }, [loadQuizData]);
 
    useEffect(() => {
     if (!quizStarted || quizSubmitted || questions.length === 0 || totalQuizTime === 0) {
@@ -323,6 +336,17 @@ export default function QuizPage() {
     return 'notVisited';
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
+        <Card className="w-full max-w-lg text-center p-8 shadow-lg">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
+          <CardTitle className="text-2xl font-bold">Loading Quiz...</CardTitle>
+        </Card>
+      </div>
+    );
+  }
+
 
   if (questions.length === 0 && !quizSubmitted) {
     return (
@@ -501,7 +525,7 @@ export default function QuizPage() {
                   <ListChecks className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 sm:w-80" portalContainer={quizContainerRef.current}>
+              <SheetContent side="left" className="p-0 w-72 sm:w-80" portalContainer={quizContainerRef.current ?? undefined}>
                 <SheetHeader className="p-4 border-b">
                   <SheetTitle>Question List</SheetTitle>
                 </SheetHeader>

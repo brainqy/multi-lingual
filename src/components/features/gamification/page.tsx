@@ -3,9 +3,7 @@
 import { useI18n } from "@/hooks/use-i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Award, Flame, Star, CheckCircle, Trophy, UserCircle } from "lucide-react"; 
-import { sampleUserProfile, sampleBadges } from "@/lib/sample-data"; 
-import { samplePlatformUsers } from "@/lib/data/users";
+import { Award, Flame, Star, CheckCircle, Trophy, UserCircle, Loader2, Share2 } from "lucide-react"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -13,7 +11,13 @@ import * as LucideIcons from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect, useMemo } from "react"; 
-import { UserProfile } from "@/types";
+import type { UserProfile, Badge as BadgeType, CommunityPost } from "@/types";
+import { useAuth } from "@/hooks/use-auth";
+import { getBadges } from "@/lib/actions/gamification";
+import { getUsers } from "@/lib/data-services/users";
+import { Button } from "@/components/ui/button";
+import { createCommunityPost } from "@/lib/actions/community";
+import { useToast } from "@/hooks/use-toast";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -30,12 +34,77 @@ function DynamicIcon({ name, ...props }: { name: IconName } & LucideIcons.Lucide
 
 export default function GamificationPage() {
   const { t } = useI18n();
-  const user = sampleUserProfile;
-  const badges = sampleBadges;
+  const { user, isLoading: isUserLoading } = useAuth();
+  const [badges, setBadges] = useState<BadgeType[]>([]);
+  const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  const earnedBadges = badges.filter(badge => user.earnedBadges?.includes(badge.id));
-  const notEarnedBadges = badges.filter(badge => !user.earnedBadges?.includes(badge.id));
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [allUsers, allBadges] = await Promise.all([
+        getUsers(),
+        getBadges()
+      ]);
 
+      const sortedUsers = allUsers
+        .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
+        .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
+      setLeaderboardUsers(sortedUsers.slice(0, 10));
+      
+      setBadges(allBadges);
+      setIsLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const earnedBadges = useMemo(() => {
+    if (!user) return [];
+    return badges.filter(badge => user.earnedBadges?.includes(badge.id));
+  }, [user, badges]);
+
+  const notEarnedBadges = useMemo(() => {
+    if (!user) return [];
+    return badges.filter(badge => !user.earnedBadges?.includes(badge.id));
+  }, [user, badges]);
+  
+  const handleShareBadge = async (badge: BadgeType) => {
+    if (!user) return;
+
+    const postContent = `🏆 I just earned the "${badge.name}" badge on ${t("appName")}!\n\n${badge.description}\n\n#AchievementUnlocked #${t("appName").replace(/\s+/g, '')}`;
+
+    const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'> = {
+      userId: user.id,
+      userName: user.name,
+      userAvatar: user.profilePictureUrl,
+      content: postContent,
+      type: 'text',
+      tags: ['AchievementUnlocked', badge.name.replace(/\s+/g, '')],
+      moderationStatus: 'visible',
+      flagCount: 0,
+    };
+
+    const newPost = await createCommunityPost(newPostData);
+
+    if (newPost) {
+      toast({
+        title: "Achievement Shared!",
+        description: `Your new badge has been posted to the community feed.`,
+      });
+    } else {
+      toast({
+        title: "Sharing Failed",
+        description: "Could not share your achievement at this time.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isUserLoading || !user || isLoading) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+  }
+  
   const xpPerLevel = 1000;
   const xpLevel = Math.floor((user.xpPoints || 0) / xpPerLevel) + 1;
   const xpForCurrentLevelStart = (xpLevel - 1) * xpPerLevel;
@@ -43,14 +112,6 @@ export default function GamificationPage() {
   const xpProgressInLevel = (user.xpPoints || 0) - xpForCurrentLevelStart;
   const progressPercentage = (xpProgressInLevel / xpPerLevel) * 100;
 
-  const [leaderboardUsers, setLeaderboardUsers] = useState<UserProfile[]>([]);
-
-  useEffect(() => {
-    const sortedUsers = [...samplePlatformUsers]
-      .filter(u => typeof u.xpPoints === 'number' && u.xpPoints > 0)
-      .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0));
-    setLeaderboardUsers(sortedUsers.slice(0, 10)); // Show top 10
-  }, []);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -125,6 +186,9 @@ export default function GamificationPage() {
                     <p className="font-semibold">{badge.name}</p>
                     <p className="text-xs text-muted-foreground">{badge.description}</p>
                     {badge.xpReward && <p className="text-xs text-yellow-500">+{badge.xpReward} XP</p>}
+                    <Button size="xs" className="mt-2 w-full" onClick={() => handleShareBadge(badge)}>
+                      <Share2 className="mr-1 h-3 w-3" /> Share
+                    </Button>
                   </TooltipContent>
                 </Tooltip>
               ))}

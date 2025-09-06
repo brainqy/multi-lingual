@@ -4,7 +4,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PieChart, Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, Sector, LineChart as RechartsLineChart } from 'recharts';
 import { Activity, Briefcase, Users, Zap, FileText, CheckCircle, Clock, Target, CalendarClock, CalendarCheck2, History as HistoryIcon, Gift, ExternalLink, Settings, Loader2, PlusCircle, Trash2, Puzzle, ArrowRight, Award, Flame, Trophy, User as UserIcon, Star } from "lucide-react";
-import { userDashboardTourSteps } from "@/lib/sample-data";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { getActivePromotionalContent } from "@/lib/actions/promotional-content";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -14,7 +13,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent } from '@/types';
+import type { TourStep, Appointment, PracticeSession, Activity as ActivityType, InterviewQuestionCategory, DailyChallenge, UserDashboardWidgetId, JobApplication, PromotionalContent, MockInterviewSession } from '@/types';
 import type { Badge as BadgeType } from '@/types';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,8 +34,9 @@ import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@
 import { Skeleton } from "../ui/skeleton";
 import type { UserProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { updateUser } from "@/lib/data-services/users";
+import { updateUser } from '@/lib/data-services/users';
 import AiMentorSuggestions from "@/components/dashboards/AiMentorSuggestions";
+import { userDashboardTourSteps } from "@/lib/tour-steps";
 
 interface UserDashboardProps {
   user: UserProfile;
@@ -144,10 +144,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
   useEffect(() => {
     async function loadData() {
+        if (!user) return;
         setIsLoading(true);
         const [data, promotions] = await Promise.all([
             getDashboardData(user.tenantId, user.id),
-            getActivePromotionalContent()
+            getActivePromotionalContent(user)
         ]);
         setDashboardData(data);
         setActivePromotions(promotions);
@@ -182,9 +183,9 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     if (!dashboardData || !user) return { jobApplicationStatusData: [], recentUserActivities: [], earnedBadges: [], leaderboardUsers: [], upcomingReminders: [], upcomingAppointmentsAndSessions: [] };
 
     const userJobApps = dashboardData.jobApplications.filter((app: JobApplication) => app.userId === user.id);
-    const statusData = userJobApps.reduce((acc: any, curr: JobApplication) => {
+    const statusData: { name: string; value: number }[] = userJobApps.reduce((acc: { name: string; value: number }[], curr: JobApplication) => {
         const status = curr.status;
-        const existing = acc.find((item: any) => item.name === status);
+        const existing = acc.find((item) => item.name === status);
         if (existing) existing.value += 1;
         else acc.push({ name: status, value: 1 });
         return acc;
@@ -215,8 +216,8 @@ export default function UserDashboard({ user }: UserDashboardProps) {
       }));
     
     const practiceSessions = dashboardData.mockInterviews
-        .filter((ps: PracticeSession) => ps.userId === user.id && ps.status === 'in-progress' && isFuture(parseISO(ps.createdAt))) // Assuming 'in-progress' means scheduled for future
-        .map((ps: PracticeSession) => ({
+        .filter((ps: MockInterviewSession) => ps.userId === user.id && ps.status === 'in-progress' && isFuture(parseISO(ps.createdAt))) // Assuming 'in-progress' means scheduled for future
+        .map((ps: MockInterviewSession) => ({
             id: ps.id, date: parseISO(ps.createdAt), title: ps.topic, type: 'AI Mock Interview',
             with: 'AI Coach', link: '/interview-prep', isPractice: true,
         }));
@@ -279,8 +280,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
   const handleCustomizeToggle = (widgetId: UserDashboardWidgetId, checked: boolean) => {
     setTempVisibleWidgetIds(prev => {
       const newSet = new Set(prev);
-      if (checked) newSet.add(widgetId);
-      else newSet.delete(widgetId);
+      if (checked) {
+        newSet.add(widgetId);
+      } else {
+        newSet.delete(widgetId);
+      }
       return newSet;
     });
   };

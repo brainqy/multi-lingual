@@ -11,6 +11,7 @@ import { updateUser } from '@/lib/data-services/users';
 import { createActivity } from '@/lib/actions/activities';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 import { db } from '@/lib/db';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all promo codes, scoped by tenant for managers.
@@ -42,12 +43,19 @@ export async function getPromoCodes(tenantId?: string): Promise<PromoCode[]> {
  * @param codeData The data for the new promo code.
  * @returns The newly created PromoCode object or null.
  */
-export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'>): Promise<PromoCode | null> {
+export async function createPromoCode(codeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt' | 'tenantId'>): Promise<PromoCode | null> {
   console.log('[PromoCodeAction LOG] 1. Starting createPromoCode with data:', codeData);
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+
     const { isPlatformWide, ...restOfData } = codeData as any; // Exclude form-only field
+    
+    const effectiveTenantId = isPlatformWide ? 'platform' : tenantId;
+
     const dataForDb = {
       ...restOfData,
+      tenantId: effectiveTenantId,
       code: codeData.code.toUpperCase(),
       expiresAt: codeData.expiresAt ? new Date(codeData.expiresAt) : undefined,
     };
@@ -188,7 +196,6 @@ export async function redeemPromoCode(code: string, userId: string): Promise<{ s
             
             await createActivity({
                 userId: user.id,
-                tenantId: user.tenantId,
                 description: `${rewardDescription} for ${promoCode.rewardValue} ${promoCode.rewardType}.`
             });
         });

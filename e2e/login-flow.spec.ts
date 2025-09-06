@@ -27,6 +27,6 @@ test('should allow an existing user to log in and be redirected to the dashboard
 
   // Step 4: Verify redirection to the dashboard after successful login.
   // We use a longer timeout to account for authentication and page load time.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 });

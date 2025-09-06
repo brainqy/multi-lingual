@@ -27,6 +27,7 @@ import Image from 'next/image';
 import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost, togglePollVote, toggleEventRegistration, toggleFlagPost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { createAppointment } from '@/lib/actions/appointments';
 
 
 const postSchema = z.object({
@@ -175,9 +176,9 @@ export default function CommunityFeedPage() {
       type: 'text',
       imageUrl: '',
       pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }],
-      eventDate: z.string().optional(),
-      eventLocation: z.string().optional(),
-      eventTitle: z.string().optional(),
+      eventDate: '',
+      eventLocation: '',
+      eventTitle: '',
       attendees: 0,
       capacity: 0,
     }
@@ -189,7 +190,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     setIsLoading(true);
     const [fetchedPosts, fetchedUsers] = await Promise.all([
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
       getUsers()
     ]);
     setPosts(fetchedPosts);
@@ -203,8 +204,17 @@ export default function CommunityFeedPage() {
 
   const mostActiveUsers = useMemo(() => {
     if (!allUsers.length || !currentUser) return [];
-    return [...allUsers]
-      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active' && (currentUser.role === 'admin' || user.tenantId === currentUser.tenantId || user.tenantId === 'platform'))
+
+    let usersToFilter = allUsers;
+
+    // If the current user is a manager, only show users from their tenant.
+    if (currentUser.role === 'manager') {
+        usersToFilter = allUsers.filter(user => user.tenantId === currentUser.tenantId);
+    }
+    // Admins will see users from all tenants by default (no filtering here).
+
+    return usersToFilter
+      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active')
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
       .slice(0, 5);
   }, [allUsers, currentUser]);
@@ -247,7 +257,6 @@ export default function CommunityFeedPage() {
       }
     } else {
       const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
-        tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
@@ -341,8 +350,7 @@ export default function CommunityFeedPage() {
     if (updatedPost) {
       setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
       
-      const newAppointmentData = {
-          tenantId: postToUpdate.tenantId,
+      const newAppointmentData: Omit<Appointment, 'id'> = {
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
           title: `Assigned Request: ${postToUpdate.content?.substring(0, 30)}...`,
@@ -353,6 +361,8 @@ export default function CommunityFeedPage() {
           costInCoins: 0,
       };
       
+      await createAppointment(newAppointmentData);
+
       toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
     }
   };
@@ -478,7 +488,8 @@ export default function CommunityFeedPage() {
     const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
     
     return posts.filter(post => {
-      const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
+      // A user should only see posts from their own tenant.
+      const isVisibleForTenant = post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
 
       const isRemoved = post.moderationStatus === 'removed';

@@ -26,10 +26,10 @@ import * as z from "zod";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
-import { useI18n } from "@/hooks/use-i18n";
-import { createAppointment } from '@/lib/actions/appointments';
+import { useI18n } from '@/hooks/use-i18n';
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
+import { createAppointment } from '@/lib/actions/appointments';
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
@@ -68,7 +68,8 @@ export default function AlumniConnectPage() {
 
   const fetchAlumni = useCallback(async () => {
     setIsLoading(true);
-    const users = await getUsers();
+    // Fetch all users, then filter on the client-side based on the current user's tenant.
+    const users = await getUsers(); 
     setAllAlumniData(users as AlumniProfile[]);
     setIsLoading(false);
   }, []);
@@ -81,14 +82,24 @@ export default function AlumniConnectPage() {
     setCurrentPage(1);
   }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
 
-  const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
-  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company).filter(Boolean))).sort(), [allAlumniData]);
+  const distinguishedAlumni = useMemo(() => {
+    if (!currentUser) return [];
+    return allAlumniData.filter(a => a.isDistinguished && a.tenantId === currentUser.tenantId);
+  }, [allAlumniData, currentUser]);
+
+  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
   const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
-  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
+  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter((uni): uni is string => !!uni))).sort(), [allAlumniData]);
 
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
-    let results = allAlumniData.filter(a => a.id !== currentUser.id); // Exclude self
+
+    // Filter alumni to show only those from the same tenant.
+    let results = allAlumniData.filter(alumni => 
+      alumni.id !== currentUser.id && 
+      alumni.tenantId === currentUser.tenantId
+    );
+
     if (searchTerm) {
       results = results.filter(alumni =>
         alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,7 +107,7 @@ export default function AlumniConnectPage() {
       );
     }
     if (selectedCompanies.size > 0) {
-      results = results.filter(alumni => selectedCompanies.has(alumni.company));
+      results = results.filter(alumni => alumni.currentOrganization && selectedCompanies.has(alumni.currentOrganization));
     }
     if (selectedSkills.size > 0) {
       results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
@@ -265,7 +276,7 @@ export default function AlumniConnectPage() {
       </div>
 
       {distinguishedAlumni.length > 0 && (
-        <Card className="shadow-lg bg-primary/5 border-primary/20">
+        <Card data-testid="distinguished-alumni-carousel" className="shadow-lg bg-primary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
               <Star className="h-6 w-6" /> {t("alumniConnect.distinguishedTitle", { default: "Most Distinguished Alumni" })}
@@ -291,7 +302,7 @@ export default function AlumniConnectPage() {
                         </Avatar>
                         <h3 className="text-md font-semibold text-foreground">{alumni.name}</h3>
                         <p className="text-xs text-primary">{alumni.currentJobTitle}</p>
-                        <p className="text-xs text-muted-foreground mb-2">{alumni.company}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{alumni.currentOrganization}</p>
                         <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.shortBio}</p>
                       </CardContent>
                       <CardFooter className="p-3 border-t mt-auto">
@@ -316,9 +327,10 @@ export default function AlumniConnectPage() {
 
       <Accordion type="single" collapsible className="w-full bg-card shadow-lg rounded-lg">
         <AccordionItem value="filters">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", { default: "Filters" })}
+          <AccordionTrigger className="px-6 py-4 hover:no-underline text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <FilterIcon className="h-5 w-5" />
+              <span>{t("alumniConnect.filters", { default: "Filters" })}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
@@ -337,6 +349,7 @@ export default function AlumniConnectPage() {
                           id={`comp-${company}`}
                           checked={selectedCompanies.has(company)}
                           onCheckedChange={() => handleFilterChange(selectedCompanies, company, setSelectedCompanies)}
+                          aria-label={company}
                         />
                         <Label htmlFor={`comp-${company}`} className="font-normal">{company}</Label>
                       </div>
@@ -395,7 +408,7 @@ export default function AlumniConnectPage() {
         </Card>
       ) : (
         <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-testid="alumni-directory-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedAlumni.map(alumni => (
             <Card key={alumni.id} className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
               <CardContent className="pt-6 flex-grow">
@@ -406,7 +419,7 @@ export default function AlumniConnectPage() {
                   </Avatar>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">{alumni.name}</h3>
-                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.company}</p>
+                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.currentOrganization}</p>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                         <Mail className="h-3 w-3 mr-1" /> {alumni.email}
                     </div>
@@ -564,5 +577,3 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
-
-    

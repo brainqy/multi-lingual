@@ -50,8 +50,7 @@ export default function GalleryManagementPage() {
   const fetchData = useCallback(async () => {
       if (!currentUser) return;
       setIsLoading(true);
-      const tenantId = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
-      const fetchedEvents = await getAllGalleryEvents(tenantId);
+      const fetchedEvents = await getAllGalleryEvents();
       setEvents(fetchedEvents);
       setIsLoading(false);
   }, [currentUser]);
@@ -75,14 +74,12 @@ export default function GalleryManagementPage() {
 
   const onSubmitForm = async (data: GalleryEventFormData) => {
     if (!currentUser) return;
-    const tenantForEvent = currentUser.role === 'admin' && data.isPlatformGlobal ? 'platform' : currentUser.tenantId;
     const eventData = {
       title: data.title,
       date: data.date.toISOString(),
       imageUrls: data.imageUrls.split(',').map(url => url.trim()).filter(url => url),
       description: data.description,
       dataAiHint: data.dataAiHint,
-      tenantId: tenantForEvent,
       isPlatformGlobal: data.isPlatformGlobal,
       approved: data.approved,
       createdByUserId: currentUser.id,

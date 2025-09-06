@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,11 +54,12 @@ interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => void;
+  onDelete: (applicationId: string) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
 }
 
-export default function JobApplicationDialog({ isOpen, onClose, onSave, editingApplication, resumes }: JobApplicationDialogProps) {
+export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete, editingApplication, resumes }: JobApplicationDialogProps) {
   const { t } = useI18n();
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
@@ -272,9 +284,36 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, editingA
               </div>
             </ScrollArea>
           </Tabs>
-          <DialogFooter className="pt-4 border-t shrink-0">
-            <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+          <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
+            <div>
+              {editingApplication && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="destructive">
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete this job application.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDelete(editingApplication.id)} className="bg-destructive hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+            <div className="flex gap-2">
+                <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
+                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

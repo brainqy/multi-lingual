@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import type { ResumeProfile, ResumeScanHistoryItem } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all resume profiles for a specific user.
@@ -33,10 +34,15 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
  * @returns The newly created ResumeProfile object or null if failed.
  */
 export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'>): Promise<ResumeProfile | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating resume profile', { userId: resumeData.userId, name: resumeData.name });
   try {
     const newResume = await db.resumeProfile.create({
-      data: resumeData,
+      data: {
+        ...resumeData,
+        tenantId,
+      },
     });
     return newResume as unknown as ResumeProfile;
   } catch (error) {
@@ -111,10 +117,15 @@ export async function getScanHistory(userId: string): Promise<ResumeScanHistoryI
  * @returns The newly created ResumeScanHistoryItem object or null if failed.
  */
 export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'>): Promise<ResumeScanHistoryItem | null> {
+  const headersList = headers();
+  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
   logAction('Creating scan history entry', { userId: scanData.userId, jobTitle: scanData.jobTitle });
   try {
     const newScan = await db.resumeScanHistory.create({
-      data: scanData,
+      data: {
+        ...scanData,
+        tenantId,
+      },
     });
     
     // Award badges after action
