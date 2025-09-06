@@ -38,7 +38,7 @@ export async function createReferral(referrerUserId: string, referredUserId: str
     await db.referralHistory.create({
       data: {
         referrerUserId,
-        referredUserId,
+        // The referredUserId is not a field in the model, it's just passed for context
         referredEmailOrName,
         status: 'Signed Up',
         referralDate: new Date(),
