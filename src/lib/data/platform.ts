@@ -23,9 +23,6 @@ export const sampleTenants: Tenant[] = [
         gamificationEnabled: true,
         walletEnabled: true,
         eventRegistrationEnabled: true,
-      },
-      emailTemplates: {
-        welcomeEmail: 'Welcome to Brainqy University Alumni Network!',
       }
     }
   },
