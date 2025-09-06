@@ -142,7 +142,7 @@ export interface PromotionalContent {
   gradientVia?: string;
   gradientTo?: string;
   tenantId?: string | null;
-  targetRole?: UserRole | null;
+  audience?: string | null;
 }
 
 export interface CommunityPost {
