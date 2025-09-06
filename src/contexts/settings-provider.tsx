@@ -2,11 +2,12 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { PlatformSettings } from '@/types';
 
 interface SettingsContextType {
   settings: PlatformSettings;
+  setSettings: React.Dispatch<React.SetStateAction<PlatformSettings>>;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -16,9 +17,10 @@ interface SettingsProviderProps {
   settings: PlatformSettings;
 }
 
-export function SettingsProvider({ children, settings }: SettingsProviderProps) {
+export function SettingsProvider({ children, settings: initialSettings }: SettingsProviderProps) {
+  const [settings, setSettings] = useState<PlatformSettings>(initialSettings);
   return (
-    <SettingsContext.Provider value={{ settings }}>
+    <SettingsContext.Provider value={{ settings, setSettings }}>
       {children}
     </SettingsContext.Provider>
   );

@@ -5,10 +5,10 @@ import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem,
 import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices, Award as AwardIcon, Trash2, TrendingUp, Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { samplePlatformSettings } from "@/lib/sample-data";
 import { useI18n } from "@/hooks/use-i18n"; // <-- Add this import
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useSettings } from "@/contexts/settings-provider";
 
 const navItems = [
   { href: "/dashboard", labelKey: "sideMenu.dashboard", icon: Home },
@@ -91,7 +91,8 @@ const adminItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user: currentUser } = useAuth();
-  const platformName = samplePlatformSettings.platformName;
+  const { settings } = useSettings();
+  const platformName = settings.platformName;
   const { t } = useI18n();
   const { isMobile, setOpenMobile } = useSidebar();
 

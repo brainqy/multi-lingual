@@ -1,14 +1,13 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Layers, Search, Eye, Download, Edit, PlusCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { sampleResumeTemplates, sampleResumeProfiles } from "@/lib/sample-data";
 import type { ResumeTemplate, ResumeProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -20,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
+import { getResumeTemplates } from "@/lib/actions/templates";
+import { createResumeProfile } from "@/lib/actions/resumes";
 
 export default function ResumeTemplatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,10 +30,19 @@ export default function ResumeTemplatesPage() {
   const { toast } = useToast();
   const { user: currentUser, isLoading } = useAuth();
   const router = useRouter();
+  const [templates, setTemplates] = useState<ResumeTemplate[]>([]);
 
-  const allCategories = Array.from(new Set(sampleResumeTemplates.map(template => template.category)));
+  useEffect(() => {
+    async function loadTemplates() {
+      const fetchedTemplates = await getResumeTemplates();
+      setTemplates(fetchedTemplates);
+    }
+    loadTemplates();
+  }, []);
 
-  const filteredTemplates = sampleResumeTemplates.filter(template => {
+  const allCategories = Array.from(new Set(templates.map(template => template.category)));
+
+  const filteredTemplates = templates.filter(template => {
     const matchesSearch = searchTerm === '' ||
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -45,30 +55,6 @@ export default function ResumeTemplatesPage() {
   const openPreviewDialog = (template: ResumeTemplate) => {
     setSelectedTemplate(template);
     setIsPreviewOpen(true);
-  };
-
-  const handleUseTemplate = (template: ResumeTemplate) => {
-    if (!currentUser) return;
-    
-    const newResumeName = `Resume from ${template.name} (${new Date().toLocaleDateString()})`;
-    const newResume: ResumeProfile = {
-      id: `resume-${Date.now()}`,
-      tenantId: currentUser.tenantId,
-      userId: currentUser.id,
-      name: newResumeName,
-      resumeText: template.content, // Use the template's content
-      lastAnalyzed: undefined,
-    };
-
-    // Add to global sample data (for demo persistence across app)
-    // In a real app, this would be an API call to save to backend.
-    sampleResumeProfiles.unshift(newResume); 
-
-    toast({ 
-      title: "Resume Created from Template", 
-      description: `"${newResumeName}" has been added to 'My Resumes'. You can edit it there.` 
-    });
-    setIsPreviewOpen(false); // Close the preview dialog
   };
   
   const handleEditTemplate = (templateId: string) => {

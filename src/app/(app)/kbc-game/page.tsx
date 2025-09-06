@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useI18n } from '@/hooks/use-i18n';
-import { sampleInterviewQuestions } from '@/lib/sample-data';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +16,7 @@ import Confetti from "react-confetti";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from '@/hooks/use-auth';
 import { createActivity } from '@/lib/actions/activities';
+import { getInterviewQuestions } from '@/lib/actions/questions';
 
 
 const KBC_QUESTION_COUNT = 10;
@@ -57,8 +57,12 @@ export default function KBCGamePage() {
 
   useEffect(() => {
     setIsClient(true);
-    const mcqQuestions = sampleInterviewQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length >= 2 && q.correctAnswer);
-    setAllQuestions(mcqQuestions);
+    async function loadQuestions() {
+      const allQuestions = await getInterviewQuestions();
+      const mcqQuestions = allQuestions.filter(q => q.isMCQ && q.mcqOptions && q.mcqOptions.length >= 2 && q.correctAnswer);
+      setAllQuestions(mcqQuestions);
+    }
+    loadQuestions();
   }, []);
 
   useEffect(() => {

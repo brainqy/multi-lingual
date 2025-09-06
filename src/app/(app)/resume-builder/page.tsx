@@ -5,10 +5,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
-import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile } from "@/types";
+import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile, ResumeTemplate } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { sampleResumeTemplates } from "@/lib/sample-data";
 import StepHeaderForm from "@/components/features/resume-builder/StepHeaderForm";
 import StepExperienceForm from "@/components/features/resume-builder/StepExperienceForm";
 import StepEducationForm from "@/components/features/resume-builder/StepEducationForm";
@@ -24,6 +23,7 @@ import type { ResumeProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getResumeProfiles } from "@/lib/actions/resumes";
+import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 
 const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
@@ -35,7 +35,7 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
       skills: [],
       summary: "",
       additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-      templateId: sampleResumeTemplates[0].id,
+      templateId: 'template1', // Fallback templateId
     };
   }
   return {
@@ -57,7 +57,7 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
       languages: "",
       interests: (user.interests || []).join(", "),
     },
-    templateId: sampleResumeTemplates[0].id,
+    templateId: 'template1', // Default templateId
   };
 };
 
@@ -72,7 +72,20 @@ export default function ResumeBuilderPage() {
   const { toast } = useToast();
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   
+  useEffect(() => {
+    async function loadTemplates() {
+      const templates = await getResumeTemplates();
+      setAllTemplates(templates);
+      if (!resumeData.templateId && templates.length > 0) {
+        setResumeData(prev => ({...prev, templateId: templates[0].id}));
+      }
+    }
+    loadTemplates();
+  }, [resumeData.templateId]);
+  
+
   const loadResumeForEditing = useCallback(async (resumeId: string) => {
     if (!user) return;
     toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
@@ -95,7 +108,7 @@ export default function ResumeBuilderPage() {
 
   const loadTemplateForEditing = useCallback((templateId: string) => {
     toast({ title: "Loading Template...", description: "Preparing the builder with your selected template." });
-    const template = sampleResumeTemplates.find(t => t.id === templateId);
+    const template = allTemplates.find(t => t.id === templateId);
     if (template) {
       const newHeader: ResumeHeaderData = {
         fullName: user?.name || "Your Name",
@@ -118,20 +131,20 @@ export default function ResumeBuilderPage() {
     } else {
       toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
     }
-  }, [user, toast]);
+  }, [user, toast, allTemplates]);
 
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
     const templateId = searchParams.get('templateId');
     if (resumeId) {
       loadResumeForEditing(resumeId);
-    } else if (templateId) {
+    } else if (templateId && allTemplates.length > 0) {
       loadTemplateForEditing(templateId);
     } else if (user) {
       setResumeData(getInitialResumeData(user));
       setEditingResumeId(null);
     }
-  }, [user, searchParams, loadResumeForEditing, loadTemplateForEditing]);
+  }, [user, searchParams, loadResumeForEditing, loadTemplateForEditing, allTemplates]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -295,7 +308,7 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview ref={resumePreviewRef} data={resumeData} templateId={resumeData.templateId} />
+          <ResumePreview ref={resumePreviewRef} data={resumeData} templateId={resumeData.templateId} templates={allTemplates} />
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
@@ -311,7 +324,7 @@ export default function ResumeBuilderPage() {
         isOpen={isTemplateDialogOpen}
         onClose={() => setIsTemplateDialogOpen(false)}
         onSelect={handleTemplateSelect}
-        templates={sampleResumeTemplates}
+        templates={allTemplates}
         currentTemplateId={resumeData.templateId}
     />
     </>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,15 +15,17 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { User as UserIcon, LogOut } from "lucide-react";
+import { useSettings } from "@/contexts/settings-provider";
 
 export function UserNav() {
   const { user, logout } = useAuth();
   const { t } = useI18n();
+  const { settings } = useSettings();
 
   if (!user) return null;
 
   const getInitials = (name?: string) => {
-    if (!name) return "BS"; // Bhasha Setu initials
+    if (!name) return settings?.platformName.substring(0,2) || "BS";
     const names = name.split(' ');
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();

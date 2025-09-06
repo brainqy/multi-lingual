@@ -4,18 +4,18 @@
 import React, { forwardRef } from 'react';
 import type { ResumeBuilderData, ResumeTemplate } from "@/types";
 import { Card, CardContent } from '@/components/ui/card';
-import { sampleResumeTemplates } from '@/lib/sample-data';
 import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
 
 interface ResumePreviewProps {
   data: ResumeBuilderData;
   templateId: string;
+  templates: ResumeTemplate[];
 }
 
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
-  ({ data, templateId }, ref) => {
-    const template = sampleResumeTemplates.find(t => t.id === templateId);
+  ({ data, templateId, templates }, ref) => {
+    const template = templates.find(t => t.id === templateId);
 
     const styles = {
       headerColor: template?.headerColor,

@@ -6,16 +6,18 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import { samplePlatformSettings } from "@/lib/sample-data";
 import { useAuth } from '@/hooks/use-auth';
+import { useSettings } from '@/contexts/settings-provider';
+import { SettingsProvider } from '@/contexts/settings-provider';
+import type { PlatformSettings } from '@/types';
+import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
-export default function PublicBlogLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function BlogLayoutContent({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const platformName = samplePlatformSettings.platformName;
+  const { settings } = useSettings();
+  const platformName = settings.platformName;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -37,7 +39,7 @@ export default function PublicBlogLayout({
                   <Link href="/auth/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/auth/signup">Sign Up</Link>
+                  <Link href="/auth/signup">Sign Up</Button>
                 </Button>
               </div>
             )}
@@ -51,5 +53,35 @@ export default function PublicBlogLayout({
         <p>&copy; {new Date().getFullYear()} {platformName}. All rights reserved.</p>
       </footer>
     </div>
+  );
+}
+
+export default function PublicBlogLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const platformSettings = await getPlatformSettings();
+      setSettings(platformSettings);
+    }
+    loadSettings();
+  }, []);
+
+  if (!settings) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <SettingsProvider settings={settings}>
+      <BlogLayoutContent>{children}</BlogLayoutContent>
+    </SettingsProvider>
   );
 }
