@@ -57,14 +57,14 @@ export default function FloatingMessenger() {
   const addMessage = (type: 'bot' | 'user', content: React.ReactNode, batch: Message[] = []): Message[] => {
     const newId = `${Date.now()}-${messageIdCounter.current++}`;
     const newMessage = { id: newId, type, content };
-    
-    // If not batching, update state directly. If batching, just return the new array.
+    const newMessages = [...batch, newMessage];
+
+    // If not batching, update state directly.
     if (batch.length === 0) {
-        setMessages(prev => [...prev, newMessage]);
-    } else {
-        batch.push(newMessage);
+      setMessages(prev => [...prev, newMessage]);
     }
-    return [...batch, newMessage];
+    
+    return newMessages;
   };
   
   const processStep = (stepId: string | undefined | null) => {
