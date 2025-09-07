@@ -97,7 +97,7 @@ export default function JobTrackerPage() {
 
     const dataForServer = {
       ...applicationData,
-      interviews, // Pass the managed interviews list here
+      interviews,
     };
     
     let result: JobApplication | null = null;
