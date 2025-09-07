@@ -112,6 +112,8 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     }
     const newInterviewEntry = { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' };
     setCurrentInterviews(prev => [...prev, newInterviewEntry]);
+    console.log("Current Interviews after adding:", [...currentInterviews, { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' }]);
+
     setNewInterview({ date: '', type: 'Phone Screen', interviewer: '' });
   };
   
