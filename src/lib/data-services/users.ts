@@ -101,6 +101,11 @@ export async function updateUser(userId: string, updateData: Partial<UserProfile
     const cleanUpdateData = Object.fromEntries(
       Object.entries(updateData).filter(([_, v]) => v !== undefined)
     );
+    
+    // Explicitly handle null dateOfBirth from client and convert to undefined for Prisma
+    if (cleanUpdateData.dateOfBirth === null) {
+        cleanUpdateData.dateOfBirth = undefined;
+    }
 
     const updatedUser = await db.user.update({
       where: { id: userId },
