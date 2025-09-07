@@ -39,7 +39,6 @@ const jobApplicationSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   status: z.enum(JOB_APPLICATION_STATUSES),
   dateApplied: z.string().min(1, "Date applied is required").refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
-  notes: z.array(z.string()).optional(),
   jobDescription: z.string().optional(),
   location: z.string().optional(),
   applicationUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
@@ -83,15 +82,14 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
         const formData = {
           ...editingApplication,
           dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
-          notes: editingApplication.notes || [],
         };
         reset(formData);
         setCurrentInterviews(editingApplication.interviews || []);
         setCurrentNotes(editingApplication.notes || []);
       } else {
-        const defaultData: JobApplicationFormData = {
-          companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
-          notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
+        const defaultData = {
+          companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
+          jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
         };
         reset(defaultData);
         setCurrentInterviews([]);
@@ -112,10 +110,11 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       toast({ title: t("jobTracker.toast.missingInterviewInfo.title"), description: t("jobTracker.toast.missingInterviewInfo.description"), variant: "destructive" });
       return;
     }
-    setCurrentInterviews(prev => [...prev, { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' }]);
+    const newInterviewEntry = { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' };
+    setCurrentInterviews(prev => [...prev, newInterviewEntry]);
     setNewInterview({ date: '', type: 'Phone Screen', interviewer: '' });
   };
-
+  
   const handleRemoveInterview = (interviewId: string) => {
     setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
   };
@@ -130,20 +129,20 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   const handleRemoveNote = (index: number) => {
     setCurrentNotes(prev => prev.filter((_, i) => i !== index));
   };
+
   const formId = `job-app-form-${editingApplication?.id || 'new'}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-        <form id={formId} onSubmit={handleSubmit(onValidSubmit)}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" }) }</DialogTitle>
-           <DialogDescription>
+          <DialogDescription>
             {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
           </DialogDescription>
         </DialogHeader>
         
-        
+        <form id={formId} onSubmit={handleSubmit(onValidSubmit)} className="flex-grow overflow-hidden flex flex-col">
           <Tabs defaultValue="jobDetails" className="w-full h-full flex flex-col overflow-hidden">
             <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
               <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
@@ -298,7 +297,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
               </div>
             </ScrollArea>
           </Tabs>
-        
+        </form>
 
         <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
           <div>
@@ -332,7 +331,6 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </div>
         </DialogFooter>
       </DialogContent>
-        </form>
     </Dialog>
   );
 }
