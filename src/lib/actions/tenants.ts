@@ -62,7 +62,7 @@ export async function getTenantByIdentifier(identifier: string): Promise<Tenant 
  * @returns The newly created Tenant object or null if failed.
  */
 export async function createTenantWithAdmin(
-    tenantData: Omit<Tenant, 'id' | 'createdAt' | 'settings'> & { settings: Omit<TenantSettings, 'id'> },
+    tenantData: Omit<Tenant, 'id' | 'createdAt' | 'settings'> & { settings: Omit<TenantSettings, 'id' | 'tenantId'> },
     adminUserData: { name: string; email: string; }
 ): Promise<{ success: boolean; tenant: Tenant | null; error?: string }> {
     logAction('Creating tenant with admin', { tenantName: tenantData.name, adminEmail: adminUserData.email });
