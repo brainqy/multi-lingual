@@ -222,7 +222,7 @@ export default function AiMockInterviewPage() {
       
       const genQuestions: MockInterviewQuestion[] = questions.map(q => ({
         ...q,
-        category: q.category || 'Common',
+        category: q.category || 'Common', // Safeguard against missing category
         difficulty: q.difficulty || 'Medium',
       }));
       
@@ -240,7 +240,7 @@ export default function AiMockInterviewPage() {
         createdAt: new Date().toISOString(),
         timerPerQuestion: config.timerPerQuestion,
         difficulty: config.difficulty ? difficultyMap[config.difficulty] : undefined,
-        questionCategories: config.questionCategories,
+        questionCategories: config.questionCategories as InterviewQuestionCategory[] | undefined,
         recordingReferences: [],
       };
       setSession(newSession);
