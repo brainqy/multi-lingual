@@ -9,7 +9,6 @@ import { Loader2, Bot, Maximize, Minimize, Settings2, Mic, Square, Video as Vide
 import { useToast } from '@/hooks/use-toast';
 import type {
   MockInterviewStepId,
-  GenerateMockInterviewQuestionsInput,
   MockInterviewSession,
   MockInterviewQuestion,
   EvaluateInterviewAnswerInput,
@@ -24,7 +23,7 @@ import AiMockInterviewStepper from '@/components/features/ai-mock-interview/AiMo
 import StepSetup from '@/components/features/ai-mock-interview/StepSetup';
 import StepInterview from '@/components/features/ai-mock-interview/StepInterview';
 import StepFeedback from '@/components/features/ai-mock-interview/StepFeedback';
-import { generateMockInterviewQuestions } from '@/ai/flows/generate-mock-interview-questions';
+import { generateMockInterviewQuestions, type GenerateMockInterviewQuestionsInput } from '@/ai/flows/generate-mock-interview-questions';
 import { evaluateInterviewAnswer } from '@/ai/flows/evaluate-interview-answer';
 import { generateOverallInterviewFeedback } from '@/ai/flows/generate-overall-interview-feedback';
 import { cn } from '@/lib/utils';
