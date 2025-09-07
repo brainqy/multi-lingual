@@ -115,7 +115,7 @@ Example for empty: { "questions": [] }
           ...q,
           id: q.id || `gen_q_${Date.now()}_${index + 1}`, // More unique ID
           category: q.category || "Common",
-          difficulty: (q.difficulty ? (q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)) : defaultDifficulty) as InterviewQuestionDifficulty,
+          difficulty: q.difficulty || defaultDifficulty,
       };
     });
     logger.info(`generateMockInterviewQuestions processed ${processedQuestions.length} questions.`);

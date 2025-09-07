@@ -208,17 +208,23 @@ export default function AiMockInterviewPage() {
       logger.info("Requesting interview questions with config:", config);
       
       const apiKey = settings.allowUserApiKey ? currentUser.userApiKey : undefined;
-      const { questions: genQuestions } = await generateMockInterviewQuestions({...config, apiKey});
+      const { questions } = await generateMockInterviewQuestions({...config, apiKey});
 
-      logger.info("Received questions from AI:", genQuestions);
+      logger.info("Received questions from AI:", questions);
 
-      if (!genQuestions || genQuestions.length === 0) {
+      if (!questions || questions.length === 0) {
         toast({ title: t("aiMockInterview.toast.setupFailed.title"), description: t("aiMockInterview.toast.setupFailed.description"), variant: "destructive", duration: 7000 });
         setIsLoading(false);
         setCurrentUiStepId('setup');
         router.replace('/ai-mock-interview', undefined);
         return;
       }
+      
+      const genQuestions: MockInterviewQuestion[] = questions.map(q => ({
+        ...q,
+        category: q.category || 'Common',
+        difficulty: q.difficulty || 'Medium',
+      }));
       
       await updateMockInterviewSession(sessionId, { questions: genQuestions });
 
@@ -676,5 +682,3 @@ export default function AiMockInterviewPage() {
     </div>
   );
 }
-
-    
