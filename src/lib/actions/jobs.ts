@@ -152,50 +152,71 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
     try {
         const { interviews, ...restOfUpdateData } = updateData;
 
-        const updatedApplication = await db.jobApplication.update({
-            where: { id: applicationId },
-            data: {
-                ...restOfUpdateData,
-                notes: restOfUpdateData.notes || undefined,
-            },
-            include: {
-                interviews: true,
-            }
-        });
-        log("updateJobApplication: updated main application data.", { applicationId });
-        
-        if (interviews) {
-            log("updateJobApplication: handling interview updates.", { applicationId, newInterviewCount: interviews.length });
-            // This is a simplified approach. A real app might need to handle
-            // creation, deletion, and updates of interviews within a transaction.
-            await db.interview.deleteMany({ where: { jobApplicationId: applicationId }});
-            log("updateJobApplication: deleted old interviews.", { applicationId });
-            if (interviews.length > 0) {
-                await db.interview.createMany({
-                    data: interviews.map(i => ({
-                        date: new Date(i.date),
-                        type: i.type,
-                        interviewer: i.interviewer,
-                        notes: i.notes,
-                        jobApplicationId: applicationId
-                    }))
+        // Use a transaction to ensure all updates succeed or fail together
+        const updatedApplication = await db.$transaction(async (prisma) => {
+            // 1. Update the main application data
+            const appUpdate = await prisma.jobApplication.update({
+                where: { id: applicationId },
+                data: {
+                    ...restOfUpdateData,
+                    notes: restOfUpdateData.notes || undefined,
+                },
+                include: { interviews: true }
+            });
+            log("updateJobApplication: updated main application data.", { applicationId });
+            
+            // 2. Handle interview updates
+            if (interviews) {
+                log("updateJobApplication: handling interview updates.", { applicationId, newInterviewCount: interviews.length });
+                const existingInterviews = appUpdate.interviews;
+                const existingInterviewIds = new Set(existingInterviews.map(i => i.id));
+                const incomingInterviewIds = new Set(interviews.filter(i => !i.id.startsWith('int-')).map(i => i.id));
+
+                // Find interviews to delete
+                const interviewsToDelete = existingInterviewIds.forEach(id => {
+                    if (!incomingInterviewIds.has(id)) {
+                        prisma.interview.delete({ where: { id } }).catch(e => logError(`Failed to delete interview ${id}`, e));
+                    }
                 });
-                log("updateJobApplication: created new interviews.", { applicationId, count: interviews.length });
+
+                // Find interviews to update or create
+                const updatesAndCreates = interviews.map(interview => {
+                    const interviewData = {
+                        date: new Date(interview.date),
+                        type: interview.type,
+                        interviewer: interview.interviewer,
+                        notes: interview.notes,
+                        jobApplicationId: applicationId,
+                    };
+                    if (interview.id.startsWith('int-')) { // This is a new, temporary ID from the client
+                        return prisma.interview.create({ data: interviewData });
+                    } else { // This is an existing interview
+                        return prisma.interview.update({
+                            where: { id: interview.id },
+                            data: interviewData
+                        });
+                    }
+                });
+
+                await Promise.all(updatesAndCreates);
+                log("updateJobApplication: completed interview updates/creations.", { applicationId });
             }
-        }
-        
-        const finalApplication = await db.jobApplication.findUnique({
-            where: { id: applicationId },
-            include: { interviews: true },
+            
+            // 3. Refetch the final state of the application with all interviews
+            return await prisma.jobApplication.findUnique({
+                where: { id: applicationId },
+                include: { interviews: true },
+            });
         });
         
-        log("updateJobApplication successful.", { finalApplication });
-        return finalApplication as unknown as JobApplication;
+        log("updateJobApplication successful.", { updatedApplication });
+        return updatedApplication as unknown as JobApplication;
     } catch (error) {
         logError(`Error in updateJobApplication for application ${applicationId}:`, error);
         return null;
     }
 }
+
 
 /**
  * Deletes a job application.
@@ -205,6 +226,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
   log("deleteJobApplication called.", { applicationId });
   try {
+    // Prisma cascading delete should handle interviews if the schema is set up correctly.
     await db.jobApplication.delete({
       where: { id: applicationId },
     });

@@ -355,5 +355,3 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     </Dialog>
   );
 }
-
-    
