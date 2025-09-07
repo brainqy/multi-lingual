@@ -1049,3 +1049,16 @@ export interface EmailTemplate {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface FeatureRequest {
+  id: string;
+  tenantId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string | null;
+  title: string;
+  description: string;
+  status: 'Pending' | 'In Progress' | 'Completed' | 'Rejected';
+  timestamp: string; // ISO String
+  upvotes: number;
+}
