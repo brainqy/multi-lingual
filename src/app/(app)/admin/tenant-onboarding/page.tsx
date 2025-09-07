@@ -117,7 +117,7 @@ export default function TenantOnboardingPage() {
 
   const onSubmit = async (data: TenantOnboardingFormData) => {
     setIsSubmitting(true);
-    const tenantSettings: Omit<TenantSettings, 'id'> = {
+    const tenantSettings = {
       allowPublicSignup: data.allowPublicSignup,
       customLogoUrl: data.customLogoUrl,
       primaryColor: data.primaryColor,
