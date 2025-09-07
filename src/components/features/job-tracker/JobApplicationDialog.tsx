@@ -137,20 +137,21 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader className="shrink-0">
           <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" })}</DialogTitle>
-           <DialogDescription>
+          <DialogDescription>
             {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
           </DialogDescription>
         </DialogHeader>
-        <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
-          <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
-            <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
-              <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
-              <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
-              <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
-              <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
-              <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
-            </TabsList>
-            <ScrollArea className="flex-grow mt-4">
+        
+        <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
+            <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
+            <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
+            <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
+            <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
+            <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
+          </TabsList>
+          <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden">
+            <ScrollArea className="h-full mt-4">
               <div className="px-1 pr-4">
                 <TabsContent value="jobDetails" className="space-y-4">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -295,8 +296,8 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
                 </TabsContent>
               </div>
             </ScrollArea>
-          </Tabs>
-        </form>
+          </form>
+        </Tabs>
         <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
           <div>
             {editingApplication && (
