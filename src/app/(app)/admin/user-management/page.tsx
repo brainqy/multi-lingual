@@ -30,7 +30,7 @@ const userSchema = z.object({
   role: z.enum(['user', 'manager', 'admin']),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
   password: z.string().optional(),
-  tenantId: z.string().optional(), // Added for the form
+  tenantId: z.string().min(1, "Tenant is required."),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -113,7 +113,7 @@ export default function UserManagementPage() {
         role: 'user', 
         status: 'active', 
         password: '',
-        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : 'platform',
+        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : '',
     });
     setIsFormDialogOpen(true);
   };
@@ -299,18 +299,18 @@ export default function UserManagementPage() {
                 </span>
             </div>
             <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
-                <p><strong>Role:</strong> <span className="capitalize">{user.role}</span></p>
-                {currentUser.role === 'admin' && <p><strong>Tenant:</strong> {getTenantName(user.tenantId)}</p>}
-                <p><strong>Streak Freezes:</strong> {user.streakFreezes ?? 0}</p>
+                <p><strong>{t("userManagement.table.role")}:</strong> <span className="capitalize">{user.role}</span></p>
+                {currentUser.role === 'admin' && <p><strong>{t("userManagement.table.tenant")}:</strong> {getTenantName(user.tenantId)}</p>}
+                <p><strong>{t("userManagement.userCard.streakFreezes")}:</strong> {user.streakFreezes ?? 0}</p>
             </div>
              <div className="flex justify-end gap-2 border-t pt-3">
                 <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
-                    <Edit3 className="h-4 w-4 mr-1" /> Edit
+                    <Edit3 className="h-4 w-4 mr-1" /> {t("userManagement.userCard.editButton")}
                 </Button>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
-                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                            <Trash2 className="h-4 w-4 mr-1" /> {t("userManagement.userCard.deleteButton")}
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -486,7 +486,7 @@ export default function UserManagementPage() {
             </div>
             {!editingUser && (
               <div>
-                <Label htmlFor="password">{t("userManagement.form.passwordLabel")} (Optional)</Label>
+                <Label htmlFor="password">{t("userManagement.form.passwordLabel")}</Label>
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
                 <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelpAdmin")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
@@ -494,14 +494,14 @@ export default function UserManagementPage() {
             )}
             {currentUser.role === 'admin' && (
               <div>
-                <Label htmlFor="tenantId">Tenant</Label>
+                <Label htmlFor="tenantId">{t("userManagement.form.tenantLabel")}</Label>
                 <Controller
                   name="tenantId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value} disabled={!!editingUser}>
                       <SelectTrigger id="tenantId">
-                        <SelectValue placeholder="Select a tenant" />
+                        <SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {tenants.map(tenant => (
