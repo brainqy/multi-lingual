@@ -22,9 +22,19 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+
+const GoogleIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24">
+    <path
+      fill="currentColor"
+      d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12.27C5,8.29 8.36,5.27 12.19,5.27C14.03,5.27 15.39,5.82 16.32,6.72L18.25,4.92C16.48,3.24 14.24,2.27 12.19,2.27C6.92,2.27 2.73,6.66 2.73,12.27C2.73,17.88 6.92,22.27 12.19,22.27C17.6,22.27 21.5,18.33 21.5,12.42C21.5,11.83 21.43,11.45 21.35,11.1Z"
+    />
+  </svg>
+);
 
 export function LoginForm() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
   const platformName = t("appName", { default: "Bhasha Setu" });
@@ -141,6 +151,14 @@ export function LoginForm() {
             </Button>
           </form>
         </Form>
+        <div className="relative my-6">
+          <Separator />
+          <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-card px-2 text-sm text-muted-foreground">OR</span>
+        </div>
+        <Button variant="outline" className="w-full" onClick={() => loginWithGoogle(tenantId)}>
+          <GoogleIcon />
+          <span className="ml-2">Sign in with Google</span>
+        </Button>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t("signup.loginPrompt")}{" "}
           <Link href="/auth/signup" className="font-medium text-primary hover:underline">

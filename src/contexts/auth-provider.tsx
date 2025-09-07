@@ -6,7 +6,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { UserProfile, Wallet } from '@/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
+import { loginUser, signupUser, validateSession, loginOrSignupWithGoogle } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
@@ -19,6 +19,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password?: string) => Promise<void>;
+  loginWithGoogle: (tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string) => Promise<void>;
   isLoading: boolean;
@@ -236,6 +237,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [router, toast, fetchWalletForUser]);
 
+  const loginWithGoogle = useCallback(async (tenantId?: string) => {
+    try {
+      const result = await loginOrSignupWithGoogle(tenantId);
+      if (result.success && result.user) {
+        let userToLogin = result.user;
+        userToLogin = await handleStreakAndBadges(userToLogin, toast, setStreakPopupOpen);
+        setUser(userToLogin);
+        await fetchWalletForUser(userToLogin.id);
+        localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
+        
+        if (userToLogin.role === 'admin') {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/dashboard');
+        }
+        
+        toast({ title: "Login Successful", description: `Welcome, ${userToLogin.name}!` });
+      } else {
+        toast({
+          title: "Google Sign-In Failed",
+          description: result.message || "Could not sign in with Google. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast({ title: "Google Sign-In Error", description: "An unexpected error occurred.", variant: "destructive" });
+    }
+  }, [router, toast, fetchWalletForUser]);
+
   const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string) => {
     try {
       if (!password) {
@@ -277,7 +308,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, loginWithGoogle, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
       {children}
     </AuthContext.Provider>
   );

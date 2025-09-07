@@ -6,6 +6,10 @@ import type { UserProfile } from '@/types';
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { headers } from 'next/headers';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeFirebaseAdmin } from '../firebase-admin';
+
+initializeFirebaseAdmin();
 
 /**
  * Handles user login, scoped to a specific tenant identified by the request headers.
@@ -67,9 +71,61 @@ export async function loginUser(email: string, password?: string): Promise<UserP
   }
 }
 
+export async function loginOrSignupWithGoogle(
+  tenantId?: string
+): Promise<{ success: boolean; user: UserProfile | null; message?: string }> {
+  try {
+    const headersList = headers();
+    const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
+    if (!idToken) {
+      return { success: false, user: null, message: 'Authorization token not found.' };
+    }
+
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const { email, name, picture } = decodedToken;
+
+    if (!email) {
+      return { success: false, user: null, message: 'Email not found in Google token.' };
+    }
+    
+    const effectiveTenantId = tenantId || headersList.get('X-Tenant-Id') || 'platform';
+
+    let user = await getUserByEmail(email);
+
+    if (user) {
+      // User exists, log them in
+      const sessionId = `session-${Date.now()}`;
+      user = await updateUser(user.id, { sessionId, lastLogin: new Date().toISOString(), profilePictureUrl: picture });
+      logAction('Google login successful for existing user', { userId: user?.id, email, tenantId: user?.tenantId });
+    } else {
+      // User does not exist, create a new one
+      user = await createUser({
+        name: name || email.split('@')[0],
+        email: email,
+        role: 'user',
+        tenantId: effectiveTenantId,
+        status: 'active',
+        profilePictureUrl: picture,
+      });
+
+      if (!user) {
+        throw new Error('Failed to create new user account after Google sign-in.');
+      }
+      logAction('Google signup successful for new user', { userId: user.id, email, tenantId: user.tenantId });
+    }
+
+    return { success: true, user };
+  } catch (error) {
+    logError('Exception during loginOrSignupWithGoogle', error, {});
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return { success: false, user: null, message };
+  }
+}
+
+
 /**
  * Handles new user registration.
- * @param userData The data for the new user, including password.
+ * @param userData The data for the new user, including the password.
  * @returns An object with success status, a message, and the user object if successful.
  */
 export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin'; password?: string; tenantId?: string; }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
