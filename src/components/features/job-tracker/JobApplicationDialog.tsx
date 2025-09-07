@@ -68,10 +68,12 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   const [currentNotes, setCurrentNotes] = useState<string[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<JobApplicationFormData>({
+  const { control, handleSubmit, reset, formState: { errors, isDirty }, watch } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
   });
   
+  const watchedValues = watch();
+
   useEffect(() => {
     if (isOpen) {
       if (editingApplication) {
@@ -97,6 +99,21 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       }
     }
   }, [isOpen, editingApplication, reset]);
+  
+   // Auto-save logic
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (isDirty && editingApplication) {
+        const dataForServer = {
+          ...value,
+          dateApplied: value.dateApplied ? new Date(value.dateApplied).toISOString() : undefined,
+        };
+        onSave(dataForServer, currentInterviews, currentNotes);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, isDirty, editingApplication, onSave, currentInterviews, currentNotes]);
+
 
   const onValidSubmit = (data: JobApplicationFormData) => {
     onSave({
@@ -111,23 +128,39 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       return;
     }
     const newInterviewEntry = { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' };
-    setCurrentInterviews(prev => [...prev, newInterviewEntry]);
+    const updatedInterviews = [...currentInterviews, newInterviewEntry];
+    setCurrentInterviews(updatedInterviews);
+    if (editingApplication) {
+      onSave(watchedValues, updatedInterviews, currentNotes);
+    }
     setNewInterview({ date: '', type: 'Phone Screen', interviewer: '' });
   };
   
   const handleRemoveInterview = (interviewId: string) => {
-    setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
+    const updatedInterviews = currentInterviews.filter(int => int.id !== interviewId);
+    setCurrentInterviews(updatedInterviews);
+    if (editingApplication) {
+      onSave(watchedValues, updatedInterviews, currentNotes);
+    }
   };
   
   const handleAddNote = () => {
     if (newNoteContent.trim()) {
-      setCurrentNotes(prev => [newNoteContent.trim(), ...prev]);
+      const updatedNotes = [newNoteContent.trim(), ...currentNotes];
+      setCurrentNotes(updatedNotes);
+      if (editingApplication) {
+        onSave(watchedValues, currentInterviews, updatedNotes);
+      }
       setNewNoteContent('');
     }
   };
 
   const handleRemoveNote = (index: number) => {
-    setCurrentNotes(prev => prev.filter((_, i) => i !== index));
+    const updatedNotes = currentNotes.filter((_, i) => i !== index);
+    setCurrentNotes(updatedNotes);
+    if (editingApplication) {
+      onSave(watchedValues, currentInterviews, updatedNotes);
+    }
   };
 
   const formId = editingApplication ? `job-app-form-${editingApplication.id}` : 'job-app-form-new';
@@ -138,7 +171,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
         <DialogHeader>
           <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" }) }</DialogTitle>
           <DialogDescription>
-            {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
+            {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}. Changes are saved automatically.` : "Add a new job application to your tracker."}
           </DialogDescription>
         </DialogHeader>
         
@@ -224,7 +257,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
                   </div>
                 </TabsContent>
                 <TabsContent value="interviews">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <Card className="p-4 bg-secondary/50">
                           <h5 className="font-semibold mb-2">Add New Interview</h5>
                           <div className="space-y-3">
@@ -335,12 +368,12 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </div>
           <div className="flex gap-2">
             <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
-            <Button type="submit" form={formId} className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+            {!editingApplication && (
+              <Button type="submit" form={formId} className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
