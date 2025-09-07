@@ -18,10 +18,10 @@ interface AuthContextType {
   wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string, tenantId?: string) => Promise<void>;
   loginWithGoogle: (tenantId?: string) => Promise<void>;
   logout: () => void;
-  signup: (name: string, email: string, role: 'user' | 'admin', password?: string) => Promise<void>;
+  signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
   isStreakPopupOpen: boolean;
@@ -206,7 +206,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [user, logout, toast]);
 
 
-  const login = useCallback(async (email: string, password?: string) => {
+  const login = useCallback(async (email: string, password?: string, tenantId?: string) => {
     try {
       let userToLogin = await loginUser(email, password || "mock_password");
 
@@ -267,12 +267,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [router, toast, fetchWalletForUser]);
 
-  const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string) => {
+  const signup = useCallback(async (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => {
     try {
       if (!password) {
         throw new Error("Password is required for signup.");
       }
-      const result = await signupUser({ name, email, role, password });
+      const result = await signupUser({ name, email, role, password, tenantId });
       
       if (result.success && result.user) {
         let signedUpUser = result.user;
