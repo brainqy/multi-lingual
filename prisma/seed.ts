@@ -195,13 +195,21 @@ async function main() {
       tenantId: 'platform',
       steps: {
         "set": [
-          {"id":"start","type":"botMessage","text":"Let's complete your profile to get the most out of the platform! First, what is your current job title?","nextStepId":"getJobTitle"},
-          {"id":"getJobTitle","type":"userInput","variableName":"jobTitle","placeholder":"e.g., Software Engineer","nextStepId":"getCompany"},
-          {"id":"getCompany","type":"botMessage","text":"Great! And where do you currently work?","nextStepId":"getCompanyInput"},
-          {"id":"getCompanyInput","type":"userInput","variableName":"company","placeholder":"e.g., Google","nextStepId":"getSkills"},
+          {"id":"start","type":"botMessage","text":"Let's complete your profile to get the most out of the platform! First, what's a short, professional bio about yourself?","nextStepId":"getBio"},
+          {"id":"getBio","type":"userInput","variableName":"bio","inputType":"textarea","placeholder":"e.g., Experienced software engineer passionate about building scalable web applications...","nextStepId":"getJobTitle"},
+          {"id":"getJobTitle","type":"botMessage","text":"Great bio! Now, what is your current job title?","nextStepId":"getJobTitleInput"},
+          {"id":"getJobTitleInput","type":"userInput","variableName":"jobTitle","placeholder":"e.g., Software Engineer","nextStepId":"getCompany"},
+          {"id":"getCompany","type":"botMessage","text":"And where do you currently work?","nextStepId":"getCompanyInput"},
+          {"id":"getCompanyInput","type":"userInput","variableName":"company","placeholder":"e.g., Google","nextStepId":"getExperience"},
+          {"id":"getExperience","type":"botMessage","text":"How many years of professional experience do you have?","nextStepId":"getExperienceInput"},
+          {"id":"getExperienceInput","type":"userInput","variableName":"yearsOfExperience","placeholder":"e.g., 5+","nextStepId":"getLinkedin"},
+          {"id":"getLinkedin","type":"botMessage","text":"What's your LinkedIn profile URL?","nextStepId":"getLinkedinInput"},
+          {"id":"getLinkedinInput","type":"userInput","variableName":"linkedInProfile","placeholder":"https://linkedin.com/in/your-profile","nextStepId":"getSkills"},
           {"id":"getSkills","type":"botMessage","text":"What are some of your top skills? (comma-separated)","nextStepId":"getSkillsInput"},
-          {"id":"getSkillsInput","type":"userInput","variableName":"skills","placeholder":"e.g., React, Node.js, Project Management","nextStepId":"end"},
-          {"id":"end","type":"botMessage","text":"Awesome! Your profile is updated. You can add more details on your profile page anytime.","isLastStep":true}
+          {"id":"getSkillsInput","type":"userInput","variableName":"skills","placeholder":"e.g., React, Node.js, Project Management","nextStepId":"getInterests"},
+          {"id":"getInterests","type":"botMessage","text":"Finally, what are your main career interests?","nextStepId":"getInterestsInput"},
+          {"id":"getInterestsInput","type":"userInput","variableName":"careerInterests","placeholder":"e.g., AI, Product Management, Fintech","nextStepId":"end"},
+          {"id":"end","type":"botMessage","text":"Awesome! Your profile is much more complete. You can add even more details on your profile page anytime.","isLastStep":true}
         ]
       }
     }
