@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, X, Send } from 'lucide-react';
+import { Bot, X, Send, ChevronRight } from 'lucide-react';
 import type { SurveyStep, SurveyOption, UserProfile, Survey } from '@/types';
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/use-auth';
@@ -234,6 +234,12 @@ export default function FloatingMessenger() {
     processStep(currentSurveyStep.nextStepId);
   };
   
+  const handleSkip = () => {
+    if (!currentSurveyStep || !currentSurveyStep.nextStepId) return;
+    addMessage('user', <em>(Skipped)</em>);
+    processStep(currentSurveyStep.nextStepId);
+  };
+
   useEffect(() => {
     const handleAdminSurveyChange = async (event: Event) => {
         const customEvent = event as CustomEvent<string>;
@@ -338,22 +344,36 @@ export default function FloatingMessenger() {
                   onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInputSubmit(); }}}
                 />
               )}
-              <Button size="icon" onClick={handleInputSubmit} disabled={!inputValue.trim()} className="h-9 w-9 shrink-0 self-end">
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex flex-col gap-1">
+                <Button size="icon" onClick={handleInputSubmit} disabled={!inputValue.trim()} className="h-9 w-9 shrink-0">
+                  <Send className="h-4 w-4" />
+                </Button>
+                {currentSurveyStep.nextStepId && !currentSurveyStep.isLastStep && (
+                    <Button size="icon" variant="ghost" onClick={handleSkip} className="h-6 w-9 text-xs text-muted-foreground p-0">
+                        Skip
+                    </Button>
+                )}
+              </div>
             </div>
           )}
           {currentSurveyStep && currentSurveyStep.type === 'userDropdown' && currentSurveyStep.dropdownOptions && (
-              <Select onValueChange={handleDropdownChange}>
-                <SelectTrigger className="w-full text-sm">
-                  <SelectValue placeholder="Select an option" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentSurveyStep.dropdownOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value} className="text-sm">{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex w-full items-center gap-2">
+                <Select onValueChange={handleDropdownChange}>
+                  <SelectTrigger className="w-full text-sm">
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentSurveyStep.dropdownOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value} className="text-sm">{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currentSurveyStep.nextStepId && !currentSurveyStep.isLastStep && (
+                    <Button size="sm" variant="ghost" onClick={handleSkip} className="text-xs text-muted-foreground p-1">
+                        Skip
+                    </Button>
+                )}
+              </div>
           )}
            {!currentSurveyStep && messages.length > 0 && activeSurvey && ( 
              <div className="flex flex-col items-center w-full space-y-2">
