@@ -97,10 +97,15 @@ export async function createUser(userData: {
 export async function updateUser(userId: string, updateData: Partial<UserProfile>): Promise<UserProfile | null> {
   logAction('Updating user', { userId, fields: Object.keys(updateData) });
   try {
+    // This removes any keys with an 'undefined' value, which Prisma doesn't like.
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, v]) => v !== undefined)
+    );
+
     const updatedUser = await db.user.update({
       where: { id: userId },
       data: {
-        ...updateData,
+        ...cleanUpdateData,
         // Ensure complex types like weeklyActivity are handled correctly
         weeklyActivity: updateData.weeklyActivity as any[],
         challengeProgress: updateData.challengeProgress as any,

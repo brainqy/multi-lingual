@@ -14,6 +14,8 @@ import type { SurveyStep, SurveyOption, UserProfile, Survey } from '@/types';
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/hooks/use-auth';
 import { getSurveyByName, getSurveyForUser, createSurveyResponse } from '@/lib/actions/surveys';
+import { updateUser } from '@/lib/data-services/users';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -43,7 +45,8 @@ export default function FloatingMessenger() {
   logger.log('useRef: messagesEndRef');
   const messageIdCounter = useRef(0);
   logger.log('useRef: messageIdCounter');
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const { toast } = useToast();
   logger.log('useAuth', { user });
   const [isInitialized, setIsInitialized] = useState(false);
   logger.log('useState: isInitialized', { isInitialized });
@@ -104,6 +107,28 @@ export default function FloatingMessenger() {
           data: surveyData,
         });
         logger.log('processStep: Survey response created.');
+
+        if (activeSurvey.name === 'profileCompletionSurvey') {
+            const profileUpdates: Partial<UserProfile> = {};
+            if (surveyData.bio) profileUpdates.bio = surveyData.bio;
+            if (surveyData.jobTitle) profileUpdates.currentJobTitle = surveyData.jobTitle;
+            if (surveyData.company) profileUpdates.currentOrganization = surveyData.company;
+            if (surveyData.yearsOfExperience) profileUpdates.yearsOfExperience = surveyData.yearsOfExperience;
+            if (surveyData.linkedInProfile) profileUpdates.linkedInProfile = surveyData.linkedInProfile;
+            if (surveyData.skills) profileUpdates.skills = surveyData.skills.split(',').map(s => s.trim());
+            if (surveyData.careerInterests) profileUpdates.careerInterests = surveyData.careerInterests;
+
+            if (Object.keys(profileUpdates).length > 0) {
+                const updatedUser = await updateUser(user.id, profileUpdates);
+                if (updatedUser) {
+                    await refreshUser();
+                    toast({
+                        title: "Profile Updated!",
+                        description: "Your profile information has been saved from the survey.",
+                    });
+                }
+            }
+        }
       }
       setCurrentStepId(null); // End of survey
       return;
@@ -117,7 +142,7 @@ export default function FloatingMessenger() {
       logger.log('processStep: User input required, setting current step and waiting.', { stepId: step.id });
       setCurrentStepId(step.id);
     }
-  }, [activeSurvey, addMessage, user, surveyData]);
+  }, [activeSurvey, addMessage, user, surveyData, refreshUser, toast]);
 
   const resetSurvey = useCallback(async (surveyToLoad: Survey) => {
     logger.log('resetSurvey called', { surveyToLoad });

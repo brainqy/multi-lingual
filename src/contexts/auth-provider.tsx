@@ -24,6 +24,7 @@ interface AuthContextType {
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isStreakPopupOpen: boolean;
   setStreakPopupOpen: (isOpen: boolean) => void;
 }
@@ -160,6 +161,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       router.push('/auth/login');
     }
   }, [router, pathname]);
+
+  const refreshUser = useCallback(async () => {
+    if (!user) return;
+    try {
+        const freshUser = await validateSession(user.email, user.sessionId!);
+        if (freshUser) {
+            setUser(freshUser);
+            localStorage.setItem('bhashaSetuUser', JSON.stringify(freshUser));
+        } else {
+            logout();
+        }
+    } catch (error) {
+        console.error("Failed to refresh user session", error);
+        logout();
+    }
+  }, [user, logout]);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -308,7 +325,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, loginWithGoogle, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, loginWithGoogle, logout, signup, isLoading, refreshWallet, refreshUser, isStreakPopupOpen, setStreakPopupOpen }}>
       {children}
     </AuthContext.Provider>
   );
