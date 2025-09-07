@@ -100,7 +100,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     }
   }, [isOpen, editingApplication, reset]);
 
-  const onSubmit = (data: JobApplicationFormData) => {
+  const onValidSubmit = (data: JobApplicationFormData) => {
     onSave({
       ...data,
       notes: currentNotes,
@@ -142,8 +142,8 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </DialogDescription>
         </DialogHeader>
         
-        <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden">
-          <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
+        <div className="flex-grow overflow-hidden">
+          <Tabs defaultValue="jobDetails" className="w-full h-full flex flex-col overflow-hidden">
             <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
               <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
               <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
@@ -151,78 +151,80 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
               <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
               <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-full mt-4">
+            <ScrollArea className="flex-grow mt-4">
               <div className="px-1 pr-4">
-                <TabsContent value="jobDetails" className="space-y-4">
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <form id="job-application-form" onSubmit={handleSubmit(onValidSubmit)}>
+                    <TabsContent value="jobDetails" className="space-y-4">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="companyName">Company Name *</Label>
+                                <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
+                                {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
+                            </div>
+                             <div>
+                                <Label htmlFor="jobTitle">Job Title *</Label>
+                                <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
+                                 {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
+                            </div>
+                        </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="status">Status *</Label>
+                                <Controller name="status" control={control} render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent>{JOB_APPLICATION_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                )} />
+                            </div>
+                             <div>
+                                <Label htmlFor="dateApplied">Date Applied *</Label>
+                                <Controller name="dateApplied" control={control} render={({ field }) => <Input id="dateApplied" type="date" {...field} />} />
+                                {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
+                            </div>
+                        </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <Label htmlFor="location">Location</Label>
+                                <Controller name="location" control={control} render={({ field }) => <Input id="location" {...field} />} />
+                            </div>
+                             <div>
+                                <Label htmlFor="salary">Salary (Optional)</Label>
+                                <Controller name="salary" control={control} render={({ field }) => <Input id="salary" {...field} />} />
+                            </div>
+                        </div>
                         <div>
-                            <Label htmlFor="companyName">Company Name *</Label>
-                            <Controller name="companyName" control={control} render={({ field }) => <Input id="companyName" {...field} />} />
-                            {errors.companyName && <p className="text-sm text-destructive mt-1">{errors.companyName.message}</p>}
+                            <Label htmlFor="applicationUrl">Application URL (Optional)</Label>
+                            <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" {...field} />} />
+                             {errors.applicationUrl && <p className="text-sm text-destructive mt-1">{errors.applicationUrl.message}</p>}
                         </div>
                          <div>
-                            <Label htmlFor="jobTitle">Job Title *</Label>
-                            <Controller name="jobTitle" control={control} render={({ field }) => <Input id="jobTitle" {...field} />} />
-                             {errors.jobTitle && <p className="text-sm text-destructive mt-1">{errors.jobTitle.message}</p>}
+                            <Label htmlFor="jobDescription">Job Description (Optional)</Label>
+                            <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" rows={6} {...field} />} />
                         </div>
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="status">Status *</Label>
-                            <Controller name="status" control={control} render={({ field }) => (
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger><SelectValue/></SelectTrigger>
-                                    <SelectContent>{JOB_APPLICATION_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                                </Select>
-                            )} />
+                    </TabsContent>
+                    <TabsContent value="resume">
+                        <div className="space-y-4">
+                          <Label htmlFor="resumeIdUsed">Resume Used</Label>
+                          <Controller name="resumeIdUsed" control={control} render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger><SelectValue placeholder="Select a resume profile..."/></SelectTrigger>
+                                  <SelectContent>
+                                      {resumes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                                  </SelectContent>
+                              </Select>
+                          )} />
+                          <Button variant="outline" asChild><Link href="/my-resumes">Manage Resumes</Link></Button>
                         </div>
-                         <div>
-                            <Label htmlFor="dateApplied">Date Applied *</Label>
-                            <Controller name="dateApplied" control={control} render={({ field }) => <Input id="dateApplied" type="date" {...field} />} />
-                            {errors.dateApplied && <p className="text-sm text-destructive mt-1">{errors.dateApplied.message}</p>}
+                    </TabsContent>
+                    <TabsContent value="coverLetter">
+                         <div className="space-y-4">
+                          <Label htmlFor="coverLetterText">Cover Letter</Label>
+                          <Controller name="coverLetterText" control={control} render={({ field }) => <Textarea id="coverLetterText" rows={12} {...field} />} />
+                          <Button variant="outline" asChild><Link href="/cover-letter-generator">Generate with AI</Link></Button>
                         </div>
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div>
-                            <Label htmlFor="location">Location</Label>
-                            <Controller name="location" control={control} render={({ field }) => <Input id="location" {...field} />} />
-                        </div>
-                         <div>
-                            <Label htmlFor="salary">Salary (Optional)</Label>
-                            <Controller name="salary" control={control} render={({ field }) => <Input id="salary" {...field} />} />
-                        </div>
-                    </div>
-                    <div>
-                        <Label htmlFor="applicationUrl">Application URL (Optional)</Label>
-                        <Controller name="applicationUrl" control={control} render={({ field }) => <Input id="applicationUrl" {...field} />} />
-                         {errors.applicationUrl && <p className="text-sm text-destructive mt-1">{errors.applicationUrl.message}</p>}
-                    </div>
-                     <div>
-                        <Label htmlFor="jobDescription">Job Description (Optional)</Label>
-                        <Controller name="jobDescription" control={control} render={({ field }) => <Textarea id="jobDescription" rows={6} {...field} />} />
-                    </div>
-                </TabsContent>
-                <TabsContent value="resume">
-                    <div className="space-y-4">
-                      <Label htmlFor="resumeIdUsed">Resume Used</Label>
-                      <Controller name="resumeIdUsed" control={control} render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger><SelectValue placeholder="Select a resume profile..."/></SelectTrigger>
-                              <SelectContent>
-                                  {resumes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                              </SelectContent>
-                          </Select>
-                      )} />
-                      <Button variant="outline" asChild><Link href="/my-resumes">Manage Resumes</Link></Button>
-                    </div>
-                </TabsContent>
-                <TabsContent value="coverLetter">
-                     <div className="space-y-4">
-                      <Label htmlFor="coverLetterText">Cover Letter</Label>
-                      <Controller name="coverLetterText" control={control} render={({ field }) => <Textarea id="coverLetterText" rows={12} {...field} />} />
-                      <Button variant="outline" asChild><Link href="/cover-letter-generator">Generate with AI</Link></Button>
-                    </div>
-                </TabsContent>
+                    </TabsContent>
+                 </form>
                 <TabsContent value="interviews">
                     <div className="space-y-4">
                       <h4 className="font-semibold">Scheduled Interviews</h4>
@@ -297,7 +299,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
               </div>
             </ScrollArea>
           </Tabs>
-        </form>
+        </div>
         <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
           <div>
             {editingApplication && (
