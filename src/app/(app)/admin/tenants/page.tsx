@@ -10,7 +10,7 @@ import type { Tenant } from "@/types";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-import { getTenants, deleteTenant, updateTenant } from "@/lib/actions/tenants";
+import { getTenants, deleteTenant, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,18 +72,28 @@ export default function TenantManagementPage() {
 
   const handleSaveTenantChanges = async () => {
     if (!editingTenant) return;
-    const updated = await updateTenant(editingTenant.id, {
-      name: tenantNameInput,
-      domain: tenantDomainInput,
-      settings: {
-        allowPublicSignup: allowPublicSignupInput
-      }
-    });
-    if (updated) {
-      setTenants(prev => prev.map(t => t.id === editingTenant.id ? updated : t));
+
+    // Perform updates in parallel
+    const [tenantUpdateResult, settingsUpdateResult] = await Promise.all([
+      updateTenant(editingTenant.id, {
+        name: tenantNameInput,
+        domain: tenantDomainInput,
+      }),
+      updateTenantSettings(editingTenant.id, {
+        allowPublicSignup: allowPublicSignupInput,
+      }),
+    ]);
+
+    if (tenantUpdateResult && settingsUpdateResult) {
+      // Create a fully updated tenant object for the local state
+      const fullyUpdatedTenant = {
+        ...tenantUpdateResult,
+        settings: settingsUpdateResult,
+      };
+      setTenants(prev => prev.map(t => t.id === editingTenant.id ? fullyUpdatedTenant : t));
       toast({ title: "Tenant Updated", description: `Details for ${tenantNameInput} have been saved.` });
     } else {
-      toast({ title: "Update Failed", variant: "destructive" });
+      toast({ title: "Update Failed", description: "One or more updates failed. Please try again.", variant: "destructive" });
     }
     setIsEditDialogOpen(false);
   };

@@ -153,18 +153,12 @@ export async function createTenantWithAdmin(
  * @param updateData The data to update (e.g., name, domain).
  * @returns The updated Tenant object or null if failed.
  */
-export async function updateTenant(tenantId: string, updateData: Partial<Pick<Tenant, 'name' | 'domain' | 'settings'>>): Promise<Tenant | null> {
+export async function updateTenant(tenantId: string, updateData: Partial<Pick<Tenant, 'name' | 'domain'>>): Promise<Tenant | null> {
     logAction('Updating tenant', { tenantId });
     try {
-        const { settings, ...tenantInfo } = updateData;
-
-        if (settings) {
-            await updateTenantSettings(tenantId, settings);
-        }
-
         const updatedTenant = await db.tenant.update({
             where: { id: tenantId },
-            data: tenantInfo,
+            data: updateData,
             include: { settings: true },
         });
         return updatedTenant as unknown as Tenant;
