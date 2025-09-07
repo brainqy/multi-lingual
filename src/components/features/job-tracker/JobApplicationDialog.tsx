@@ -100,13 +100,6 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     }
   }, [isOpen, editingApplication, reset]);
 
-  // This effect will run *after* currentInterviews state has been updated, providing accurate logging.
-  useEffect(() => {
-    if (currentInterviews.length > 0) {
-      console.log("[JobApplicationDialog] Interviews list updated:", currentInterviews);
-    }
-  }, [currentInterviews]);
-
   const onValidSubmit = (data: JobApplicationFormData) => {
     onSave({
       ...data,
@@ -141,15 +134,16 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+        <form id={formId} onSubmit={handleSubmit(onValidSubmit)}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" }) }</DialogTitle>
-          <DialogDescription>
+           <DialogDescription>
             {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
           </DialogDescription>
         </DialogHeader>
         
-        <form id={formId} onSubmit={handleSubmit(onValidSubmit)} className="flex-grow overflow-hidden flex flex-col">
+        
           <Tabs defaultValue="jobDetails" className="w-full h-full flex flex-col overflow-hidden">
             <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
               <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
@@ -304,7 +298,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
               </div>
             </ScrollArea>
           </Tabs>
-        </form>
+        
 
         <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
           <div>
@@ -338,6 +332,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </div>
         </DialogFooter>
       </DialogContent>
+        </form>
     </Dialog>
   );
 }
