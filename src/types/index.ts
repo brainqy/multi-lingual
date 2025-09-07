@@ -145,8 +145,9 @@ export interface PromotionalContent {
   targetRole?: UserRole | null;
 }
 
-export const ANNOUNCEMENT_STATUSES = ['Draft', 'Published', 'Archived'] as const;
-export type AnnouncementStatus = (typeof ANNOUNCEMENT_STATUSES)[number];
+export const ANNOUNCEMENT_STATUSES = ['Draft', 'Published', 'Archived'];
+export type AnnouncementStatus = 'Draft' | 'Published' | 'Archived';
+
 
 export interface Announcement {
   id: string;
@@ -407,8 +408,8 @@ export interface ResumeScanHistoryItem {
 }
 
 // Job Applications
-export const JOB_APPLICATION_STATUSES = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'] as const;
-export type JobApplicationStatus = (typeof JOB_APPLICATION_STATUSES)[number];
+export const JOB_APPLICATION_STATUSES: ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+export type JobApplicationStatus = typeof JOB_APPLICATION_STATUSES[number];
 export type KanbanColumnId = 'Saved' | 'Applied' | 'Interviewing' | 'Offer';
 
 export interface Interview {
