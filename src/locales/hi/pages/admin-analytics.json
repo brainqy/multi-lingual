@@ -1,2 +1,67 @@
 
-{}
+{
+    "adminAnalytics": {
+        "pageTitle": "प्लेटफ़ॉर्म एनालिटिक्स",
+        "pageDescription": "उपयोगकर्ता वृद्धि, सहभागिता और फ़ीचर अपनाने में अंतर्दृष्टि।",
+        "kpi": {
+            "totalUsers": "कुल उपयोगकर्ता",
+            "newSignups": "नए साइनअप (अवधि)",
+            "dau": "दैनिक सक्रिय उपयोगकर्ता",
+            "mau": "मासिक सक्रिय उपयोगकर्ता",
+            "stickiness": "स्थिरता (DAU/MAU)"
+        },
+        "charts": {
+            "userGrowth": {
+                "title": "उपयोगकर्ता वृद्धि के रुझान",
+                "description": "चयनित अवधि में नए उपयोगकर्ता साइनअप।",
+                "legend": "नए साइनअप"
+            },
+            "featureAdoption": {
+                "title": "फ़ीचर अपनाना",
+                "description": "मुख्य प्लेटफ़ॉर्म फ़ीचर के लिए कुल उपयोग गणना।"
+            },
+            "tenantLeaderboard": {
+                "title": "किरायेदार लीडरबोर्ड",
+                "description": "उपयोगकर्ता गणना और गतिविधि स्कोर द्वारा सबसे सक्रिय किरायेदार।",
+                "legendUsers": "कुल उपयोगकर्ता",
+                "legendActivity": "गतिविधि स्कोर"
+            }
+        },
+        "filters": {
+            "selectTenant": "किरायेदार चुनें",
+            "allTenants": "सभी किरायेदार"
+        },
+        "retention": {
+            "title": "साइनअप सप्ताह द्वारा उपयोगकर्ता प्रतिधारण",
+            "description": "साइनअप के बाद के हफ्तों में वापस आने वाले नए उपयोगकर्ताओं का प्रतिशत।",
+            "cohortColumn": "समूह",
+            "newUsersColumn": "नए उपयोगकर्ता",
+            "weekColumn": "सप्ताह {week}",
+            "cohortDate": "{date} का सप्ताह",
+            "cohortPrefix": " का सप्ताह"
+        },
+        "features": {
+            "resumeScans": "रिज्यूमे स्कैन",
+            "jobApps": "नौकरी ऐप्स",
+            "communityPosts": "सामुदायिक पोस्ट",
+            "appointments": "नियुक्तियाँ",
+            "mockInterviews": "मॉक इंटरव्यू"
+        },
+        "coinEconomy": {
+            "title": "सिक्का अर्थव्यवस्था",
+            "description": "प्लेटफ़ॉर्म की आभासी मुद्रा का अवलोकन।",
+            "totalInCirculation": "कुल प्रचलन में",
+            "totalEarned": "कुल अर्जित (सभी समय)",
+            "totalSpent": "कुल खर्च (सभी समय)",
+            "spendingByCategory": "फ़ीचर द्वारा सिक्का खर्च",
+            "spendingDescription": "उपयोगकर्ता अपने सिक्के किस पर खर्च कर रहे हैं।",
+            "topUsers": "शीर्ष उपयोगकर्ता",
+            "topUsersDescription": "सिक्का अर्थव्यवस्था में सबसे अधिक व्यस्त उपयोगकर्ता।",
+            "topEarners": "शीर्ष अर्जक",
+            "topSpenders": "शीर्ष खर्च करने वाले",
+            "userColumn": "उपयोगकर्ता",
+            "coinsEarnedColumn": "अर्जित सिक्के",
+            "coinsSpentColumn": "खर्च किए गए सिक्के"
+        }
+    }
+}

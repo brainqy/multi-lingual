@@ -1,2 +1,70 @@
 
-{}
+{
+  "referrals": {
+    "pageTitle": "रेफरल प्रोग्राम",
+    "pageDescription": "मित्रांना JobMatch AI वर रेफर करा आणि प्रत्येक यशस्वी साइनअपवर बक्षिसे मिळवा!",
+    "yourReferralCardTitle": "तुमची रेफरल लिंक",
+    "yourReferralCardDescription": "तुमची युनिक लिंक किंवा कोड शेअर करा. जेव्हा कोणी साइन अप करते, तेव्हा तुम्हाला बक्षीस मिळते.",
+    "referralCodeLabel": "तुमचा रेफरल कोड",
+    "referralLinkLabel": "तुमची रेफरल लिंक",
+    "copyButton": "कॉपी करा",
+    "copyCodeButton": "कोड कॉपी करा",
+    "copyLinkButton": "लिंक कॉपी करा",
+    "shareButton": "शेअर करा",
+    "statsCardTitle": "तुमची आकडेवारी",
+    "statsCardDescription": "तुमच्या रेफरल कामगिरीचा मागोवा घ्या.",
+    "totalReferralsLabel": "एकूण रेफरल्स",
+    "successfulSignupsLabel": "यशस्वी साइनअप",
+    "rewardsInfo": "रेफरल सत्यापित झाल्यावर बक्षिसे तुमच्या वॉलेटमध्ये जमा केली जातात.",
+    "historyCardTitle": "रेफरल इतिहास",
+    "historyCardDescription": "तुमच्या रेफरल क्रियेचा लॉग.",
+    "noHistory": "तुम्ही अजून कोणालाही रेफर केलेले नाही. सुरू करण्यासाठी तुमची लिंक शेअर करा!",
+    "tableReferredUser": "रेफर केलेला वापरकर्ता",
+    "tableDateReferred": "रेफर केल्याची तारीख",
+    "tableStatus": "स्थिती",
+    "tableReward": "बक्षीस",
+    "statusPending": "प्रलंबित",
+    "statusSignedUp": "साइन अप केले",
+    "statusRewardEarned": "बक्षीस मिळवले",
+    "statusExpired": "कालबाह्य झाले",
+    "howItWorksCardTitle": "हे कसे कार्य करते",
+    "howItWorks": [
+      {
+        "title": "तुमची लिंक शेअर करा",
+        "description": "तुमची युनिक रेफरल लिंक सोशल मीडिया, ईमेल किंवा तुमच्या वेबसाइटद्वारे वितरित करा."
+      },
+      {
+        "title": "मित्र साइन अप करतो",
+        "description": "तुमचा मित्र तुमच्या लिंकवर क्लिक करतो आणि JobMatch AI प्लॅटफॉर्मवर यशस्वीरित्या साइन अप करतो."
+      },
+      {
+        "title": "बक्षिसे मिळवा",
+        "description": "त्यांचे साइनअप सत्यापित झाल्यावर आणि ते सक्रिय वापरकर्ता बनल्यावर तुम्ही कॉइन्स किंवा XP मिळवता."
+      },
+      {
+        "title": "प्रगतीचा मागोवा घ्या",
+        "description": "तुमच्या डॅशबोर्डमध्ये तुमच्या सर्व रेफरल्स आणि बक्षिसांचे निरीक्षण करा."
+      }
+    ],
+    "toastCopied": {
+      "title": "क्लिपबोर्डवर कॉपी केले!",
+      "description": "तुमची रेफरल लिंक शेअर करण्यासाठी तयार आहे."
+    },
+    "toastCopyFailed": {
+      "title": "कॉपी करण्यात अयशस्वी",
+      "description": "मजकूर कॉपी करता आला नाही."
+    },
+    "toastShareAPINotSupported": {
+      "title": "शेअर API समर्थित नाही",
+      "description": "तुमचा ब्राउझर वेब शेअर API ला समर्थन देत नाही. त्याऐवजी लिंक क्लिपबोर्डवर कॉपी केली आहे."
+    },
+    "share": {
+      "title": "JobMatch AI वर माझ्यासोबत सामील व्हा!",
+      "text": "JobMatch AI वर साइन अप करण्यासाठी माझा रेफरल कोड {code} वापरा!"
+    },
+    "featureDisabled": {
+      "title": "वैशिष्ट्य अक्षम केले आहे",
+      "message": "रेफरल प्रोग्राम सध्या प्लॅटफॉर्म प्रशासकाद्वारे अक्षम केला आहे."
+    }
+  }
+}

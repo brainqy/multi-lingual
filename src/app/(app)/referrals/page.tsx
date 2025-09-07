@@ -43,7 +43,7 @@ export default function ReferralsPage() {
   const successfulReferrals = referralHistory.filter(r => r.status === 'Reward Earned' || r.status === 'Signed Up').length;
 
   if (!settings?.referralsEnabled) {
-    return <AccessDeniedMessage title="Feature Disabled" message="The referral program is currently disabled by the platform administrator." />;
+    return <AccessDeniedMessage title={t("referrals.featureDisabled.title")} message={t("referrals.featureDisabled.message")} />;
   }
 
   if (isLoading || !user) {
@@ -68,8 +68,8 @@ export default function ReferralsPage() {
   const handleShare = () => {
      if (navigator.share) {
       navigator.share({
-        title: 'Join me on JobMatch AI!',
-        text: `Use my referral code ${user.referralCode || 'DEFAULT123'} to sign up for JobMatch AI!`,
+        title: t("referrals.share.title"),
+        text: t("referrals.share.text", { code: user.referralCode || 'DEFAULT123' }),
         url: referralLink,
       })
       .then(() => console.log('Successful share'))
@@ -132,7 +132,7 @@ export default function ReferralsPage() {
               <Input id="referral-code" value={user.referralCode || 'DEFAULT123'} readOnly className="font-mono flex-grow"/>
               <Button variant="outline" title={t("referrals.copyButton")} onClick={() => copyToClipboard(user.referralCode || 'DEFAULT123')} className="shrink-0">
                 <Copy className="h-4 w-4" />
-                <span className="ml-2 sm:hidden">Copy Code</span>
+                <span className="ml-2 sm:hidden">{t("referrals.copyCodeButton")}</span>
               </Button>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function ReferralsPage() {
               <Input id="referral-link" value={referralLink} readOnly className="flex-grow"/>
               <Button variant="outline" title={t("referrals.copyButton")} onClick={() => copyToClipboard(referralLink)} className="shrink-0">
                 <LinkIcon className="h-4 w-4" />
-                <span className="ml-2 sm:hidden">Copy Link</span>
+                <span className="ml-2 sm:hidden">{t("referrals.copyLinkButton")}</span>
               </Button>
             </div>
           </div>
