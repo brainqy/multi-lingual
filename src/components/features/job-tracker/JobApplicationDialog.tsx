@@ -1,6 +1,6 @@
 
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
@@ -43,7 +43,7 @@ const dialogLogger = logger("MainDialog");
 const jobApplicationSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   jobTitle: z.string().min(1, "Job title is required"),
-  status: z.enum(JOB_APPLICATION_STATUSES as [JobApplicationStatus, ...JobApplicationStatus[]]),
+  status: z.enum(JOB_APPLICATION_STATUSES),
   dateApplied: z.string().min(1, "Date applied is required").refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
   notes: z.array(z.string()).optional(),
   jobDescription: z.string().optional(),
@@ -101,7 +101,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       dialogLogger.log("Form reset with existing application data.", { formData });
     } else {
       const defaultData = {
-        companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
+        companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
         notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
       };
       reset(defaultData);
@@ -355,3 +355,5 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     </Dialog>
   );
 }
+
+    
