@@ -13,6 +13,10 @@ import JobSearchCard from "@/components/features/job-tracker/JobSearchCard";
 import KanbanBoard from "@/components/features/job-tracker/KanbanBoard";
 import JobApplicationDialog from "@/components/features/job-tracker/JobApplicationDialog";
 
+const logger = {
+  log: (message: string, ...args: any[]) => console.log(`[JobTrackerPage][MainPage] ${message}`, ...args),
+};
+
 export default function JobTrackerPage() {
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
@@ -47,8 +51,10 @@ export default function JobTrackerPage() {
   }, [fetchData]);
 
   const handleEdit = (app: JobApplication) => {
+    logger.log('handleEdit called for application:', app.id);
     setEditingApplication(app);
     setIsDialogOpen(true);
+    logger.log('handleEdit finished, dialog opened for editing.');
   };
 
   const handleDelete = async (id: string) => {
@@ -86,46 +92,69 @@ export default function JobTrackerPage() {
   };
 
   const onDialogClose = () => {
+    logger.log('onDialogClose called.');
     setIsDialogOpen(false);
     setEditingApplication(null);
+    logger.log('onDialogClose finished, dialog closed.');
   }
 
   const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => {
+    logger.log('onDialogSave called.', { applicationData, interviews });
     if (!currentUser) {
+      logger.log('onDialogSave: No current user, returning.');
       return;
     }
+    logger.log('onDialogSave: Current user found.', { userId: currentUser.id });
 
     const dataForServer = {
       ...applicationData,
       interviews,
     };
+    logger.log('onDialogSave: Prepared data for server.', { dataForServer });
     
     let result: JobApplication | null = null;
+    logger.log('onDialogSave: Checking if editing or creating.');
     if (editingApplication) {
+      logger.log('onDialogSave: Editing mode. Calling updateJobApplication.', { appId: editingApplication.id });
       result = await updateJobApplication(editingApplication.id, dataForServer);
+      logger.log('onDialogSave: updateJobApplication returned.', { result });
       if (result) {
+        logger.log('onDialogSave: Update successful. Updating local state.');
         setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
+        logger.log('onDialogSave: Local state updated.');
         toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
+        logger.log('onDialogSave: Toast shown for update.');
       }
     } else {
+      logger.log('onDialogSave: Create mode. Preparing data with userId.');
       const dataToCreate = {
         ...dataForServer,
         userId: currentUser.id,
       };
+      logger.log('onDialogSave: Calling createJobApplication.', { dataToCreate });
       result = await createJobApplication(dataToCreate as Omit<JobApplication, 'id'>);
+      logger.log('onDialogSave: createJobApplication returned.', { result });
       if (result) {
+        logger.log('onDialogSave: Create successful. Updating local state.');
         setApplications(prev => [result!, ...prev]);
+        logger.log('onDialogSave: Local state updated.');
         toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
+        logger.log('onDialogSave: Toast shown for create.');
       }
     }
 
+    logger.log('onDialogSave: Checking if result is null.');
     if (!result) {
+      logger.log('onDialogSave: Result is null, showing error toast and refetching data.');
       toast({ title: "Error", description: "Failed to save application.", variant: "destructive" });
       await fetchData(); 
+      logger.log('onDialogSave: Data refetched.');
     }
     
+    logger.log('onDialogSave: Closing dialog.');
     setIsDialogOpen(false);
     setEditingApplication(null);
+    logger.log('onDialogSave: Finished.');
   }
 
   if (isLoading) {
