@@ -84,15 +84,12 @@ export async function getSurveyForUser(userId: string): Promise<Survey | null> {
  * @param surveyData The data for the new survey.
  * @returns The newly created Survey object or null.
  */
-export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt' | 'tenantId'>): Promise<Survey | null> {
+export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
   try {
-    const tenantId = 'platform'; // Surveys are platform-wide for now
-
     // Wrap the steps array in the { "set": [...] } object structure to match the seed data.
     const dataForDb: any = {
       ...surveyData,
       steps: { set: surveyData.steps },
-      tenantId: tenantId,
     };
     
     const newSurvey = await db.survey.create({

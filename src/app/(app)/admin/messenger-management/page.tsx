@@ -118,10 +118,11 @@ export default function MessengerManagementPage() {
         toast({ title: "Error", description: "Survey must have at least one step.", variant: "destructive" });
         return;
     }
-    const newSurveyData: Omit<Survey, 'id' | 'createdAt' | 'tenantId'> = { 
+    const newSurveyData: Omit<Survey, 'id' | 'createdAt'> = { 
       name: newSurveyName, 
       description: newSurveyDescription, 
       steps: newSurveySteps,
+      tenantId: 'platform', // Surveys are platform-wide
     };
     
     const createdSurvey = await createSurvey(newSurveyData);
