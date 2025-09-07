@@ -90,11 +90,12 @@ export default function JobTrackerPage() {
     setEditingApplication(null);
   }
 
-  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => {
+  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[], notes: string[]) => {
     if (!currentUser) return;
 
     const dataForServer = {
       ...applicationData,
+      notes: notes,
       interviews,
     };
     

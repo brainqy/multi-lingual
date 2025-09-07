@@ -55,7 +55,7 @@ type NewInterviewFormData = Omit<Interview, 'id' | 'jobApplicationId'>;
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => void;
+  onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[], notes: string[]) => void;
   onDelete: (applicationId: string) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
@@ -100,12 +100,18 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     }
   }, [isOpen, editingApplication, reset]);
 
+  // This effect will run *after* currentInterviews state has been updated, providing accurate logging.
+  useEffect(() => {
+    if (currentInterviews.length > 0) {
+      console.log("[JobApplicationDialog] Interviews list updated:", currentInterviews);
+    }
+  }, [currentInterviews]);
+
   const onValidSubmit = (data: JobApplicationFormData) => {
     onSave({
       ...data,
-      notes: currentNotes,
       dateApplied: new Date(data.dateApplied).toISOString()
-    }, currentInterviews);
+    }, currentInterviews, currentNotes);
   };
 
   const handleAddInterview = () => {
