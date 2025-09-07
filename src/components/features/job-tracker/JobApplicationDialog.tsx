@@ -55,7 +55,7 @@ type NewInterviewFormData = Omit<Interview, 'id' | 'jobApplicationId'>;
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => void;
+  onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => void;
   onDelete: (applicationId: string) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
@@ -89,8 +89,8 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
         setCurrentInterviews(editingApplication.interviews || []);
         setCurrentNotes(editingApplication.notes || []);
       } else {
-        const defaultData = {
-          companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
+        const defaultData: JobApplicationFormData = {
+          companyName: '', jobTitle: '', status: 'Saved', dateApplied: new Date().toISOString().split('T')[0],
           notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
         };
         reset(defaultData);
@@ -141,7 +141,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
             {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
+        <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
           <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
             <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
               <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
@@ -296,38 +296,38 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
               </div>
             </ScrollArea>
           </Tabs>
-          <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
-            <div>
-              {editingApplication && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button type="button" variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogUIDescription>
-                        This action cannot be undone. This will permanently delete this job application.
-                      </AlertDialogUIDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onDelete(editingApplication.id)} className="bg-destructive hover:bg-destructive/90">
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
-            <div className="flex gap-2">
-                <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
-            </div>
-          </DialogFooter>
         </form>
+        <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
+          <div>
+            {editingApplication && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogUIDescription>
+                      This action cannot be undone. This will permanently delete this job application.
+                    </AlertDialogUIDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(editingApplication.id)} className="bg-destructive hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+          <div className="flex gap-2">
+              <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
+              <Button type="submit" form="job-application-form" className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

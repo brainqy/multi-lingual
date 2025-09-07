@@ -44,7 +44,7 @@ export async function getJobOpenings(): Promise<JobOpening[]> {
  * @returns The newly created JobOpening object or null if failed.
  */
 export async function addJobOpening(
-  jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName'>,
+  jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
   const headersList = headers();
@@ -98,7 +98,6 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @returns The newly created JobApplication object or null if failed.
  */
 export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'tenantId'>): Promise<JobApplication | null> {
-  logAction('[JobsAction][createJobApplication] called.', { company: applicationData.companyName, interviewsCount: applicationData.interviews?.length });
   try {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
@@ -107,7 +106,7 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
     const newApplication = await db.jobApplication.create({
       data: {
         ...restOfData,
-        dateApplied: new Date(restOfData.dateApplied), // Ensure it's a Date object
+        dateApplied: new Date(restOfData.dateApplied), 
         tenantId,
         notes: applicationData.notes || [],
         interviews: interviews && interviews.length > 0 ? {
@@ -123,7 +122,6 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
         interviews: true,
       },
     });
-    logAction('[JobsAction][createJobApplication] finished.', { appId: newApplication.id });
     return newApplication as unknown as JobApplication;
   } catch (error) {
     logError('[JobsAction][createJobApplication] failed.', error, { applicationData });
@@ -138,7 +136,6 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
  * @returns The updated JobApplication object or null if failed.
  */
 export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
-  logAction('[JobsAction][updateJobApplication] called.', { appId: applicationId, interviewsCount: updateData.interviews?.length, notesCount: updateData.notes?.length });
     try {
         const { interviews, ...restOfUpdateData } = updateData;
 
@@ -172,7 +169,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                         notes: interview.notes,
                         jobApplicationId: applicationId,
                     };
-                    if (interview.id.startsWith('int-')) { // This is a new, temporary ID
+                    if (interview.id.startsWith('int-')) { 
                         await prisma.interview.create({ data: interviewData });
                     } else { 
                         await prisma.interview.update({
@@ -189,7 +186,6 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
             });
         });
         
-        logAction('[JobsAction][updateJobApplication] finished.', { appId: updatedApplication?.id });
         return updatedApplication as unknown as JobApplication;
     } catch (error) {
         logError(`[JobsAction][updateJobApplication] for application ${applicationId} failed.`, error);
@@ -204,12 +200,15 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  * @returns A boolean indicating success.
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
-  logAction('[JobsAction][deleteJobApplication] called.', { appId: applicationId });
   try {
+    // Delete related interviews first
+    await db.interview.deleteMany({
+      where: { jobApplicationId: applicationId },
+    });
+    // Then delete the application
     await db.jobApplication.delete({
       where: { id: applicationId },
     });
-    logAction('[JobsAction][deleteJobApplication] finished.', { appId: applicationId });
     return true;
   } catch (error) {
     logError(`[JobsAction][deleteJobApplication] for application ${applicationId} failed.`, error);
