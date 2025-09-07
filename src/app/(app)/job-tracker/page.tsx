@@ -113,6 +113,7 @@ export default function JobTrackerPage() {
       result = await createJobApplication(dataToCreate as Omit<JobApplication, 'id'>);
       if (result) {
         setApplications(prev => [result!, ...prev]);
+        toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
       }
     }
 

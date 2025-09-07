@@ -142,15 +142,15 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
-            <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
-            <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
-            <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
-            <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
-            <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
-          </TabsList>
-          <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden">
+        <form id="job-application-form" onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden">
+          <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">
+            <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
+              <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
+              <TabsTrigger value="resume">{t("jobTracker.dialog.resume", { default: "Resume" })}</TabsTrigger>
+              <TabsTrigger value="coverLetter">{t("jobTracker.dialog.coverLetter", { default: "Cover Letter" })}</TabsTrigger>
+              <TabsTrigger value="interviews">{t("jobTracker.dialog.interviews", { default: "Interviews" })}</TabsTrigger>
+              <TabsTrigger value="notes">{t("jobTracker.dialog.notes", { default: "Notes" })}</TabsTrigger>
+            </TabsList>
             <ScrollArea className="h-full mt-4">
               <div className="px-1 pr-4">
                 <TabsContent value="jobDetails" className="space-y-4">
@@ -296,8 +296,8 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
                 </TabsContent>
               </div>
             </ScrollArea>
-          </form>
-        </Tabs>
+          </Tabs>
+        </form>
         <DialogFooter className="pt-4 border-t shrink-0 flex justify-between w-full">
           <div>
             {editingApplication && (
