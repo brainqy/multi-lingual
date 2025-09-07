@@ -23,6 +23,7 @@ async function main() {
   await prisma.surveyResponse.deleteMany({});
   await prisma.survey.deleteMany({});
   await prisma.productCompany.deleteMany({});
+  await prisma.announcement.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.tenant.deleteMany({});
   
@@ -295,3 +296,5 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
+
+    
