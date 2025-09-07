@@ -111,6 +111,8 @@ export async function updateUser(userId: string, updateData: Partial<UserProfile
         challengeProgress: updateData.challengeProgress as any,
         currentFlipChallenge: updateData.currentFlipChallenge as any,
         flipChallengeProgressStart: updateData.flipChallengeProgressStart as any,
+        skills: Array.isArray(updateData.skills) ? updateData.skills : undefined,
+        areasOfSupport: Array.isArray(updateData.areasOfSupport) ? updateData.areasOfSupport : undefined,
       },
     });
     return updatedUser as unknown as UserProfile;

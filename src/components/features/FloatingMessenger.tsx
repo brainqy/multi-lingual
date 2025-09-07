@@ -37,7 +37,7 @@ export default function FloatingMessenger() {
   logger.log('useState: currentStepId', { currentStepId });
   const [messages, setMessages] = useState<Message[]>([]);
   logger.log('useState: messages', { messages });
-  const [surveyData, setSurveyData] = useState<Record<string, string>>({});
+  const [surveyData, setSurveyData] = useState<Record<string, any>>({});
   logger.log('useState: surveyData', { surveyData });
   const [inputValue, setInputValue] = useState('');
   logger.log('useState: inputValue', { inputValue });
@@ -114,9 +114,26 @@ export default function FloatingMessenger() {
             if (surveyData.jobTitle) profileUpdates.currentJobTitle = surveyData.jobTitle;
             if (surveyData.company) profileUpdates.currentOrganization = surveyData.company;
             if (surveyData.yearsOfExperience) profileUpdates.yearsOfExperience = surveyData.yearsOfExperience;
+            if (surveyData.workLocation) profileUpdates.workLocation = surveyData.workLocation;
+            if (surveyData.industry) profileUpdates.industry = surveyData.industry as UserProfile['industry'];
+            if (surveyData.graduationYear) profileUpdates.graduationYear = surveyData.graduationYear;
+            if (surveyData.degreeProgram) profileUpdates.degreeProgram = surveyData.degreeProgram as UserProfile['degreeProgram'];
+            if (surveyData.department) profileUpdates.department = surveyData.department;
             if (surveyData.linkedInProfile) profileUpdates.linkedInProfile = surveyData.linkedInProfile;
-            if (surveyData.skills) profileUpdates.skills = surveyData.skills.split(',').map(s => s.trim());
+            if (surveyData.skills) profileUpdates.skills = surveyData.skills.split(',').map((s:string) => s.trim()).filter((s:string) => s);
             if (surveyData.careerInterests) profileUpdates.careerInterests = surveyData.careerInterests;
+            if (surveyData.gender) profileUpdates.gender = surveyData.gender as UserProfile['gender'];
+            if (surveyData.dob) profileUpdates.dateOfBirth = new Date(surveyData.dob).toISOString();
+            if (surveyData.mobile) profileUpdates.mobileNumber = surveyData.mobile;
+            if (surveyData.address) profileUpdates.currentAddress = surveyData.address;
+            if (surveyData.supportAreas) profileUpdates.areasOfSupport = surveyData.supportAreas;
+            if (surveyData.timeCommitment) profileUpdates.timeCommitment = surveyData.timeCommitment as UserProfile['timeCommitment'];
+            if (surveyData.engagementMode) profileUpdates.preferredEngagementMode = surveyData.engagementMode as UserProfile['preferredEngagementMode'];
+            if (surveyData.supportSought) profileUpdates.lookingForSupportType = surveyData.supportSought as UserProfile['lookingForSupportType'];
+            if (surveyData.helpNeeded) profileUpdates.helpNeededDescription = surveyData.helpNeeded;
+            if (surveyData.shareConsent !== undefined) profileUpdates.shareProfileConsent = surveyData.shareConsent === 'yes';
+            if (surveyData.spotlightConsent !== undefined) profileUpdates.featureInSpotlightConsent = surveyData.spotlightConsent === 'yes';
+
 
             if (Object.keys(profileUpdates).length > 0) {
                 const updatedUser = await updateUser(user.id, profileUpdates);
