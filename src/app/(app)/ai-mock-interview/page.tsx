@@ -11,8 +11,6 @@ import type {
   MockInterviewStepId,
   MockInterviewSession,
   MockInterviewQuestion,
-  EvaluateInterviewAnswerInput,
-  GenerateOverallInterviewFeedbackInput,
   GenerateOverallInterviewFeedbackOutput,
   MockInterviewAnswer,
   RecordingReference,
@@ -24,8 +22,8 @@ import StepSetup from '@/components/features/ai-mock-interview/StepSetup';
 import StepInterview from '@/components/features/ai-mock-interview/StepInterview';
 import StepFeedback from '@/components/features/ai-mock-interview/StepFeedback';
 import { generateMockInterviewQuestions, type GenerateMockInterviewQuestionsInput } from '@/ai/flows/generate-mock-interview-questions';
-import { evaluateInterviewAnswer } from '@/ai/flows/evaluate-interview-answer';
-import { generateOverallInterviewFeedback } from '@/ai/flows/generate-overall-interview-feedback';
+import { evaluateInterviewAnswer, type EvaluateInterviewAnswerInput } from '@/ai/flows/evaluate-interview-answer';
+import { generateOverallInterviewFeedback, type GenerateOverallInterviewFeedbackInput } from '@/ai/flows/generate-overall-interview-feedback';
 import { cn } from '@/lib/utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
@@ -648,20 +646,24 @@ export default function AiMockInterviewPage() {
       </Card>
 
       <div className={cn("transition-all duration-300", currentUiStepId === 'interview' && isInterviewFullScreen ? "flex-grow flex flex-col overflow-hidden" : "relative")}>
-          {currentUiStepId === 'setup' && <Card className="shadow-lg"><CardContent className="p-3 md:p-4 lg:p-6"><StepSetup onSetupComplete={(config) => {
+          {currentUiStepId === 'setup' && <Card className="shadow-lg" data-testid="mock-interview-setup-form"><CardContent className="p-3 md:p-4 lg:p-6"><StepSetup onSetupComplete={(config) => {
             const tempSessionId = `session-ai-${Date.now()}`; 
             handleSetupComplete(config, tempSessionId);
           }} isLoading={isLoading} /></CardContent></Card>}
+          
           {currentUiStepId === 'feedback' && session && <StepFeedback session={session} onRestart={handleRestartInterview} />}
+          
           {currentUiStepId === 'interview' && session && (
-            <StepInterview
-              questions={session.questions}
-              currentQuestionIndex={currentQuestionIndex}
-              onAnswerSubmit={handleAnswerSubmit}
-              onCompleteInterview={handleCompleteInterview}
-              isEvaluating={isEvaluatingAnswer}
-              timerPerQuestion={session.timerPerQuestion}
-            />
+            <div data-testid="mock-interview-interface">
+              <StepInterview
+                questions={session.questions}
+                currentQuestionIndex={currentQuestionIndex}
+                onAnswerSubmit={handleAnswerSubmit}
+                onCompleteInterview={handleCompleteInterview}
+                isEvaluating={isEvaluatingAnswer}
+                timerPerQuestion={session.timerPerQuestion}
+              />
+            </div>
           )}
 
           {isLoading && currentUiStepId !== 'interview' && (
@@ -674,3 +676,5 @@ export default function AiMockInterviewPage() {
     </div>
   );
 }
+
+    
