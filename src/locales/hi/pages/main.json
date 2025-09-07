@@ -179,5 +179,102 @@
         "scan": "बायोडाटा स्कैन आपके बुकमार्क से हटा दिया गया है।"
       }
     }
+  },
+  "aiResumeWriter": {
+    "title": "एआई रिज्यूमे राइटर",
+    "description": "एआई सहायता से विभिन्न भूमिकाओं और उद्योगों के लिए अपना रिज्यूमे अनुकूलित करें। एक मौजूदा रिज्यूमे चुनें या अपनी सामग्री पेस्ट करें, फिर अपना लक्ष्य निर्दिष्ट करें।",
+    "selectResumeLabel": "मौजूदा रिज्यूमे चुनें",
+    "selectResumePlaceholder": "-- या नीचे टाइप/पेस्ट करें --",
+    "baseResumeLabel": "आधार रिज्यूमे टेक्स्ट",
+    "baseResumePlaceholder": "अपना वर्तमान रिज्यूमे टेक्स्ट यहां पेस्ट करें...",
+    "targetRoleLabel": "लक्ष्य भूमिका / नौकरी का शीर्षक",
+    "targetRolePlaceholder": "जैसे, सीनियर सॉफ्टवेयर इंजीनियर, उत्पाद प्रबंधक",
+    "targetIndustryLabel": "लक्ष्य उद्योग (वैकल्पिक)",
+    "targetIndustryPlaceholder": "जैसे, फिनटेक, हेल्थकेयर टेक्नोलॉजी",
+    "skillsToHighlightLabel": "हाइलाइट करने के लिए कौशल (अल्पविराम से अलग, वैकल्पिक)",
+    "skillsToHighlightPlaceholder": "जैसे, परियोजना प्रबंधन, पायथन, डेटा विज़ुअलाइज़ेशन",
+    "toneLabel": "वांछित टोन",
+    "tonePlaceholder": "टोन चुनें",
+    "tones": {
+      "professional": "पेशेवर",
+      "creative": "रचनात्मक",
+      "concise": "संक्षिप्त",
+      "technical": "तकनीकी"
+    },
+    "additionalInstructionsLabel": "अतिरिक्त निर्देश (वैकल्पिक)",
+    "additionalInstructionsPlaceholder": "जैसे, नेतृत्व अनुभव पर जोर दें, इसे एक स्टार्टअप वातावरण के लिए उपयुक्त बनाएं।",
+    "generateButton": "रिज्यूमे संस्करण उत्पन्न करें",
+    "generatingMessage": "एआई आपके रिज्यूमे संस्करण का निर्माण कर रहा है...",
+    "generatedResumeTitle": "उत्पन्न रिज्यूमे संस्करण",
+    "generatedResumeDescription": "नीचे एआई-जनित रिज्यूमे टेक्स्ट की समीक्षा करें। आप इसे संपादित कर सकते हैं या कॉपी कर सकते हैं।",
+    "saveButton": "उत्पन्न रिज्यूमे सहेजें",
+    "defaultSaveName": "{role} ({date}) के लिए संस्करण",
+    "saveDialog": {
+      "title": "रिज्यूमे संस्करण सहेजें",
+      "description": "इस नए रिज्यूमे संस्करण को अपनी \"मेरे रिज्यूमे\" सूची में सहेजने के लिए एक नाम दें।",
+      "nameLabel": "नाम",
+      "saveButton": "रिज्यूमे सहेजें"
+    },
+    "toast": {
+      "mustBeLoggedIn": "इस सुविधा का उपयोग करने के लिए आपको लॉग इन होना चाहिए।",
+      "baseResumeRequired": "कृपया आधार रिज्यूमे टेक्स्ट प्रदान करें।",
+      "targetRoleRequired": "कृपया लक्ष्य भूमिका निर्दिष्ट करें।",
+      "generationSuccess": {
+        "title": "रिज्यूमे संस्करण उत्पन्न",
+        "description": "नया रिज्यूमे संस्करण नीचे तैयार है।"
+      },
+      "generationFailed": {
+        "title": "उत्पन्न करने में विफल",
+        "description": "रिज्यूमे संस्करण उत्पन्न करते समय एक त्रुटि हुई।"
+      },
+      "noResumeToSave": "सहेजने के लिए कोई उत्पन्न रिज्यूमे नहीं।",
+      "nameRequired": {
+        "title": "नाम आवश्यक",
+        "description": "कृपया रिज्यूमे प्रोफाइल के लिए एक नाम प्रदान करें।"
+      },
+      "saveSuccess": {
+        "title": "रिज्यूमे सहेजा गया",
+        "description": "\"{name}\" को 'मेरे रिज्यूमे' में सहेजा गया है।"
+      },
+      "saveFailed": {
+        "title": "सहेजने में विफल",
+        "description": "रिज्यूमे को सहेजा नहीं जा सका।"
+      },
+      "copied": "कवर लेटर कॉपी किया गया!"
+    }
+  },
+  "coverLetterGenerator": {
+    "title": "एआई कवर लेटर जेनरेटर",
+    "description": "अपनी प्रोफाइल जानकारी का उपयोग करके एक विशिष्ट नौकरी विवरण के अनुरूप एक व्यक्तिगत कवर लेटर बनाएं।",
+    "jobTitleLabel": "नौकरी का शीर्षक",
+    "jobTitlePlaceholder": "जैसे, सीनियर मार्केटिंग मैनेजर",
+    "companyNameLabel": "कंपनी का नाम",
+    "companyNamePlaceholder": "जैसे, एक्मे इनोवेशन लिमिटेड",
+    "jobDescriptionLabel": "नौकरी का विवरण",
+    "jobDescriptionPlaceholder": "यहां पूरा नौकरी विवरण पेस्ट करें...",
+    "userProfileInfoLabel": "उपयोगकर्ता प्रोफाइल जानकारी (एआई द्वारा उपयोग)",
+    "profileInfoNote": "आपकी विस्तृत प्रोफाइल और रिज्यूमे टेक्स्ट का उपयोग एआई द्वारा किया जाता है",
+    "viewProfileLink": "पूरी प्रोफाइल देखें/संपादित करें",
+    "additionalNotesLabel": "एआई के लिए अतिरिक्त नोट्स (वैकल्पिक)",
+    "additionalNotesPlaceholder": "जैसे, मेरे हालिया एक्स प्रोजेक्ट का उल्लेख करें, इस भूमिका के लिए विशेष रूप से वाई कौशल पर जोर दें।",
+    "generateButton": "कवर लेटर उत्पन्न करें",
+    "generatingMessage": "एआई आपका कवर लेटर तैयार कर रहा है...",
+    "generatedCoverLetterTitle": "उत्पन्न कवर लेटर",
+    "generatedCoverLetterDescription": "एआई-जनित कवर लेटर की समीक्षा करें। आप इसे संपादित कर सकते हैं या कॉपी कर सकते हैं।",
+    "toast": {
+      "mustBeLoggedIn": "इस सुविधा का उपयोग करने के लिए आपको लॉग इन होना चाहिए।",
+      "jobDescriptionRequired": "कृपया नौकरी का विवरण प्रदान करें।",
+      "companyNameRequired": "कृपया कंपनी का नाम दर्ज करें।",
+      "jobTitleRequired": "कृपया नौकरी का शीर्षक दर्ज करें।",
+      "generationSuccess": {
+        "title": "कवर लेटर उत्पन्न",
+        "description": "आपका व्यक्तिगत कवर लेटर नीचे तैयार है।"
+      },
+      "generationFailed": {
+        "title": "उत्पन्न करने में विफल",
+        "description": "कवर लेटर उत्पन्न करते समय एक त्रुटि हुई।"
+      },
+      "copied": "कवर लेटर कॉपी किया गया!"
+    }
   }
 }
