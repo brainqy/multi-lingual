@@ -99,6 +99,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   }, [isOpen, editingApplication, reset]);
 
   const onValidSubmit = (data: JobApplicationFormData) => {
+    console.log("Submitting with onValidSubmit:", data, currentInterviews, currentNotes);
     onSave({
       ...data,
       dateApplied: new Date(data.dateApplied).toISOString()
