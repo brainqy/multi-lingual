@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -34,12 +34,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-const logger = (component: string) => ({
-  log: (message: string, ...args: any[]) => console.log(`[JobApplicationDialog][${component}] ${message}`, ...args),
-  error: (message: string, ...args: any[]) => console.error(`[JobApplicationDialog][${component}] ${message}`, ...args),
-});
-const dialogLogger = logger("MainDialog");
-
 const jobApplicationSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
   jobTitle: z.string().min(1, "Job title is required"),
@@ -56,9 +50,7 @@ const jobApplicationSchema = z.object({
 
 type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
-// This type represents the form data for a new interview before it's saved.
 type NewInterviewFormData = Omit<Interview, 'id' | 'jobApplicationId'>;
-
 
 interface JobApplicationDialogProps {
   isOpen: boolean;
@@ -70,7 +62,6 @@ interface JobApplicationDialogProps {
 }
 
 export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete, editingApplication, resumes }: JobApplicationDialogProps) {
-  dialogLogger.log("Component rendering or re-rendering.", { isOpen, editingApplicationId: editingApplication?.id });
   const { t } = useI18n();
   const { toast } = useToast();
   const [currentInterviews, setCurrentInterviews] = useState<Interview[]>([]);
@@ -83,7 +74,6 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   });
 
   useEffect(() => {
-    dialogLogger.log("useEffect triggered for isOpen change.", { isOpen });
     if (isOpen) {
       if (editingApplication) {
         const dateApplied = editingApplication.dateApplied;
@@ -99,7 +89,6 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
         reset(formData);
         setCurrentInterviews(editingApplication.interviews || []);
         setCurrentNotes(editingApplication.notes || []);
-        dialogLogger.log("Form reset with existing application data.", { formData });
       } else {
         const defaultData = {
           companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
@@ -108,57 +97,36 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
         reset(defaultData);
         setCurrentInterviews([]);
         setCurrentNotes([]);
-        dialogLogger.log("Form reset with default data for new application.", { defaultData });
       }
     }
   }, [isOpen, editingApplication, reset]);
 
-
   const onSubmit = (data: JobApplicationFormData) => {
-    dialogLogger.log("onSubmit called with form data.", { data });
     onSave({ ...data, notes: currentNotes }, currentInterviews);
-    dialogLogger.log("onSubmit finished, onSave prop called.");
   };
 
   const handleAddInterview = () => {
-    dialogLogger.log("handleAddInterview called.", { newInterview });
     if (!newInterview.date || !newInterview.interviewer) {
       toast({ title: t("jobTracker.toast.missingInterviewInfo.title"), description: t("jobTracker.toast.missingInterviewInfo.description"), variant: "destructive" });
-      dialogLogger.error("handleAddInterview failed: missing info.");
       return;
     }
-    setCurrentInterviews(prev => {
-      const newInterviews = [...prev, { id: `int-${Date.now()}`, jobApplicationId: editingApplication?.id || 'temp', ...newInterview }];
-      dialogLogger.log("handleAddInterview: updating interviews state.", { newInterviewsCount: newInterviews.length });
-      return newInterviews;
-    });
+    setCurrentInterviews(prev => [...prev, { id: `int-${Date.now()}`, ...newInterview, jobApplicationId: editingApplication?.id || 'temp' }]);
     setNewInterview({ date: '', type: 'Phone Screen', interviewer: '' });
-    dialogLogger.log("handleAddInterview finished, cleared new interview form.");
   };
 
   const handleRemoveInterview = (interviewId: string) => {
-    dialogLogger.log("handleRemoveInterview called.", { interviewId });
     setCurrentInterviews(prev => prev.filter(int => int.id !== interviewId));
-    dialogLogger.log("handleRemoveInterview finished.");
   };
   
   const handleAddNote = () => {
-    dialogLogger.log("handleAddNote called.", { newNoteContent });
     if (newNoteContent.trim()) {
-      setCurrentNotes(prev => {
-        const newNotes = [newNoteContent.trim(), ...prev];
-        dialogLogger.log("handleAddNote: updating notes state.", { newNotesCount: newNotes.length });
-        return newNotes;
-      });
+      setCurrentNotes(prev => [newNoteContent.trim(), ...prev]);
       setNewNoteContent('');
-      dialogLogger.log("handleAddNote finished, cleared new note input.");
     }
   };
 
   const handleRemoveNote = (index: number) => {
-    dialogLogger.log("handleRemoveNote called.", { index });
     setCurrentNotes(prev => prev.filter((_, i) => i !== index));
-    dialogLogger.log("handleRemoveNote finished.");
   };
 
   return (
@@ -166,6 +134,9 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader className="shrink-0">
           <DialogTitle className="text-2xl">{editingApplication ? t("jobTracker.editJob", { default: "Edit Job Application" }) : t("jobTracker.addNewJob", { default: "Add New Job Application" })}</DialogTitle>
+           <DialogDescription>
+            {editingApplication ? `Editing details for ${editingApplication.jobTitle} at ${editingApplication.companyName}.` : "Add a new job application to your tracker."}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex-grow overflow-hidden flex flex-col">
           <Tabs defaultValue="jobDetails" className="w-full flex-grow flex flex-col overflow-hidden">

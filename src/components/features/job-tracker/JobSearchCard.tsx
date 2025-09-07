@@ -14,20 +14,12 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 
-const logger = (component: string) => ({
-  log: (message: string, ...args: any[]) => console.log(`[JobSearchCard][${component}] ${message}`, ...args),
-  error: (message: string, ...args: any[]) => console.error(`[JobSearchCard][${component}] ${message}`, ...args),
-});
-const cardLogger = logger("MainCard");
-
-
 interface JobSearchCardProps {
     applications: JobApplication[];
     setApplications: React.Dispatch<React.SetStateAction<JobApplication[]>>;
 }
 
 export default function JobSearchCard({ applications, setApplications }: JobSearchCardProps) {
-    cardLogger.log("Component rendering or re-rendering.");
     const { t } = useI18n();
     const { user: currentUser } = useAuth();
     const { toast } = useToast();
@@ -37,10 +29,8 @@ export default function JobSearchCard({ applications, setApplications }: JobSear
     const [hasSearched, setHasSearched] = useState(false);
 
     const handleJobSearch = async () => {
-        cardLogger.log("handleJobSearch called.", { searchKeywords, searchLocation });
         setHasSearched(true);
         const allOpenings = await getJobOpenings();
-        cardLogger.log("handleJobSearch: fetched openings.", { count: allOpenings.length });
         const filtered = allOpenings.filter(job => {
             const matchesKeywords = searchKeywords.trim() === '' ||
                 job.title.toLowerCase().includes(searchKeywords.trim().toLowerCase()) ||
@@ -51,21 +41,17 @@ export default function JobSearchCard({ applications, setApplications }: JobSear
             return matchesKeywords && matchesLocation;
         });
         setJobSearchResults(filtered);
-        cardLogger.log("handleJobSearch finished.", { resultsCount: filtered.length });
         if (filtered.length === 0) {
             toast({ title: t("jobTracker.toast.noJobsFound.title"), description: t("jobTracker.toast.noJobsFound.description") });
         }
     };
 
     const handleAddSearchedJobToTracker = async (job: JobOpening) => {
-        cardLogger.log("handleAddSearchedJobToTracker called.", { jobId: job.id });
         if (!currentUser) {
-            cardLogger.error("handleAddSearchedJobToTracker aborted: no current user.");
             return;
         }
         const alreadyExists = applications.some(app => app.sourceJobOpeningId === job.id);
         if (alreadyExists) {
-            cardLogger.log("handleAddSearchedJobToTracker aborted: job already in tracker.", { jobId: job.id });
             toast({ title: t("jobTracker.toast.alreadyInTracker.title"), description: t("jobTracker.toast.alreadyInTracker.description"), variant: "default" });
             return;
         }
@@ -88,10 +74,8 @@ export default function JobSearchCard({ applications, setApplications }: JobSear
         if (newApp) {
             setApplications(prevApps => [newApp, ...prevApps]);
             toast({ title: t("jobTracker.toast.jobAdded.title"), description: t("jobTracker.toast.jobAdded.description", { jobTitle: job.title, companyName: newApp.companyName }) });
-            cardLogger.log("handleAddSearchedJobToTracker successful.", { newApp });
         } else {
             toast({ title: "Error", description: "Could not add job to tracker.", variant: "destructive" });
-            cardLogger.error("handleAddSearchedJobToTracker failed: server action returned null.");
         }
     };
 

@@ -13,15 +13,7 @@ import JobSearchCard from "@/components/features/job-tracker/JobSearchCard";
 import KanbanBoard from "@/components/features/job-tracker/KanbanBoard";
 import JobApplicationDialog from "@/components/features/job-tracker/JobApplicationDialog";
 
-const logger = (component: string) => ({
-  log: (message: string, ...args: any[]) => console.log(`[JobTrackerPage][${component}] ${message}`, ...args),
-  error: (message: string, ...args: any[]) => console.error(`[JobTrackerPage][${component}] ${message}`, ...args),
-});
-
-const pageLogger = logger("MainPage");
-
 export default function JobTrackerPage() {
-  pageLogger.log("Component rendering or re-rendering.");
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -32,108 +24,74 @@ export default function JobTrackerPage() {
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
-    pageLogger.log("fetchData triggered.");
     if (!currentUser) {
-      pageLogger.log("fetchData aborted: no current user.");
       return;
     }
     setIsLoading(true);
-    pageLogger.log("fetchData starting, setting isLoading to true.");
     try {
       const [userApps, userResumes] = await Promise.all([
         getUserJobApplications(currentUser.id),
         getResumeProfiles(currentUser.id),
       ]);
-      pageLogger.log("fetchData received data from server.", { userAppsCount: userApps.length, userResumesCount: userResumes.length });
       setApplications(userApps);
       setResumes(userResumes);
     } catch (err) {
-      pageLogger.error("fetchData failed.", err);
+      console.error("Error fetching job tracker data:", err);
     } finally {
       setIsLoading(false);
-      pageLogger.log("fetchData finished, setting isLoading to false.");
     }
   }, [currentUser]);
 
   useEffect(() => {
-    pageLogger.log("useEffect for fetchData called.");
     fetchData();
   }, [fetchData]);
 
   const handleEdit = (app: JobApplication) => {
-    pageLogger.log("handleEdit called for application:", app.id);
     setEditingApplication(app);
     setIsDialogOpen(true);
-    pageLogger.log("handleEdit finished, dialog opened for editing.");
   };
 
   const handleDelete = async (id: string) => {
-    pageLogger.log("handleDelete called for application ID:", id);
     const success = await deleteJobApplication(id);
     if(success) {
-      setApplications(apps => {
-        const newApps = apps.filter(app => app.id !== id);
-        pageLogger.log("handleDelete successful, updating state.", { newAppsCount: newApps.length });
-        return newApps;
-      });
+      setApplications(apps => apps.filter(app => app.id !== id));
       toast({ title: t("jobTracker.toast.appDeleted.title"), description: t("jobTracker.toast.appDeleted.description") });
     } else {
-      pageLogger.error("handleDelete failed for application ID:", id);
       toast({ title: "Error", description: "Failed to delete application.", variant: "destructive"});
     }
     setIsDialogOpen(false);
     setEditingApplication(null);
-    pageLogger.log("handleDelete finished.");
   };
 
   const handleMoveApplication = async (appId: string, newStatus: JobApplicationStatus) => {
-    pageLogger.log("handleMoveApplication called.", { appId, newStatus });
     const originalApplication = applications.find(app => app.id === appId);
     if (!originalApplication) {
-      pageLogger.error("handleMoveApplication aborted: original application not found.", { appId });
       return;
     }
     
-    // Optimistic UI update
-    setApplications(prevApps => {
-      const newApps = prevApps.map(app => app.id === appId ? { ...app, status: newStatus } : app);
-      pageLogger.log("handleMoveApplication optimistically updated UI state.");
-      return newApps;
-    });
+    setApplications(prevApps => prevApps.map(app => app.id === appId ? { ...app, status: newStatus } : app));
 
     const updatedApp = await updateJobApplication(appId, { status: newStatus });
     if(updatedApp) {
-      pageLogger.log("handleMoveApplication successful on server.", { updatedApp });
       toast({ title: t("jobTracker.toast.appMoved.title"), description: t("jobTracker.toast.appMoved.description", { jobTitle: updatedApp.jobTitle, newStatus: t(`jobTracker.statuses.${newStatus}`) }) });
     } else {
-      // Revert on failure
-      setApplications(prevApps => {
-        pageLogger.error("handleMoveApplication failed on server, reverting UI state.");
-        return prevApps.map(app => app.id === appId ? originalApplication : app);
-      });
+      setApplications(prevApps => prevApps.map(app => app.id === appId ? originalApplication : app));
       toast({ title: "Error", description: "Could not move application.", variant: "destructive" });
     }
-    pageLogger.log("handleMoveApplication finished.");
   };
 
   const openNewApplicationDialog = () => {
-    pageLogger.log("openNewApplicationDialog called.");
     setEditingApplication(null);
     setIsDialogOpen(true);
-    pageLogger.log("openNewApplicationDialog finished, dialog opened for new application.");
   };
 
   const onDialogClose = () => {
-    pageLogger.log("onDialogClose called.");
     setIsDialogOpen(false);
     setEditingApplication(null);
-    pageLogger.log("onDialogClose finished, dialog closed.");
   }
 
   const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => {
-    pageLogger.log("onDialogSave called.", { applicationData, interviewsCount: interviews.length, editing: !!editingApplication });
     if (!currentUser) {
-      pageLogger.error("onDialogSave aborted: no current user.");
       return;
     }
 
@@ -145,14 +103,12 @@ export default function JobTrackerPage() {
     
     let result: JobApplication | null = null;
     if (editingApplication) {
-      pageLogger.log("onDialogSave: updating existing application.", { id: editingApplication.id });
       result = await updateJobApplication(editingApplication.id, dataForServer);
       if (result) {
         setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
         toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
       }
     } else {
-      pageLogger.log("onDialogSave: creating new application.");
       const dataToCreate = {
         ...dataForServer,
         userId: currentUser.id,
@@ -165,16 +121,13 @@ export default function JobTrackerPage() {
     }
 
     if (!result) {
-      pageLogger.error("onDialogSave: save operation failed on server.");
       toast({ title: "Error", description: "Failed to save application.", variant: "destructive" });
-      await fetchData(); // Refetch to ensure UI consistency on failure
+      await fetchData(); 
     }
     
     setIsDialogOpen(false);
     setEditingApplication(null);
-    pageLogger.log("onDialogSave finished.", { result });
   }
-
 
   if (isLoading) {
     return (

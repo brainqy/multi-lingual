@@ -6,12 +6,6 @@ import type { JobApplication, JobApplicationStatus, KanbanColumnId } from "@/typ
 import { useI18n } from "@/hooks/use-i18n";
 import JobCard from "./JobCard";
 
-const logger = (component: string) => ({
-  log: (message: string, ...args: any[]) => console.log(`[KanbanBoard][${component}] ${message}`, ...args),
-});
-const boardLogger = logger("MainBoard");
-const columnLogger = logger("Column");
-
 const KANBAN_COLUMNS_CONFIG: { id: KanbanColumnId; titleKey: string; descriptionKey: string; acceptedStatuses: JobApplicationStatus[] }[] = [
   { id: 'Saved', titleKey: 'jobTracker.kanban.Saved.title', descriptionKey: 'jobTracker.kanban.Saved.description', acceptedStatuses: ['Saved'] },
   { id: 'Applied', titleKey: 'jobTracker.kanban.Applied.title', descriptionKey: 'jobTracker.kanban.Applied.description', acceptedStatuses: ['Applied'] },
@@ -28,7 +22,6 @@ interface KanbanColumnProps {
 }
 
 function KanbanColumn({ column, applications, onEdit, onDelete, onMove }: KanbanColumnProps) {
-  columnLogger.log("Component rendering for column:", column.id, { appCount: applications.length });
   const { t } = useI18n();
   return (
     <Card data-testid={`kanban-column-${column.id}`} className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-secondary/50 shadow-sm h-full flex flex-col">
@@ -59,14 +52,10 @@ interface KanbanBoardProps {
 }
 
 export default function KanbanBoard({ applications, onEdit, onDelete, onMove }: KanbanBoardProps) {
-    boardLogger.log("Component rendering or re-rendering.", { totalApps: applications.length });
     const { t } = useI18n();
 
     const getAppsForColumn = (column: { acceptedStatuses: JobApplicationStatus[] }): JobApplication[] => {
-        boardLogger.log("getAppsForColumn called for statuses:", column.acceptedStatuses);
-        const filteredApps = applications.filter(app => column.acceptedStatuses.includes(app.status));
-        boardLogger.log("getAppsForColumn finished.", { count: filteredApps.length });
-        return filteredApps;
+        return applications.filter(app => column.acceptedStatuses.includes(app.status));
     };
 
     return (
