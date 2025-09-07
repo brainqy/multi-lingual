@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
+  AlertDialogDescription as AlertDialogUIDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -55,7 +55,7 @@ type NewInterviewFormData = Omit<Interview, 'id' | 'jobApplicationId'>;
 interface JobApplicationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => void;
+  onSave: (applicationData: Partial<Omit<JobApplication, 'id'>>, interviews: Interview[]) => void;
   onDelete: (applicationId: string) => void;
   editingApplication: JobApplication | null;
   resumes: ResumeProfile[];
@@ -104,6 +104,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
     // Pass the current state of interviews and notes, not the (potentially stale) form data for them
     onSave({
       ...data,
+      notes: currentNotes, // Pass the managed notes state
       dateApplied: new Date(data.dateApplied).toISOString() // Ensure it's in ISO format for the server
     }, currentInterviews);
   };
@@ -235,7 +236,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
                                      <p className="font-medium">{interview.type} with {interview.interviewer}</p>
                                      <p className="text-xs text-muted-foreground">{format(interviewDate, 'PPpp')}</p>
                                    </div>
-                                   <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id!)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                   <Button variant="ghost" size="icon" onClick={() => handleRemoveInterview(interview.id)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                                </li>
                              )
                            })}
@@ -308,9 +309,9 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogUIDescription>
                         This action cannot be undone. This will permanently delete this job application.
-                      </AlertDialogDescription>
+                      </AlertDialogUIDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
