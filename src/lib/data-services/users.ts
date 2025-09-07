@@ -60,6 +60,7 @@ export async function createUser(userData: {
   password?: string;
   status?: UserStatus;
   tenantId: string; // tenantId is now required
+  profilePictureUrl?: string;
 }): Promise<UserProfile | null> {
   logAction('Creating user', { email: userData.email, tenantId: userData.tenantId });
   try {
@@ -72,6 +73,7 @@ export async function createUser(userData: {
         tenantId: userData.tenantId, // Use the provided tenantId
         status: userData.status || 'active',
         sessionId: `session-${Date.now()}`, // Generate an initial session ID
+        profilePictureUrl: userData.profilePictureUrl,
       },
     });
     

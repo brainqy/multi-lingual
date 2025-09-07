@@ -29,7 +29,8 @@ const userSchema = z.object({
   email: z.string().email("Invalid email address."),
   role: z.enum(['user', 'manager', 'admin']),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
-  password: z.string().optional(), // Password is now optional
+  password: z.string().optional(),
+  tenantId: z.string().optional(), // Added for the form
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -111,7 +112,8 @@ export default function UserManagementPage() {
         email: '', 
         role: 'user', 
         status: 'active', 
-        password: '' 
+        password: '',
+        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : 'platform',
     });
     setIsFormDialogOpen(true);
   };
@@ -125,6 +127,7 @@ export default function UserManagementPage() {
       role: user.role,
       status: user.status || 'active',
       password: '', // Don't expose password
+      tenantId: user.tenantId,
     });
     setIsFormDialogOpen(true);
   };
@@ -136,19 +139,24 @@ export default function UserManagementPage() {
         email: data.email,
         role: data.role as UserRole,
         status: data.status as UserStatus,
+        tenantId: data.tenantId,
       });
       if (updatedUser) {
         toast({ title: t("userManagement.toast.updated.title"), description: t("userManagement.toast.updated.description", { name: data.name }) });
         await fetchAllData(); // Refetch after update
       }
     } else {
-      // Password is no longer required when an admin creates a user
+      if (!data.tenantId) {
+        toast({ title: "Error", description: "A tenant must be selected for the new user.", variant: "destructive" });
+        return;
+      }
       const newUser = await createUser({
         name: data.name,
         email: data.email,
         role: data.role as UserRole,
         status: data.status as UserStatus,
-        password: data.password, // Pass it if provided, can be used for initial setup
+        password: data.password,
+        tenantId: data.tenantId,
       });
       
       if (newUser) {
@@ -224,12 +232,13 @@ export default function UserManagementPage() {
             tenantId: values[tenantIdIndex],
           };
 
-          if (newUserCsv.email && !currentUsers.some(u => u.email === newUserCsv.email)) {
+          if (newUserCsv.email && !currentUsers.some(u => u.email === newUserCsv.email) && newUserCsv.tenantId) {
             creationPromises.push(createUser({
               name: newUserCsv.name,
               email: newUserCsv.email,
               role: newUserCsv.role!,
-              status: 'active'
+              status: 'active',
+              tenantId: newUserCsv.tenantId,
             }));
             addedCount++;
           }
@@ -481,6 +490,30 @@ export default function UserManagementPage() {
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
                 <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelpAdmin")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+              </div>
+            )}
+            {currentUser.role === 'admin' && (
+              <div>
+                <Label htmlFor="tenantId">Tenant</Label>
+                <Controller
+                  name="tenantId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!!editingUser}>
+                      <SelectTrigger id="tenantId">
+                        <SelectValue placeholder="Select a tenant" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tenants.map(tenant => (
+                          <SelectItem key={tenant.id} value={tenant.id}>
+                            {tenant.name} ({tenant.id})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                 {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
