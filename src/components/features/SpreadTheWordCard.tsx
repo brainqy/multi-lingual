@@ -17,11 +17,11 @@ export default function SpreadTheWordCard({ user }: SpreadTheWordCardProps) {
   const { t } = useI18n();
   const siteUrl = "https://JobMatch.ai"; // Ideally, this would come from an environment variable
   const referralLink = `${siteUrl}/signup?ref=${user.referralCode || 'DEFAULT123'}`;
-  const shareText = `Check out ${t("appName", { default: "Bhasha Setu" })}! It's a great platform for career development. Join me here: ${referralLink}`;
+  const shareText = t("referrals.share.text", { appName: t("appName", { default: "JobMatch AI" }), referralLink });
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
-      toast({ title: t("spreadTheWord.toast.copied.title", { default: "Link Copied!" }), description: t("spreadTheWord.toast.copied.description", { default: "Your unique referral link is ready to share." }) });
+      toast({ title: t("spreadTheWord.toast.copied.title"), description: t("spreadTheWord.toast.copied.description") });
     }).catch(() => {
       toast({ title: "Copy Failed", variant: "destructive" });
     });
@@ -35,7 +35,7 @@ export default function SpreadTheWordCard({ user }: SpreadTheWordCardProps) {
     if (platform === 'twitter') {
       url = `https://twitter.com/intent/tweet?text=${encodedText}`;
     } else if (platform === 'linkedin') {
-      url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodeURIComponent(`Join me on ${t("appName", { default: "Bhasha Setu" })}`)}&summary=${encodedText}`;
+      url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodeURIComponent(t("referrals.share.title"))}&summary=${encodedText}`;
     } else if (platform === 'whatsapp') {
       url = `https://wa.me/?text=${encodedText}`;
     }
