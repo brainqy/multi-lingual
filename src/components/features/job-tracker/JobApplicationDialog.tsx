@@ -83,33 +83,36 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   });
 
   useEffect(() => {
-    dialogLogger.log("useEffect triggered for editingApplication change.", { editingApplicationId: editingApplication?.id });
-    if (editingApplication) {
-      const dateApplied = editingApplication.dateApplied;
-      const dateToFormat = typeof dateApplied === 'string'
-        ? parseISO(dateApplied)
-        : dateApplied;
+    dialogLogger.log("useEffect triggered for isOpen change.", { isOpen });
+    if (isOpen) {
+      if (editingApplication) {
+        const dateApplied = editingApplication.dateApplied;
+        const dateToFormat = typeof dateApplied === 'string'
+          ? parseISO(dateApplied)
+          : dateApplied;
 
-      const formData = {
-        ...editingApplication,
-        dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
-        notes: editingApplication.notes || [],
-      };
-      reset(formData);
-      setCurrentInterviews(editingApplication.interviews || []);
-      setCurrentNotes(editingApplication.notes || []);
-      dialogLogger.log("Form reset with existing application data.", { formData });
-    } else {
-      const defaultData = {
-        companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
-        notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
-      };
-      reset(defaultData);
-      setCurrentInterviews([]);
-      setCurrentNotes([]);
-      dialogLogger.log("Form reset with default data for new application.", { defaultData });
+        const formData = {
+          ...editingApplication,
+          dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
+          notes: editingApplication.notes || [],
+        };
+        reset(formData);
+        setCurrentInterviews(editingApplication.interviews || []);
+        setCurrentNotes(editingApplication.notes || []);
+        dialogLogger.log("Form reset with existing application data.", { formData });
+      } else {
+        const defaultData = {
+          companyName: '', jobTitle: '', status: 'Saved' as JobApplicationStatus, dateApplied: new Date().toISOString().split('T')[0],
+          notes: [], jobDescription: '', location: '', applicationUrl: '', salary: '', resumeIdUsed: '', coverLetterText: ''
+        };
+        reset(defaultData);
+        setCurrentInterviews([]);
+        setCurrentNotes([]);
+        dialogLogger.log("Form reset with default data for new application.", { defaultData });
+      }
     }
-  }, [editingApplication, reset]);
+  }, [isOpen, editingApplication, reset]);
+
 
   const onSubmit = (data: JobApplicationFormData) => {
     dialogLogger.log("onSubmit called with form data.", { data });

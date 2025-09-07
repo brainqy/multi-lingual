@@ -173,14 +173,16 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                 const incomingInterviewIds = new Set(interviews.filter(i => !i.id.startsWith('int-')).map(i => i.id));
 
                 // Find interviews to delete
-                const interviewsToDelete = existingInterviewIds.forEach(id => {
-                    if (!incomingInterviewIds.has(id)) {
-                        prisma.interview.delete({ where: { id } }).catch(e => logError(`Failed to delete interview ${id}`, e));
-                    }
-                });
+                const interviewsToDelete = Array.from(existingInterviewIds).filter(id => !incomingInterviewIds.has(id));
+                if (interviewsToDelete.length > 0) {
+                    await prisma.interview.deleteMany({
+                        where: { id: { in: interviewsToDelete } },
+                    });
+                    log("Deleted interviews", { ids: interviewsToDelete });
+                }
 
                 // Find interviews to update or create
-                const updatesAndCreates = interviews.map(interview => {
+                for (const interview of interviews) {
                     const interviewData = {
                         date: new Date(interview.date),
                         type: interview.type,
@@ -189,16 +191,16 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                         jobApplicationId: applicationId,
                     };
                     if (interview.id.startsWith('int-')) { // This is a new, temporary ID from the client
-                        return prisma.interview.create({ data: interviewData });
+                        await prisma.interview.create({ data: interviewData });
+                        log("Created new interview", { data: interviewData });
                     } else { // This is an existing interview
-                        return prisma.interview.update({
+                        await prisma.interview.update({
                             where: { id: interview.id },
                             data: interviewData
                         });
+                        log("Updated existing interview", { id: interview.id });
                     }
-                });
-
-                await Promise.all(updatesAndCreates);
+                }
                 log("updateJobApplication: completed interview updates/creations.", { applicationId });
             }
             
