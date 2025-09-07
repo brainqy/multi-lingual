@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -76,11 +76,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   useEffect(() => {
     if (isOpen) {
       if (editingApplication) {
-        const dateApplied = editingApplication.dateApplied;
-        const dateToFormat = typeof dateApplied === 'string'
-          ? parseISO(dateApplied)
-          : dateApplied;
-
+        const dateToFormat = typeof editingApplication.dateApplied === 'string'
+          ? parseISO(editingApplication.dateApplied)
+          : editingApplication.dateApplied;
+        
         const formData = {
           ...editingApplication,
           dateApplied: format(dateToFormat, 'yyyy-MM-dd'),
@@ -102,7 +101,11 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   }, [isOpen, editingApplication, reset]);
 
   const onSubmit = (data: JobApplicationFormData) => {
-    onSave({ ...data, notes: currentNotes }, currentInterviews);
+    // Pass the current state of interviews and notes, not the (potentially stale) form data for them
+    onSave({
+      ...data,
+      dateApplied: new Date(data.dateApplied).toISOString() // Ensure it's in ISO format for the server
+    }, currentInterviews);
   };
 
   const handleAddInterview = () => {

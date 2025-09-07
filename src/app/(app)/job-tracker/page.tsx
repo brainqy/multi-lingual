@@ -97,8 +97,7 @@ export default function JobTrackerPage() {
 
     const dataForServer = {
       ...applicationData,
-      dateApplied: applicationData.dateApplied ? new Date(applicationData.dateApplied).toISOString() : new Date().toISOString(),
-      interviews: interviews,
+      interviews, // Pass the managed interviews list here
     };
     
     let result: JobApplication | null = null;

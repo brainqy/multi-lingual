@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
 import { headers } from 'next/headers';
+import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all job openings from the database, filtered by the tenant from the request headers.
@@ -97,6 +98,7 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @returns The newly created JobApplication object or null if failed.
  */
 export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'tenantId'>): Promise<JobApplication | null> {
+  logAction('[JobsAction][createJobApplication] called.', { company: applicationData.companyName, interviewsCount: applicationData.interviews?.length });
   try {
     const headersList = headers();
     const tenantId = headersList.get('X-Tenant-Id') || 'platform';
@@ -105,6 +107,7 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
     const newApplication = await db.jobApplication.create({
       data: {
         ...restOfData,
+        dateApplied: new Date(restOfData.dateApplied), // Ensure it's a Date object
         tenantId,
         notes: applicationData.notes || [],
         interviews: interviews && interviews.length > 0 ? {
@@ -120,9 +123,10 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
         interviews: true,
       },
     });
+    logAction('[JobsAction][createJobApplication] finished.', { appId: newApplication.id });
     return newApplication as unknown as JobApplication;
   } catch (error) {
-    console.error("Error in createJobApplication:", error, { applicationData });
+    logError('[JobsAction][createJobApplication] failed.', error, { applicationData });
     return null;
   }
 }
@@ -134,6 +138,7 @@ export async function createJobApplication(applicationData: Omit<JobApplication,
  * @returns The updated JobApplication object or null if failed.
  */
 export async function updateJobApplication(applicationId: string, updateData: Partial<Omit<JobApplication, 'id'>>): Promise<JobApplication | null> {
+  logAction('[JobsAction][updateJobApplication] called.', { appId: applicationId, interviewsCount: updateData.interviews?.length, notesCount: updateData.notes?.length });
     try {
         const { interviews, ...restOfUpdateData } = updateData;
 
@@ -142,6 +147,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                 where: { id: applicationId },
                 data: {
                     ...restOfUpdateData,
+                    dateApplied: restOfUpdateData.dateApplied ? new Date(restOfUpdateData.dateApplied) : undefined,
                     notes: restOfUpdateData.notes || undefined,
                 },
                 include: { interviews: true }
@@ -166,7 +172,7 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
                         notes: interview.notes,
                         jobApplicationId: applicationId,
                     };
-                    if (interview.id.startsWith('int-')) {
+                    if (interview.id.startsWith('int-')) { // This is a new, temporary ID
                         await prisma.interview.create({ data: interviewData });
                     } else { 
                         await prisma.interview.update({
@@ -183,9 +189,10 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
             });
         });
         
+        logAction('[JobsAction][updateJobApplication] finished.', { appId: updatedApplication?.id });
         return updatedApplication as unknown as JobApplication;
     } catch (error) {
-        console.error(`Error in updateJobApplication for application ${applicationId}:`, error);
+        logError(`[JobsAction][updateJobApplication] for application ${applicationId} failed.`, error);
         return null;
     }
 }
@@ -197,13 +204,15 @@ export async function updateJobApplication(applicationId: string, updateData: Pa
  * @returns A boolean indicating success.
  */
 export async function deleteJobApplication(applicationId: string): Promise<boolean> {
+  logAction('[JobsAction][deleteJobApplication] called.', { appId: applicationId });
   try {
     await db.jobApplication.delete({
       where: { id: applicationId },
     });
+    logAction('[JobsAction][deleteJobApplication] finished.', { appId: applicationId });
     return true;
   } catch (error) {
-    console.error(`Error in deleteJobApplication for application ${applicationId}:`, error);
+    logError(`[JobsAction][deleteJobApplication] for application ${applicationId} failed.`, error);
     return false;
   }
 }
