@@ -140,7 +140,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit(onValidSubmit)} className="flex-grow overflow-hidden flex flex-col">
+        <form id="job-application-form" className="flex-grow overflow-hidden flex flex-col">
           <Tabs defaultValue="jobDetails" className="w-full flex-grow overflow-hidden flex flex-col">
             <TabsList className="grid w-full grid-cols-5 shrink-0 h-10">
               <TabsTrigger value="jobDetails">{t("jobTracker.dialog.jobDetails", { default: "Job Details" })}</TabsTrigger>
@@ -333,12 +333,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
           </div>
           <div className="flex gap-2">
             <DialogClose asChild><Button type="button" variant="outline">{t("jobTracker.dialog.close", { default: "Close" })}</Button></DialogClose>
-            <Button type="button" onClick={handleSubmit(onValidSubmit)} className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
+            <Button onClick={handleSubmit(onValidSubmit)} className="bg-primary hover:bg-primary/90 text-primary-foreground">{t("jobTracker.dialog.save", { default: "Save" })}</Button>
           </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
