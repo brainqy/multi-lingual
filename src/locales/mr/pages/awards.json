@@ -1,0 +1,50 @@
+{
+  "awards": {
+    "pageTitle": "पुरस्कार आणि सन्मान",
+    "pageDescription": "उत्कृष्ट कामगिरी आणि योगदानासाठी पात्र माजी विद्यार्थ्यांना नामांकित करा आणि विजेत्यांसाठी मतदान करा.",
+    "noActiveAwardsTitle": "कोणतेही सक्रिय पुरस्कार नाहीत",
+    "noActiveAwardsDescription": "सध्या नामांकन किंवा मतदानासाठी कोणतेही पुरस्कार खुले नाहीत. नंतर पुन्हा तपासा!",
+    "winnerAnnounced": "विजेता घोषित!",
+    "viewProfileButton": "प्रोफाइल पहा",
+    "nominateButton": "नामांकित करा",
+    "viewAndVoteButton": "पहा आणि मत द्या",
+    "votingEndedButton": "मतदान संपले",
+    "comingSoonButton": "लवकरच येत आहे",
+    "nominationPeriodLabel": "नामांकन",
+    "votingPeriodLabel": "मतदान",
+    "timeLeft": "शिल्लक",
+    "nominationDialog": {
+      "title": "{awardTitle} साठी नामांकन करा",
+      "description": "एक वापरकर्ता निवडा आणि तुमच्या नामांकनासाठी एक समर्थन द्या.",
+      "nomineeLabel": "नामांकित व्यक्ती",
+      "nomineePlaceholder": "नामांकित करण्यासाठी एक वापरकर्ता निवडा...",
+      "justificationLabel": "समर्थन",
+      "justificationPlaceholder": "या व्यक्तीला पुरस्कार का मिळायला हवा हे स्पष्ट करा...",
+      "submitButton": "नामांकन सादर करा"
+    },
+    "votingDialog": {
+      "title": "{awardTitle} साठी मत द्या",
+      "description": "नामांकित व्यक्तींचे पुनरावलोकन करा आणि तुमचे मत द्या. तुम्ही फक्त एकदाच मतदान करू शकता.",
+      "noNominees": "या पुरस्कारासाठी कोणतेही नामांकन सादर केलेले नाही.",
+      "voteButton": "मत द्या"
+    },
+    "toast": {
+      "nominationSubmitted": {
+        "title": "नामांकन सादर केले!",
+        "description": "आमच्या समुदायातील एका पात्र सदस्याला ओळखल्याबद्दल धन्यवाद."
+      },
+      "nominationFailed": {
+        "title": "नामांकन अयशस्वी",
+        "description": "एक अनपेक्षित त्रुटी आली."
+      },
+      "voteCast": {
+        "title": "मतदान केले!",
+        "description": "तुमचे मत नोंदवले गेले आहे."
+      },
+      "voteFailed": {
+        "title": "मतदान अयशस्वी",
+        "description": "एक अनपेक्षित त्रुटी आली."
+      }
+    }
+  }
+}
