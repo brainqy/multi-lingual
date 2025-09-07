@@ -196,7 +196,7 @@ export default function FeatureRequestsPage() {
               <DialogHeader>
                 <DialogTitle className="text-2xl">{selectedRequest.title}</DialogTitle>
                 <DialogUIDescription className="pt-2 flex items-center gap-2">
-                   <Avatar className="h-6 w-6"><AvatarImage src={selectedRequest.userAvatar} /><AvatarFallback>{selectedRequest.userName.substring(0,1)}</AvatarFallback></Avatar>
+                   <Avatar className="h-6 w-6"><AvatarImage src={selectedRequest.userAvatar ?? undefined} /><AvatarFallback>{selectedRequest.userName.substring(0,1)}</AvatarFallback></Avatar>
                     <span>{t("featureRequests.suggestedBy", { name: selectedRequest.userName })} • {formatDistanceToNow(new Date(selectedRequest.timestamp), { addSuffix: true })}</span>
                 </DialogUIDescription>
               </DialogHeader>
