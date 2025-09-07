@@ -72,8 +72,8 @@ export default function TenantManagementPage() {
 
   const handleSaveTenantChanges = async () => {
     if (!editingTenant) return;
-    const updated = await updateTenant(editingTenant.id, { 
-      name: tenantNameInput, 
+    const updated = await updateTenant(editingTenant.id, {
+      name: tenantNameInput,
       domain: tenantDomainInput,
       settings: {
         allowPublicSignup: allowPublicSignupInput
