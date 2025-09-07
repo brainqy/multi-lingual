@@ -130,7 +130,7 @@ export default function ProfilePage() {
 
     const updatedProfileData: Partial<UserProfile> = {
       ...data,
-      dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : undefined,
+      dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString() : undefined,
       skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
       areasOfSupport: data.areasOfSupport as SupportArea[] || [],
       degreeProgram: data.degreeProgram,
