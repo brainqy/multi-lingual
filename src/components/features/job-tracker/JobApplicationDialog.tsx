@@ -125,6 +125,7 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   const handleAddNote = () => {
     if (newNoteContent.trim()) {
       setCurrentNotes(prev => [newNoteContent.trim(), ...prev]);
+      console.log("Current Notes after adding:", [newNoteContent.trim(), ...currentNotes]);
       setNewNoteContent('');
     }
   };
