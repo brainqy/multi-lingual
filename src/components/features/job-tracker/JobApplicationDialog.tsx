@@ -101,11 +101,10 @@ export default function JobApplicationDialog({ isOpen, onClose, onSave, onDelete
   }, [isOpen, editingApplication, reset]);
 
   const onSubmit = (data: JobApplicationFormData) => {
-    // Pass the current state of interviews and notes, not the (potentially stale) form data for them
     onSave({
       ...data,
-      notes: currentNotes, // Pass the managed notes state
-      dateApplied: new Date(data.dateApplied).toISOString() // Ensure it's in ISO format for the server
+      notes: currentNotes,
+      dateApplied: new Date(data.dateApplied).toISOString()
     }, currentInterviews);
   };
 
