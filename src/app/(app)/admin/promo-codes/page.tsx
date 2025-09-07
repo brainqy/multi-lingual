@@ -148,9 +148,12 @@ export default function PromoCodeManagementPage() {
 
   const onSubmit = async (data: PromoCodeFormData) => {
     if (!currentUser) return;
+    
+    const tenantId = currentUser.role === 'admin' && data.isPlatformWide ? 'platform' : currentUser.tenantId;
 
     const newCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
       ...data,
+      tenantId: tenantId,
       expiresAt: data.expiresAt ? data.expiresAt.toISOString() : undefined,
     };
 
@@ -194,6 +197,7 @@ export default function PromoCodeManagementPage() {
       const uniquePart = Math.random().toString(36).substring(2, 10).toUpperCase();
       const code = `${data.prefix}-${uniquePart}`;
       const newPromoCodeData: Omit<PromoCode, 'id' | 'timesUsed' | 'createdAt'> = {
+        tenantId: currentUser.tenantId, // Generated codes are for the current tenant
         code,
         description: `One-time use code (${data.rewardValue} ${data.rewardType})`,
         rewardType: data.rewardType,
