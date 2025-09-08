@@ -49,7 +49,7 @@ export default function AlumniConnectPage() {
 
   const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
-  const [selectedUniversities, setSelectedUniversities] = useState<Set<string>>(new Set());
+  const [selectedOrganizations, setSelectedOrganizations] = useState<Set<string>>(new Set());
 
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [alumniToBook, setAlumniToBook] = useState<AlumniProfile | null>(null);
@@ -80,7 +80,7 @@ export default function AlumniConnectPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedOrganizations]);
 
   const distinguishedAlumni = useMemo(() => {
     if (!currentUser) return [];
@@ -88,8 +88,9 @@ export default function AlumniConnectPage() {
   }, [allAlumniData, currentUser]);
 
   const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
-  const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
-  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter((uni): uni is string => !!uni))).sort(), [allAlumniData]);
+  const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills ?? []))).sort(), [allAlumniData]);
+  const uniqueOrganizations = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
+
 
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
@@ -110,13 +111,13 @@ export default function AlumniConnectPage() {
       results = results.filter(alumni => alumni.currentOrganization && selectedCompanies.has(alumni.currentOrganization));
     }
     if (selectedSkills.size > 0) {
-      results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
+      results = results.filter(alumni => (alumni.skills ?? []).some(skill => selectedSkills.has(skill)));
     }
-    if (selectedUniversities.size > 0) {
-      results = results.filter(alumni => alumni.university && selectedUniversities.has(alumni.university));
+    if (selectedOrganizations.size > 0) {
+      results = results.filter(alumni => alumni.currentOrganization && selectedOrganizations.has(alumni.currentOrganization));
     }
     return results;
-  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData, currentUser]);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedOrganizations, allAlumniData, currentUser]);
 
   const paginatedAlumni = useMemo(() => {
     const startIndex = (currentPage - 1) * alumniPerPage;
@@ -303,7 +304,7 @@ export default function AlumniConnectPage() {
                         <h3 className="text-md font-semibold text-foreground">{alumni.name}</h3>
                         <p className="text-xs text-primary">{alumni.currentJobTitle}</p>
                         <p className="text-xs text-muted-foreground mb-2">{alumni.currentOrganization}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.shortBio}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.bio}</p>
                       </CardContent>
                       <CardFooter className="p-3 border-t mt-auto">
                         <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "View Profile (Mock)", description: `Viewing profile of ${alumni.name}.`})}>
@@ -375,17 +376,17 @@ export default function AlumniConnectPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">{t("alumniConnect.university", { default: "University" })}</h4>
+                <h4 className="font-medium mb-2">{t("alumniConnect.university", { default: "Organization" })}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
-                    {uniqueUniversities.map(uni => (
-                      <div key={uni} className="flex items-center space-x-2">
+                    {uniqueOrganizations.map(org => (
+                      <div key={org} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`uni-${uni}`}
-                          checked={selectedUniversities.has(uni)}
-                          onCheckedChange={() => handleFilterChange(selectedUniversities, uni, setSelectedUniversities)}
+                          id={`org-${org}`}
+                          checked={selectedOrganizations.has(org)}
+                          onCheckedChange={() => handleFilterChange(selectedOrganizations, org, setSelectedOrganizations)}
                         />
-                        <Label htmlFor={`uni-${uni}`} className="font-normal">{uni}</Label>
+                        <Label htmlFor={`org-${org}`} className="font-normal">{org}</Label>
                       </div>
                     ))}
                   </div>
@@ -437,11 +438,11 @@ export default function AlumniConnectPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold mb-1">Offers Help With:</h4>
-                    {renderTags(alumni.offersHelpWith, 3)}
+                    {renderTags(alumni.areasOfSupport, 3)}
                   </div>
                 </div>
-                 <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{alumni.shortBio}</p>
-                 <p className="text-xs text-muted-foreground mb-3"><GraduationCap className="inline h-3 w-3 mr-1"/>{alumni.university}</p>
+                 <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{alumni.bio}</p>
+                 <p className="text-xs text-muted-foreground mb-3"><GraduationCap className="inline h-3 w-3 mr-1"/>{alumni.degreeProgram}</p>
                  {(currentUser.role === 'admin' || currentUser.role === 'manager') && (
                     <div className="flex items-center space-x-2 my-2 p-2 border-t border-b">
                       <Switch
