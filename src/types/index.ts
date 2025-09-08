@@ -1063,3 +1063,17 @@ export interface FeatureRequest {
   timestamp: string; // ISO String
   upvotes: number;
 }
+
+export interface ProductCompany {
+  id: string;
+  name: string;
+  location: string;
+  websiteUrl: string;
+  domain: string;
+  logoUrl?: string;
+  hrName?: string;
+  hrEmail?: string;
+  contactNumber?: string;
+  createdAt: string;
+  updatedAt: string;
+}
