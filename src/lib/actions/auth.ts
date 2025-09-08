@@ -7,7 +7,6 @@ import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebaseAdmin } from '../firebase-admin';
-import { headers } from 'next/headers';
 
 initializeFirebaseAdmin();
 
@@ -24,7 +23,7 @@ export async function loginUser(email: string, password?: string, tenantIdFromCo
     });
 
     if (user) {
-      const isPlatformLogin = tenantIdFromContext === 'platform';
+      const isPlatformLogin = !tenantIdFromContext || tenantIdFromContext === 'platform';
       
       let tenant = null;
       if (!isPlatformLogin && tenantIdFromContext) {
@@ -69,11 +68,10 @@ export async function loginUser(email: string, password?: string, tenantIdFromCo
 }
 
 export async function loginOrSignupWithGoogle(
+  idToken: string,
   tenantId?: string
 ): Promise<{ success: boolean; user: UserProfile | null; message?: string }> {
   try {
-    const headersList = headers();
-    const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return { success: false, user: null, message: 'Authorization token not found.' };
     }

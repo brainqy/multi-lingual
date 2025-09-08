@@ -12,13 +12,15 @@ import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 import { createActivity } from '@/lib/actions/activities';
 import { differenceInCalendarDays } from 'date-fns';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { app } from '@/lib/firebase-client';
 
 interface AuthContextType {
   user: UserProfile | null;
   wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string, tenantId?: string) => Promise<void>;
   loginWithGoogle: (tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
@@ -256,9 +258,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginWithGoogle = useCallback(async (tenantId?: string) => {
     try {
-      const result = await loginOrSignupWithGoogle(tenantId);
-      if (result.success && result.user) {
-        let userToLogin = result.user;
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+      
+      const serverResult = await loginOrSignupWithGoogle(idToken, tenantId);
+
+      if (serverResult.success && serverResult.user) {
+        let userToLogin = serverResult.user;
         userToLogin = await handleStreakAndBadges(userToLogin, toast, setStreakPopupOpen);
         setUser(userToLogin);
         await fetchWalletForUser(userToLogin.id);
@@ -274,7 +282,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         toast({
           title: "Google Sign-In Failed",
-          description: result.message || "Could not sign in with Google. Please try again.",
+          description: serverResult.message || "Could not sign in with Google. Please try again.",
           variant: "destructive",
         });
       }
