@@ -167,9 +167,9 @@ export function LoginForm() {
           <span className="ml-2">Sign in with Google</span>
         </Button>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t("signup.loginPrompt")}{" "}
+          {t("login.signupPrompt")}{" "}
           <Link href="/auth/signup" className="font-medium text-primary hover:underline">
-            {t("signup.loginLink")}
+            {t("login.signupLink")}
           </Link>
         </p>
       </CardContent>
