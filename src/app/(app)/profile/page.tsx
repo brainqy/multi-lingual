@@ -312,7 +312,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="gender">Gender</Label>
-                  <Controller name="gender" control={control} render={({ field }) => (
+                  <Controller name="gender" control={control} defaultValue={user.gender} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="gender"><SelectValue placeholder="Select Gender" /></SelectTrigger>
                       <SelectContent>
@@ -335,7 +335,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="graduationYear">Graduation Year</Label>
-                  <Controller name="graduationYear" control={control} render={({ field }) => (
+                  <Controller name="graduationYear" control={control} defaultValue={user.graduationYear} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="graduationYear"><SelectValue placeholder="Select Year" /></SelectTrigger>
                       <SelectContent>
@@ -346,7 +346,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="degreeProgram">Degree / Program</Label>
-                  <Controller name="degreeProgram" control={control} render={({ field }) => (
+                  <Controller name="degreeProgram" control={control} defaultValue={user.degreeProgram} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="degreeProgram"><SelectValue placeholder="Select Degree" /></SelectTrigger>
                       <SelectContent>
@@ -373,7 +373,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="industry">Industry</Label>
-                  <Controller name="industry" control={control} render={({ field }) => (
+                  <Controller name="industry" control={control} defaultValue={user.industry} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="industry"><SelectValue placeholder="Select Industry" /></SelectTrigger>
                       <SelectContent>
@@ -407,6 +407,7 @@ export default function ProfilePage() {
                 <Controller
                   name="areasOfSupport"
                   control={control}
+                  defaultValue={user.areasOfSupport || []}
                   render={({ field }) => (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
                       {AreasOfSupportOptions.map((area) => (
@@ -433,7 +434,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="timeCommitment" className="flex items-center gap-1"><Clock className="h-4 w-4 text-muted-foreground"/>Time Commitment (per month)</Label>
-                  <Controller name="timeCommitment" control={control} render={({ field }) => (
+                  <Controller name="timeCommitment" control={control} defaultValue={user.timeCommitment} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="timeCommitment"><SelectValue placeholder="Select Time Commitment" /></SelectTrigger>
                       <SelectContent>
@@ -444,7 +445,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="preferredEngagementMode" className="flex items-center gap-1"><MessageCircle className="h-4 w-4 text-muted-foreground"/>Preferred Engagement Mode</Label>
-                  <Controller name="preferredEngagementMode" control={control} render={({ field }) => (
+                  <Controller name="preferredEngagementMode" control={control} defaultValue={user.preferredEngagementMode} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="preferredEngagementMode"><SelectValue placeholder="Select Engagement Mode" /></SelectTrigger>
                       <SelectContent>
@@ -459,7 +460,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="lookingForSupportType">Type of Support</Label>
-                  <Controller name="lookingForSupportType" control={control} render={({ field }) => (
+                  <Controller name="lookingForSupportType" control={control} defaultValue={user.lookingForSupportType} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="lookingForSupportType"><SelectValue placeholder="Select Support Type (Optional)" /></SelectTrigger>
                       <SelectContent>
@@ -478,7 +479,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Share profile with other alumni for relevant collaboration?</Label>
-                  <Controller name="shareProfileConsent" control={control} render={({ field }) => (
+                  <Controller name="shareProfileConsent" control={control} defaultValue={user.shareProfileConsent} render={({ field }) => (
                     <RadioGroup onValueChange={(val) => field.onChange(val === "true")} value={String(field.value)} className="flex space-x-4">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="share-yes" /><Label htmlFor="share-yes" className="font-normal">Yes</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="share-no" /><Label htmlFor="share-no" className="font-normal">No</Label></div>
@@ -487,7 +488,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Feature on alumni dashboard or spotlight?</Label>
-                  <Controller name="featureInSpotlightConsent" control={control} render={({ field }) => (
+                  <Controller name="featureInSpotlightConsent" control={control} defaultValue={user.featureInSpotlightConsent} render={({ field }) => (
                     <RadioGroup onValueChange={(val) => field.onChange(val === "true")} value={String(field.value)} className="flex space-x-4">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="feature-yes" /><Label htmlFor="feature-yes" className="font-normal">Yes</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="feature-no" /><Label htmlFor="feature-no" className="font-normal">No</Label></div>
