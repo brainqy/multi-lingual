@@ -193,7 +193,10 @@ export default function CommunityFeedPage() {
       getCommunityPosts(currentUser.id),
       getUsers()
     ]);
-    setPosts(fetchedPosts);
+    setPosts(fetchedPosts.map(p => ({
+      ...p,
+      bookmarkedBy: p.bookmarkedBy || [],
+    })));
     setAllUsers(fetchedUsers);
     setIsLoading(false);
   }, [currentUser]);
@@ -250,7 +253,7 @@ export default function CommunityFeedPage() {
       const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
 
       if (updatedPost) {
-        setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === editingPost.id ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
       } else {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
@@ -260,6 +263,7 @@ export default function CommunityFeedPage() {
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
+        tenantId: currentUser.tenantId,
         content: data.content,
         type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
@@ -278,7 +282,7 @@ export default function CommunityFeedPage() {
       const newPost = await createCommunityPost(newPostData);
       
       if (newPost) {
-        setPosts(prev => [newPost, ...prev]);
+        setPosts(prev => [{ ...newPost, bookmarkedBy: [] }, ...prev]);
         toast({ title: "Post Created", description: "Your post has been added to the feed." });
       } else {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
@@ -331,7 +335,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await togglePollVote(postId, optionIndex, currentUser.id);
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       toast({ title: updatedPost.message });
     } else {
       toast({ title: "Error", description: "Could not process vote.", variant: "destructive" });
@@ -348,7 +352,7 @@ export default function CommunityFeedPage() {
 
     const updatedPost = await updateCommunityPost(postId, { assignedTo: userName, status: 'in progress' });
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       
       const newAppointmentData: Omit<Appointment, 'id'> = {
           requesterUserId: postToUpdate.userId,
@@ -371,7 +375,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await toggleEventRegistration(postId, currentUser.id);
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       toast({ title: updatedPost.message });
     } else {
       toast({ title: "Error", description: "Could not process registration.", variant: "destructive" });
@@ -416,7 +420,7 @@ export default function CommunityFeedPage() {
 
     const updatedPost = await toggleFlagPost(postToFlag.id, currentUser.id, flagReason);
     if (updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postToFlag.id ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postToFlag.id ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: updatedPost.message });
     } else {
         toast({ title: "Error", description: "Failed to update flag status.", variant: "destructive" });
@@ -428,7 +432,7 @@ export default function CommunityFeedPage() {
   const handleApprovePost = async (postId: string) => {
     const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flagReasons: [] });
     if(updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Approved", description: "The post is now visible." });
     }
   };
@@ -436,7 +440,7 @@ export default function CommunityFeedPage() {
   const handleRemovePost = async (postId: string) => {
     const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'removed' });
     if(updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Removed", description: "The post has been removed.", variant: "destructive" });
     }
   };
@@ -445,7 +449,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await toggleLikePost(postId, currentUser.id);
     if (updatedPost) {
-      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
     } else {
       toast({ title: "Error", description: "Could not update like.", variant: "destructive" });
     }
