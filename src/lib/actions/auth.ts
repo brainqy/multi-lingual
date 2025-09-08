@@ -5,9 +5,9 @@ import { getUserByEmail, createUser, updateUser } from '@/lib/data-services/user
 import type { UserProfile } from '@/types';
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
-import { headers } from 'next/headers';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebaseAdmin } from '../firebase-admin';
+import { headers } from 'next/headers';
 
 initializeFirebaseAdmin();
 
@@ -17,26 +17,23 @@ initializeFirebaseAdmin();
  * @param password The user's password.
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string, password?: string): Promise<UserProfile | null> {
+export async function loginUser(email: string, password?: string, tenantIdFromContext?: string): Promise<UserProfile | null> {
   try {
-    const headersList = headers();
-    const identifier = headersList.get('X-Tenant-Id') || 'platform';
-    
     const user = await db.user.findFirst({
       where: { email: email },
     });
 
     if (user) {
-      const isPlatformLogin = identifier === 'platform';
+      const isPlatformLogin = tenantIdFromContext === 'platform';
       
       let tenant = null;
-      if (!isPlatformLogin) {
+      if (!isPlatformLogin && tenantIdFromContext) {
         // Find tenant by ID or custom domain from the identifier.
         tenant = await db.tenant.findFirst({
-          where: { OR: [{ domain: identifier }, { id: identifier }] },
+          where: { OR: [{ domain: tenantIdFromContext }, { id: tenantIdFromContext }] },
         });
         if (!tenant) {
-            logError('Login failed: Tenant not found by identifier from header', { email, identifier });
+            logError('Login failed: Tenant not found by identifier', { email, identifier: tenantIdFromContext });
             return null; // The specified tenant subdomain does not exist.
         }
       }
@@ -44,7 +41,7 @@ export async function loginUser(email: string, password?: string): Promise<UserP
       const tenantId = tenant ? tenant.id : 'platform';
 
       if (user.role === 'admin' && !isPlatformLogin) {
-        logError('Admin login attempt failed on tenant subdomain', { email, identifier });
+        logError('Admin login attempt failed on tenant subdomain', { email, identifier: tenantIdFromContext });
         return null;
       }
       
@@ -88,7 +85,7 @@ export async function loginOrSignupWithGoogle(
       return { success: false, user: null, message: 'Email not found in Google token.' };
     }
     
-    const effectiveTenantId = tenantId || headersList.get('X-Tenant-Id') || 'platform';
+    const effectiveTenantId = tenantId || 'platform';
 
     let user = await getUserByEmail(email);
 
@@ -141,10 +138,7 @@ export async function signupUser(userData: { name: string; email: string; role: 
       };
     }
     
-    // Determine tenant from headers if not explicitly provided
-    const headersList = headers();
-    const tenantIdFromHeader = headersList.get('X-Tenant-Id') || 'platform';
-    const finalTenantId = userData.tenantId || tenantIdFromHeader;
+    const finalTenantId = userData.tenantId || 'platform';
 
     const newUser = await createUser({ ...userData, tenantId: finalTenantId });
 

@@ -4,17 +4,17 @@
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import type { JobApplication, Interview, JobOpening, UserProfile } from '@/types';
-import { headers } from 'next/headers';
 import { logAction, logError } from '@/lib/logger';
 
 /**
- * Fetches all job openings from the database, filtered by the tenant from the request headers.
+ * Fetches all job openings from the database, filtered by the tenant of the current user.
  * @returns A promise that resolves to an array of JobOpening objects.
  */
-export async function getJobOpenings(): Promise<JobOpening[]> {
+export async function getJobOpenings(currentUserId: string): Promise<JobOpening[]> {
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id');
+    const user = await db.user.findUnique({ where: { id: currentUserId }});
+    if (!user) return [];
+    const tenantId = user.tenantId;
 
     const whereClause: Prisma.JobOpeningWhereInput = {};
     if (tenantId && tenantId !== 'platform') {
@@ -47,8 +47,7 @@ export async function addJobOpening(
   jobData: Omit<JobOpening, 'id' | 'datePosted' | 'postedByAlumniId' | 'alumniName' | 'tenantId'>,
   currentUser: Pick<UserProfile, 'id' | 'name' | 'tenantId'>
 ): Promise<JobOpening | null> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id') || currentUser.tenantId;
+  const tenantId = currentUser.tenantId;
 
   const newOpeningData = {
     ...jobData,
@@ -97,17 +96,14 @@ export async function getUserJobApplications(userId: string): Promise<JobApplica
  * @param applicationData The data for the new job application.
  * @returns The newly created JobApplication object or null if failed.
  */
-export async function createJobApplication(applicationData: Omit<JobApplication, 'id' | 'tenantId'>): Promise<JobApplication | null> {
+export async function createJobApplication(applicationData: Omit<JobApplication, 'id'>): Promise<JobApplication | null> {
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
     const { interviews, ...restOfData } = applicationData;
 
     const newApplication = await db.jobApplication.create({
       data: {
         ...restOfData,
         dateApplied: new Date(restOfData.dateApplied), 
-        tenantId,
         notes: applicationData.notes || [],
         interviews: interviews && interviews.length > 0 ? {
           create: interviews.map(i => ({

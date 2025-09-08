@@ -3,22 +3,22 @@
 
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
-import type { CommunityPost, CommunityComment } from '@/types';
+import type { CommunityPost, CommunityComment, UserProfile } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { createNotification } from './notifications';
 import { AppError } from '../exceptions';
 import { logAction, logError } from '@/lib/logger';
-import { headers } from 'next/headers';
 
 /**
  * Fetches community posts visible to the current user (tenant-specific and platform-wide).
- * The tenant is determined from the request headers.
  * @param currentUserId The current user's ID.
  * @returns A promise that resolves to an array of CommunityPost objects.
  */
 export async function getCommunityPosts(currentUserId: string): Promise<CommunityPost[]> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id');
+  const user = await db.user.findUnique({ where: { id: currentUserId }});
+  if (!user) return [];
+  const tenantId = user.tenantId;
+
   logAction('Fetching community posts', { tenantId, currentUserId });
   try {
     const whereClause: Prisma.CommunityPostWhereInput = tenantId && tenantId !== 'platform'
@@ -53,13 +53,15 @@ export async function getCommunityPosts(currentUserId: string): Promise<Communit
 }
 
 /**
- * Creates a new community post within the tenant context from the request headers.
+ * Creates a new community post within the tenant context from the user's profile.
  * @param postData The data for the new post.
  * @returns The newly created CommunityPost object or null if failed.
  */
-export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'>): Promise<CommunityPost | null> {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+export async function createCommunityPost(postData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'>): Promise<CommunityPost | null> {
+    const user = await db.user.findUnique({ where: { id: postData.userId }});
+    if (!user) return null;
+    const tenantId = user.tenantId;
+
     logAction('Creating community post', { userId: postData.userId, type: postData.type, tenantId });
     try {
         const dataForDb: Prisma.CommunityPostCreateInput = {

@@ -18,7 +18,7 @@ interface AuthContextType {
   wallet: Wallet | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string, tenantId?: string) => Promise<void>;
+  login: (email: string, password?: string) => Promise<void>;
   loginWithGoogle: (tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
@@ -225,7 +225,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password?: string, tenantId?: string) => {
     try {
-      let userToLogin = await loginUser(email, password || "mock_password");
+      let userToLogin = await loginUser(email, password, tenantId);
 
       if (userToLogin) {
         userToLogin = await handleStreakAndBadges(userToLogin, toast, setStreakPopupOpen);

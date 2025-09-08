@@ -2,10 +2,9 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { ReferralHistoryItem } from '@/types';
+import type { ReferralHistoryItem, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
-import { headers } from 'next/headers';
 
 /**
  * Fetches the referral history for a specific user.
@@ -30,18 +29,16 @@ export async function getReferralHistory(userId: string): Promise<ReferralHistor
  * Creates a referral history item and notifies the referrer.
  * This would typically be called during the signup process if a referral code is used.
  * @param referrerUserId The user who made the referral.
- * @param referredUserId The new user who signed up.
- * @param referredEmailOrName The name or email of the new user.
+ * @param referredUser The new user who signed up.
  */
-export async function createReferral(referrerUserId: string, referredUserId: string, referredEmailOrName: string) {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
-  logAction('Creating referral record', { referrerUserId, referredUserId, tenantId });
+export async function createReferral(referrerUserId: string, referredUser: UserProfile) {
+  const tenantId = referredUser.tenantId;
+  logAction('Creating referral record', { referrerUserId, referredUserId: referredUser.id, tenantId });
   try {
     await db.referralHistory.create({
       data: {
         referrerUserId,
-        referredEmailOrName,
+        referredEmailOrName: referredUser.name || referredUser.email,
         status: 'Signed Up',
         referralDate: new Date(),
         tenantId: tenantId,
@@ -51,7 +48,7 @@ export async function createReferral(referrerUserId: string, referredUserId: str
     await createNotification({
       userId: referrerUserId,
       type: 'system',
-      content: `Success! ${referredEmailOrName} has signed up using your referral code.`,
+      content: `Success! ${referredUser.name || referredUser.email} has signed up using your referral code.`,
       link: '/referrals',
       isRead: false,
     });

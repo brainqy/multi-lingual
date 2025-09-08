@@ -4,7 +4,6 @@
 import { db } from '@/lib/db';
 import type { Announcement, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
-import { headers } from 'next/headers';
 
 /**
  * Fetches announcements visible to the current user.
@@ -85,14 +84,18 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @param announcementData The data for the new announcement.
  * @returns The newly created Announcement object or null if failed.
  */
-export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
-  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdByUserId, tenantId });
+export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>): Promise<Announcement | null> {
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdByUserId });
   try {
+    // The tenantId is now part of the incoming data, typically from the current user's session
+    const creator = await db.user.findUnique({ where: { id: announcementData.createdByUserId }});
+    if (!creator) {
+      throw new Error("Creator user not found");
+    }
+    
     const dataForDb = {
       ...announcementData,
-      tenantId: announcementData.targetTenantId || tenantId, // Assign to target tenant or creator's tenant
+      tenantId: announcementData.targetTenantId || creator.tenantId, // Assign to target tenant or creator's tenant
     };
     const newAnnouncement = await db.announcement.create({
       data: dataForDb,
