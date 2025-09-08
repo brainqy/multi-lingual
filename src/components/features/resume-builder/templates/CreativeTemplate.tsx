@@ -7,6 +7,12 @@ import { User, Phone, Mail, Linkedin, Home, Briefcase, GraduationCap, Star, Awar
 
 interface TemplateProps {
   data: ResumeBuilderData;
+  styles?: {
+    headerColor?: string;
+    bodyColor?: string;
+    headerFontSize?: string;
+    textAlign?: 'left' | 'center' | 'right';
+  };
 }
 
 const CreativeTemplate = ({ data }: TemplateProps) => {

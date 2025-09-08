@@ -1,0 +1,93 @@
+
+{
+  "userManagement": {
+    "titleAdmin": "वापरकर्ता व्यवस्थापन",
+    "titleManager": "वापरकर्ता व्यवस्थापन ({tenantName})",
+    "descriptionAdmin": "प्लॅटफॉर्मवरील सर्व वापरकर्त्यांचे निरीक्षण, शोध आणि व्यवस्थापन करा.",
+    "descriptionManager": "तुमच्या भाडेकरूमधील वापरकर्त्यांचे व्यवस्थापन करा: {tenantName}.",
+    "bulkUploadButton": "बल्क अपलोड वापरकर्ते",
+    "addNewButton": "नवीन वापरकर्ता जोडा",
+    "allUsersTitle": "सर्व वापरकर्ते",
+    "searchPlaceholder": "नाव, ईमेल किंवा भाडेकरूद्वारे शोधा...",
+    "table": {
+      "user": "वापरकर्ता",
+      "role": "भूमिका",
+      "tenant": "भाडेकरू",
+      "status": "स्थिती",
+      "actions": "क्रिया"
+    },
+    "userCard": {
+      "streakFreezes": "स्ट्रीक फ्रीझ",
+      "editButton": "संपादित करा",
+      "deleteButton": "हटवा"
+    },
+    "deleteDialog": {
+      "title": "तुम्ही निश्चित आहात का?",
+      "description": "ही क्रिया पूर्ववत केली जाऊ शकत नाही. हे वापरकर्ता {name} आणि त्यांचा सर्व संबंधित डेटा कायमचा हटवेल.",
+      "deleteButton": "होय, वापरकर्ता हटवा"
+    },
+    "dialog": {
+      "editTitle": "वापरकर्ता संपादित करा",
+      "addTitle": "नवीन वापरकर्ता जोडा",
+      "saveButton": "बदल जतन करा",
+      "createButton": "वापरकर्ता तयार करा"
+    },
+    "form": {
+      "nameLabel": "पूर्ण नाव",
+      "emailLabel": "ईमेल पत्ता",
+      "passwordLabel": "पासवर्ड (पर्यायी)",
+      "passwordHelpAdmin": "पासवर्ड सेट न करण्यासाठी रिक्त सोडा. वापरकर्ता 'पासवर्ड विसरला' द्वारे तो सेट करू शकतो.",
+      "tenantLabel": "भाडेकरू",
+      "tenantPlaceholder": "एक भाडेकरू निवडा",
+      "roleLabel": "भूमिका",
+      "statusLabel": "स्थिती"
+    },
+    "roles": {
+      "user": "वापरकर्ता",
+      "manager": "व्यवस्थापक",
+      "admin": "प्रशासक"
+    },
+    "statuses": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "suspended": "निलंबित",
+      "pending": "प्रलंबित"
+    },
+    "bulkUpload": {
+      "title": "बल्क अपलोड वापरकर्ते",
+      "description": "एकाच वेळी अनेक वापरकर्ते तयार करण्यासाठी CSV फाइल अपलोड करा. CSV मध्ये 'name', 'email', 'role', आणि 'tenantId' स्तंभ असणे आवश्यक आहे.",
+      "csvLabel": "CSV फाइल",
+      "selectedFile": "निवडलेली फाइल",
+      "downloadSample": "नमुना CSV डाउनलोड करा",
+      "exampleFormat": "उदाहरण स्वरूप",
+      "uploadButton": "अपलोड करा आणि वापरकर्ते तयार करा",
+      "errorNoFile": "कृपया अपलोड करण्यासाठी एक CSV फाइल निवडा.",
+      "errorCsvFormat": "CSV फाइलमध्ये हेडर पंक्ती आणि किमान एक डेटा पंक्ती असणे आवश्यक आहे.",
+      "errorCsvHeader": "CSV मध्ये खालील हेडर असणे आवश्यक आहे: {headers}",
+      "errorProcessing": "CSV फाइल प्रक्रिया करताना त्रुटी आली.",
+      "errorReading": "फाइल वाचताना त्रुटी आली."
+    },
+    "toast": {
+      "updated": {
+        "title": "वापरकर्ता अद्यतनित",
+        "description": "{name} साठी तपशील अद्यतनित केले आहेत."
+      },
+      "created": {
+        "title": "वापरकर्ता तयार केला",
+        "description": "{name} साठी एक नवीन वापरकर्ता खाते तयार केले आहे."
+      },
+      "deleteSelf": {
+        "title": "क्रिया नाकारली",
+        "description": "तुम्ही स्वतःचे खाते हटवू शकत नाही."
+      },
+      "deleted": {
+        "title": "वापरकर्ता हटवला",
+        "description": "वापरकर्ता यशस्वीरित्या काढला गेला आहे."
+      },
+      "uploaded": {
+        "title": "अपलोड पूर्ण",
+        "description": "CSV फाइलमधून {count} नवीन वापरकर्ते यशस्वीरित्या तयार केले गेले."
+      }
+    }
+  }
+}

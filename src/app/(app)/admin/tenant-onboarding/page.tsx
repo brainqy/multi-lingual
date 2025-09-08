@@ -79,8 +79,9 @@ export default function TenantOnboardingPage() {
       gamificationEnabled: true,
       walletEnabled: true,
       eventRegistrationEnabled: true,
-      primaryColor: 'hsl(180 100% 25%)', 
-      accentColor: 'hsl(180 100% 30%)',
+      customLogoUrl: '',
+      primaryColor: '', 
+      accentColor: '',
     }
   });
   
@@ -116,7 +117,7 @@ export default function TenantOnboardingPage() {
 
   const onSubmit = async (data: TenantOnboardingFormData) => {
     setIsSubmitting(true);
-    const tenantSettings: Omit<TenantSettings, 'id'> = {
+    const tenantSettings = {
       allowPublicSignup: data.allowPublicSignup,
       customLogoUrl: data.customLogoUrl,
       primaryColor: data.primaryColor,
@@ -141,13 +142,13 @@ export default function TenantOnboardingPage() {
         email: data.adminEmail,
     };
 
-    const newTenant = await createTenantWithAdmin(tenantData, adminUserData);
+    const result = await createTenantWithAdmin(tenantData, adminUserData);
 
-    if (newTenant) {
+    if (result.success && result.tenant) {
         toast({ title: t("tenantOnboarding.toast.tenantCreated.title", { default: "Tenant Created!" }), description: t("tenantOnboarding.toast.tenantCreated.description", { default: "{tenantName} has been successfully onboarded.", tenantName: data.tenantName}) });
         router.push('/admin/tenants');
     } else {
-        toast({ title: "Error", description: "Failed to create the new tenant.", variant: "destructive"});
+        toast({ title: "Error", description: result.error || "Failed to create the new tenant.", variant: "destructive"});
         setIsSubmitting(false);
     }
   };
@@ -235,6 +236,9 @@ export default function TenantOnboardingPage() {
               <Label htmlFor="adminEmail">{t("tenantOnboarding.formLabels.adminEmail", { default: "Admin Email" })}</Label>
               <Controller name="adminEmail" control={control} render={({ field }) => <Input id="adminEmail" type="email" {...field} />} />
               {errors.adminEmail && <p className="text-sm text-destructive mt-1">{errors.adminEmail.message}</p>}
+               <p className="text-xs text-muted-foreground mt-1">
+                The new manager will receive a welcome email with instructions to set their own password.
+              </p>
             </div>
           </div>
         );
@@ -282,26 +286,24 @@ export default function TenantOnboardingPage() {
           </div>
           <Progress value={((currentStep + 1) / STEPS_CONFIG.length) * 100} className="w-full h-2 [&>div]:bg-primary" />
         </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="min-h-[300px]">
+        <div className="min-h-[300px] p-6">
             {renderStepContent()}
-          </CardContent>
-          <CardFooter className="flex justify-between border-t pt-6">
+        </div>
+        <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={handlePrevStep} disabled={currentStep === 0 || isSubmitting}>
-              <ChevronLeft className="mr-2 h-4 w-4" /> {t("tenantOnboarding.buttons.previous", { default: "Previous" })}
+            <ChevronLeft className="mr-2 h-4 w-4" /> {t("tenantOnboarding.buttons.previous", { default: "Previous" })}
             </Button>
             {currentStep < STEPS_CONFIG.length - 1 ? (
-              <Button type="button" onClick={handleNextStep} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button type="button" onClick={handleNextStep} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 {t("tenantOnboarding.buttons.next", { default: "Next" })} <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+            </Button>
             ) : (
-              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
+            <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-primary-foreground">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.createTenant", { default: "Create Tenant" })}
-              </Button>
+                {isSubmitting ? "Creating..." : t("tenantOnboarding.buttons.finish", { default: "Finish" })}
+            </Button>
             )}
-          </CardFooter>
-        </form>
+        </CardFooter>
       </Card>
     </div>
   );

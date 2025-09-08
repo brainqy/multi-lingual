@@ -3,9 +3,10 @@
 
 import { db } from '@/lib/db';
 import type { Tenant, TenantSettings } from '@/types';
-import { Prisma } from '@prisma/client';
-import { createUser } from '@/lib/data-services/users';
+import { Prisma, EmailTemplateType } from '@prisma/client';
+import { createUser, getUserByEmail } from '@/lib/data-services/users';
 import { logAction, logError } from '@/lib/logger';
+import { sendEmail } from './send-email';
 
 /**
  * Fetches all tenants from the database.
@@ -30,21 +31,67 @@ export async function getTenants(): Promise<Tenant[]> {
 }
 
 /**
+ * Fetches a single tenant by its ID or custom domain.
+ * @param identifier The tenant's ID or unique custom domain.
+ * @returns The Tenant object or null if not found.
+ */
+export async function getTenantByIdentifier(identifier: string): Promise<Tenant | null> {
+    logAction('Fetching tenant by identifier', { identifier });
+    try {
+        const tenant = await db.tenant.findFirst({
+            where: {
+                OR: [
+                    { id: identifier },
+                    { domain: identifier },
+                ]
+            }
+        });
+        return tenant as unknown as Tenant | null;
+    } catch (error) {
+        logError('[TenantAction] Error fetching tenant by identifier', error, { identifier });
+        return null;
+    }
+}
+
+
+/**
  * Creates a new tenant and its initial admin user.
+ * Sends a welcome email to the new manager with a password reset link.
  * @param tenantData The data for the new tenant.
  * @param adminUserData The data for the initial admin user.
  * @returns The newly created Tenant object or null if failed.
  */
 export async function createTenantWithAdmin(
-    tenantData: Omit<Tenant, 'id' | 'createdAt' | 'settings'> & { settings: Omit<TenantSettings, 'id'> },
+    tenantData: Omit<Tenant, 'id' | 'createdAt' | 'settings'> & { settings: Omit<TenantSettings, 'id' | 'tenantId'> },
     adminUserData: { name: string; email: string; }
-): Promise<Tenant | null> {
+): Promise<{ success: boolean; tenant: Tenant | null; error?: string }> {
     logAction('Creating tenant with admin', { tenantName: tenantData.name, adminEmail: adminUserData.email });
     try {
+        // Check if the admin email is already in use
+        const existingUser = await getUserByEmail(adminUserData.email);
+        if (existingUser) {
+            logError('[TenantAction] Admin email already exists', {}, { adminEmail: adminUserData.email });
+            return { success: false, tenant: null, error: 'An account with this admin email already exists.' };
+        }
+
+        const tenantIdentifier = tenantData.domain?.trim() ? tenantData.domain.trim().toLowerCase() : undefined;
+
+        // Check if the tenant domain/id is already in use
+        if (tenantIdentifier) {
+            const existingTenant = await db.tenant.findFirst({
+                where: { OR: [{ id: tenantIdentifier }, { domain: tenantIdentifier }] }
+            });
+            if (existingTenant) {
+                logError('[TenantAction] Tenant domain/ID already exists', {}, { identifier: tenantIdentifier });
+                return { success: false, tenant: null, error: 'This tenant domain or ID is already taken. Please choose another.' };
+            }
+        }
+        
         const newTenant = await db.tenant.create({
             data: {
+                id: tenantIdentifier, // Use domain as ID if provided, otherwise Prisma generates one
                 name: tenantData.name,
-                domain: tenantData.domain,
+                domain: tenantIdentifier,
                 settings: {
                     create: {
                         allowPublicSignup: tenantData.settings.allowPublicSignup,
@@ -60,19 +107,43 @@ export async function createTenantWithAdmin(
             },
         });
 
-        // Create the initial admin user for this tenant
-        await createUser({
+        // Create the initial admin user for this tenant without a password
+        const newManager = await createUser({
             name: adminUserData.name,
             email: adminUserData.email,
             role: 'manager', // Initial tenant creator is a manager
             tenantId: newTenant.id,
             status: 'active',
         });
+        
+        if (newManager) {
+            // Use the tenant's actual ID (which could be the domain) for the subdomain
+            const subdomain = newTenant.id;
+            
+            await sendEmail({
+                tenantId: newTenant.id,
+                recipientEmail: newManager.email,
+                type: EmailTemplateType.TENANT_WELCOME,
+                placeholders: {
+                    userName: newManager.name,
+                    userEmail: newManager.email,
+                    tenantDomain: subdomain, // Pass the correct identifier for link generation
+                },
+            });
+             logAction('Welcome email sent to new tenant manager', { email: newManager.email });
+        }
 
-        return newTenant as unknown as Tenant;
+
+        return { success: true, tenant: newTenant as unknown as Tenant };
     } catch (error) {
         logError('[TenantAction] Error creating tenant with admin', error, { tenantName: tenantData.name });
-        return null;
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            // P2002 is the unique constraint violation code
+            if (error.code === 'P2002') {
+                return { success: false, tenant: null, error: 'This tenant domain or ID is already taken. Please choose another.' };
+            }
+        }
+        return { success: false, tenant: null, error: 'An unexpected error occurred.' };
     }
 }
 
@@ -108,7 +179,10 @@ export async function updateTenantSettings(tenantId: string, settingsData: Parti
     try {
         const updatedSettings = await db.tenantSettings.update({
             where: { tenantId: tenantId },
-            data: settingsData,
+            data: {
+              ...settingsData,
+              features: settingsData.features ? (settingsData.features as Prisma.JsonObject) : undefined,
+            },
         });
         return updatedSettings as unknown as TenantSettings;
     } catch (error) {

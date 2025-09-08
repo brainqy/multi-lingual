@@ -1,3 +1,4 @@
+
 "use client";
 
 import type React from 'react';
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ResumeEducationEntry } from "@/types";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { graduationYears } from '@/lib/sample-data';
+import { graduationYears } from "@/lib/utils";
 import { DegreePrograms } from '@/types'; 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 

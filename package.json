@@ -1,4 +1,3 @@
-
 {
   "name": "nextn",
   "version": "0.1.0",
@@ -11,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest --watch --config jest.config.ts"
+    "test": "jest --watch --config jest.config.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.8.0",
@@ -49,6 +49,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^11.8.1",
+    "firebase-admin": "^12.2.0",
     "genkit": "^1.8.0",
     "handlebars": "^4.7.8",
     "html2canvas": "^1.4.1",

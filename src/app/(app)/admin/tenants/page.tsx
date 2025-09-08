@@ -10,7 +10,7 @@ import type { Tenant } from "@/types";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
-import { getTenants, deleteTenant, updateTenant } from "@/lib/actions/tenants";
+import { getTenants, deleteTenant, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function TenantManagementPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -45,6 +46,7 @@ export default function TenantManagementPage() {
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   const [tenantNameInput, setTenantNameInput] = useState("");
   const [tenantDomainInput, setTenantDomainInput] = useState("");
+  const [allowPublicSignupInput, setAllowPublicSignupInput] = useState(true);
 
   useEffect(() => {
     async function loadTenants() {
@@ -64,17 +66,34 @@ export default function TenantManagementPage() {
     setEditingTenant(tenant);
     setTenantNameInput(tenant.name);
     setTenantDomainInput(tenant.domain || "");
+    setAllowPublicSignupInput(tenant.settings?.allowPublicSignup ?? true);
     setIsEditDialogOpen(true);
   };
 
   const handleSaveTenantChanges = async () => {
     if (!editingTenant) return;
-    const updated = await updateTenant(editingTenant.id, { name: tenantNameInput, domain: tenantDomainInput });
-    if (updated) {
-      setTenants(prev => prev.map(t => t.id === editingTenant.id ? updated : t));
+
+    // Perform updates in parallel
+    const [tenantUpdateResult, settingsUpdateResult] = await Promise.all([
+      updateTenant(editingTenant.id, {
+        name: tenantNameInput,
+        domain: tenantDomainInput,
+      }),
+      updateTenantSettings(editingTenant.id, {
+        allowPublicSignup: allowPublicSignupInput,
+      }),
+    ]);
+
+    if (tenantUpdateResult && settingsUpdateResult) {
+      // Create a fully updated tenant object for the local state
+      const fullyUpdatedTenant = {
+        ...tenantUpdateResult,
+        settings: settingsUpdateResult,
+      };
+      setTenants(prev => prev.map(t => t.id === editingTenant.id ? fullyUpdatedTenant : t));
       toast({ title: "Tenant Updated", description: `Details for ${tenantNameInput} have been saved.` });
     } else {
-      toast({ title: "Update Failed", variant: "destructive" });
+      toast({ title: "Update Failed", description: "One or more updates failed. Please try again.", variant: "destructive" });
     }
     setIsEditDialogOpen(false);
   };
@@ -177,6 +196,14 @@ export default function TenantManagementPage() {
             <div>
               <Label htmlFor="tenant-domain">Tenant Domain</Label>
               <Input id="tenant-domain" value={tenantDomainInput} onChange={e => setTenantDomainInput(e.target.value)} />
+            </div>
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox 
+                id="allow-public-signup" 
+                checked={allowPublicSignupInput}
+                onCheckedChange={(checked) => setAllowPublicSignupInput(Boolean(checked))}
+              />
+              <Label htmlFor="allow-public-signup" className="font-normal">Allow Public Signup</Label>
             </div>
           </div>
           <DialogFooter>

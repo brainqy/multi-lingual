@@ -10,7 +10,7 @@
 
 import { genkit } from 'genkit';
 import { z } from 'genkit';
-import { getGoogleAIPlugin, AI_PROMPT_CONFIG } from '@/ai/genkit';
+import { getGoogleAIPlugin } from '@/ai/genkit';
 import type { MockInterviewQuestion, InterviewQuestionCategory, InterviewQuestionDifficulty } from '@/types';
 
 const logger = { // Simple logger for server-side visibility
@@ -61,7 +61,7 @@ export async function generateMockInterviewQuestions(
     name: 'generateMockInterviewQuestionsPrompt',
     input: { schema: BaseInputSchema },
     output: { schema: GenerateMockInterviewQuestionsOutputSchema },
-    config: AI_PROMPT_CONFIG,
+    config: {},
     prompt: `You are an expert Interview Question Generator. Your task is to create a set of diverse and relevant mock interview questions based on the provided criteria.
 
 Topic/Role: {{{topic}}}
@@ -115,7 +115,7 @@ Example for empty: { "questions": [] }
           ...q,
           id: q.id || `gen_q_${Date.now()}_${index + 1}`, // More unique ID
           category: q.category || "Common",
-          difficulty: (q.difficulty ? (q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)) : defaultDifficulty) as InterviewQuestionDifficulty,
+          difficulty: q.difficulty || defaultDifficulty,
       };
     });
     logger.info(`generateMockInterviewQuestions processed ${processedQuestions.length} questions.`);

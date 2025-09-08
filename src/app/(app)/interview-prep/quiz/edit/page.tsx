@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -11,52 +11,65 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { sampleCreatedQuizzes, sampleInterviewQuestions, sampleUserProfile } from '@/lib/sample-data';
-import type { MockInterviewSession, InterviewQuestion, InterviewQuestionCategory } from '@/types';
-import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
-import { ChevronLeft, Save, PlusCircle, Trash2, ListFilter, Search, Tag, Users, Zap, Brain, Puzzle, MessageSquare, Lightbulb, Code } from 'lucide-react';
+import type { MockInterviewSession, InterviewQuestion, InterviewQuestionCategory, UserProfile } from '@/types';
+import { ALL_CATEGORIES } from '@/types';
+import { ChevronLeft, Save, PlusCircle, Trash2, ListFilter, Search, Tag, Users, Zap, Brain, Puzzle, MessageSquare, Lightbulb, Code, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useAuth } from '@/hooks/use-auth';
+import { getInterviewQuestions } from '@/lib/actions/questions';
+import { getCreatedQuizzes, updateQuiz } from '@/lib/actions/quizzes';
+
 
 export default function EditQuizPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   const quizId = searchParams.get('quizId');
   const isNewQuiz = searchParams.get('mode') === 'new';
 
   const [quizDetails, setQuizDetails] = useState<MockInterviewSession | null>(null);
-  const [originalQuizQuestions, setOriginalQuizQuestions] = useState<MockInterviewSession['questions']>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
   const [quizQuestions, setQuizQuestions] = useState<MockInterviewSession['questions']>([]);
   
   // State for question bank
-  const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>(sampleInterviewQuestions);
+  const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
   const [selectedBankCategories, setSelectedBankCategories] = useState<InterviewQuestionCategory[]>([]);
   const [bankSearchTerm, setBankSearchTerm] = useState('');
   const [selectedQuestionsToAdd, setSelectedQuestionsToAdd] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const quizToEdit = quizId ? sampleCreatedQuizzes.find(q => q.id === quizId) : null;
+  const loadData = useCallback(async () => {
+    if (!currentUser) return;
+    setIsLoading(true);
+
+    const [allQuestions, allQuizzes] = await Promise.all([
+        getInterviewQuestions(),
+        getCreatedQuizzes(currentUser.id)
+    ]);
+    setAllBankQuestions(allQuestions);
+
+    const quizToEdit = quizId ? allQuizzes.find(q => q.id === quizId) : null;
+
     if (quizToEdit) {
       const initialQuestions = quizToEdit.questions.map(q => ({...q}));
       setQuizDetails(quizToEdit);
       setTopic(quizToEdit.topic);
       setDescription(quizToEdit.description || '');
       setQuizQuestions(initialQuestions);
-      setOriginalQuizQuestions(initialQuestions);
     } else if (isNewQuiz) {
       const questionIdsParam = searchParams.get('questions');
       const questionIds = questionIdsParam ? questionIdsParam.split(',') : [];
-      const preselectedQuestions = sampleInterviewQuestions
+      const preselectedQuestions = allQuestions
         .filter(q => questionIds.includes(q.id) && q.isMCQ && q.mcqOptions && q.correctAnswer && q.questionText)
         .map(q => ({ id: q.id, questionText: q.questionText, category: q.category, difficulty: q.difficulty, baseScore: q.baseScore || 10 }));
 
       setQuizDetails({
           id: `quiz-${Date.now()}`,
-          userId: sampleUserProfile.id,
+          userId: currentUser.id,
           topic: 'New Custom Quiz',
           description: 'Describe your new quiz here.',
           questions: preselectedQuestions,
@@ -67,18 +80,21 @@ export default function EditQuizPage() {
       setTopic('New Custom Quiz');
       setDescription('Describe your new quiz here.');
       setQuizQuestions(preselectedQuestions);
-      setOriginalQuizQuestions(preselectedQuestions);
-    }
-     else {
+    } else {
       toast({ title: "Quiz Not Found", description: "Could not find the quiz to edit.", variant: "destructive" });
       router.push('/interview-prep');
     }
-  }, [quizId, isNewQuiz, searchParams, router, toast]);
+    setIsLoading(false);
+  }, [quizId, isNewQuiz, searchParams, router, toast, currentUser]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const filteredBankQuestions = useMemo(() => {
     return allBankQuestions.filter(q => {
       if (!q.isMCQ || !q.mcqOptions || !q.correctAnswer) return false;
-      if (q.approved === false && sampleUserProfile.role !== 'admin') return false;
+      if (q.approved === false && currentUser?.role !== 'admin') return false;
       if (quizQuestions.some(quizQ => quizQ.id === q.id)) return false;
 
       const matchesCategory = selectedBankCategories.length === 0 || selectedBankCategories.includes(q.category);
@@ -87,7 +103,7 @@ export default function EditQuizPage() {
                             (q.tags && q.tags.some(tag => tag.toLowerCase().includes(bankSearchTerm.toLowerCase())));
       return matchesCategory && matchesSearch;
     });
-  }, [allBankQuestions, selectedBankCategories, bankSearchTerm, quizQuestions]);
+  }, [allBankQuestions, selectedBankCategories, bankSearchTerm, quizQuestions, currentUser]);
 
 
   const handleRemoveQuestionFromQuiz = (questionId: string) => {
@@ -105,8 +121,8 @@ export default function EditQuizPage() {
     toast({ title: `${questionsToAdd.length} Questions Added`, description: "Questions added to the quiz." });
   };
 
-  const handleSaveChanges = () => {
-    if (!quizDetails) return;
+  const handleSaveChanges = async () => {
+    if (!quizDetails || !currentUser) return;
     if (!topic.trim()) {
         toast({ title: "Error", description: "Quiz topic cannot be empty.", variant: "destructive"});
         return;
@@ -116,26 +132,25 @@ export default function EditQuizPage() {
         return;
     }
 
-    const updatedQuiz: MockInterviewSession = {
+    const quizData: Omit<MockInterviewSession, 'id'> = {
       ...quizDetails,
       topic,
       description,
       questions: quizQuestions,
-      userId: quizDetails.userId || sampleUserProfile.id,
-      status: quizDetails.status || 'pending',
+      userId: currentUser.id,
+      status: 'pending',
       createdAt: quizDetails.createdAt || new Date().toISOString(),
-      answers: quizDetails.answers || [],
+      answers: [],
     };
+    
+    const savedQuiz = await updateQuiz(quizDetails.id, quizData, isNewQuiz);
 
-    const quizIndex = sampleCreatedQuizzes.findIndex(q => q.id === updatedQuiz.id);
-    if (quizIndex !== -1) {
-      sampleCreatedQuizzes[quizIndex] = updatedQuiz;
+    if (savedQuiz) {
+        toast({ title: "Quiz Saved", description: `Quiz "${topic}" has been saved.` });
+        router.push('/interview-prep'); 
     } else {
-      sampleCreatedQuizzes.push(updatedQuiz);
+        toast({ title: "Save Failed", description: "Could not save the quiz.", variant: "destructive" });
     }
-
-    toast({ title: "Quiz Saved", description: `Quiz "${topic}" has been saved.` });
-    router.push('/interview-prep'); 
   };
   
   const getCategoryIcon = (category: InterviewQuestionCategory) => {
@@ -151,10 +166,10 @@ export default function EditQuizPage() {
     }
   };
 
-  if (!quizDetails) {
+  if (isLoading || !quizDetails) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading quiz details...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }

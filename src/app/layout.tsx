@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { I18nProvider } from '@/contexts/i18n-provider'; // Keep for global language setting
 import { AuthProvider } from '@/contexts/auth-provider'; // Keep for global auth state
 

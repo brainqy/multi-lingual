@@ -1,0 +1,67 @@
+
+{
+    "adminAnalytics": {
+        "pageTitle": "प्लॅटफॉर्म विश्लेषण",
+        "pageDescription": "वापरकर्ता वाढ, प्रतिबद्धता आणि वैशिष्ट्य स्वीकृतीमधील अंतर्दृष्टी.",
+        "kpi": {
+            "totalUsers": "एकूण वापरकर्ते",
+            "newSignups": "नवीन साइनअप (कालावधी)",
+            "dau": "दैनिक सक्रिय वापरकर्ते",
+            "mau": "मासिक सक्रिय वापरकर्ते",
+            "stickiness": "चिकटपणा (DAU/MAU)"
+        },
+        "charts": {
+            "userGrowth": {
+                "title": "वापरकर्ता वाढीचे ट्रेंड",
+                "description": "निवडलेल्या कालावधीत नवीन वापरकर्ता साइनअप.",
+                "legend": "नवीन साइनअप"
+            },
+            "featureAdoption": {
+                "title": "वैशिष्ट्य स्वीकृती",
+                "description": "मुख्य प्लॅटफॉर्म वैशिष्ट्यांसाठी एकूण वापर संख्या."
+            },
+            "tenantLeaderboard": {
+                "title": "भाडेकरू लीडरबोर्ड",
+                "description": "वापरकर्ता संख्या आणि क्रियाकलाप स्कोअरनुसार सर्वात सक्रिय भाडेकरू.",
+                "legendUsers": "एकूण वापरकर्ते",
+                "legendActivity": "क्रियाकलाप स्कोअर"
+            }
+        },
+        "filters": {
+            "selectTenant": "भाडेकरू निवडा",
+            "allTenants": "सर्व भाडेकरू"
+        },
+        "retention": {
+            "title": "साइनअप आठवड्यानुसार वापरकर्ता टिकवणूक",
+            "description": "साइनअपच्या नंतरच्या आठवड्यात परत आलेल्या नवीन वापरकर्त्यांची टक्केवारी.",
+            "cohortColumn": "गट",
+            "newUsersColumn": "नवीन वापरकर्ते",
+            "weekColumn": "आठवडा {week}",
+            "cohortDate": "{date} चा आठवडा",
+            "cohortPrefix": " चा आठवडा"
+        },
+        "features": {
+            "resumeScans": "रेझ्युमे स्कॅन",
+            "jobApps": "नोकरी अर्ज",
+            "communityPosts": "समुदाय पोस्ट",
+            "appointments": "भेटी",
+            "mockInterviews": "मॉक मुलाखती"
+        },
+        "coinEconomy": {
+            "title": "नाणे अर्थव्यवस्था",
+            "description": "प्लॅटफॉर्मच्या आभासी चलनाचे विहंगावलोकन.",
+            "totalInCirculation": "एकूण वापरात",
+            "totalEarned": "एकूण कमावलेले (सर्व वेळ)",
+            "totalSpent": "एकूण खर्च केलेले (सर्व वेळ)",
+            "spendingByCategory": "वैशिष्ट्यानुसार नाणे खर्च",
+            "spendingDescription": "वापरकर्ते त्यांचे नाणे कशावर खर्च करत आहेत.",
+            "topUsers": "शीर्ष वापरकर्ते",
+            "topUsersDescription": "नाणे अर्थव्यवस्थेतील सर्वात व्यस्त वापरकर्ते.",
+            "topEarners": "शीर्ष कमावणारे",
+            "topSpenders": "शीर्ष खर्च करणारे",
+            "userColumn": "वापरकर्ता",
+            "coinsEarnedColumn": "कमावलेले नाणे",
+            "coinsSpentColumn": "खर्च केलेले नाणे"
+        }
+    }
+}

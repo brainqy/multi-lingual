@@ -6,12 +6,14 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { UserProfile, Wallet } from '@/types';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { loginUser, signupUser, validateSession } from '@/lib/actions/auth';
+import { loginUser, signupUser, validateSession, loginOrSignupWithGoogle } from '@/lib/actions/auth';
 import { getWallet } from '@/lib/actions/wallet';
 import { updateUser } from '@/lib/data-services/users';
 import { checkAndAwardBadges } from '@/lib/actions/gamification';
 import { createActivity } from '@/lib/actions/activities';
 import { differenceInCalendarDays } from 'date-fns';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { app } from '@/lib/firebase-client';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -19,10 +21,12 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password?: string, tenantId?: string) => Promise<void>;
+  loginWithGoogle: (tenantId?: string) => Promise<void>;
   logout: () => void;
   signup: (name: string, email: string, role: 'user' | 'admin', password?: string, tenantId?: string) => Promise<void>;
   isLoading: boolean;
   refreshWallet: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isStreakPopupOpen: boolean;
   setStreakPopupOpen: (isOpen: boolean) => void;
 }
@@ -160,6 +164,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [router, pathname]);
 
+  const refreshUser = useCallback(async () => {
+    if (!user) return;
+    try {
+        const freshUser = await validateSession(user.email, user.sessionId!);
+        if (freshUser) {
+            setUser(freshUser);
+            localStorage.setItem('bhashaSetuUser', JSON.stringify(freshUser));
+        } else {
+            logout();
+        }
+    } catch (error) {
+        console.error("Failed to refresh user session", error);
+        logout();
+    }
+  }, [user, logout]);
+
   useEffect(() => {
     const checkUserSession = async () => {
       try {
@@ -207,14 +227,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password?: string, tenantId?: string) => {
     try {
-      let userToLogin = await loginUser(email, password || "mock_password", tenantId);
+      let userToLogin = await loginUser(email, password, tenantId);
 
       if (userToLogin) {
         userToLogin = await handleStreakAndBadges(userToLogin, toast, setStreakPopupOpen);
         setUser(userToLogin);
         await fetchWalletForUser(userToLogin.id);
         localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
-        router.push('/dashboard');
+        
+        // Redirect admin users to the admin dashboard
+        if (userToLogin.role === 'admin') {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/dashboard');
+        }
+        
         toast({ title: "Login Successful", description: `Welcome back, ${userToLogin.name}!` });
       } else {
         toast({
@@ -226,6 +253,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error("Login error:", error);
       toast({ title: "Login Error", description: "An unexpected error occurred.", variant: "destructive" });
+    }
+  }, [router, toast, fetchWalletForUser]);
+
+  const loginWithGoogle = useCallback(async (tenantId?: string) => {
+    try {
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+      
+      const serverResult = await loginOrSignupWithGoogle(idToken, tenantId);
+
+      if (serverResult.success && serverResult.user) {
+        let userToLogin = serverResult.user;
+        userToLogin = await handleStreakAndBadges(userToLogin, toast, setStreakPopupOpen);
+        setUser(userToLogin);
+        await fetchWalletForUser(userToLogin.id);
+        localStorage.setItem('bhashaSetuUser', JSON.stringify(userToLogin));
+        
+        if (userToLogin.role === 'admin') {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/dashboard');
+        }
+        
+        toast({ title: "Login Successful", description: `Welcome, ${userToLogin.name}!` });
+      } else {
+        toast({
+          title: "Google Sign-In Failed",
+          description: serverResult.message || "Could not sign in with Google. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast({ title: "Google Sign-In Error", description: "An unexpected error occurred.", variant: "destructive" });
     }
   }, [router, toast, fetchWalletForUser]);
 
@@ -270,7 +333,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, logout, signup, isLoading, refreshWallet, isStreakPopupOpen, setStreakPopupOpen }}>
+    <AuthContext.Provider value={{ user, wallet, isAuthenticated, isAdmin, login, loginWithGoogle, logout, signup, isLoading, refreshWallet, refreshUser, isStreakPopupOpen, setStreakPopupOpen }}>
       {children}
     </AuthContext.Provider>
   );

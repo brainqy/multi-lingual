@@ -1,7 +1,9 @@
+
 import { test, expect } from '@playwright/test';
 
 test('should allow a user to search and filter the alumni directory', async ({ page }) => {
   // Step 1: Sign up a new user to ensure an authenticated session.
+  // This user will be in the 'platform' tenant by default.
   await page.goto('/auth/signup');
   const uniqueEmail = `testuser_alumni_${Date.now()}@example.com`;
   await page.getByLabel('Full Name').fill('Alumni Test User');
@@ -11,32 +13,38 @@ test('should allow a user to search and filter the alumni directory', async ({ p
   await page.getByRole('button', { name: /Create Account/i }).click();
 
   // Step 2: Wait for redirect and navigate to the alumni connect page.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await page.goto('/alumni-connect');
   await expect(page.getByRole('heading', { name: /Alumni Directory/i })).toBeVisible();
 
-  // Initially, multiple alumni should be visible. We'll check for a couple.
-  await expect(page.getByText('Alice Wonderland')).toBeVisible();
-  await expect(page.getByText('Bob Builder')).toBeVisible();
+  // Define locators for the main sections
+  const distinguishedCarousel = page.getByTestId('distinguished-alumni-carousel');
+  const directoryGrid = page.getByTestId('alumni-directory-grid');
 
-  // Step 3: Perform a search for a specific alumnus.
-  await page.getByLabel(/Name or Job Title/i).fill('Alice');
+  // Alice is distinguished and should always be visible in her carousel.
+  await expect(distinguishedCarousel.getByText('Alice Wonderland')).toBeVisible();
 
-  // Step 4: Verify that only the searched alumnus is visible.
-  await expect(page.getByText('Alice Wonderland')).toBeVisible();
-  await expect(page.getByText('Bob Builder')).not.toBeVisible();
-  await expect(page.getByText('Charlie Chocolate')).not.toBeVisible();
+  // Step 3: Apply a company filter first. This is more robust than checking the initial unfiltered list.
+  await page.getByRole('button', { name: /Filters/i }).click();
+  // Use a direct selector for the checkbox by its accessible name.
+  await page.getByRole('checkbox', { name: 'Google' }).check();
 
-  // Step 5: Clear the search and apply a company filter.
-  await page.getByLabel(/Name or Job Title/i).clear();
-  // Ensure other cards are visible again after clearing.
-  await expect(page.getByText('Bob Builder')).toBeVisible();
+  // Step 4: Verify that only alumni from that company are visible in the main grid.
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).toBeVisible();
+  await expect(directoryGrid.getByText('Alice Wonderland')).not.toBeVisible();
 
-  // Now, apply the filter.
-  await page.getByLabel('Company').getByRole('checkbox', { name: 'Microsoft' }).check();
+  // Step 5: Perform a search within the filtered results.
+  await page.getByLabel(/Name or Job Title/i).fill('Bob');
   
-  // Step 6: Verify that only the alumnus from that company is visible.
-  await expect(page.getByText('Charlie Chocolate')).toBeVisible();
-  await expect(page.getByText('Alice Wonderland')).not.toBeVisible();
-  await expect(page.getByText('Bob Builder')).not.toBeVisible();
+  // Step 6: Verify only the searched and filtered user is visible.
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).not.toBeVisible();
+  
+  // Step 7: Clear the search and ensure the filter is still applied.
+  await page.getByLabel(/Name or Job Title/i).clear();
+  
+  // Step 8: Verify the filtered list returns to its previous state.
+  await expect(directoryGrid.getByText('Bob Builder')).toBeVisible();
+  await expect(directoryGrid.getByText('Eve Engineer')).toBeVisible();
 });

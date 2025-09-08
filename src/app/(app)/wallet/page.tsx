@@ -107,7 +107,7 @@ export default function WalletPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Coins className="h-6 w-6 text-primary" />
-                        Main Wallet Balance
+                        {t("wallet.mainBalanceTitle")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -124,7 +124,7 @@ export default function WalletPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Star className="h-6 w-6 text-yellow-500" />
-                        XP Balance
+                        {t("wallet.xpBalanceTitle")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -132,7 +132,7 @@ export default function WalletPage() {
                         {user.xpPoints || 0} <span className="text-2xl text-muted-foreground">XP</span>
                     </p>
                     <CardDescription className="mt-1">
-                        Earn points by engaging with the platform.
+                        {t("wallet.xpUsageHint")}
                     </CardDescription>
                 </CardContent>
             </Card>
@@ -141,15 +141,15 @@ export default function WalletPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Gift className="h-5 w-5 text-primary" />
-                        Flash Coins
+                        {t("wallet.flashCoinsTitle")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-5xl font-bold text-primary">
-                        {totalFlashCoins} <span className="text-2xl text-muted-foreground">Flash</span>
+                        {totalFlashCoins} <span className="text-2xl text-muted-foreground">{t("wallet.flash")}</span>
                     </p>
                     <CardDescription className="mt-1">
-                        Limited-time promotional coins. Used automatically before regular coins.
+                        {t("wallet.flashCoinsHint")}
                     </CardDescription>
                 </CardContent>
             </Card>
@@ -158,17 +158,17 @@ export default function WalletPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card className="shadow-lg">
           <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>Redeem a Promo Code</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary"/>{t("wallet.redeemTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
               <div className="flex flex-col sm:flex-row items-end gap-2">
                   <div className="flex-grow w-full">
-                      <Label htmlFor="promo-code-input">Enter Code</Label>
-                      <Input id="promo-code-input" placeholder="e.g., WELCOME50" value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
+                      <Label htmlFor="promo-code-input">{t("wallet.enterCode")}</Label>
+                      <Input id="promo-code-input" placeholder={t("wallet.codePlaceholder")} value={promoCodeInput} onChange={(e) => setPromoCodeInput(e.target.value)} />
                   </div>
                   <Button onClick={handleRedeemCode} disabled={isRedeeming} className="w-full sm:w-auto">
                       {isRedeeming && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                      Redeem
+                      {t("wallet.redeemButton")}
                   </Button>
               </div>
           </CardContent>
@@ -177,17 +177,17 @@ export default function WalletPage() {
         {settings.gamificationEnabled && (
           <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>Streak Freeze Store</CardTitle>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary"/>{t("wallet.streakFreezeTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
                     <div className="text-center sm:text-left">
-                        <p className="font-medium">You have: <span className="text-2xl font-bold text-primary">{user.streakFreezes || 0}</span> Streak Freezes</p>
-                        <p className="text-xs text-muted-foreground">Protects your daily streak if you miss a day.</p>
+                        <p className="font-medium">{t("wallet.youHave")} <span className="text-2xl font-bold text-primary">{user.streakFreezes || 0}</span> {t("wallet.streakFreezes")}</p>
+                        <p className="text-xs text-muted-foreground">{t("wallet.streakFreezeDescription")}</p>
                     </div>
                     <Button onClick={handleBuyStreakFreeze} disabled={isBuying || (wallet?.coins ?? 0) < 500} className="w-full sm:w-auto mt-2 sm:mt-0">
                         {isBuying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Buy 1 for 500 <Coins className="ml-1 h-4 w-4"/>
+                        {t("wallet.buyButton", { cost: 500 })} <Coins className="ml-1 h-4 w-4"/>
                     </Button>
                 </div>
             </CardContent>
@@ -197,14 +197,14 @@ export default function WalletPage() {
       
       <Tabs defaultValue="coin_transactions" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="coin_transactions">Coin Transactions</TabsTrigger>
-          <TabsTrigger value="xp_history">XP History</TabsTrigger>
-          <TabsTrigger value="flash_coins">Flash Coin History</TabsTrigger>
+          <TabsTrigger value="coin_transactions">{t("wallet.coinTransactions")}</TabsTrigger>
+          <TabsTrigger value="xp_history">{t("wallet.xpHistory")}</TabsTrigger>
+          <TabsTrigger value="flash_coins">{t("wallet.flashCoinHistory")}</TabsTrigger>
         </TabsList>
         <TabsContent value="coin_transactions">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />Coin Transaction History</CardTitle>
+              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.coinTransactionHistory")}</CardTitle>
               <CardDescription>{t("wallet.recentActivity")}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -247,21 +247,21 @@ export default function WalletPage() {
         <TabsContent value="xp_history">
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />XP History</CardTitle>
-              <CardDescription>Your recent XP earnings.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.xpHistory")}</CardTitle>
+              <CardDescription>{t("wallet.recentXPEarnings")}</CardDescription>
             </CardHeader>
             <CardContent>
               {xpTransactions.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">
-                  No XP transactions yet.
+                  {t("wallet.noXPTransactions")}
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>{t("wallet.date")}</TableHead>
+                      <TableHead>{t("wallet.description")}</TableHead>
+                      <TableHead className="text-right">{t("wallet.amount")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -289,10 +289,10 @@ export default function WalletPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <History className="h-5 w-5" />
-                        Flash Coin Details
+                        {t("wallet.flashCoinDetails")}
                     </CardTitle>
                     <CardDescription>
-                        A log of your promotional flash coins and their expiration dates.
+                        {t("wallet.flashCoinDescription")}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -303,16 +303,16 @@ export default function WalletPage() {
                                 isPast(new Date(fc.expiresAt)) ? 'bg-secondary/50 opacity-60' : 'bg-secondary'
                             )}>
                                 <div>
-                                    <span className="font-medium text-foreground">+ {fc.amount} coins</span>
-                                    <span className="text-xs italic ml-2">from {fc.source}</span>
+                                    <span className="font-medium text-foreground">+ {fc.amount} {t("wallet.coins")}</span>
+                                    <span className="text-xs italic ml-2">{t("wallet.fromSource", { source: fc.source })}</span>
                                 </div>
                                 <span className={cn(
                                     "text-xs font-semibold",
                                     isPast(new Date(fc.expiresAt)) ? 'text-red-500' : 'text-foreground'
                                 )}>
                                     {isPast(new Date(fc.expiresAt)) 
-                                        ? 'Expired' 
-                                        : `Expires in ${formatDistanceToNowStrict(new Date(fc.expiresAt))}`
+                                        ? t("wallet.expired") 
+                                        : t("wallet.expiresIn", { duration: formatDistanceToNowStrict(new Date(fc.expiresAt)) })
                                     }
                                 </span>
                             </li>
@@ -323,10 +323,10 @@ export default function WalletPage() {
            ) : (
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />Flash Coin History</CardTitle>
+                <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t("wallet.flashCoinHistory")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-muted-foreground py-4">You have no flash coin history.</p>
+                <p className="text-center text-muted-foreground py-4">{t("wallet.noFlashCoinHistory")}</p>
               </CardContent>
             </Card>
            )}

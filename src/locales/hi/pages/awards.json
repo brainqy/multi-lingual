@@ -1,0 +1,50 @@
+{
+  "awards": {
+    "pageTitle": "पुरस्कार और सम्मान",
+    "pageDescription": "उत्कृष्ट उपलब्धियों और योगदान के लिए योग्य पूर्व छात्रों को नामांकित करें, और विजेताओं के लिए मतदान करें।",
+    "noActiveAwardsTitle": "कोई सक्रिय पुरस्कार नहीं",
+    "noActiveAwardsDescription": "वर्तमान में नामांकन या मतदान के लिए कोई पुरस्कार खुला नहीं है। बाद में वापस देखें!",
+    "winnerAnnounced": "विजेता घोषित!",
+    "viewProfileButton": "प्रोफ़ाइल देखें",
+    "nominateButton": "नामांकित करें",
+    "viewAndVoteButton": "देखें और वोट दें",
+    "votingEndedButton": "मतदान समाप्त",
+    "comingSoonButton": "जल्द आ रहा है",
+    "nominationPeriodLabel": "नामांकन",
+    "votingPeriodLabel": "मतदान",
+    "timeLeft": "बचा है",
+    "nominationDialog": {
+      "title": "{awardTitle} के लिए नामांकित करें",
+      "description": "एक उपयोगकर्ता का चयन करें और अपने नामांकन के लिए एक औचित्य प्रदान करें।",
+      "nomineeLabel": "नामांकित व्यक्ति",
+      "nomineePlaceholder": "नामांकित करने के लिए एक उपयोगकर्ता का चयन करें...",
+      "justificationLabel": "औचित्य",
+      "justificationPlaceholder": "बताएं कि यह व्यक्ति पुरस्कार का हकदार क्यों है...",
+      "submitButton": "नामांकन जमा करें"
+    },
+    "votingDialog": {
+      "title": "{awardTitle} के लिए वोट दें",
+      "description": "नामांकित व्यक्तियों की समीक्षा करें और अपना वोट डालें। आप केवल एक बार वोट कर सकते हैं।",
+      "noNominees": "इस पुरस्कार के लिए कोई नामांकन जमा नहीं किया गया था।",
+      "voteButton": "वोट दें"
+    },
+    "toast": {
+      "nominationSubmitted": {
+        "title": "नामांकन जमा किया गया!",
+        "description": "हमारे समुदाय के एक योग्य सदस्य को पहचानने के लिए धन्यवाद।"
+      },
+      "nominationFailed": {
+        "title": "नामांकन विफल",
+        "description": "एक अप्रत्याशित त्रुटि हुई।"
+      },
+      "voteCast": {
+        "title": "वोट डाला गया!",
+        "description": "आपका वोट दर्ज कर लिया गया है।"
+      },
+      "voteFailed": {
+        "title": "मतदान विफल",
+        "description": "एक अप्रत्याशित त्रुटि हुई।"
+      }
+    }
+  }
+}

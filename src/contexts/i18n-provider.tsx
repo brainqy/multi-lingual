@@ -21,7 +21,6 @@ import mrLayout from '@/locales/mr/layout.json';
 
 // Import all the new split page files
 import enAdminDashboard from '@/locales/en/pages/admin-dashboard.json';
-import enAffiliates from '@/locales/en/pages/affiliates.json';
 import enGamification from '@/locales/en/pages/gamification.json';
 import enMain from '@/locales/en/pages/main.json';
 import enPlatformSettings from '@/locales/en/pages/platform-settings.json';
@@ -31,18 +30,29 @@ import enContentModeration from '@/locales/en/pages/content-moderation.json';
 import enBlogSettingsAdmin from '@/locales/en/pages/blog-settings-admin.json';
 import enGamificationRules from '@/locales/en/pages/gamification-rules.json';
 import enFeatureRequests from '@/locales/en/pages/feature-requests.json';
-import enReferrals from '@/locales/en/pages/referrals.json';
-import enUserSettings from '@/locales/en/pages/user-settings.json';
 import enDailyChallenge from '@/locales/en/pages/daily-challenge.json';
 import enTranslateTool from '@/locales/en/pages/translate-tool.json';
 import enAlumniConnect from '@/locales/en/pages/alumni-connect.json';
 import enNumberMatchGame from '@/locales/en/pages/number-match-game.json';
 import enKbcGame from '@/locales/en/pages/kbc-game.json';
-import enPromoCodes from '@/locales/en/pages/promo-codes.json';
 import enJobTracker from '@/locales/en/pages/job-tracker.json';
+import enManagerDashboard from '@/locales/en/pages/manager-dashboard.json';
+import enPromotionalContent from '@/locales/en/pages/promotional-content.json';
+import enJobBoard from '@/locales/en/pages/job-board.json';
+import enUserManagement from '@/locales/en/pages/user-management.json';
+import enAiMockInterview from '@/locales/en/pages/ai-mock-interview.json';
+import enAwards from '@/locales/en/pages/awards.json';
+import enReferrals from '@/locales/en/pages/referrals.json';
+import enAffiliates from '@/locales/en/pages/affiliates.json';
+import enPromoCodes from '@/locales/en/pages/promo-codes.json';
+import enAdminAnalytics from '@/locales/en/pages/admin-analytics.json';
+import enUserSettings from '@/locales/en/pages/user-settings.json';
+import enLanding from '@/locales/en/pages/landing.json';
+import enAiResumeAnalyzer from '@/locales/en/pages/ai-resume-analyzer.json';
+import enWallet from '@/locales/en/pages/wallet.json';
+
 
 import hiAdminDashboard from '@/locales/hi/pages/admin-dashboard.json';
-import hiAffiliates from '@/locales/hi/pages/affiliates.json';
 import hiGamification from '@/locales/hi/pages/gamification.json';
 import hiMain from '@/locales/hi/pages/main.json';
 import hiPlatformSettings from '@/locales/hi/pages/platform-settings.json';
@@ -52,18 +62,28 @@ import hiContentModeration from '@/locales/hi/pages/content-moderation.json';
 import hiBlogSettingsAdmin from '@/locales/hi/pages/blog-settings-admin.json';
 import hiGamificationRules from '@/locales/hi/pages/gamification-rules.json';
 import hiFeatureRequests from '@/locales/hi/pages/feature-requests.json';
-import hiReferrals from '@/locales/hi/pages/referrals.json';
-import hiUserSettings from '@/locales/hi/pages/user-settings.json';
 import hiDailyChallenge from '@/locales/hi/pages/daily-challenge.json';
 import hiTranslateTool from '@/locales/hi/pages/translate-tool.json';
 import hiAlumniConnect from '@/locales/hi/pages/alumni-connect.json';
 import hiNumberMatchGame from '@/locales/hi/pages/number-match-game.json';
 import hiKbcGame from '@/locales/hi/pages/kbc-game.json';
-import hiPromoCodes from '@/locales/hi/pages/promo-codes.json';
 import hiJobTracker from '@/locales/hi/pages/job-tracker.json';
+import hiManagerDashboard from '@/locales/hi/pages/manager-dashboard.json';
+import hiPromotionalContent from '@/locales/hi/pages/promotional-content.json';
+import hiJobBoard from '@/locales/hi/pages/job-board.json';
+import hiUserManagement from '@/locales/hi/pages/user-management.json';
+import hiAiMockInterview from '@/locales/hi/pages/ai-mock-interview.json';
+import hiAwards from '@/locales/hi/pages/awards.json';
+import hiReferrals from '@/locales/hi/pages/referrals.json';
+import hiAffiliates from '@/locales/hi/pages/affiliates.json';
+import hiPromoCodes from '@/locales/hi/pages/promo-codes.json';
+import hiAdminAnalytics from '@/locales/hi/pages/admin-analytics.json';
+import hiUserSettings from '@/locales/hi/pages/user-settings.json';
+import hiLanding from '@/locales/hi/pages/landing.json';
+import hiAiResumeAnalyzer from '@/locales/hi/pages/ai-resume-analyzer.json';
+import hiWallet from '@/locales/hi/pages/wallet.json';
 
 import mrAdminDashboard from '@/locales/mr/pages/admin-dashboard.json';
-import mrAffiliates from '@/locales/mr/pages/affiliates.json';
 import mrGamification from '@/locales/mr/pages/gamification.json';
 import mrMain from '@/locales/mr/pages/main.json';
 import mrPlatformSettings from '@/locales/mr/pages/platform-settings.json';
@@ -73,40 +93,63 @@ import mrContentModeration from '@/locales/mr/pages/content-moderation.json';
 import mrBlogSettingsAdmin from '@/locales/mr/pages/blog-settings-admin.json';
 import mrGamificationRules from '@/locales/mr/pages/gamification-rules.json';
 import mrFeatureRequests from '@/locales/mr/pages/feature-requests.json';
-import mrReferrals from '@/locales/mr/pages/referrals.json';
-import mrUserSettings from '@/locales/mr/pages/user-settings.json';
 import mrDailyChallenge from '@/locales/mr/pages/daily-challenge.json';
 import mrTranslateTool from '@/locales/mr/pages/translate-tool.json';
 import mrAlumniConnect from '@/locales/mr/pages/alumni-connect.json';
 import mrNumberMatchGame from '@/locales/mr/pages/number-match-game.json';
 import mrKbcGame from '@/locales/mr/pages/kbc-game.json';
-import mrPromoCodes from '@/locales/mr/pages/promo-codes.json';
 import mrJobTracker from '@/locales/mr/pages/job-tracker.json';
+import mrManagerDashboard from '@/locales/mr/pages/manager-dashboard.json';
+import mrPromotionalContent from '@/locales/mr/pages/promotional-content.json';
+import mrJobBoard from '@/locales/mr/pages/job-board.json';
+import mrUserManagement from '@/locales/mr/pages/user-management.json';
+import mrAiMockInterview from '@/locales/mr/pages/ai-mock-interview.json';
+import mrAwards from '@/locales/mr/pages/awards.json';
+import mrReferrals from '@/locales/mr/pages/referrals.json';
+import mrAffiliates from '@/locales/mr/pages/affiliates.json';
+import mrPromoCodes from '@/locales/mr/pages/promo-codes.json';
+import mrAdminAnalytics from '@/locales/mr/pages/admin-analytics.json';
+import mrUserSettings from '@/locales/mr/pages/user-settings.json';
+import mrLanding from '@/locales/mr/pages/landing.json';
+import mrAiResumeAnalyzer from '@/locales/mr/pages/ai-resume-analyzer.json';
+import mrWallet from '@/locales/mr/pages/wallet.json';
 
 // Merge all page translations
 const enPages = {
-  ...enAdminDashboard, ...enAffiliates, ...enGamification, ...enMain,
+  ...enAdminDashboard, ...enGamification, ...enMain,
   ...enPlatformSettings, ...enTenantManagement, ...enAnnouncementsAdmin,
   ...enContentModeration, ...enBlogSettingsAdmin, ...enGamificationRules,
-  ...enFeatureRequests, ...enReferrals, ...enUserSettings, ...enDailyChallenge,
+  ...enFeatureRequests, ...enDailyChallenge,
   ...enTranslateTool, ...enAlumniConnect, ...enNumberMatchGame, ...enKbcGame,
-  ...enPromoCodes, ...enJobTracker
+  ...enJobTracker, ...enManagerDashboard,
+  ...enPromotionalContent, ...enJobBoard, ...enUserManagement,
+  ...enAiMockInterview, ...enAwards, ...enReferrals, ...enAffiliates,
+  ...enPromoCodes, ...enAdminAnalytics, ...enUserSettings, ...enLanding,
+  ...enAiResumeAnalyzer, ...enWallet
 };
 const hiPages = {
-  ...hiAdminDashboard, ...hiAffiliates, ...hiGamification, ...hiMain,
+  ...hiAdminDashboard, ...hiGamification, ...hiMain,
   ...hiPlatformSettings, ...hiTenantManagement, ...hiAnnouncementsAdmin,
   ...hiContentModeration, ...hiBlogSettingsAdmin, ...hiGamificationRules,
-  ...hiFeatureRequests, ...hiReferrals, ...hiUserSettings, ...hiDailyChallenge,
+  ...hiFeatureRequests, ...hiDailyChallenge,
   ...hiTranslateTool, ...hiAlumniConnect, ...hiNumberMatchGame, ...hiKbcGame,
-  ...hiPromoCodes, ...hiJobTracker
+  ...hiJobTracker, ...hiManagerDashboard,
+  ...hiPromotionalContent, ...hiJobBoard, ...hiUserManagement,
+  ...hiAiMockInterview, ...hiAwards, ...hiReferrals, ...hiAffiliates,
+  ...hiPromoCodes, ...hiAdminAnalytics, ...hiUserSettings, ...hiLanding,
+  ...hiAiResumeAnalyzer, ...hiWallet
 };
 const mrPages = {
-  ...mrAdminDashboard, ...mrAffiliates, ...mrGamification, ...mrMain,
+  ...mrAdminDashboard, ...mrGamification, ...mrMain,
   ...mrPlatformSettings, ...mrTenantManagement, ...mrAnnouncementsAdmin,
   ...mrContentModeration, ...mrBlogSettingsAdmin, ...mrGamificationRules,
-  ...mrFeatureRequests, ...mrReferrals, ...mrUserSettings, ...mrDailyChallenge,
+  ...mrFeatureRequests, ...mrDailyChallenge,
   ...mrTranslateTool, ...mrAlumniConnect, ...mrNumberMatchGame, ...mrKbcGame,
-  ...mrPromoCodes, ...mrJobTracker
+  ...mrJobTracker, ...mrManagerDashboard,
+  ...mrPromotionalContent, ...mrJobBoard, ...mrUserManagement,
+  ...mrAiMockInterview, ...mrAwards, ...mrReferrals, ...mrAffiliates,
+  ...mrPromoCodes, ...mrAdminAnalytics, ...mrUserSettings, ...mrLanding,
+  ...mrAiResumeAnalyzer, ...mrWallet
 };
 
 const enMergedTranslations: Translations = {

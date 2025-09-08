@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Appointment } from '@/types';
+import type { Appointment, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
 import { getDashboardData } from './dashboard';
@@ -39,19 +39,21 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
  * @returns The newly created Appointment object or null if failed.
  */
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
-  logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
+  const { tenantId, ...restOfData } = appointmentData;
+  logAction('Creating appointment', { requester: restOfData.requesterUserId, alumni: restOfData.alumniUserId, tenantId });
   try {
     const dashboardData = await getDashboardData();
-    const requesterUser = dashboardData.users.find(u => u.id === appointmentData.requesterUserId);
+    const requesterUser = dashboardData.users.find((u: UserProfile) => u.id === restOfData.requesterUserId);
 
     if (!requesterUser) {
-        throw new Error(`Requester user with ID ${appointmentData.requesterUserId} not found.`);
+        throw new Error(`Requester user with ID ${restOfData.requesterUserId} not found.`);
     }
 
     const newAppointment = await db.appointment.create({
       data: {
-        ...appointmentData,
-        dateTime: new Date(appointmentData.dateTime),
+        ...restOfData,
+        tenantId: tenantId,
+        dateTime: new Date(restOfData.dateTime),
       },
     });
 
@@ -66,7 +68,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
 
     return newAppointment as unknown as Appointment;
   } catch (error) {
-    logError('[AppointmentAction] Error creating appointment', error, { requester: appointmentData.requesterUserId });
+    logError('[AppointmentAction] Error creating appointment', error, { requester: restOfData.requesterUserId });
     return null;
   }
 }

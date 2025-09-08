@@ -3,21 +3,20 @@
 
 import { db } from '@/lib/db';
 import type { FeatureRequest } from '@/types';
-import { logAction, logError } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 /**
  * Fetches all feature requests.
  * @returns A promise that resolves to an array of FeatureRequest objects.
  */
 export async function getFeatureRequests(): Promise<FeatureRequest[]> {
-  logAction('Fetching feature requests');
   try {
     const requests = await db.featureRequest.findMany({
       orderBy: { timestamp: 'desc' },
     });
     return requests as unknown as FeatureRequest[];
   } catch (error) {
-    logError('[FeatureRequestAction] Error fetching requests', error);
+    console.error('[FeatureRequestAction] Error fetching requests:', error);
     return [];
   }
 }
@@ -27,18 +26,21 @@ export async function getFeatureRequests(): Promise<FeatureRequest[]> {
  * @param requestData The data for the new request.
  * @returns The newly created FeatureRequest object or null.
  */
-export async function createFeatureRequest(requestData: Omit<FeatureRequest, 'id' | 'timestamp' | 'upvotes'>): Promise<FeatureRequest | null> {
-  logAction('Creating feature request', { userId: requestData.userId, title: requestData.title });
+export async function createFeatureRequest(requestData: Omit<FeatureRequest, 'id' | 'timestamp' | 'upvotes' | 'tenantId'>): Promise<FeatureRequest | null> {
   try {
+    const headersList = headers();
+    const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+    
     const newRequest = await db.featureRequest.create({
       data: {
         ...requestData,
+        tenantId,
         upvotes: 0,
       },
     });
     return newRequest as unknown as FeatureRequest;
   } catch (error) {
-    logError('[FeatureRequestAction] Error creating request', error, { userId: requestData.userId });
+    console.error('[FeatureRequestAction] Error creating request:', error);
     return null;
   }
 }
@@ -50,7 +52,6 @@ export async function createFeatureRequest(requestData: Omit<FeatureRequest, 'id
  * @returns The updated FeatureRequest object or null.
  */
 export async function updateFeatureRequest(requestId: string, updateData: Partial<Omit<FeatureRequest, 'id'>>): Promise<FeatureRequest | null> {
-  logAction('Updating feature request', { requestId });
   try {
     const updatedRequest = await db.featureRequest.update({
       where: { id: requestId },
@@ -58,7 +59,7 @@ export async function updateFeatureRequest(requestId: string, updateData: Partia
     });
     return updatedRequest as unknown as FeatureRequest;
   } catch (error) {
-    logError(`[FeatureRequestAction] Error updating request ${requestId}`, error, { requestId });
+    console.error(`[FeatureRequestAction] Error updating request ${requestId}:`, error);
     return null;
   }
 }
@@ -69,7 +70,6 @@ export async function updateFeatureRequest(requestId: string, updateData: Partia
  * @returns The updated FeatureRequest object or null.
  */
 export async function upvoteFeatureRequest(requestId: string): Promise<FeatureRequest | null> {
-    logAction('Upvoting feature request', { requestId });
     try {
         const updatedRequest = await db.featureRequest.update({
             where: { id: requestId },
@@ -81,7 +81,7 @@ export async function upvoteFeatureRequest(requestId: string): Promise<FeatureRe
         });
         return updatedRequest as unknown as FeatureRequest;
     } catch (error) {
-        logError(`[FeatureRequestAction] Error upvoting request ${requestId}`, error, { requestId });
+        console.error(`[FeatureRequestAction] Error upvoting request ${requestId}:`, error);
         return null;
     }
 }

@@ -1,0 +1,100 @@
+{
+  "aiMockInterview": {
+    "title": "AI Mock Interview",
+    "exitFullscreen": "Exit Fullscreen",
+    "enterFullscreen": "Enter Fullscreen",
+    "restart": "Restart",
+    "loadingMessage": "Generating your personalized interview questions...",
+    "toast": {
+      "speechError": {
+        "title": "Speech Recognition Error",
+        "description": "Error: {error}. Please try again or type your answer."
+      },
+      "cameraError": {
+        "title": "Camera Error",
+        "description": "Camera access not supported by your browser."
+      },
+      "cameraDenied": {
+        "title": "Camera Access Denied",
+        "description": "Please enable camera permissions in your browser settings."
+      },
+      "setupFailed": {
+        "title": "Setup Failed",
+        "description": "Could not generate interview questions. The topic might be too specific. Please try a broader topic."
+      },
+      "interviewReady": {
+        "title": "Interview Ready!",
+        "description": "Your interview with {count} questions is ready."
+      },
+      "apiQuotaError": {
+        "title": "API Usage Limit Exceeded",
+        "description": "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account."
+      },
+      "fullscreenError": {
+        "title": "Fullscreen Error",
+        "description": "Could not enter fullscreen: {message}"
+      },
+      "timesUp": {
+        "title": "Time's Up!",
+        "description": "Please submit your answer or move to the next question."
+      },
+      "evaluationFailed": {
+        "title": "Evaluation Failed",
+        "description": "Could not evaluate your answer."
+      },
+      "sessionIssue": {
+        "title": "Session Issue",
+        "description": "Could not find session data. Please restart."
+      },
+      "noAnswers": {
+        "title": "No Answers Provided",
+        "description": "You haven't answered any questions. Please answer at least one to get feedback."
+      },
+      "interviewComplete": {
+        "title": "Interview Complete!",
+        "description": "Generating your overall feedback now."
+      },
+      "feedbackFailed": {
+        "title": "Feedback Generation Failed",
+        "description": "Could not generate overall interview feedback."
+      },
+      "micMuted": {
+        "title": "Mic Muted"
+      },
+      "micUnmuted": {
+        "title": "Mic Unmuted"
+      },
+      "notSupported": {
+        "title": "Not Supported",
+        "description": "Speech recognition is not supported in your browser. Please type your answer."
+      },
+      "recordingNotSupported": {
+        "title": "Recording Not Supported",
+        "description": "Session recording is not supported in this browser."
+      },
+      "micError": {
+        "title": "Microphone Error",
+        "description": "Could not access the microphone for recording."
+      },
+      "noAudioInput": {
+        "title": "No Audio Input",
+        "description": "Please unmute your microphone to start recording."
+      },
+      "recordingError": {
+        "title": "Recording Error",
+        "description": "No active audio stream to record."
+      },
+      "recordingStopped": {
+        "title": "Recording Stopped",
+        "description": "Recording is available for playback/download."
+      },
+      "recordingStarted": {
+        "title": "Recording Started"
+      },
+      "recordingInitError": {
+        "title": "Recording Init Error",
+        "description": "Could not start recording."
+      }
+    }
+  }
+}

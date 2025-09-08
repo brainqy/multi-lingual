@@ -28,7 +28,7 @@ export default function ContentModerationPage() {
   const fetchPosts = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const allPosts = await getCommunityPosts(currentUser.role === 'admin' ? null : currentUser.tenantId, currentUser.id);
+    const allPosts = await getCommunityPosts(currentUser.id);
     setPosts(allPosts);
     setIsLoading(false);
   }, [currentUser]);

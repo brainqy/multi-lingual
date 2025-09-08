@@ -37,13 +37,11 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  */
 export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
     const { userId, tenantId, ...restOfData } = activityData;
-    logAction('Creating activity', { userId, description: restOfData.description });
+    logAction('Creating activity', { userId, description: restOfData.description, tenantId });
     try {
         const dataForDb: any = {
             ...restOfData,
-            tenant: {
-                connect: { id: tenantId },
-            },
+            tenantId: tenantId,
         };
 
         if (userId) {

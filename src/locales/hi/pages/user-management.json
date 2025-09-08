@@ -1,0 +1,93 @@
+
+{
+  "userManagement": {
+    "titleAdmin": "उपयोगकर्ता प्रबंधन",
+    "titleManager": "उपयोगकर्ता प्रबंधन ({tenantName})",
+    "descriptionAdmin": "प्लेटफ़ॉर्म पर सभी उपयोगकर्ताओं का निरीक्षण, खोज और प्रबंधन करें।",
+    "descriptionManager": "अपने किरायेदार के भीतर उपयोगकर्ताओं का प्रबंधन करें: {tenantName}।",
+    "bulkUploadButton": "बल्क अपलोड उपयोगकर्ता",
+    "addNewButton": "नया उपयोगकर्ता जोड़ें",
+    "allUsersTitle": "सभी उपयोगकर्ता",
+    "searchPlaceholder": "नाम, ईमेल, या किरायेदार द्वारा खोजें...",
+    "table": {
+      "user": "उपयोगकर्ता",
+      "role": "भूमिका",
+      "tenant": "किरायेदार",
+      "status": "स्थिति",
+      "actions": "कार्रवाइयां"
+    },
+    "userCard": {
+      "streakFreezes": "स्ट्रीक फ्रीज",
+      "editButton": "संपादित करें",
+      "deleteButton": "हटाएं"
+    },
+    "deleteDialog": {
+      "title": "क्या आप निश्चित हैं?",
+      "description": "यह क्रिया पूर्ववत नहीं की जा सकती। यह उपयोगकर्ता {name} और उनके सभी संबंधित डेटा को स्थायी रूप से हटा देगा।",
+      "deleteButton": "हाँ, उपयोगकर्ता हटाएं"
+    },
+    "dialog": {
+      "editTitle": "उपयोगकर्ता संपादित करें",
+      "addTitle": "नया उपयोगकर्ता जोड़ें",
+      "saveButton": "बदलाव सहेजें",
+      "createButton": "उपयोगकर्ता बनाएं"
+    },
+    "form": {
+      "nameLabel": "पूरा नाम",
+      "emailLabel": "ईमेल पता",
+      "passwordLabel": "पासवर्ड (वैकल्पिक)",
+      "passwordHelpAdmin": "पासवर्ड सेट न करने के लिए खाली छोड़ दें। उपयोगकर्ता 'पासवर्ड भूल गए' के माध्यम से इसे सेट कर सकता है।",
+      "tenantLabel": "किरायेदार",
+      "tenantPlaceholder": "एक किरायेदार चुनें",
+      "roleLabel": "भूमिका",
+      "statusLabel": "स्थिति"
+    },
+    "roles": {
+      "user": "उपयोगकर्ता",
+      "manager": "प्रबंधक",
+      "admin": "व्यवस्थापक"
+    },
+    "statuses": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "suspended": "निलंबित",
+      "pending": "लंबित"
+    },
+    "bulkUpload": {
+      "title": "बल्क अपलोड उपयोगकर्ता",
+      "description": "एक साथ कई उपयोगकर्ता बनाने के लिए एक CSV फ़ाइल अपलोड करें। CSV में 'name', 'email', 'role', और 'tenantId' कॉलम होने चाहिए।",
+      "csvLabel": "CSV फ़ाइल",
+      "selectedFile": "चयनित फ़ाइल",
+      "downloadSample": "नमूना CSV डाउनलोड करें",
+      "exampleFormat": "उदाहरण प्रारूप",
+      "uploadButton": "अपलोड करें और उपयोगकर्ता बनाएं",
+      "errorNoFile": "कृपया अपलोड करने के लिए एक CSV फ़ाइल चुनें।",
+      "errorCsvFormat": "CSV फ़ाइल में एक हेडर पंक्ति और कम से कम एक डेटा पंक्ति होनी चाहिए।",
+      "errorCsvHeader": "CSV में निम्नलिखित हेडर होने चाहिए: {headers}",
+      "errorProcessing": "CSV फ़ाइल को संसाधित करते समय एक त्रुटि हुई।",
+      "errorReading": "फ़ाइल पढ़ते समय एक त्रुटि हुई।"
+    },
+    "toast": {
+      "updated": {
+        "title": "उपयोगकर्ता अपडेट किया गया",
+        "description": "{name} के लिए विवरण अपडेट कर दिए गए हैं।"
+      },
+      "created": {
+        "title": "उपयोगकर्ता बनाया गया",
+        "description": "{name} के लिए एक नया उपयोगकर्ता खाता बनाया गया है।"
+      },
+      "deleteSelf": {
+        "title": "कार्रवाई अस्वीकृत",
+        "description": "आप अपना खाता नहीं हटा सकते।"
+      },
+      "deleted": {
+        "title": "उपयोगकर्ता हटा दिया गया",
+        "description": "उपयोगकर्ता को सफलतापूर्वक हटा दिया गया है।"
+      },
+      "uploaded": {
+        "title": "अपलोड पूरा हुआ",
+        "description": "CSV फ़ाइल से {count} नए उपयोगकर्ता सफलतापूर्वक बनाए गए।"
+      }
+    }
+  }
+}

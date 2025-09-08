@@ -30,7 +30,8 @@
       "coins": "Coins",
       "flash_coins": "Flash Coins",
       "xp": "XP",
-      "premium_days": "Premium Days"
+      "premium_days": "Premium Days",
+      "streak_freeze": "Streak Freeze"
     },
     "dialog": {
       "editTitle": "Edit Promo Code",

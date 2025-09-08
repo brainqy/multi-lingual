@@ -30,7 +30,8 @@
       "coins": "नाणी",
       "flash_coins": "फ्लॅश नाणी",
       "xp": "XP",
-      "premium_days": "प्रीमियम दिवस"
+      "premium_days": "प्रीमियम दिवस",
+      "streak_freeze": "स्ट्रीक फ्रीझ"
     },
     "dialog": {
       "editTitle": "प्रोमो कोड संपादित करा",

@@ -47,7 +47,9 @@ export default function JobSearchCard({ applications, setApplications }: JobSear
     };
 
     const handleAddSearchedJobToTracker = async (job: JobOpening) => {
-        if (!currentUser) return;
+        if (!currentUser) {
+            return;
+        }
         const alreadyExists = applications.some(app => app.sourceJobOpeningId === job.id);
         if (alreadyExists) {
             toast({ title: t("jobTracker.toast.alreadyInTracker.title"), description: t("jobTracker.toast.alreadyInTracker.description"), variant: "default" });

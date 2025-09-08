@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSettings } from "@/contexts/settings-provider";
 
 export default function CoverLetterGeneratorPage() {
+  const { t } = useI18n();
   const [jobDescriptionText, setJobDescriptionText] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -28,19 +29,19 @@ export default function CoverLetterGeneratorPage() {
   const handleGenerateCoverLetter = async (event: FormEvent) => {
     event.preventDefault();
     if (!currentUser || !settings) {
-        toast({ title: "Error", description: "You must be logged in to use this feature.", variant: "destructive" });
+        toast({ title: t("common.error"), description: t("coverLetterGenerator.toast.mustBeLoggedIn"), variant: "destructive" });
         return;
     }
     if (!jobDescriptionText.trim()) {
-      toast({ title: "Error", description: "Please provide the job description.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("coverLetterGenerator.toast.jobDescriptionRequired"), variant: "destructive" });
       return;
     }
     if (!companyName.trim()) {
-      toast({ title: "Error", description: "Please enter the company name.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("coverLetterGenerator.toast.companyNameRequired"), variant: "destructive" });
       return;
     }
     if (!jobTitle.trim()) {
-      toast({ title: "Error", description: "Please enter the job title.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("coverLetterGenerator.toast.jobTitleRequired"), variant: "destructive" });
       return;
     }
 
@@ -71,19 +72,19 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
       };
       const result = await generateCoverLetter(input);
       setGeneratedCoverLetterText(result.generatedCoverLetterText);
-      toast({ title: "Cover Letter Generated", description: "Your personalized cover letter is ready below." });
+      toast({ title: t("coverLetterGenerator.toast.generationSuccess.title"), description: t("coverLetterGenerator.toast.generationSuccess.description") });
     } catch (error) {
       console.error("Cover letter generation error:", error);
       const errorMessage = (error as any).message || String(error);
       if (errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('billing')) {
           toast({
-              title: "API Usage Limit Exceeded",
-              description: "You have exceeded your Gemini API usage limit. Please check your Google Cloud billing account.",
+              title: t("aiMockInterview.toast.apiQuotaError.title"),
+              description: t("aiMockInterview.toast.apiQuotaError.description"),
               variant: "destructive",
               duration: 9000,
           });
       } else {
-        toast({ title: "Generation Failed", description: "An error occurred while generating the cover letter.", variant: "destructive" });
+        toast({ title: t("coverLetterGenerator.toast.generationFailed.title"), description: t("coverLetterGenerator.toast.generationFailed.description"), variant: "destructive" });
       }
     } finally {
       setIsLoading(false);
@@ -93,9 +94,9 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
   const handleCopyToClipboard = () => {
     if (!generatedCoverLetterText) return;
     navigator.clipboard.writeText(generatedCoverLetterText).then(() => {
-      toast({ title: "Copied to Clipboard", description: "Cover letter copied!" });
+      toast({ title: t("common.copied"), description: t("coverLetterGenerator.toast.copied") });
     }).catch(err => {
-      toast({ title: "Copy Failed", description: "Could not copy text.", variant: "destructive" });
+      toast({ title: t("common.copyFailed"), variant: "destructive" });
     });
   };
 
@@ -112,10 +113,10 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Edit className="h-8 w-8 text-primary" /> AI Cover Letter Generator
+            <Edit className="h-8 w-8 text-primary" /> {t("coverLetterGenerator.title")}
           </CardTitle>
           <CardDescription>
-            Create a personalized cover letter tailored to a specific job description using your profile information.
+            {t("coverLetterGenerator.description")}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleGenerateCoverLetter}>
@@ -124,30 +125,30 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
               {/* Left Column: Job Details Input */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="job-title" className="font-medium">Job Title *</Label>
+                  <Label htmlFor="job-title" className="font-medium">{t("coverLetterGenerator.jobTitleLabel")} *</Label>
                   <Input 
                     id="job-title" 
-                    placeholder="e.g., Senior Marketing Manager" 
+                    placeholder={t("coverLetterGenerator.jobTitlePlaceholder")}
                     value={jobTitle} 
                     onChange={(e) => setJobTitle(e.target.value)} 
                     required 
                   />
                 </div>
                 <div>
-                  <Label htmlFor="company-name" className="font-medium">Company Name *</Label>
+                  <Label htmlFor="company-name" className="font-medium">{t("coverLetterGenerator.companyNameLabel")} *</Label>
                   <Input 
                     id="company-name" 
-                    placeholder="e.g., Acme Innovations Ltd." 
+                    placeholder={t("coverLetterGenerator.companyNamePlaceholder")}
                     value={companyName} 
                     onChange={(e) => setCompanyName(e.target.value)} 
                     required 
                   />
                 </div>
                 <div>
-                  <Label htmlFor="job-description" className="font-medium">Job Description *</Label>
+                  <Label htmlFor="job-description" className="font-medium">{t("coverLetterGenerator.jobDescriptionLabel")} *</Label>
                   <Textarea
                     id="job-description"
-                    placeholder="Paste the full job description here..."
+                    placeholder={t("coverLetterGenerator.jobDescriptionPlaceholder")}
                     value={jobDescriptionText}
                     onChange={(e) => setJobDescriptionText(e.target.value)}
                     rows={15}
@@ -160,24 +161,24 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
               {/* Right Column: User Info & Additional Notes */}
               <div className="space-y-4">
                  <div>
-                    <Label className="font-medium">User Profile Information (Used by AI)</Label>
+                    <Label className="font-medium">{t("coverLetterGenerator.userProfileInfoLabel")}</Label>
                     <Card className="mt-1 bg-secondary/50 p-3">
                         <p className="text-sm text-muted-foreground line-clamp-4">
-                            <strong>Name:</strong> {currentUser.name}<br/>
-                            <strong>Role:</strong> {currentUser.currentJobTitle || 'N/A'}<br/>
-                            <strong>Skills:</strong> {(currentUser.skills || []).slice(0,3).join(', ') || 'N/A'}...<br/>
-                            (Your detailed profile & resume text are used by the AI)
+                            <strong>{t("common.name")}:</strong> {currentUser.name}<br/>
+                            <strong>{t("common.role")}:</strong> {currentUser.currentJobTitle || 'N/A'}<br/>
+                            <strong>{t("common.skills")}:</strong> {(currentUser.skills || []).slice(0,3).join(', ') || 'N/A'}...<br/>
+                            ({t("coverLetterGenerator.profileInfoNote")})
                         </p>
                         <Button variant="link" size="sm" className="p-0 h-auto mt-1" asChild>
-                            <a href="/profile" target="_blank">View/Edit Full Profile</a>
+                            <a href="/profile" target="_blank">{t("coverLetterGenerator.viewProfileLink")}</a>
                         </Button>
                     </Card>
                  </div>
                  <div>
-                  <Label htmlFor="additional-notes" className="font-medium">Additional Notes for AI (Optional)</Label>
+                  <Label htmlFor="additional-notes" className="font-medium">{t("coverLetterGenerator.additionalNotesLabel")}</Label>
                   <Textarea 
                     id="additional-notes" 
-                    placeholder="e.g., Mention my recent X project, Emphasize Y skill specifically for this role." 
+                    placeholder={t("coverLetterGenerator.additionalNotesPlaceholder")}
                     value={additionalNotes} 
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     rows={5}
@@ -190,11 +191,11 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
             <Button type="submit" disabled={isLoading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("common.generating")}
                 </>
               ) : (
                 <>
-                  <Sparkles className="mr-2 h-4 w-4" /> Generate Cover Letter
+                  <Sparkles className="mr-2 h-4 w-4" /> {t("coverLetterGenerator.generateButton")}
                 </>
               )}
             </Button>
@@ -205,7 +206,7 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
       {isLoading && (
         <div className="text-center py-8">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="mt-2 text-muted-foreground">AI is crafting your cover letter...</p>
+          <p className="mt-2 text-muted-foreground">{t("coverLetterGenerator.generatingMessage")}</p>
         </div>
       )}
 
@@ -213,9 +214,9 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
         <Card className="shadow-xl mt-8">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <FileText className="h-7 w-7 text-primary" /> Generated Cover Letter
+              <FileText className="h-7 w-7 text-primary" /> {t("coverLetterGenerator.generatedCoverLetterTitle")}
             </CardTitle>
-            <CardDescription>Review the AI-generated cover letter. You can edit it or copy it.</CardDescription>
+            <CardDescription>{t("coverLetterGenerator.generatedCoverLetterDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -227,7 +228,7 @@ ${currentUser.resumeText ? currentUser.resumeText.substring(0, 1000) + '...' : '
           </CardContent>
           <CardFooter className="flex justify-between">
              <Button onClick={handleCopyToClipboard} variant="outline">
-              <Copy className="mr-2 h-4 w-4" /> Copy to Clipboard
+              <Copy className="mr-2 h-4 w-4" /> {t("common.copyToClipboard")}
             </Button>
             {/* Optionally, a "Save Letter" button could be added here */}
           </CardFooter>

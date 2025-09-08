@@ -27,21 +27,16 @@ export async function getVisibleAnnouncements(currentUser: UserProfile): Promise
           { endDate: { gte: now } },
           { endDate: null },
         ],
-        AND: [
-          {
+        AND: {
             OR: [
-              { audience: 'All Users' },
-              {
-                audience: 'Specific Tenant',
-                audienceTarget: currentUser.tenantId,
-              },
-              {
-                audience: 'Specific Role',
-                audienceTarget: currentUser.role,
-              },
+              { targetTenantId: null }, // Platform-wide
+              { targetTenantId: currentUser.tenantId },
             ],
-          },
-        ],
+            OR: [
+              { targetRole: null }, // All roles
+              { targetRole: currentUser.role },
+            ],
+        }
       },
       orderBy: {
         createdAt: 'desc',
@@ -66,7 +61,7 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
     if (tenantId) {
         whereClause.OR = [
             { tenantId: tenantId },
-            { audience: 'All Users' } 
+            { targetTenantId: null } // Managers can see platform-wide announcements
         ];
     }
     
@@ -89,11 +84,21 @@ export async function getAllAnnouncements(tenantId?: string): Promise<Announceme
  * @param announcementData The data for the new announcement.
  * @returns The newly created Announcement object or null if failed.
  */
-export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>): Promise<Announcement | null> {
-  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdBy });
+export async function createAnnouncement(announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt' | 'tenantId'>): Promise<Announcement | null> {
+  logAction('Creating announcement', { title: announcementData.title, createdBy: announcementData.createdByUserId });
   try {
+    // The tenantId is now part of the incoming data, typically from the current user's session
+    const creator = await db.user.findUnique({ where: { id: announcementData.createdByUserId }});
+    if (!creator) {
+      throw new Error("Creator user not found");
+    }
+    
+    const dataForDb = {
+      ...announcementData,
+      tenantId: announcementData.targetTenantId || creator.tenantId, // Assign to target tenant or creator's tenant
+    };
     const newAnnouncement = await db.announcement.create({
-      data: announcementData,
+      data: dataForDb,
     });
     return newAnnouncement as unknown as Announcement;
   } catch (error) {

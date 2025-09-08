@@ -6,7 +6,9 @@
         "kpi": {
             "totalUsers": "Total Users",
             "newSignups": "New Signups (Period)",
-            "activeUsers": "Active Users (Period)"
+            "dau": "Daily Active Users",
+            "mau": "Monthly Active Users",
+            "stickiness": "Stickiness (DAU/MAU)"
         },
         "charts": {
             "userGrowth": {
@@ -28,6 +30,38 @@
         "filters": {
             "selectTenant": "Select Tenant",
             "allTenants": "All Tenants"
+        },
+        "retention": {
+            "title": "User Retention by Signup Week",
+            "description": "Percentage of new users who returned in the weeks following their signup.",
+            "cohortColumn": "Cohort",
+            "newUsersColumn": "New Users",
+            "weekColumn": "Week {week}",
+            "cohortDate": "Week of {date}",
+            "cohortPrefix": "Week of "
+        },
+        "features": {
+            "resumeScans": "Resume Scans",
+            "jobApps": "Job Apps",
+            "communityPosts": "Community Posts",
+            "appointments": "Appointments",
+            "mockInterviews": "Mock Interviews"
+        },
+        "coinEconomy": {
+            "title": "Coin Economy",
+            "description": "Overview of the platform's virtual currency.",
+            "totalInCirculation": "Total in Circulation",
+            "totalEarned": "Total Earned (All Time)",
+            "totalSpent": "Total Spent (All Time)",
+            "spendingByCategory": "Coin Spending by Feature",
+            "spendingDescription": "What users are spending their coins on.",
+            "topUsers": "Top Users",
+            "topUsersDescription": "Most engaged users in the coin economy.",
+            "topEarners": "Top Earners",
+            "topSpenders": "Top Spenders",
+            "userColumn": "User",
+            "coinsEarnedColumn": "Coins Earned",
+            "coinsSpentColumn": "Coins Spent"
         }
     }
 }

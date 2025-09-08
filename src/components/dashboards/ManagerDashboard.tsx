@@ -1,16 +1,15 @@
 
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Users, Zap, MessageSquare, CheckSquare, Settings as SettingsIcon, Activity, CalendarCheck2, Gift, Loader2, Megaphone, ExternalLink } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import {
-    managerDashboardTourSteps,
-} from "@/lib/sample-data";
+import { managerDashboardTourSteps } from "@/lib/tour-steps";
 import { getDashboardData } from "@/lib/actions/dashboard";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import type { Tenant, UserProfile, CommunityPost, Appointment, ResumeScanHistoryItem, GalleryEvent, PromotionalContent } from "@/types"; 
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,10 +19,13 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import { Skeleton } from "../ui/skeleton";
-import type { UserProfile, Appointment, CommunityPost, ResumeScanHistoryItem, GalleryEvent } from "@/types";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import Image from "next/image";
+import { getActivePromotionalContent } from "@/lib/actions/promotional-content";
 
 interface ManagerDashboardProps {
-  user: UserProfile;
+  user: UserProfile; 
 }
 
 type ManagerDashboardWidgetId =
@@ -32,7 +34,8 @@ type ManagerDashboardWidgetId =
   | 'communityPostsStat'
   | 'pendingApprovalsStat'
   | 'tenantEngagementOverview'
-  | 'tenantManagementActions';
+  | 'tenantManagementActions'
+  | 'promotionalSpotlight';
 
 interface WidgetConfig {
   id: ManagerDashboardWidgetId;
@@ -41,6 +44,7 @@ interface WidgetConfig {
 }
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
+  { id: 'promotionalSpotlight', titleKey: 'managerDashboard.widgets.promotionalSpotlight', defaultVisible: true },
   { id: 'activeUsersStat', titleKey: 'managerDashboard.widgets.activeUsersStat', defaultVisible: true },
   { id: 'resumesAnalyzedStat', titleKey: 'managerDashboard.widgets.resumesAnalyzedStat', defaultVisible: true },
   { id: 'communityPostsStat', titleKey: 'managerDashboard.widgets.communityPostsStat', defaultVisible: true },
@@ -55,6 +59,7 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
   const tenantId = user.tenantId;
   const { toast } = useToast();
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [activePromotions, setActivePromotions] = useState<PromotionalContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [visibleWidgetIds, setVisibleWidgetIds] = useState<Set<ManagerDashboardWidgetId>>(
@@ -65,9 +70,14 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
 
   useEffect(() => {
     async function loadData() {
+      if (!user) return;
       setIsLoading(true);
-      const data = await getDashboardData(tenantId, user.id, user.role);
+      const [data, promotions] = await Promise.all([
+        getDashboardData(tenantId, user.id, user.role),
+        getActivePromotionalContent(user)
+      ]);
       setDashboardData(data);
+      setActivePromotions(promotions);
       setIsLoading(false);
     }
     loadData();
@@ -160,6 +170,35 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
           </Button>
         </div>
 
+        {visibleWidgetIds.has('promotionalSpotlight') && activePromotions.length > 0 && (
+            <Card className="shadow-lg p-0 overflow-hidden">
+                <Carousel plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]} className="w-full" opts={{ loop: true }}>
+                <CarouselContent>
+                    {activePromotions.map((promotion: PromotionalContent) => (
+                    <CarouselItem key={promotion.id}>
+                        <div className={cn("text-primary-foreground bg-gradient-to-r", promotion.gradientFrom, promotion.gradientVia, promotion.gradientTo)}>
+                        <div className="flex flex-col md:flex-row items-center p-6 gap-6">
+                            <div className="md:w-1/3 flex justify-center">
+                              <Image src={promotion.imageUrl} alt={promotion.imageAlt} width={250} height={160} className="rounded-lg shadow-md object-cover" data-ai-hint={promotion.imageHint || "promotion"}/>
+                            </div>
+                            <div className="md:w-2/3 text-center md:text-left">
+                              <h2 className="text-2xl font-bold mb-2">{promotion.title}</h2>
+                              <p className="text-sm opacity-90 mb-4">{promotion.description}</p>
+                              <Button variant="secondary" size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" asChild>
+                                  <Link href={promotion.buttonLink} target={promotion.buttonLink === '#' ? '_self' : '_blank'} rel="noopener noreferrer">
+                                  {promotion.buttonText} <ExternalLink className="ml-2 h-4 w-4" />
+                                  </Link>
+                              </Button>
+                            </div>
+                        </div>
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                {activePromotions.length > 1 && (<><CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /><CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex" /></>)}
+                </Carousel>
+            </Card>
+        )}
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {visibleWidgetIds.has('activeUsersStat') && (
@@ -307,5 +346,3 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
     </>
   );
 }
-
-    

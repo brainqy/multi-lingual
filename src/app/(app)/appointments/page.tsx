@@ -55,7 +55,7 @@ export default function AppointmentsPage() {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [allUsers, setAllUsers] = useState<AlumniProfile[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
@@ -88,10 +88,10 @@ export default function AppointmentsPage() {
     const [userAppointments, users, posts] = await Promise.all([
       getAppointments(currentUser.id),
       getUsers(),
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
     ]);
     setAppointments(userAppointments);
-    setAllUsers(users as AlumniProfile[]);
+    setAllUsers(users as UserProfile[]);
     setCommunityPosts(posts);
     setIsLoading(false);
   }, [currentUser]);
@@ -108,7 +108,7 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getPartnerDetails = useCallback((appointment: Appointment | null): AlumniProfile | undefined => {
+  const getPartnerDetails = useCallback((appointment: Appointment | null): UserProfile | undefined => {
     if (!currentUser || !appointment) return undefined;
     const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
@@ -161,13 +161,23 @@ export default function AppointmentsPage() {
 
   const onRescheduleSubmit = async (data: RescheduleFormData) => {
     if (!appointmentToReschedule) return;
+
     const newDateTime = new Date(data.preferredDate);
-    const timeParts = data.preferredTimeSlot.match(/(\d+)(AM|PM)/);
+    // Correctly parse time like "9:30 AM"
+    const timeParts = data.preferredTimeSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
     if (timeParts) {
-      let hour = parseInt(timeParts[1]);
-      if (timeParts[2] === 'PM' && hour !== 12) hour += 12;
-      if (timeParts[2] === 'AM' && hour === 12) hour = 0;
-      newDateTime.setHours(hour, 0, 0, 0);
+        let hour = parseInt(timeParts[1], 10);
+        const minute = parseInt(timeParts[2], 10);
+        const ampm = timeParts[3].toUpperCase();
+
+        if (ampm === 'PM' && hour !== 12) {
+            hour += 12;
+        }
+        if (ampm === 'AM' && hour === 12) { // Midnight case
+            hour = 0;
+        }
+        newDateTime.setHours(hour, minute, 0, 0);
     }
 
     const partner = getPartnerDetails(appointmentToReschedule);
@@ -245,7 +255,7 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="appointments-page">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-8 w-8" /> {t("appointments.title", { default: "My Appointments" })}
@@ -309,7 +319,7 @@ export default function AppointmentsPage() {
       ) : (
         <>
           {filteredAppointments.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2" data-testid="appointments-list">
               {filteredAppointments.map((appt) => {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
@@ -319,7 +329,7 @@ export default function AppointmentsPage() {
                 const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
 
                 return (
-                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300" data-testid={`appointment-card-${appt.id}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{appt.title}</CardTitle>
@@ -465,5 +475,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-
-    

@@ -7,18 +7,18 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Award, CheckCircle, Repeat, Lightbulb, Zap, Loader2, Trophy, Send, Clock } from 'lucide-react';
-import type { DailyChallenge, UserProfile, InterviewQuestionCategory } from '@/types';
+import type { DailyChallenge, UserProfile, InterviewQuestionCategory, EvaluateDailyChallengeAnswerOutput } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/use-auth";
 import { updateUser } from "@/lib/data-services/users";
 import { createActivity } from "@/lib/actions/activities";
-import { evaluateDailyChallengeAnswer, type EvaluateDailyChallengeAnswerOutput } from "@/ai/flows/evaluate-daily-challenge-answer";
+import { evaluateDailyChallengeAnswer } from "@/ai/flows/evaluate-daily-challenge-answer";
 import ScoreCircle from '@/components/ui/score-circle';
 import { getDashboardData } from "@/lib/actions/dashboard";
 import { useRouter } from "next/navigation";
 import { getDynamicFlipChallenge } from "@/lib/actions/challenges";
-import { intervalToDuration, isFuture } from 'date-fns';
+import { Duration, intervalToDuration, isFuture } from 'date-fns';
 import { useSettings } from "@/contexts/settings-provider";
 
 const CountdownTimer = ({ expiryDate }: { expiryDate: Date }) => {
@@ -76,7 +76,7 @@ export default function DailyInterviewChallengePage() {
     if (!user) return;
     setIsLoading(true);
     const [dashboardData, dynamicFlipChallenge] = await Promise.all([
-      getDashboardData(user.tenantId, user.id, user.role),
+      getDashboardData(user.id, user.role),
       getDynamicFlipChallenge(user.id),
     ]);
     
@@ -155,7 +155,7 @@ export default function DailyInterviewChallengePage() {
         const updatedUser = await updateUser(user.id, { xpPoints: (user.xpPoints || 0) + xpGained });
         if (updatedUser) {
           await login(updatedUser.email); // Re-login to update auth context
-          await createActivity({ userId: user.id, tenantId: user.tenantId, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
+          await createActivity({ userId: user.id, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
           toast({
             title: `+${xpGained} XP! Correct Answer!`,
             description: `You've successfully completed the challenge.`,

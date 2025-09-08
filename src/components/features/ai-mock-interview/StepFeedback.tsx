@@ -10,8 +10,9 @@ import { Sparkles, ListChecks, CheckCircle, AlertTriangle, RefreshCw, MessageSqu
 import type { MockInterviewSession, CommunityPost } from '@/types';
 import ScoreCircle from '@/components/ui/score-circle';
 import { useToast } from '@/hooks/use-toast';
-import { sampleCommunityPosts, sampleUserProfile } from '@/lib/sample-data';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
+import { createCommunityPost } from '@/lib/actions/community';
 
 interface StepFeedbackProps {
   session: MockInterviewSession;
@@ -20,7 +21,7 @@ interface StepFeedbackProps {
 
 export default function StepFeedback({ session, onRestart }: StepFeedbackProps) {
   const { toast } = useToast();
-  const currentUser = sampleUserProfile;
+  const { user: currentUser } = useAuth();
 
   const topicsToRevise = useMemo(() => {
     if (!session?.answers || !session?.questions) return [];
@@ -43,7 +44,11 @@ export default function StepFeedback({ session, onRestart }: StepFeedbackProps) 
     return <p>Generating feedback... Please wait.</p>;
   }
 
-  const handleShareToFeed = () => {
+  const handleShareToFeed = async () => {
+    if (!currentUser) {
+      toast({ title: "Not Logged In", description: "You must be logged in to share.", variant: "destructive" });
+      return;
+    }
     if (!session.overallFeedback || session.overallScore === undefined) {
       toast({ title: "Error", description: "Interview data is not complete for sharing.", variant: "destructive" });
       return;
@@ -64,28 +69,33 @@ export default function StepFeedback({ session, onRestart }: StepFeedbackProps) 
 
     postContent += `\n\n#AIMockInterview #CareerPrep #${session.topic.toLowerCase().replace(/\s+/g, '')}`;
     
-    const newPost: CommunityPost = {
-      id: `post-interview-${Date.now()}`,
+    const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
       tenantId: currentUser.tenantId,
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.profilePictureUrl,
-      timestamp: new Date().toISOString(),
       content: postContent,
       type: 'text',
       tags: ['AIMockInterview', 'CareerPrep', session.topic.toLowerCase().replace(/\s+/g, '')],
       moderationStatus: 'visible',
       flagCount: 0,
-      comments: [],
     };
 
-    sampleCommunityPosts.unshift(newPost);
+    const newPost = await createCommunityPost(newPostData);
 
-    toast({
-      title: "Shared to Feed!",
-      description: "Your mock interview achievement has been posted to the community feed.",
-      duration: 5000,
-    });
+    if (newPost) {
+      toast({
+        title: "Shared to Feed!",
+        description: "Your mock interview achievement has been posted to the community feed.",
+        duration: 5000,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to share your results. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

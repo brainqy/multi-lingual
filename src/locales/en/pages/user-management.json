@@ -1,0 +1,93 @@
+
+{
+  "userManagement": {
+    "titleAdmin": "User Management",
+    "titleManager": "User Management ({tenantName})",
+    "descriptionAdmin": "Oversee, search, and manage all users across the platform.",
+    "descriptionManager": "Manage users within your tenant: {tenantName}.",
+    "bulkUploadButton": "Bulk Upload Users",
+    "addNewButton": "Add New User",
+    "allUsersTitle": "All Users",
+    "searchPlaceholder": "Search by name, email, or tenant...",
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "tenant": "Tenant",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "userCard": {
+      "streakFreezes": "Streak Freezes",
+      "editButton": "Edit",
+      "deleteButton": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Are you sure?",
+      "description": "This action cannot be undone. This will permanently delete the user {name} and all their associated data.",
+      "deleteButton": "Yes, delete user"
+    },
+    "dialog": {
+      "editTitle": "Edit User",
+      "addTitle": "Add New User",
+      "saveButton": "Save Changes",
+      "createButton": "Create User"
+    },
+    "form": {
+      "nameLabel": "Full Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password (Optional)",
+      "passwordHelpAdmin": "Leave blank to not set a password. The user can set it via 'Forgot Password'.",
+      "tenantLabel": "Tenant",
+      "tenantPlaceholder": "Select a tenant",
+      "roleLabel": "Role",
+      "statusLabel": "Status"
+    },
+    "roles": {
+      "user": "User",
+      "manager": "Manager",
+      "admin": "Admin"
+    },
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    },
+    "bulkUpload": {
+      "title": "Bulk Upload Users",
+      "description": "Upload a CSV file to create multiple users at once. The CSV must contain 'name', 'email', 'role', and 'tenantId' columns.",
+      "csvLabel": "CSV File",
+      "selectedFile": "Selected file",
+      "downloadSample": "Download Sample CSV",
+      "exampleFormat": "Example Format",
+      "uploadButton": "Upload & Create Users",
+      "errorNoFile": "Please select a CSV file to upload.",
+      "errorCsvFormat": "CSV file must have a header row and at least one data row.",
+      "errorCsvHeader": "CSV must contain the following headers: {headers}",
+      "errorProcessing": "An error occurred while processing the CSV file.",
+      "errorReading": "An error occurred while reading the file."
+    },
+    "toast": {
+      "updated": {
+        "title": "User Updated",
+        "description": "Details for {name} have been updated."
+      },
+      "created": {
+        "title": "User Created",
+        "description": "A new user account for {name} has been created."
+      },
+      "deleteSelf": {
+        "title": "Action Denied",
+        "description": "You cannot delete your own account."
+      },
+      "deleted": {
+        "title": "User Deleted",
+        "description": "The user has been successfully removed."
+      },
+      "uploaded": {
+        "title": "Upload Complete",
+        "description": "{count} new users were successfully created from the CSV file."
+      }
+    }
+  }
+}

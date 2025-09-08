@@ -1,13 +1,14 @@
+
 "use client";
 
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarMenuItem, SidebarMenuButton, SidebarSeparator, SidebarGroup, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar";
 import { Aperture, Award, BarChart2, BookOpen, Briefcase, Building2, CalendarDays, FileText, GalleryVerticalEnd, GitFork, Gift, Handshake, History, Home, Layers3, ListChecks, MessageSquare, Settings, ShieldAlert, ShieldQuestion, User, Users, WalletCards, Zap, UserCog, BotMessageSquare, Target, Users2, BookText as BookTextIcon, Activity, Edit, FileType, Brain, FilePlus2, Trophy, Settings2 as Settings2Icon, Puzzle as PuzzleIcon, Mic, ServerIcon, Megaphone, PlusCircle, Dices, Award as AwardIcon, Trash2, TrendingUp, Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { samplePlatformSettings } from "@/lib/sample-data";
 import { useI18n } from "@/hooks/use-i18n"; // <-- Add this import
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useSettings } from "@/contexts/settings-provider";
 
 const navItems = [
   { href: "/dashboard", labelKey: "sideMenu.dashboard", icon: Home },
@@ -90,7 +91,8 @@ const adminItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { user: currentUser } = useAuth();
-  const platformName = samplePlatformSettings.platformName;
+  const { settings } = useSettings();
+  const platformName = settings.platformName;
   const { t } = useI18n();
   const { isMobile, setOpenMobile } = useSidebar();
 
@@ -124,18 +126,18 @@ export function AppSidebar() {
     return (
       <SidebarMenuItem key={item.href || item.labelKey}>
          {effectiveHref ? (
-           <Link href={effectiveHref} passHref legacyBehavior>
-            <SidebarMenuButton 
-              as="a"
+           <SidebarMenuButton 
+              asChild
               isActive={isActive} 
               size={isSubItem ? "sm" : "default"} 
               className="w-full justify-start"
               onClick={handleMenuItemClick}
             >
-              <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
-              <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
+              <Link href={effectiveHref}>
+                <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/80"}`} />
+                <span className={`${isActive ? "text-sidebar-primary-foreground" : ""} group-data-[collapsible=icon]:hidden`}>{t(item.labelKey)}</span>
+              </Link>
             </SidebarMenuButton>
-           </Link>
          ) : (
            <SidebarMenuButton size={isSubItem ? "sm" : "default"} className="w-full justify-start cursor-default hover:bg-transparent group-data-[collapsible=icon]:justify-center">
               <item.icon className="h-5 w-5 text-sidebar-foreground/80" />

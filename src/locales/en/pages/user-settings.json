@@ -69,7 +69,7 @@
       },
       "userSettingsSaved": {
         "title": "Settings Saved",
-        "description": "Your preferences have been updated."
+        "description": "Your preferences have been successfully updated."
       },
       "passwordChangedMock": {
         "title": "Password Changed (Mock)",
