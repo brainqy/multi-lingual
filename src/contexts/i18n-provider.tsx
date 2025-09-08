@@ -49,6 +49,7 @@ import enAdminAnalytics from '@/locales/en/pages/admin-analytics.json';
 import enUserSettings from '@/locales/en/pages/user-settings.json';
 import enLanding from '@/locales/en/pages/landing.json';
 import enAiResumeAnalyzer from '@/locales/en/pages/ai-resume-analyzer.json';
+import enWallet from '@/locales/en/pages/wallet.json';
 
 
 import hiAdminDashboard from '@/locales/hi/pages/admin-dashboard.json';
@@ -80,6 +81,7 @@ import hiAdminAnalytics from '@/locales/hi/pages/admin-analytics.json';
 import hiUserSettings from '@/locales/hi/pages/user-settings.json';
 import hiLanding from '@/locales/hi/pages/landing.json';
 import hiAiResumeAnalyzer from '@/locales/hi/pages/ai-resume-analyzer.json';
+import hiWallet from '@/locales/hi/pages/wallet.json';
 
 import mrAdminDashboard from '@/locales/mr/pages/admin-dashboard.json';
 import mrGamification from '@/locales/mr/pages/gamification.json';
@@ -110,6 +112,7 @@ import mrAdminAnalytics from '@/locales/mr/pages/admin-analytics.json';
 import mrUserSettings from '@/locales/mr/pages/user-settings.json';
 import mrLanding from '@/locales/mr/pages/landing.json';
 import mrAiResumeAnalyzer from '@/locales/mr/pages/ai-resume-analyzer.json';
+import mrWallet from '@/locales/mr/pages/wallet.json';
 
 // Merge all page translations
 const enPages = {
@@ -122,7 +125,7 @@ const enPages = {
   ...enPromotionalContent, ...enJobBoard, ...enUserManagement,
   ...enAiMockInterview, ...enAwards, ...enReferrals, ...enAffiliates,
   ...enPromoCodes, ...enAdminAnalytics, ...enUserSettings, ...enLanding,
-  ...enAiResumeAnalyzer
+  ...enAiResumeAnalyzer, ...enWallet
 };
 const hiPages = {
   ...hiAdminDashboard, ...hiGamification, ...hiMain,
@@ -134,7 +137,7 @@ const hiPages = {
   ...hiPromotionalContent, ...hiJobBoard, ...hiUserManagement,
   ...hiAiMockInterview, ...hiAwards, ...hiReferrals, ...hiAffiliates,
   ...hiPromoCodes, ...hiAdminAnalytics, ...hiUserSettings, ...hiLanding,
-  ...hiAiResumeAnalyzer
+  ...hiAiResumeAnalyzer, ...hiWallet
 };
 const mrPages = {
   ...mrAdminDashboard, ...mrGamification, ...mrMain,
@@ -146,7 +149,7 @@ const mrPages = {
   ...mrPromotionalContent, ...mrJobBoard, ...mrUserManagement,
   ...mrAiMockInterview, ...mrAwards, ...mrReferrals, ...mrAffiliates,
   ...mrPromoCodes, ...mrAdminAnalytics, ...mrUserSettings, ...mrLanding,
-  ...mrAiResumeAnalyzer
+  ...mrAiResumeAnalyzer, ...mrWallet
 };
 
 const enMergedTranslations: Translations = {
