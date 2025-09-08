@@ -1,4 +1,3 @@
-
 // src/lib/firebase-client.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 
