@@ -32,7 +32,7 @@ import { updateUser } from '@/lib/data-services/users';
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  dateOfBirth: z.date().optional(),
+  dateOfBirth: z.date().optional().nullable(),
   gender: z.enum(Genders).optional(),
   mobileNumber: z.string().optional(),
   currentAddress: z.string().optional(),
@@ -83,7 +83,7 @@ const convertUserProfileToFormData = (user: UserProfile): ProfileFormData => {
 
 export default function ProfilePage() {
   const { t } = useI18n();
-  const { user, login } = useAuth(); // Use auth context
+  const { user, refreshUser } = useAuth(); // Use auth context
   const [isEditing, setIsEditing] = useState(false); 
   const [suggestedSkills, setSuggestedSkills] = useState<SuggestedSkill[] | null>(null);
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
@@ -142,8 +142,7 @@ export default function ProfilePage() {
     const updatedUser = await updateUser(user.id, updatedProfileData);
 
     if (updatedUser) {
-      // Re-login to update the user in the auth context
-      await login(updatedUser.email);
+      await refreshUser();
       setIsEditing(false); 
       setIsProfileSavedDialogOpen(true);
       reset(convertUserProfileToFormData(updatedUser)); // Reset form to show new clean state
@@ -308,7 +307,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Controller name="dateOfBirth" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
+                  <Controller name="dateOfBirth" control={control} render={({ field }) => <DatePicker date={field.value ?? undefined} setDate={field.onChange} />} />
                   {errors.dateOfBirth && <p className="text-sm text-destructive mt-1">{errors.dateOfBirth.message}</p>}
                 </div>
                 <div className="space-y-1">
