@@ -2,14 +2,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { BarChart, Users, Briefcase, CheckSquare, MessageSquare, Zap, Activity, Settings as SettingsIcon, CalendarCheck2, Gift, Loader2, Megaphone, ExternalLink } from "lucide-react";
+import { Users, Zap, MessageSquare, CheckSquare, Settings as SettingsIcon, Activity, CalendarCheck2, Gift, Loader2, Megaphone, ExternalLink } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
 import { managerDashboardTourSteps } from "@/lib/tour-steps";
 import { getDashboardData } from "@/lib/actions/dashboard";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { Tenant, UserProfile, SystemAlert, CommunityPost, Affiliate, Appointment, ResumeScanHistoryItem, GalleryEvent, PromotionalContent } from "@/types"; 
+import type { Tenant, UserProfile, CommunityPost, Appointment, ResumeScanHistoryItem, GalleryEvent, PromotionalContent } from "@/types"; 
 import { ResponsiveContainer, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, Bar as RechartsBar, CartesianGrid } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
