@@ -60,7 +60,7 @@
     },
     "share": {
       "title": "Join me on JobMatch AI!",
-      "text": "Use my referral code {code} to sign up for JobMatch AI!"
+      "text": "Use my referral code {code} to sign up for JobMatch AI! {referralLink}"
     },
     "featureDisabled": {
       "title": "Feature Disabled",

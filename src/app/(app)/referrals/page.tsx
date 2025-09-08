@@ -23,8 +23,14 @@ export default function ReferralsPage() {
   const { settings } = useSettings();
   const [referralHistory, setReferralHistory] = useState<ReferralHistoryItem[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
+  const [baseUrl, setBaseUrl] = useState('');
 
   useEffect(() => {
+    // Ensure this runs only on the client-side where window is available
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin);
+    }
+
     async function loadHistory() {
       if (!user) return;
       setIsDataLoading(true);
@@ -54,7 +60,7 @@ export default function ReferralsPage() {
     );
   }
 
-  const referralLink = `https://JobMatch.ai/signup?ref=${user.referralCode || 'DEFAULT123'}`;
+  const referralLink = `${baseUrl}/auth/signup?ref=${user.referralCode || 'DEFAULT123'}`;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -69,7 +75,7 @@ export default function ReferralsPage() {
      if (navigator.share) {
       navigator.share({
         title: t("referrals.share.title"),
-        text: t("referrals.share.text", { code: user.referralCode || 'DEFAULT123' }),
+        text: t("referrals.share.text", { code: user.referralCode || 'DEFAULT123', referralLink }),
         url: referralLink,
       })
       .then(() => console.log('Successful share'))

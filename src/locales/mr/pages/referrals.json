@@ -60,7 +60,7 @@
     },
     "share": {
       "title": "JobMatch AI वर माझ्यासोबत सामील व्हा!",
-      "text": "JobMatch AI वर साइन अप करण्यासाठी माझा रेफरल कोड {code} वापरा!"
+      "text": "JobMatch AI वर साइन अप करण्यासाठी माझा रेफरल कोड {code} वापरा! {referralLink}"
     },
     "featureDisabled": {
       "title": "वैशिष्ट्य अक्षम केले आहे",
