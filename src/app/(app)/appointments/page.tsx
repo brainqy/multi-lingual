@@ -161,13 +161,23 @@ export default function AppointmentsPage() {
 
   const onRescheduleSubmit = async (data: RescheduleFormData) => {
     if (!appointmentToReschedule) return;
+
     const newDateTime = new Date(data.preferredDate);
-    const timeParts = data.preferredTimeSlot.match(/(\d+)(AM|PM)/);
+    // Correctly parse time like "9:30 AM"
+    const timeParts = data.preferredTimeSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
     if (timeParts) {
-      let hour = parseInt(timeParts[1]);
-      if (timeParts[2] === 'PM' && hour !== 12) hour += 12;
-      if (timeParts[2] === 'AM' && hour === 12) hour = 0;
-      newDateTime.setHours(hour, 0, 0, 0);
+        let hour = parseInt(timeParts[1], 10);
+        const minute = parseInt(timeParts[2], 10);
+        const ampm = timeParts[3].toUpperCase();
+
+        if (ampm === 'PM' && hour !== 12) {
+            hour += 12;
+        }
+        if (ampm === 'AM' && hour === 12) { // Midnight case
+            hour = 0;
+        }
+        newDateTime.setHours(hour, minute, 0, 0);
     }
 
     const partner = getPartnerDetails(appointmentToReschedule);
