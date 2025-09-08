@@ -345,7 +345,7 @@ export default function CommunityFeedPage() {
   const handleAssign = async (postId: string, userName: string) => {
     if (!currentUser) return;
     const postToUpdate = posts.find(p => p.id === postId);
-    if (postToUpdate?.type !== 'request' || postToUpdate.assignedTo) {
+    if (!postToUpdate || postToUpdate.type !== 'request' || postToUpdate.assignedTo) {
       toast({ title: "Already Assigned", description: "This request is already assigned to someone." });
       return;
     }
@@ -355,6 +355,7 @@ export default function CommunityFeedPage() {
       setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       
       const newAppointmentData: Omit<Appointment, 'id'> = {
+          tenantId: postToUpdate.tenantId,
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
           title: `Assigned Request: ${postToUpdate.content?.substring(0, 30)}...`,
