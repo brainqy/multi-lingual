@@ -279,7 +279,7 @@ export default function CommunityFeedPage() {
         status: data.type === 'request' ? 'open' as const : undefined,
       };
 
-      const newPost = await createCommunityPost(newPostData);
+      const newPost = await createCommunityPost(newPostData as Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'>);
       
       if (newPost) {
         setPosts(prev => [{ ...newPost, bookmarkedBy: [] }, ...prev]);
