@@ -53,7 +53,6 @@ const profileSchema = z.object({
   areasOfSupport: z.array(z.enum(AreasOfSupportOptions)).optional(), 
   timeCommitment: z.enum(TimeCommitments).optional(), 
   preferredEngagementMode: z.enum(EngagementModes).optional(), 
-  otherComments: z.string().optional(),
   
   lookingForSupportType: z.enum(SupportTypesSought).optional(),
   helpNeededDescription: z.string().optional(),
@@ -455,10 +454,6 @@ export default function ProfilePage() {
                     </Select>
                   )} />
                 </div>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="otherComments" className="flex items-center gap-1"><Info className="h-4 w-4 text-muted-foreground"/>Other Engagement Comments/Notes</Label>
-                <Controller name="otherComments" control={control} render={({ field }) => <Textarea id="otherComments" placeholder="Any other ways you'd like to contribute..." {...field} />} />
               </div>
 
               {renderSectionHeader("Support You're Looking For", HelpCircle, "What kind of help or connections are you seeking from the alumni network?")}

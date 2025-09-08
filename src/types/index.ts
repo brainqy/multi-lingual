@@ -72,7 +72,6 @@ export interface UserProfile {
   areasOfSupport?: SupportArea[];
   timeCommitment?: TimeCommitment;
   preferredEngagementMode?: EngagementMode;
-  otherComments?: string;
   
   // Support Seeking
   lookingForSupportType?: SupportTypeSought;
@@ -193,6 +192,7 @@ export interface CommunityPost {
   registeredBy?: string[];
   assignedTo?: string;
   status?: 'open' | 'in progress' | 'completed';
+  bookmarkedBy?: string[];
 }
 
 export interface CommunityComment {
