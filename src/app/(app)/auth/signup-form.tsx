@@ -24,16 +24,23 @@ import { User, KeyRound, Mail, Gift, Eye, EyeOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTenantByIdentifier } from "@/lib/actions/tenants";
+import { getPlatformSettings } from "@/lib/actions/platform-settings";
 
 export function SignupForm() {
   const { signup } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
-  const platformName = t("appName", { default: "Bhasha Setu" });
+  const [platformName, setPlatformName] = useState("Bhasha Setu");
   const [tenantId, setTenantId] = useState<string | undefined>(undefined);
   const [tenantName, setTenantName] = useState<string | null>(null);
 
   useEffect(() => {
+    async function loadSettings() {
+      const settings = await getPlatformSettings();
+      setPlatformName(settings.platformName);
+    }
+    loadSettings();
+    
     // This runs on the client, so window is available.
     async function resolveTenant() {
       const hostname = window.location.hostname;
@@ -50,11 +57,12 @@ export function SignupForm() {
             setTenantName('Invalid Tenant');
         }
       } else {
-          setTenantName(platformName);
+          const settings = await getPlatformSettings();
+          setTenantName(settings.platformName);
       }
     }
     resolveTenant();
-  }, [platformName]);
+  }, []);
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),

@@ -23,6 +23,7 @@ import { Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { getPlatformSettings } from "@/lib/actions/platform-settings";
 
 const GoogleIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -37,10 +38,16 @@ export function LoginForm() {
   const { login, loginWithGoogle } = useAuth();
   const { t } = useI18n();
   const [showPassword, setShowPassword] = React.useState(false);
-  const platformName = t("appName", { default: "Bhasha Setu" });
+  const [platformName, setPlatformName] = useState("Bhasha Setu");
   const [tenantId, setTenantId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    async function loadSettings() {
+        const settings = await getPlatformSettings();
+        setPlatformName(settings.platformName);
+    }
+    loadSettings();
+
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       const parts = hostname.split('.');
