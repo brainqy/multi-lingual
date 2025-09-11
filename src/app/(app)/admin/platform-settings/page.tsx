@@ -38,6 +38,8 @@ const settingsSchema = z.object({
   coverLetterGeneratorEnabled: z.boolean(),
   mockInterviewEnabled: z.boolean(),
   aiMockInterviewCost: z.coerce.number().min(0, "platformSettings.validation.aiMockInterviewCostMin"),
+  aiResumeAnalysisCost: z.coerce.number().min(0, "Cost must be non-negative").optional(),
+  aiAlumniConnectionRecCost: z.coerce.number().min(0, "Cost must be non-negative").optional(),
   referralsEnabled: z.boolean(),
   affiliateProgramEnabled: z.boolean(),
   alumniConnectEnabled: z.boolean(),
@@ -80,6 +82,8 @@ export default function PlatformSettingsPage() {
     coverLetterGeneratorEnabled: z.boolean(),
     mockInterviewEnabled: z.boolean(),
     aiMockInterviewCost: z.coerce.number().min(0, t("platformSettings.validation.aiMockInterviewCostMin")),
+    aiResumeAnalysisCost: z.coerce.number().min(0, "Cost must be non-negative").optional(),
+    aiAlumniConnectionRecCost: z.coerce.number().min(0, "Cost must be non-negative").optional(),
     referralsEnabled: z.boolean(),
     affiliateProgramEnabled: z.boolean(),
     alumniConnectEnabled: z.boolean(),
@@ -217,6 +221,7 @@ export default function PlatformSettingsPage() {
             {renderSettingRow("jobBoardEnabled", "platformSettings.career.jobBoardEnabled.label", <Controller name="jobBoardEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
             {renderSettingRow("maxJobPostingDays", "platformSettings.career.maxJobPostingDays.label", <Controller name="maxJobPostingDays" control={control} render={({ field }) => <Input type="number" {...field} />} />, "platformSettings.career.maxJobPostingDays.description", errors.maxJobPostingDays?.message)}
             {renderSettingRow("resumeAnalyzerEnabled", "platformSettings.career.resumeAnalyzerEnabled.label", <Controller name="resumeAnalyzerEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
+            {renderSettingRow("aiResumeAnalysisCost", "AI Resume Analysis Cost (Coins)", <Controller name="aiResumeAnalysisCost" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, "Cost for using the platform API key.", errors.aiResumeAnalysisCost?.message)}
             {renderSettingRow("aiResumeWriterEnabled", "platformSettings.career.aiResumeWriterEnabled.label", <Controller name="aiResumeWriterEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
             {renderSettingRow("coverLetterGeneratorEnabled", "platformSettings.career.coverLetterGeneratorEnabled.label", <Controller name="coverLetterGeneratorEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
             {renderSettingRow("mockInterviewEnabled", "platformSettings.career.mockInterviewEnabled.label", <Controller name="mockInterviewEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />)}
@@ -248,6 +253,7 @@ export default function PlatformSettingsPage() {
              {renderSettingRow("defaultAppointmentCost", "platformSettings.alumniConnect.defaultAppointmentCost.label", 
                 <Controller name="defaultAppointmentCost" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, 
                 "platformSettings.alumniConnect.defaultAppointmentCost.description", errors.defaultAppointmentCost?.message)}
+             {renderSettingRow("aiAlumniConnectionRecCost", "AI Mentor Suggestion Cost (Coins)", <Controller name="aiAlumniConnectionRecCost" control={control} render={({ field }) => <Input type="number" min="0" {...field} />} />, "Cost for using the platform API key.", errors.aiAlumniConnectionRecCost?.message)}
              {renderSettingRow("maxEventRegistrationsPerUser", "platformSettings.alumniConnect.maxEventRegistrationsPerUser.label", <Controller name="maxEventRegistrationsPerUser" control={control} render={({ field }) => <Input type="number" min="1" {...field} />} />, "platformSettings.alumniConnect.maxEventRegistrationsPerUser.description", errors.maxEventRegistrationsPerUser?.message)}
              {renderSettingRow("walletEnabled", "Digital Wallet System", <Controller name="walletEnabled" control={control} render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />, "Enable or disable the digital wallet (coins) feature for the platform.")}
           </CardContent>
@@ -294,4 +300,3 @@ export default function PlatformSettingsPage() {
     </TooltipProvider>
   );
 }
-

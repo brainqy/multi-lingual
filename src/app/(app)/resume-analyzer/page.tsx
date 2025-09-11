@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -12,10 +13,12 @@ import ScanHistory from '@/components/features/resume-analyzer/ScanHistory';
 import { getResumeProfiles } from '@/lib/actions/resumes';
 import { getScanHistory, createScanHistory } from '@/lib/actions/resumes';
 import { useAuth } from '@/hooks/use-auth';
+import { useSettings } from '@/contexts/settings-provider';
 
 
 export default function ResumeAnalyzerPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, wallet, refreshWallet } = useAuth();
+  const { settings } = useSettings();
   const [isLoading, setIsLoading] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [analysisReport, setAnalysisReport] = useState<AnalyzeResumeAndJobDescriptionOutput | null>(null);
@@ -66,6 +69,19 @@ export default function ResumeAnalyzerPage() {
       return;
     }
 
+    // Pre-flight check for coins if using platform key
+    const usesPlatformKey = !currentUser.userApiKey;
+    if (usesPlatformKey && settings && settings.aiResumeAnalysisCost) {
+        if (!wallet || wallet.coins < settings.aiResumeAnalysisCost) {
+            toast({
+                title: "Insufficient Coins",
+                description: `This analysis costs ${settings.aiResumeAnalysisCost} coins. You currently have ${wallet?.coins || 0}.`,
+                variant: "destructive",
+            });
+            return;
+        }
+    }
+
     setIsLoading(true);
     setAnalysisReport(null);
     setCurrentResumeText(resumeText);
@@ -79,7 +95,14 @@ export default function ResumeAnalyzerPage() {
         jobDescriptionText: jobDescription,
         jobTitle: jobTitle || undefined,
         companyName: companyName || undefined,
+        userId: usesPlatformKey ? currentUser.id : undefined,
+        apiKey: currentUser.userApiKey || undefined,
       });
+
+      if (usesPlatformKey && settings && settings.aiResumeAnalysisCost && settings.aiResumeAnalysisCost > 0) {
+        await refreshWallet(); // Refresh wallet after successful deduction
+      }
+
       setAnalysisReport(detailedReportRes);
 
       const newScanEntryData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'> = {
@@ -128,7 +151,7 @@ export default function ResumeAnalyzerPage() {
       const reportSection = document.getElementById('analysis-report-section');
       if (reportSection) reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [resumes, toast, currentUser]);
+  }, [resumes, toast, currentUser, settings, wallet, refreshWallet]);
 
   const handleRewriteComplete = useCallback((newResumeText: string) => {
     setCurrentResumeText(newResumeText);

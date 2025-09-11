@@ -270,6 +270,8 @@ export const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
   jobDescriptionText: z.string().describe('The full text of the job description.'),
   jobTitle: z.string().optional().describe('The target job title, if known.'),
   companyName: z.string().optional().describe('The target company name, if known.'),
+  userId: z.string().optional().describe('The ID of the user performing the analysis for coin deduction.'),
+  apiKey: z.string().optional().describe('Optional user-provided API key.'),
 });
 
 const RecruiterTipSchema = z.object({
@@ -482,6 +484,8 @@ export interface PlatformSettings {
   coverLetterGeneratorEnabled: boolean;
   mockInterviewEnabled: boolean;
   aiMockInterviewCost: number;
+  aiResumeAnalysisCost?: number;
+  aiAlumniConnectionRecCost?: number;
   // Engagement
   gamificationEnabled: boolean;
   xpForLogin: number;

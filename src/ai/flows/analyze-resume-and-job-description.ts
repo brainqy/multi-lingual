@@ -12,6 +12,8 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { AnalyzeResumeAndJobDescriptionInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionOutput } from '@/types';
 import { AIError, InvalidInputError } from '@/lib/exceptions';
+import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import { getWallet, updateWallet } from '@/lib/actions/wallet';
 
 
 export async function analyzeResumeAndJobDescription(
@@ -19,6 +21,18 @@ export async function analyzeResumeAndJobDescription(
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
   if (!input.resumeText?.trim() || !input.jobDescriptionText?.trim()) {
     throw new InvalidInputError("Resume text or Job Description text cannot be empty.");
+  }
+  
+  if (input.userId && !input.apiKey) {
+    const settings = await getPlatformSettings();
+    const cost = settings.aiResumeAnalysisCost ?? 0;
+    if (cost > 0) {
+      const wallet = await getWallet(input.userId);
+      if (!wallet || wallet.coins < cost) {
+        throw new Error(`Insufficient funds. This action costs ${cost} coins.`);
+      }
+      await updateWallet(input.userId, { coins: wallet.coins - cost }, `AI Resume Analysis for ${input.jobTitle || 'job'}`);
+    }
   }
   
   const { output } = await analyzeResumeAndJobDescriptionPrompt(input);
