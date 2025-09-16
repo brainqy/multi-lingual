@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
-import { getLiveInterviewSessions } from '@/lib/actions/live-interviews';
+import { getLiveInterviewSessions, createLiveInterviewSession } from '@/lib/actions/live-interviews';
 import { getUserByEmail } from '@/lib/data-services/users';
 import { useSettings } from '@/contexts/settings-provider';
 import { updateWallet } from '@/lib/actions/wallet';
