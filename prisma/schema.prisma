@@ -663,6 +663,8 @@ model MockInterviewSession {
   recordingReferences Json?
   interviewerScores    InterviewerScore[]
   finalScore           Json?
+  tenantId             String
+ 
 }
 
 model InterviewerScore {
