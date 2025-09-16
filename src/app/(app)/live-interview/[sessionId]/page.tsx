@@ -1,10 +1,14 @@
+
+"use client";
 import LiveInterviewClientView from '@/components/features/live-interview/LiveInterviewClientView';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
-// By removing generateStaticParams, this page will be dynamically rendered
-// at request time, which may help with build errors.
-
-// The page component itself is now a Server Component that wraps the client view.
+// This page now uses Suspense to handle the dynamic nature of the client component
 export default function LiveInterviewPageWrapper() {
-  // The client component will use `useParams` to get the sessionId, so we don't need to pass props.
-  return <LiveInterviewClientView />;
+  return (
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-background"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+      <LiveInterviewClientView />
+    </Suspense>
+  );
 }

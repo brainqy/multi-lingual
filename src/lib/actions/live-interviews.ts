@@ -12,36 +12,34 @@ import { headers } from 'next/headers';
  * @param sessionData The data for the new session.
  * @returns The newly created LiveInterviewSession object or null.
  */
-export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id' | 'tenantId'>): Promise<LiveInterviewSession | null> {
-  const headersList = headers();
-  const tenantId = headersList.get('X-Tenant-Id') || 'platform';
+export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id'>): Promise<LiveInterviewSession | null> {
   logAction('Creating live interview session', { title: sessionData.title });
   try {
     const { interviewerScores, ...restOfSessionData } = sessionData;
-    const newSession = await db.mockInterviewSession.create({
+    
+    // In a real app, you would have a dedicated LiveInterviewSession model.
+    // Here, we adapt it to the MockInterviewSession for demonstration.
+    // The key is storing the participant data.
+    const newSession = await db.liveInterviewSession.create({
       data: {
-        userId: restOfSessionData.participants[0]?.userId, // Assuming the first participant is the owner
-        topic: restOfSessionData.title,
-        status: 'in-progress',
-        createdAt: new Date(restOfSessionData.scheduledTime), // Use createdAt instead of scheduledTime
-        // Ensure Prisma optional JSON fields are handled
-        questions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
+        ...restOfSessionData,
+        // The Prisma schema now expects participants to be a JSON field.
+        participants: restOfSessionData.participants as any,
+        scheduledTime: new Date(restOfSessionData.scheduledTime),
+        preSelectedQuestions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: Prisma.JsonNull,
+        interviewerScores: Prisma.JsonNull,
         finalScore: Prisma.JsonNull,
       },
     });
-    // This is a simplified representation. The full LiveInterviewSession type has more fields
-    // that are not directly on the MockInterviewSession model.
-    return {
-      ...newSession,
-      ...restOfSessionData,
-      tenantId,
-    } as unknown as LiveInterviewSession;
+
+    return newSession as unknown as LiveInterviewSession;
   } catch (error) {
     logError('[LiveInterviewAction] Error creating session', error, { title: sessionData.title });
     return null;
   }
 }
+
 
 /**
  * Fetches all live interview sessions a user is part of.
@@ -51,22 +49,18 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
 export async function getLiveInterviewSessions(userId: string): Promise<LiveInterviewSession[]> {
   logAction('Fetching live interview sessions for user', { userId });
   try {
-    const sessions = await db.mockInterviewSession.findMany({
+    const sessions = await db.liveInterviewSession.findMany({
       where: {
-        userId: userId,
-        // Add a filter to distinguish live sessions if necessary, e.g. a specific tag in topic
+        participants: {
+          path: '$[*].userId',
+          array_contains: userId
+        }
       },
       orderBy: {
-        createdAt: 'desc', 
+        scheduledTime: 'desc', 
       },
     });
-    // This requires mapping the MockInterviewSession model to the LiveInterviewSession type
-    return sessions.map(s => ({
-      ...s,
-      title: s.topic,
-      scheduledTime: s.createdAt.toISOString(),
-      participants: [{ userId: s.userId, name: 'User', role: 'interviewer' }], // Placeholder participants
-    })) as unknown as LiveInterviewSession[];
+    return sessions as unknown as LiveInterviewSession[];
   } catch (error) {
     logError(`[LiveInterviewAction] Error fetching sessions for user ${userId}`, error, { userId });
     return [];
@@ -81,10 +75,9 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
 export async function getLiveInterviewSessionById(sessionId: string): Promise<LiveInterviewSession | null> {
   logAction('Fetching live interview session by ID', { sessionId });
   try {
-    const session = await db.mockInterviewSession.findUnique({
+    const session = await db.liveInterviewSession.findUnique({
       where: { id: sessionId },
     });
-    // This requires mapping
     return session as unknown as LiveInterviewSession;
   } catch (error) {
     logError(`[LiveInterviewAction] Error fetching session ${sessionId}`, error, { sessionId });
@@ -101,16 +94,15 @@ export async function getLiveInterviewSessionById(sessionId: string): Promise<Li
 export async function updateLiveInterviewSession(sessionId: string, updateData: Partial<Omit<LiveInterviewSession, 'id'>>): Promise<LiveInterviewSession | null> {
   logAction('Updating live interview session', { sessionId });
   try {
-    const { scheduledTime, interviewerScores, ...restUpdateData } = updateData;
-    const updatedSession = await db.mockInterviewSession.update({
+    const updatedSession = await db.liveInterviewSession.update({
       where: { id: sessionId },
       data: {
-        topic: restUpdateData.title,
-        status: restUpdateData.status,
-        createdAt: scheduledTime ? new Date(scheduledTime) : undefined, // Use createdAt for updates
-        // Handle JSON fields
-        questions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
+        ...updateData,
+        scheduledTime: updateData.scheduledTime ? new Date(updateData.scheduledTime) : undefined,
+        participants: updateData.participants ? updateData.participants as any : undefined,
+        preSelectedQuestions: updateData.preSelectedQuestions ? updateData.preSelectedQuestions as any : undefined,
         recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
+        interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
         finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
       },
     });

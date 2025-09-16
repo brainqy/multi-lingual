@@ -13,12 +13,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
+import type { PracticeSessionConfig, DialogStep, InterviewQuestionCategory, LiveInterviewSession, UserProfile } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import PracticeTopicSelection from './PracticeTopicSelection';
 import PracticeDateTimeSelector from './PracticeDateTimeSelector';
 import { useAuth } from '@/hooks/use-auth';
+import { createLiveInterviewSession } from '@/lib/actions/live-interviews';
 
 const friendEmailSchema = z.string().email("Please enter a valid email address.");
 
@@ -48,20 +49,54 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
   });
   const [friendEmailError, setFriendEmailError] = useState<string | null>(null);
 
-  const handleDialogNextStep = () => {
+  const handleDialogNextStep = async () => {
     if (dialogStep === 'selectType') {
       if (!practiceSessionConfig.type) {
         toast({ title: "Error", description: "Please select an interview type.", variant: "destructive" });
         return;
       }
       if (practiceSessionConfig.type === 'friends') {
-        if (!practiceSessionConfig.friendEmail?.trim()) { setFriendEmailError("Please enter a friend's email."); return; }
         const emailValidation = friendEmailSchema.safeParse(practiceSessionConfig.friendEmail);
-        if (!emailValidation.success) { setFriendEmailError(emailValidation.error.errors[0].message); return; }
+        if (!emailValidation.success) { 
+          setFriendEmailError(emailValidation.error.errors[0].message); 
+          return; 
+        }
         setFriendEmailError(null);
-        toast({ title: "Invitation Sent (Mock)", description: `Invitation would be sent to ${practiceSessionConfig.friendEmail}.` });
-        onClose();
-        return; 
+        
+        if (!currentUser) {
+            toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
+            return;
+        }
+
+        const newSessionData: Omit<LiveInterviewSession, 'id'> = {
+          tenantId: currentUser.tenantId,
+          title: `Practice Interview with ${practiceSessionConfig.friendEmail}`,
+          participants: [
+            { userId: currentUser.id, name: currentUser.name, role: "interviewer", profilePictureUrl: currentUser.profilePictureUrl },
+            // Placeholder for the friend
+            { userId: `invited-${practiceSessionConfig.friendEmail}`, name: practiceSessionConfig.friendEmail, role: "candidate", profilePictureUrl: `https://avatar.vercel.sh/${practiceSessionConfig.friendEmail}.png` }
+          ],
+          scheduledTime: new Date().toISOString(),
+          status: 'Scheduled',
+        };
+        
+        const newSession = await createLiveInterviewSession(newSessionData);
+        
+        if (newSession) {
+            const interviewLink = `${window.location.origin}/live-interview/${newSession.id}`;
+            navigator.clipboard.writeText(interviewLink);
+            toast({ 
+                title: "Practice Session Created!", 
+                description: `An invitation link has been copied to your clipboard. Share it with your friend to start the interview.`,
+                duration: 8000
+            });
+            onClose();
+            // Optional: Redirect to the interview queue or page
+            router.push(`/live-interview/${newSession.id}`);
+        } else {
+            toast({ title: "Error", description: "Failed to create the practice session.", variant: "destructive" });
+        }
+        return;
       }
       setDialogStep('selectTopics');
     } else if (dialogStep === 'selectTopics') {
