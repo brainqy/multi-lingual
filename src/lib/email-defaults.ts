@@ -1,8 +1,10 @@
 
-'use server';
-
 import type { EmailTemplateType } from '@prisma/client';
 
+/**
+ * Defines the default email templates to be used when a tenant
+ * does not have a custom one in the database.
+ */
 export const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
   {
     type: 'WELCOME',
