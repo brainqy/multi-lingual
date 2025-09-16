@@ -122,7 +122,6 @@ export async function sendEmail({
         const newTemplate = await db.emailTemplate.create({ data: dataForDb });
         logAction('[SendEmail] 6c. Successfully created default template in DB.', { newTemplateId: newTemplate.id });
         
-        // *** FIX: Re-assign the local template variable with the new DB entry ***
         template = { ...newTemplate, createdAt: newTemplate.createdAt.toISOString(), updatedAt: newTemplate.updatedAt.toISOString() };
         logAction('[SendEmail] 6d. Re-assigned local template variable with new DB entry.');
       }
