@@ -6,6 +6,7 @@ import { logAction, logError } from '@/lib/logger';
 import { getTenantEmailTemplates } from './email-templates';
 import nodemailer from 'nodemailer';
 import { EmailTemplateType } from '@prisma/client';
+import { getUserByEmail } from '../data-services/users';
 
 interface EmailPlaceholders {
   userName?: string;
@@ -108,11 +109,13 @@ export async function sendEmail({
         
         if (defaultTemplate) {
             logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
+            
+            // CORRECTED: Explicitly include the 'type' field from the default template.
             const dataForDb = {
                 subject: defaultTemplate.subject,
                 body: defaultTemplate.body,
                 tenantId: tenantId,
-                type: defaultTemplate.type, // CORRECT FIX: Explicitly include the type
+                type: defaultTemplate.type, // This was the missing field.
             };
             logAction('[SendEmail] 6b. Data prepared for DB create operation.', { dataForDb });
             
