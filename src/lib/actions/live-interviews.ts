@@ -8,7 +8,6 @@ import { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 import { sendEmail } from './send-email';
 import { getUserByEmail } from '../data-services/users';
-import { EmailTemplateType } from '@prisma/client';
 
 /**
  * Creates a new live interview session.
@@ -16,36 +15,45 @@ import { EmailTemplateType } from '@prisma/client';
  * @returns The newly created LiveInterviewSession object or null.
  */
 export async function createLiveInterviewSession(sessionData: Omit<LiveInterviewSession, 'id'>): Promise<LiveInterviewSession | null> {
-  logAction('Creating live interview session', { title: sessionData.title });
+  logAction('[LI_ACTION_CREATE] 1. Starting createLiveInterviewSession', { title: sessionData.title });
   try {
     const { interviewerScores, finalScore, ...restOfSessionData } = sessionData;
+    logAction('[LI_ACTION_CREATE] 2. Destructured session data.');
     
     // Live interviews are stored as MockInterviewSession with a specific structure
+    const dataForDb = {
+      userId: restOfSessionData.participants.find(p => p.role === 'interviewer')?.userId || 'system',
+      tenantId: restOfSessionData.tenantId,
+      topic: restOfSessionData.title,
+      description: `Live interview session scheduled for ${restOfSessionData.scheduledTime}`,
+      status: 'in-progress' as const, // Represents a scheduled live interview
+      createdAt: new Date(),
+      // Storing live-interview specific data in JSON fields
+      liveInterviewData: {
+          participants: restOfSessionData.participants,
+          scheduledTime: new Date(restOfSessionData.scheduledTime),
+      } as any,
+      questions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
+      recordingReferences: Prisma.JsonNull,
+      finalScore: Prisma.JsonNull,
+    };
+    logAction('[LI_ACTION_CREATE] 3. Prepared data for database insertion.', { data: Object.keys(dataForDb) });
+
     const newSession = await db.mockInterviewSession.create({
-      data: {
-        userId: restOfSessionData.participants.find(p => p.role === 'interviewer')?.userId || 'system',
-        tenantId: restOfSessionData.tenantId,
-        topic: restOfSessionData.title,
-        description: `Live interview session scheduled for ${restOfSessionData.scheduledTime}`,
-        status: 'in-progress', // Represents a scheduled live interview
-        createdAt: new Date(),
-        // Storing live-interview specific data in JSON fields
-        liveInterviewData: {
-            participants: restOfSessionData.participants,
-            scheduledTime: new Date(restOfSessionData.scheduledTime),
-        } as any,
-        questions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
-        recordingReferences: Prisma.JsonNull,
-      },
+      data: dataForDb,
     });
+    logAction('[LI_ACTION_CREATE] 4. Successfully created session in DB.', { newSessionId: newSession.id });
 
     // Send invitation email if it's a "Practice with a Friend" session
     const inviter = sessionData.participants.find(p => p.role === 'interviewer');
     const candidate = sessionData.participants.find(p => p.role === 'candidate');
+    logAction('[LI_ACTION_CREATE] 5. Identified inviter and candidate for potential email.', { inviter: inviter?.name, candidate: candidate?.name });
 
     if (inviter && candidate && sessionData.title.includes('Practice Interview')) {
+      logAction('[LI_ACTION_CREATE] 6. Condition for sending email met. Preparing email data.');
       const candidateUser = await getUserByEmail(candidate.name); // Email is stored in name field for invites
       const interviewLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/live-interview/${newSession.id}`;
+      logAction('[LI_ACTION_CREATE] 7. Generated interview link.', { interviewLink });
       
       await sendEmail({
         tenantId: sessionData.tenantId,
@@ -57,7 +65,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
           interviewLink: interviewLink,
         },
       });
-      logAction('Sent practice interview invitation email', { sessionId: newSession.id, to: candidate.name });
+      logAction('[LI_ACTION_CREATE] 8. `sendEmail` action called successfully.', { sessionId: newSession.id, to: candidate.name });
     }
 
     // Adapt the returned object to match the LiveInterviewSession structure for the client
@@ -70,10 +78,11 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         scheduledTime: (newSession.liveInterviewData as any)?.scheduledTime || newSession.createdAt.toISOString(),
         preSelectedQuestions: (newSession.questions as any) || [],
     };
+    logAction('[LI_ACTION_CREATE] 9. Adapted DB object to LiveInterviewSession type for client.');
 
     return liveSession;
   } catch (error) {
-    logError('[LiveInterviewAction] Error creating session', error, { title: sessionData.title });
+    logError('[LI_ACTION_CREATE] 10. CATCH BLOCK: Error creating session.', error, { title: sessionData.title });
     return null;
   }
 }
@@ -85,7 +94,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
  * @returns A promise resolving to an array of LiveInterviewSession objects.
  */
 export async function getLiveInterviewSessions(userId: string): Promise<LiveInterviewSession[]> {
-  logAction('Fetching live interview sessions for user', { userId });
+  logAction('[LI_ACTION_GET_ALL] 1. Fetching live interview sessions for user', { userId });
   try {
     // Fetch all sessions that have liveInterviewData, then filter in code.
     const sessions = await db.mockInterviewSession.findMany({
@@ -98,13 +107,15 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
         createdAt: 'desc', 
       },
     });
+    logAction('[LI_ACTION_GET_ALL] 2. Fetched all sessions with liveInterviewData from DB.', { count: sessions.length });
 
     const userSessions = sessions.filter(s => {
         const participants = (s.liveInterviewData as any)?.participants;
         return Array.isArray(participants) && participants.some(p => p.userId === userId);
     });
+    logAction('[LI_ACTION_GET_ALL] 3. Filtered sessions for the current user.', { userSessionCount: userSessions.length });
     
-    return userSessions.map(s => ({
+    const mappedSessions = userSessions.map(s => ({
         id: s.id,
         tenantId: s.tenantId,
         title: s.topic,
@@ -116,8 +127,11 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
         interviewerScores: (s.interviewerScores as any) || [],
         finalScore: (s.finalScore as any),
     })) as LiveInterviewSession[];
+    logAction('[LI_ACTION_GET_ALL] 4. Mapped DB objects to LiveInterviewSession type.');
+
+    return mappedSessions;
   } catch (error) {
-    logError(`[LiveInterviewAction] Error fetching sessions for user ${userId}`, error, { userId });
+    logError(`[LI_ACTION_GET_ALL] 5. CATCH BLOCK: Error fetching sessions for user ${userId}`, error, { userId });
     return [];
   }
 }
@@ -128,14 +142,19 @@ export async function getLiveInterviewSessions(userId: string): Promise<LiveInte
  * @returns The LiveInterviewSession object or null.
  */
 export async function getLiveInterviewSessionById(sessionId: string): Promise<LiveInterviewSession | null> {
-  logAction('Fetching live interview session by ID', { sessionId });
+  logAction('[LI_ACTION_GET_BY_ID] 1. Fetching live interview session by ID', { sessionId });
   try {
     const session = await db.mockInterviewSession.findUnique({
       where: { id: sessionId },
     });
-    if (!session || !session.liveInterviewData) return null;
+    logAction('[LI_ACTION_GET_BY_ID] 2. Fetched session from DB.', { sessionFound: !!session });
 
-    return {
+    if (!session || !session.liveInterviewData) {
+      logAction('[LI_ACTION_GET_BY_ID] 3. Session not found or is not a live interview session.');
+      return null;
+    }
+    
+    const mappedSession = {
         id: session.id,
         tenantId: session.tenantId,
         title: session.topic,
@@ -147,9 +166,12 @@ export async function getLiveInterviewSessionById(sessionId: string): Promise<Li
         interviewerScores: (session.interviewerScores as any) || [],
         finalScore: (session.finalScore as any),
     } as LiveInterviewSession;
+    logAction('[LI_ACTION_GET_BY_ID] 4. Mapped DB object to LiveInterviewSession type.');
+
+    return mappedSession;
 
   } catch (error) {
-    logError(`[LiveInterviewAction] Error fetching session ${sessionId}`, error, { sessionId });
+    logError(`[LI_ACTION_GET_BY_ID] 5. CATCH BLOCK: Error fetching session ${sessionId}`, error, { sessionId });
     return null;
   }
 }
@@ -161,20 +183,27 @@ export async function getLiveInterviewSessionById(sessionId: string): Promise<Li
  * @returns The updated LiveInterviewSession or null.
  */
 export async function updateLiveInterviewSession(sessionId: string, updateData: Partial<Omit<LiveInterviewSession, 'id'>>): Promise<LiveInterviewSession | null> {
-  logAction('Updating live interview session', { sessionId });
+  logAction('[LI_ACTION_UPDATE] 1. Updating live interview session', { sessionId, updateFields: Object.keys(updateData) });
   try {
+    const dataForDb = {
+      status: updateData.status === 'Completed' ? 'completed' : undefined,
+      recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
+      interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
+      finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
+    };
+    logAction('[LI_ACTION_UPDATE] 2. Prepared data for DB update.', { dataForDb });
+
     const updatedSession = await db.mockInterviewSession.update({
       where: { id: sessionId },
-      data: {
-        status: updateData.status === 'Completed' ? 'completed' : undefined,
-        recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
-        interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
-        finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
-      },
+      data: dataForDb,
     });
-    return await getLiveInterviewSessionById(sessionId);
+    logAction('[LI_ACTION_UPDATE] 3. DB update successful.', { updatedSessionId: updatedSession.id });
+
+    const result = await getLiveInterviewSessionById(sessionId);
+    logAction('[LI_ACTION_UPDATE] 4. Re-fetched updated session data to return.');
+    return result;
   } catch (error) {
-    logError(`[LiveInterviewAction] Error updating session ${sessionId}`, error, { sessionId });
+    logError(`[LI_ACTION_UPDATE] 5. CATCH BLOCK: Error updating session ${sessionId}`, error, { sessionId });
     return null;
   }
 }
