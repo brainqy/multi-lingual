@@ -16,9 +16,6 @@ import { headers } from 'next/headers';
 export async function getCreatedQuizzes(userId: string): Promise<MockInterviewSession[]> {
   logAction('Fetching created quizzes', { userId });
   try {
-    const headersList = headers();
-    const tenantId = headersList.get('X-Tenant-Id');
-
     const quizzes = await db.mockInterviewSession.findMany({
       where: {
         // This can be expanded if quizzes need tenant-scoping
