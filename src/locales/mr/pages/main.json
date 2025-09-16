@@ -69,7 +69,8 @@
       "WELCOME": "स्वागत ईमेल",
       "TENANT_WELCOME": "भाडेकरू स्वागत (व्यवस्थापक)",
       "APPOINTMENT_CONFIRMATION": "अपॉइंटमेंट पुष्टीकरण",
-      "PASSWORD_RESET": "पासवर्ड रीसेट"
+      "PASSWORD_RESET": "पासवर्ड रीसेट",
+      "PRACTICE_INTERVIEW_INVITE": "सराव मुलाखत आमंत्रण"
     },
     "placeholders": {
       "title": "प्लेसहोल्डर",

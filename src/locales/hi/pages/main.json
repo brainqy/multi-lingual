@@ -69,7 +69,8 @@
       "WELCOME": "स्वागत ईमेल",
       "TENANT_WELCOME": "किरायेदार स्वागत (प्रबंधक)",
       "APPOINTMENT_CONFIRMATION": "नियुक्ति पुष्टि",
-      "PASSWORD_RESET": "पासवर्ड रीसेट"
+      "PASSWORD_RESET": "पासवर्ड रीसेट",
+      "PRACTICE_INTERVIEW_INVITE": "अभ्यास साक्षात्कार आमंत्रण"
     },
     "placeholders": {
       "title": "प्लेसहोल्डर",
