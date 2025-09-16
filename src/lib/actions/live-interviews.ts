@@ -87,19 +87,24 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
 export async function getLiveInterviewSessions(userId: string): Promise<LiveInterviewSession[]> {
   logAction('Fetching live interview sessions for user', { userId });
   try {
+    // Fetch all sessions that have liveInterviewData, then filter in code.
     const sessions = await db.mockInterviewSession.findMany({
       where: {
         liveInterviewData: {
-          path: '$.participants[*].userId',
-          array_contains: userId
+          not: Prisma.JsonNull,
         }
       },
       orderBy: {
         createdAt: 'desc', 
       },
     });
+
+    const userSessions = sessions.filter(s => {
+        const participants = (s.liveInterviewData as any)?.participants;
+        return Array.isArray(participants) && participants.some(p => p.userId === userId);
+    });
     
-    return sessions.map(s => ({
+    return userSessions.map(s => ({
         id: s.id,
         tenantId: s.tenantId,
         title: s.topic,
