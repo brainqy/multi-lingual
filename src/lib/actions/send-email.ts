@@ -100,29 +100,31 @@ export async function sendEmail({
     logAction('[SendEmail] 3. Entering try block. Fetching templates for tenant.', { tenantId });
     const templates = await getTenantEmailTemplates(tenantId);
     logAction('[SendEmail] 4. Fetched existing templates.', { count: templates.length });
-    let template = templates.find(t => t.type === type);
+    let template: (typeof templates[0] | (typeof DEFAULT_TEMPLATES[0] & {id: string, tenantId: string, createdAt: string, updatedAt: string})) | undefined = templates.find(t => t.type === type);
     logAction('[SendEmail] 5. Searched for required template type.', { type, found: !!template });
 
     if (!template) {
         logAction('[SendEmail] 6. Template not found for tenant, creating from default.', { tenantId, type });
         const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
+        logAction('[SendEmail] 6.0 Template not found for tenant, creating from default.', defaultTemplate);
         
         if (defaultTemplate) {
             logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
             
-            // CORRECTED: Explicitly include the 'type' field from the default template.
             const dataForDb = {
                 subject: defaultTemplate.subject,
                 body: defaultTemplate.body,
                 tenantId: tenantId,
-                type: defaultTemplate.type, // This was the missing field.
+                type: defaultTemplate.type,
             };
             logAction('[SendEmail] 6b. Data prepared for DB create operation.', { dataForDb });
             
-            await db.emailTemplate.create({ data: dataForDb });
-            logAction('[SendEmail] 6c. Successfully created default template in DB.', { tenantId, type });
-
-            template = { ...defaultTemplate, id: 'temp-created', tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+            const newTemplate = await db.emailTemplate.create({ data: dataForDb });
+            logAction('[SendEmail] 6c. Successfully created default template in DB.', { newTemplateId: newTemplate.id });
+            
+            // *** FIX: Assign the newly created template to the 'template' variable ***
+            template = { ...newTemplate, createdAt: newTemplate.createdAt.toISOString(), updatedAt: newTemplate.updatedAt.toISOString() };
+            logAction('[SendEmail] 6d. Re-assigned local template variable with new DB entry.');
         }
     }
 
