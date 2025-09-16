@@ -81,7 +81,7 @@ export async function sendEmail({
       const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
       logAction('[SendEmail] 6.0 Template lookup result in default list.', { found: !!defaultTemplate });
       
-      if (defaultTemplate) {
+      if (defaultTemplate?.type===EmailTemplateType.PRACTICE_INTERVIEW_INVITE ) {
         logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
         
         const dataForDb = {
