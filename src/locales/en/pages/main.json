@@ -69,7 +69,8 @@
       "WELCOME": "Welcome Email",
       "TENANT_WELCOME": "Tenant Welcome (Manager)",
       "APPOINTMENT_CONFIRMATION": "Appointment Confirmation",
-      "PASSWORD_RESET": "Password Reset"
+      "PASSWORD_RESET": "Password Reset",
+      "PRACTICE_INTERVIEW_INVITE": "Practice Interview Invite"
     },
     "placeholders": {
       "title": "Placeholders",
@@ -180,7 +181,7 @@
       }
     }
   },
-  "aiResumeWriter": {
+    "aiResumeWriter": {
     "title": "AI Resume Writer",
     "description": "Adapt your resume for different roles and industries with AI assistance. Select an existing resume or paste your content, then specify your target.",
     "selectResumeLabel": "Select Existing Resume",

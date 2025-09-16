@@ -17,6 +17,8 @@ interface EmailPlaceholders {
   partnerName?: string;
   appointmentDateTime?: string;
   appointmentLink?: string;
+  inviterName?: string;
+  interviewLink?: string;
 }
 
 /**

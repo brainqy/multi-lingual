@@ -6,6 +6,9 @@ import type { LiveInterviewSession } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
+import { sendEmail } from './send-email';
+import { EmailTemplateType } from '@prisma/client';
+import { getUserByEmail } from '../data-services/users';
 
 /**
  * Creates a new live interview session.
@@ -17,13 +20,9 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
   try {
     const { interviewerScores, ...restOfSessionData } = sessionData;
     
-    // In a real app, you would have a dedicated LiveInterviewSession model.
-    // Here, we adapt it to the MockInterviewSession for demonstration.
-    // The key is storing the participant data.
     const newSession = await db.liveInterviewSession.create({
       data: {
         ...restOfSessionData,
-        // The Prisma schema now expects participants to be a JSON field.
         participants: restOfSessionData.participants as any,
         scheduledTime: new Date(restOfSessionData.scheduledTime),
         preSelectedQuestions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
@@ -32,6 +31,27 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         finalScore: Prisma.JsonNull,
       },
     });
+
+    // Send invitation email if it's a "Practice with a Friend" session
+    const inviter = sessionData.participants.find(p => p.role === 'interviewer');
+    const candidate = sessionData.participants.find(p => p.role === 'candidate');
+
+    if (inviter && candidate && sessionData.title.includes('Practice Interview')) {
+      const candidateUser = await getUserByEmail(candidate.name); // Email is stored in name field for invites
+      const interviewLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/live-interview/${newSession.id}`;
+      
+      await sendEmail({
+        tenantId: sessionData.tenantId,
+        recipientEmail: candidate.name, // The email of the friend
+        type: EmailTemplateType.PRACTICE_INTERVIEW_INVITE,
+        placeholders: {
+          userName: candidateUser ? candidateUser.name : candidate.name.split('@')[0],
+          inviterName: inviter.name,
+          interviewLink: interviewLink,
+        },
+      });
+      logAction('Sent practice interview invitation email', { sessionId: newSession.id, to: candidate.name });
+    }
 
     return newSession as unknown as LiveInterviewSession;
   } catch (error) {

@@ -84,15 +84,14 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
         
         if (newSession) {
             const interviewLink = `${window.location.origin}/live-interview/${newSession.id}`;
-            navigator.clipboard.writeText(interviewLink);
+            // The email is now sent on the server, so we just inform the user here.
             toast({ 
-                title: "Practice Session Created!", 
-                description: `An invitation link has been copied to your clipboard. Share it with your friend to start the interview.`,
+                title: "Practice Session Invitation Sent!", 
+                description: `An email invite has been sent to ${practiceSessionConfig.friendEmail}. You can also join from the 'Interview Queue' page.`,
                 duration: 8000
             });
             onClose();
-            // Optional: Redirect to the interview queue or page
-            router.push(`/live-interview/${newSession.id}`);
+            router.push(`/interview-queue`);
         } else {
             toast({ title: "Error", description: "Failed to create the practice session.", variant: "destructive" });
         }
