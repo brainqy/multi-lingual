@@ -664,6 +664,7 @@ model MockInterviewSession {
   interviewerScores    InterviewerScore[]
   finalScore           Json?
   tenantId             String
+  liveInterviewData    Json?
  
 }
 
