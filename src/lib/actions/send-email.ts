@@ -79,7 +79,7 @@ export async function sendEmail({
     if (!template) {
       logAction('[SendEmail] 6. Template not found for tenant, creating from default.', { tenantId, type });
       const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
-      logAction('[SendEmail] 6.0 Template not found for tenant, creating from default.', { defaultTemplate });
+      logAction('[SendEmail] 6.0 Template lookup result in default list.', { found: !!defaultTemplate });
       
       if (defaultTemplate) {
         logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
@@ -114,7 +114,7 @@ export async function sendEmail({
     let body = template.body;
     
     logAction('[SendEmail] 10. Preparing placeholders.', { type });
-    if (type === 'TENANT_WELCOME' && placeholders.tenantDomain) {
+    if (type === "TENANT_WELCOME" && placeholders.tenantDomain) {
         const resetToken = Buffer.from(recipientEmail).toString('base64');
         const subdomain = placeholders.tenantDomain; 
         const resetUrl = `http://${subdomain}.localhost:9002/auth/reset-password?token=${resetToken}`;

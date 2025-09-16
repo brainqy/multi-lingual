@@ -58,7 +58,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
       await sendEmail({
         tenantId: sessionData.tenantId,
         recipientEmail: candidate.name, // The email of the friend
-        type: EmailTemplateType.PRACTICE_INTERVIEW_INVITE,
+        type: 'PRACTICE_INTERVIEW_INVITE',
         placeholders: {
           userName: candidateUser ? candidateUser.name : candidate.name.split('@')[0],
           inviterName: inviter.name,
