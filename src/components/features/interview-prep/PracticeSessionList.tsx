@@ -12,10 +12,10 @@ import { format, parseISO, isFuture, isPast, differenceInMinutes, compareAsc } f
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
-import type { PracticeSession } from '@/types';
+import type { PracticeSession, LiveInterviewSession } from '@/types';
 
 interface PracticeSessionListProps {
-  practiceSessions: PracticeSession[];
+  practiceSessions: (PracticeSession | LiveInterviewSession)[];
   onCancelSession: (sessionId: string) => void;
   onRescheduleSession: (sessionId: string) => void;
 }
@@ -35,27 +35,27 @@ const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
     }
 };
 
-const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSession, onCancel: (id: string) => void, onReschedule: (id: string) => void }) => {
+const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSession | LiveInterviewSession, onCancel: (id: string) => void, onReschedule: (id: string) => void }) => {
   const router = useRouter();
-  const sessionDate = parseISO(session.date);
+  const sessionDate = parseISO('scheduledTime' in session ? session.scheduledTime : session.date);
   const now = new Date();
   let canJoin = false;
   let joinPath = '';
 
-  if (session.status === 'SCHEDULED') {
-    if (session.category === "Practice with AI") {
-      canJoin = true; 
-      const queryParams = new URLSearchParams();
-      if(session.aiTopicOrRole) queryParams.append('topic', session.aiTopicOrRole);
-      if(session.aiJobDescription) queryParams.append('jobDescription', session.aiJobDescription);
-      if(session.aiNumQuestions) queryParams.append('numQuestions', String(session.aiNumQuestions));
-      if(session.aiDifficulty) queryParams.append('difficulty', session.aiDifficulty);
-      if(session.aiTimerPerQuestion) queryParams.append('timerPerQuestion', String(session.aiTimerPerQuestion));
-      if(session.aiQuestionCategories && session.aiQuestionCategories.length > 0) queryParams.append('categories', session.aiQuestionCategories.join(','));
-      queryParams.append('autoFullScreen', 'true'); 
-      queryParams.append('sourceSessionId', session.id); 
-      joinPath = `/ai-mock-interview?${queryParams.toString()}`;
-    } else { 
+  const isLiveInterview = 'participants' in session;
+  const category = isLiveInterview ? (session.title.includes("Practice Interview") ? "Practice with Friends" : "Live Interview") : session.category;
+
+  const status = 'status' in session ? session.status.toUpperCase() : 'SCHEDULED';
+  if (status === 'SCHEDULED' || status === 'IN-PROGRESS') {
+    if (category === "Practice with AI") {
+        // AI sessions can always be started if not completed.
+        canJoin = session.status !== 'completed';
+        const queryParams = new URLSearchParams();
+        if ('aiTopicOrRole' in session && session.aiTopicOrRole) queryParams.append('topic', session.aiTopicOrRole);
+        // ... add other AI params if they exist ...
+        queryParams.append('sourceSessionId', session.id);
+        joinPath = `/ai-mock-interview?${queryParams.toString()}`;
+    } else {
         const isFutureSession = isFuture(sessionDate);
         const isRecentPast = isPast(sessionDate) && differenceInMinutes(now, sessionDate) <= 60;
         canJoin = isFutureSession || isRecentPast;
@@ -63,57 +63,56 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
     }
   }
 
+
   return (
     <Card key={session.id} className="shadow-md hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">
-            <SessionDateTime date={session.date} />
+            <SessionDateTime date={'scheduledTime' in session ? session.scheduledTime : session.date} />
           </CardTitle>
           <span className={cn(
             "px-2 py-1 text-xs font-semibold rounded-full",
-            session.status === 'SCHEDULED' ? "bg-green-100 text-green-700" :
-            session.status === 'COMPLETED' ? "bg-blue-100 text-blue-700" :
+            status === 'SCHEDULED' || status === 'IN-PROGRESS' ? "bg-green-100 text-green-700" :
+            status === 'COMPLETED' ? "bg-blue-100 text-blue-700" :
             "bg-red-100 text-red-700"
           )}>
-            {session.status}
+            {status}
           </span>
         </div>
-        <CardDescription className="text-sm">{session.category}</CardDescription>
+        <CardDescription className="text-sm">{category}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-1 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1"><Badge variant="outline">{session.type}</Badge></div>
-        {session.category === "Practice with AI" && (
+        <div className="flex items-center gap-1"><Badge variant="outline">{session.title}</Badge></div>
+         {category === "Practice with AI" && 'aiNumQuestions' in session && (
           <>
             {session.aiNumQuestions && <p className="text-xs">Questions: {session.aiNumQuestions}</p>}
-            {session.aiDifficulty && <p className="text-xs">Difficulty: {session.aiDifficulty.charAt(0).toUpperCase() + session.aiDifficulty.slice(1)}</p>}
-            {session.aiTimerPerQuestion && session.aiTimerPerQuestion > 0 && <p className="text-xs">Timer: {session.aiTimerPerQuestion}s/question</p>}
           </>
         )}
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
         {canJoin && (
-          <Button variant="default" size="sm" onClick={() => router.push(joinPath)} className={cn(session.category === "Practice with AI" ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700", "text-white")}>
-              {session.category === "Practice with AI" ? <BrainIcon className="mr-1 h-4 w-4"/> : <Video className="mr-1 h-4 w-4"/>}
-              {session.category === "Practice with AI" ? "Start AI Interview" : "Join Interview"}
+          <Button variant="default" size="sm" onClick={() => router.push(joinPath)} className={cn(category === "Practice with AI" ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700", "text-white")}>
+              {category === "Practice with AI" ? <BrainIcon className="mr-1 h-4 w-4"/> : <Video className="mr-1 h-4 w-4"/>}
+              {category === "Practice with AI" ? "Start AI Interview" : "Join Interview"}
           </Button>
         )}
-        {session.status === 'SCHEDULED' && (
+        {(status === 'SCHEDULED' || status === 'IN-PROGRESS') && (
           <>
             <Button variant="destructive" size="sm" onClick={() => onCancel(session.id)}>
               <XCircleIcon className="mr-1 h-4 w-4"/>Cancel
             </Button>
-            {session.category !== "Practice with AI" && ( 
+            {category !== "Practice with AI" && ( 
                  <Button variant="outline" size="sm" onClick={() => onReschedule(session.id)}>
                     <Calendar className="mr-1 h-4 w-4"/>Reschedule
                 </Button>
             )}
           </>
         )}
-        {session.status === 'COMPLETED' && (
+        {status === 'COMPLETED' && (
            <Button variant="outline" size="sm"><Eye className="mr-1 h-4 w-4"/>View Report</Button>
         )}
-        {session.status === 'CANCELLED' && (
+        {status === 'CANCELLED' && (
            <p className="text-xs text-red-500">This session was cancelled.</p>
         )}
       </CardFooter>
@@ -123,23 +122,24 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
 
 
 export default function PracticeSessionList({ practiceSessions, onCancelSession, onRescheduleSession }: PracticeSessionListProps) {
+  
   const upcomingSessions = useMemo(() => {
     if (!practiceSessions) return [];
     return practiceSessions
-      .filter(s => s.status === 'SCHEDULED' && isFuture(parseISO(s.date)))
-      .sort((a, b) => compareAsc(parseISO(a.date), parseISO(b.date)));
+      .filter(s => (s.status === 'SCHEDULED' || s.status === 'in-progress' || s.status === 'In-Progress') && isFuture(parseISO('scheduledTime' in s ? s.scheduledTime : s.date)))
+      .sort((a, b) => compareAsc(parseISO('scheduledTime' in a ? a.scheduledTime : a.date), parseISO('scheduledTime' in b ? b.scheduledTime : b.date)));
   }, [practiceSessions]);
 
   const allUserSessions = useMemo(() => {
     if (!practiceSessions) return [];
-    return [...practiceSessions].sort((a, b) => compareAsc(parseISO(b.date), parseISO(a.date)));
+    return [...practiceSessions].sort((a, b) => compareAsc(parseISO('scheduledTime' in b ? b.scheduledTime : b.date), parseISO('scheduledTime' in a ? a.scheduledTime : a.date)));
   }, [practiceSessions]);
   
   const cancelledSessions = useMemo(() => {
     if (!practiceSessions) return [];
     return practiceSessions
-      .filter(s => s.status === 'CANCELLED')
-      .sort((a, b) => compareAsc(parseISO(b.date), parseISO(a.date)));
+      .filter(s => s.status === 'CANCELLED' || s.status === 'Cancelled')
+      .sort((a, b) => compareAsc(parseISO('scheduledTime' in b ? b.scheduledTime : b.date), parseISO('scheduledTime' in a ? a.scheduledTime : a.date)));
   }, [practiceSessions]);
 
   return (

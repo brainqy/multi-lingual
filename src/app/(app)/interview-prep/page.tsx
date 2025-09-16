@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
+import { getLiveInterviewSessions } from '@/lib/actions/live-interviews';
 import { getUserByEmail } from '@/lib/data-services/users';
 import { useSettings } from '@/contexts/settings-provider';
 import { updateWallet } from '@/lib/actions/wallet';
@@ -33,7 +34,7 @@ const logger = {
 
 export default function InterviewPracticeHubPage() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
-  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
+  const [practiceSessions, setPracticeSessions] = useState<(PracticeSession | LiveInterviewSession)[]>([]);
   const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
@@ -55,12 +56,13 @@ export default function InterviewPracticeHubPage() {
   useEffect(() => {
     if (currentUser) {
       const loadData = async () => {
-        const [appointments, quizzes] = await Promise.all([
+        const [appointments, quizzes, liveSessions] = await Promise.all([
           getAppointments(currentUser.id),
           getCreatedQuizzes(currentUser.id),
+          getLiveInterviewSessions(currentUser.id),
         ]);
 
-        const userPracticeSessions = appointments
+        const expertPracticeSessions = appointments
           .filter(a => a.title.includes("Practice Session")) // Simple filter for demo
           .map(a => ({
             id: a.id,
@@ -73,7 +75,8 @@ export default function InterviewPracticeHubPage() {
             topic: a.title, 
             createdAt: new Date(a.dateTime).toISOString(), 
           })) as PracticeSession[];
-        setPracticeSessions(userPracticeSessions);
+        
+        setPracticeSessions([...expertPracticeSessions, ...liveSessions]);
         setCreatedQuizzes(quizzes);
       };
       loadData();
@@ -144,47 +147,33 @@ export default function InterviewPracticeHubPage() {
             toast({ title: "Error", description: "Could not create AI practice session.", variant: "destructive" });
         }
     } else {
-      logger.log('4. Session type is "experts" or "friends". Preparing to create an appointment.');
-      const expertUser = await getUserByEmail('admin@bhashasetu.com');
-      if (!expertUser) {
-        logger.log('4.1. Could not find expert user (admin@bhashasetu.com). Aborting.');
-        toast({ title: "Error", description: "Could not find an available expert to book.", variant: "destructive" });
-        return;
-      }
-      logger.log('4.2. Found expert user:', expertUser.id);
+      logger.log('4. Session type is "experts" or "friends". Preparing to create session.');
       
-      const newAppointmentData: Omit<Appointment, 'id'> = {
+      const sessionTitle = newSessionConfig.type === 'experts' 
+        ? `Practice Session with Expert: ${newSessionConfig.topics.join(', ')}`
+        : `Practice Interview with ${newSessionConfig.friendEmail}`;
+      
+      const newSessionData: Omit<LiveInterviewSession, 'id'> = {
         tenantId: currentUser.tenantId,
-        requesterUserId: currentUser.id,
-        alumniUserId: expertUser.id, // Use a real user ID
-        title: `Practice Session: ${newSessionConfig.topics.join(', ')}`,
-        dateTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
-        status: 'Pending',
-        withUser: newSessionConfig.type === 'experts' ? 'Industry Expert' : newSessionConfig.friendEmail,
-        notes: newSessionConfig.type === 'friends' ? `Invitation sent to ${newSessionConfig.friendEmail}` : `Category: ${newSessionConfig.interviewCategory}`
+        title: sessionTitle,
+        participants: [
+            { userId: currentUser.id, name: currentUser.name, role: "interviewer", profilePictureUrl: currentUser.profilePictureUrl },
+            // Placeholder for the friend/expert
+            newSessionConfig.type === 'friends' ? { userId: `invited-${newSessionConfig.friendEmail}`, name: newSessionConfig.friendEmail!, role: "candidate", profilePictureUrl: `https://avatar.vercel.sh/${newSessionConfig.friendEmail}.png` } :
+            { userId: 'expert-placeholder', name: 'Industry Expert', role: 'candidate', profilePictureUrl: 'https://avatar.vercel.sh/expert.png' }
+        ],
+        scheduledTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
+        status: 'Scheduled',
+        // In a real app you might store these structured, for now adding to description
+        preSelectedQuestions: [],
       };
       
-      logger.log('5. Calling createAppointment with data:', newAppointmentData);
-      const newAppointment = await createAppointment(newAppointmentData);
+      const newSession = await createLiveInterviewSession(newSessionData);
 
-      if (newAppointment) {
-        logger.log('6. Appointment created successfully in DB. ID:', newAppointment.id);
-        const newPracticeSession: PracticeSession = {
-          id: newAppointment.id,
-          userId: newAppointment.requesterUserId,
-          date: new Date(newAppointment.dateTime).toISOString(),
-          category: newSessionConfig.type === 'experts' ? "Practice with Experts" : "Practice with Friends",
-          type: newAppointment.title,
-          language: "English",
-          status: 'SCHEDULED',
-          topic: newAppointment.title,
-          createdAt: new Date().toISOString(), // Use current time for createdAt
-        };
-        logger.log('7. Adding new practice session to local state:', newPracticeSession);
-        setPracticeSessions(prev => [...prev, newPracticeSession]);
-        toast({ title: "Session Booked!", description: "Your new practice session is scheduled and visible in 'My Appointments'." });
+      if (newSession) {
+        setPracticeSessions(prev => [...prev, newSession]);
+        toast({ title: "Session Booked!", description: "Your new practice session is scheduled." });
       } else {
-        logger.log('8. Failed to create appointment in DB.');
         toast({ title: "Booking Failed", description: "Could not schedule the practice session.", variant: "destructive" });
       }
     }

@@ -62,40 +62,6 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
           return; 
         }
         setFriendEmailError(null);
-        
-        if (!currentUser) {
-            toast({ title: "Error", description: "You must be logged in.", variant: "destructive" });
-            return;
-        }
-
-        const newSessionData: Omit<LiveInterviewSession, 'id'> = {
-          tenantId: currentUser.tenantId,
-          title: `Practice Interview with ${practiceSessionConfig.friendEmail}`,
-          participants: [
-            { userId: currentUser.id, name: currentUser.name, role: "interviewer", profilePictureUrl: currentUser.profilePictureUrl },
-            // Placeholder for the friend
-            { userId: `invited-${practiceSessionConfig.friendEmail}`, name: practiceSessionConfig.friendEmail, role: "candidate", profilePictureUrl: `https://avatar.vercel.sh/${practiceSessionConfig.friendEmail}.png` }
-          ],
-          scheduledTime: new Date().toISOString(),
-          status: 'Scheduled',
-        };
-        
-        const newSession = await createLiveInterviewSession(newSessionData);
-        
-        if (newSession) {
-            const interviewLink = `${window.location.origin}/live-interview/${newSession.id}`;
-            // The email is now sent on the server, so we just inform the user here.
-            toast({ 
-                title: "Practice Session Invitation Sent!", 
-                description: `An email invite has been sent to ${practiceSessionConfig.friendEmail}. You can also join from the 'Interview Queue' page.`,
-                duration: 8000
-            });
-            onClose();
-            router.push(`/interview-queue`);
-        } else {
-            toast({ title: "Error", description: "Failed to create the practice session.", variant: "destructive" });
-        }
-        return;
       }
       setDialogStep('selectTopics');
     } else if (dialogStep === 'selectTopics') {
@@ -106,7 +72,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
       if (practiceSessionConfig.type === 'ai') {
         setPracticeSessionConfig(prev => ({...prev, aiTopicOrRole: prev.topics.join(', ')}));
         setDialogStep('aiSetupBasic');
-      } else { // 'experts'
+      } else { // 'experts' or 'friends'
         setDialogStep('selectInterviewCategory');
       }
     } else if (dialogStep === 'selectInterviewCategory') {
@@ -177,7 +143,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               dialogStep === 'selectType' ? "Choose the type of mock interview you want to practice." :
               dialogStep === 'selectTopics' ? "First, select the high-level topics you want to cover." :
               dialogStep === 'selectInterviewCategory' ? "Now, choose the type of questions for your expert session." :
-              dialogStep === 'selectTimeSlot' ? "Pick a date and time for your expert session." :
+              dialogStep === 'selectTimeSlot' ? "Pick a date and time for your session." :
               "Configure your AI-powered mock interview."
             }
           </DialogDescription>
@@ -209,11 +175,11 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               availableTopics={PREDEFINED_INTERVIEW_TOPICS}
               initialSelectedTopics={practiceSessionConfig.topics}
               onSelectionChange={handleTopicSelectionChange}
-              description={practiceSessionConfig.type === 'experts' ? "Select a specific topic for your expert session." : "Select topics for your AI interview."}
+              description={practiceSessionConfig.type === 'experts' ? "Select a specific topic for your expert session." : "Select topics for your session."}
             />
           )}
 
-          {dialogStep === 'selectInterviewCategory' && practiceSessionConfig.type === 'experts' && (
+          {dialogStep === 'selectInterviewCategory' && (practiceSessionConfig.type === 'experts' || practiceSessionConfig.type === 'friends') && (
              <PracticeTopicSelection
               availableTopics={ALL_CATEGORIES}
               initialSelectedTopics={practiceSessionConfig.interviewCategory ? [practiceSessionConfig.interviewCategory] : []}
