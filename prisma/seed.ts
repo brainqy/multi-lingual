@@ -24,6 +24,7 @@ async function main() {
   await prisma.survey.deleteMany({});
   await prisma.productCompany.deleteMany({});
   await prisma.announcement.deleteMany({});
+  await prisma.platformSettings.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.tenant.deleteMany({});
   
@@ -302,6 +303,43 @@ async function main() {
   });
   console.log('Seeded referral history.');
 
+  // Seed platform settings
+  await prisma.platformSettings.create({
+    data: {
+      platformName: "Bhasha Setu",
+      maintenanceMode: false,
+      communityFeedEnabled: true,
+      autoModeratePosts: true,
+      jobBoardEnabled: true,
+      maxJobPostingDays: 30,
+      gamificationEnabled: true,
+      xpForLogin: 10,
+      xpForNewPost: 20,
+      resumeAnalyzerEnabled: true,
+      aiResumeWriterEnabled: true,
+      coverLetterGeneratorEnabled: true,
+      mockInterviewEnabled: true,
+      aiMockInterviewCost: 25,
+      aiResumeAnalysisCost: 10,
+      aiAlumniConnectionRecCost: 5,
+      referralsEnabled: true,
+      affiliateProgramEnabled: true,
+      alumniConnectEnabled: true,
+      defaultAppointmentCost: 10,
+      featureRequestsEnabled: true,
+      allowTenantCustomBranding: true,
+      allowTenantEmailCustomization: false,
+      allowUserApiKey: true,
+      defaultProfileVisibility: 'alumni_only',
+      maxResumeUploadsPerUser: 5,
+      defaultTheme: 'light',
+      enablePublicProfilePages: false,
+      sessionTimeoutMinutes: 60,
+      walletEnabled: true,
+    }
+  });
+  console.log('Seeded platform settings.');
+
   console.log(`Seeding finished.`);
 }
 
@@ -314,5 +352,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-    
