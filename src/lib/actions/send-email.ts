@@ -79,16 +79,17 @@ export async function sendEmail({
     if (!template) {
       logAction('[SendEmail] 6. Template not found for tenant, creating from default.', { tenantId, type });
       const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
-      logAction('[SendEmail] 6.0 Template lookup result in default list.', { found: !!defaultTemplate });
+      const found = !!defaultTemplate;
+      logAction('[SendEmail] 6.0 Template lookup result in default list.', { found });
       
-      if (defaultTemplate?.type===EmailTemplateType.PRACTICE_INTERVIEW_INVITE ) {
+      if (defaultTemplate) {
         logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
         
         const dataForDb = {
             subject: defaultTemplate.subject,
             body: defaultTemplate.body,
             tenantId: tenantId,
-            type: defaultTemplate.type,
+            type: defaultTemplate.type as EmailTemplateType,
         };
         logAction('[SendEmail] 6b. Data prepared for DB create operation.', { dataForDb });
         
@@ -151,7 +152,7 @@ export async function sendEmail({
       from: `"${tenant.name}" <${process.env.GMAIL_EMAIL}>`,
       to: recipientEmail,
       subject: subject,
-      text: body,
+      html: body,
     };
     logAction('[SendEmail] 15. Mail options prepared. Sending email...', { from: mailOptions.from, to: mailOptions.to, subject: mailOptions.subject });
 

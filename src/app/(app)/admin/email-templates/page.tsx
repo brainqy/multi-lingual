@@ -207,7 +207,7 @@ export default function EmailTemplatesPage() {
                         <Controller
                           name="body"
                           control={control}
-                          render={({ field }) => <Textarea id="body" {...field} rows={15} />}
+                          render={({ field }) => <Textarea id="body" {...field} rows={15} placeholder="You can use HTML tags like <b>, <i>, <p>, and <a> for formatting." />}
                         />
                         {errors.body && <p className="text-sm text-destructive mt-1">{errors.body.message}</p>}
                       </div>
