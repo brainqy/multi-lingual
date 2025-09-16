@@ -3,10 +3,12 @@
 
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
-import { getTenantEmailTemplates, DEFAULT_TEMPLATES } from './email-templates';
+import { getTenantEmailTemplates } from './email-templates';
 import nodemailer from 'nodemailer';
 import { EmailTemplateType } from '@prisma/client';
 import { getUserByEmail } from '../data-services/users';
+import { DEFAULT_TEMPLATES } from '@/lib/email-defaults';
+
 
 interface EmailPlaceholders {
   userName?: string;
@@ -77,7 +79,7 @@ export async function sendEmail({
     if (!template) {
       logAction('[SendEmail] 6. Template not found for tenant, creating from default.', { tenantId, type });
       const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
-      logAction('[SendEmail] 6.0 Template not found for tenant, creating from default.', defaultTemplate);
+      logAction('[SendEmail] 6.0 Template not found for tenant, creating from default.', { defaultTemplate });
       
       if (defaultTemplate) {
         logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
