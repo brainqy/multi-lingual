@@ -1,4 +1,6 @@
 
+'use server';
+
 import type { EmailTemplateType } from '@prisma/client';
 
 export const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
