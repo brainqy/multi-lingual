@@ -6,7 +6,7 @@ import type { EmailTemplate } from '@/types';
 import { EmailTemplateType } from '@prisma/client';
 import { logAction, logError } from '@/lib/logger';
 
-const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
+export const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: string }[] = [
   {
     type: EmailTemplateType.WELCOME,
     subject: 'Welcome to {{tenantName}}!',
@@ -26,6 +26,11 @@ const DEFAULT_TEMPLATES: { type: EmailTemplateType; subject: string; body: strin
     type: EmailTemplateType.PASSWORD_RESET,
     subject: 'Reset your password for {{tenantName}}',
     body: 'Hi {{userName}},\n\nA password reset was requested for your account. Please click the link below to set a new password:\n\n{{resetLink}}\n\nIf you did not request this, you can safely ignore this email.\n\nThanks,\nThe {{tenantName}} Team',
+  },
+  {
+    type: EmailTemplateType.PRACTICE_INTERVIEW_INVITE,
+    subject: 'Invitation to a Practice Interview from {{inviterName}}',
+    body: 'Hi {{userName}},\n\n{{inviterName}} has invited you to a practice interview session on the JobMatch AI platform.\n\nClick the link below to join the session when it\'s time:\n\n{{interviewLink}}\n\nThis is a great opportunity to hone your interview skills!\n\nBest,\nThe JobMatch AI Team',
   },
 ];
 
