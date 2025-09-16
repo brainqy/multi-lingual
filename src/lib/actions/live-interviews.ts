@@ -36,7 +36,6 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
         } as any,
         questions: restOfSessionData.preSelectedQuestions ? restOfSessionData.preSelectedQuestions as any : Prisma.JsonNull,
         recordingReferences: Prisma.JsonNull,
-        interviewerScores: Prisma.JsonNull,
       },
     });
 
