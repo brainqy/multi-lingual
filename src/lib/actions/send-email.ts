@@ -103,16 +103,16 @@ export async function sendEmail({
     logAction('[SendEmail] 5. Searched for required template type.', { type, found: !!template });
 
     if (!template) {
-        logAction('[SendEmail] 6. Template not found for tenant, will create from default.', { tenantId, type });
+        logAction('[SendEmail] 6. Template not found for tenant, creating from default.', { tenantId, type });
         const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
         
         if (defaultTemplate) {
             logAction('[SendEmail] 6a. Found a default template to use.', { type: defaultTemplate.type });
             const dataForDb = {
-                type: defaultTemplate.type,
                 subject: defaultTemplate.subject,
                 body: defaultTemplate.body,
                 tenantId: tenantId,
+                type: defaultTemplate.type, // CORRECT FIX: Explicitly include the type
             };
             logAction('[SendEmail] 6b. Data prepared for DB create operation.', { dataForDb });
             
