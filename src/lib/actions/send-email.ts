@@ -104,8 +104,14 @@ export async function sendEmail({
         const defaultTemplate = DEFAULT_TEMPLATES.find(t => t.type === type);
         if (defaultTemplate) {
             logAction('Template not found for tenant, creating from default', { tenantId, type });
+            // Corrected: Ensure the 'type' field is included in the create call
             await db.emailTemplate.create({
-                data: { ...defaultTemplate, tenantId },
+                data: {
+                    type: defaultTemplate.type,
+                    subject: defaultTemplate.subject,
+                    body: defaultTemplate.body,
+                    tenantId: tenantId,
+                },
             });
             template = { ...defaultTemplate, id: 'temp', tenantId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
         }
