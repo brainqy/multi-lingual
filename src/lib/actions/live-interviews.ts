@@ -8,6 +8,7 @@ import { Prisma, EmailTemplateType } from '@prisma/client';
 import { headers } from 'next/headers';
 import { sendEmail } from './send-email';
 import { getUserByEmail } from '../data-services/users';
+import { createNotification } from './notifications';
 
 /**
  * Creates a new live interview session.
@@ -58,7 +59,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
       await sendEmail({
         tenantId: sessionData.tenantId,
         recipientEmail: candidate.name, // The email of the friend
-        type: 'PRACTICE_INTERVIEW_INVITE',
+        type: EmailTemplateType.PRACTICE_INTERVIEW_INVITE,
         placeholders: {
           userName: candidateUser ? candidateUser.name : candidate.name.split('@')[0],
           inviterName: inviter.name,
@@ -180,17 +181,30 @@ export async function getLiveInterviewSessionById(sessionId: string): Promise<Li
  * Updates a live interview session.
  * @param sessionId The ID of the session to update.
  * @param updateData The data to update.
+ * @param currentUserId The user initiating the update, for notifications.
  * @returns The updated LiveInterviewSession or null.
  */
-export async function updateLiveInterviewSession(sessionId: string, updateData: Partial<Omit<LiveInterviewSession, 'id'>>): Promise<LiveInterviewSession | null> {
+export async function updateLiveInterviewSession(sessionId: string, updateData: Partial<Omit<LiveInterviewSession, 'id'>>, currentUserId?: string): Promise<LiveInterviewSession | null> {
   logAction('[LI_ACTION_UPDATE] 1. Updating live interview session', { sessionId, updateFields: Object.keys(updateData) });
   try {
-    const dataForDb = {
-      status: updateData.status === 'Completed' ? 'completed' : undefined,
+    const originalSession = await db.mockInterviewSession.findUnique({ where: { id: sessionId }});
+    if (!originalSession || !originalSession.liveInterviewData) return null;
+
+    const originalLiveInterviewData = originalSession.liveInterviewData as any;
+    let newLiveInterviewData = { ...originalLiveInterviewData };
+    
+    if (updateData.scheduledTime) {
+        newLiveInterviewData.scheduledTime = new Date(updateData.scheduledTime);
+    }
+    
+    const dataForDb: any = {
+      status: updateData.status === 'Completed' ? 'completed' : (updateData.status === 'Cancelled' ? 'cancelled' : undefined),
       recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
       interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
       finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
+      liveInterviewData: newLiveInterviewData,
     };
+    
     logAction('[LI_ACTION_UPDATE] 2. Prepared data for DB update.', { dataForDb });
 
     const updatedSession = await db.mockInterviewSession.update({
@@ -198,6 +212,32 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
       data: dataForDb,
     });
     logAction('[LI_ACTION_UPDATE] 3. DB update successful.', { updatedSessionId: updatedSession.id });
+    
+    // Send notifications on status change
+    if (updateData.status && currentUserId) {
+        const currentUser = await db.user.findUnique({where: {id: currentUserId}});
+        const participants = originalLiveInterviewData.participants as any[];
+        const otherParticipants = participants.filter(p => p.userId !== currentUserId);
+
+        for (const participant of otherParticipants) {
+            let content = '';
+            if (updateData.status === 'Cancelled') {
+                content = `${currentUser?.name} cancelled your session: "${originalSession.topic}"`;
+            } else if (updateData.scheduledTime && originalSession.scheduledTime !== updateData.scheduledTime) {
+                content = `${currentUser?.name} requested to reschedule your session: "${originalSession.topic}". Please confirm.`;
+            }
+            
+            if (content) {
+                await createNotification({
+                    userId: participant.userId,
+                    type: 'event',
+                    content: content,
+                    link: '/interview-prep',
+                    isRead: false,
+                });
+            }
+        }
+    }
 
     const result = await getLiveInterviewSessionById(sessionId);
     logAction('[LI_ACTION_UPDATE] 4. Re-fetched updated session data to return.');
@@ -207,3 +247,4 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
     return null;
   }
 }
+```
