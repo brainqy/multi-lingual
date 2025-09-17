@@ -17,7 +17,7 @@ import type { PracticeSession, LiveInterviewSession } from '@/types';
 interface PracticeSessionListProps {
   practiceSessions: (PracticeSession | LiveInterviewSession)[];
   onCancelSession: (sessionId: string) => void;
-  onRescheduleSession: (sessionId: string) => void;
+  onRescheduleSession: (session: LiveInterviewSession) => void;
 }
 
 const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
@@ -35,7 +35,7 @@ const SessionDateTime = ({ date: isoDateString }: { date: string }) => {
     }
 };
 
-const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSession | LiveInterviewSession, onCancel: (id: string) => void, onReschedule: (id: string) => void }) => {
+const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSession | LiveInterviewSession, onCancel: (id: string) => void, onReschedule: (session: LiveInterviewSession) => void }) => {
   const router = useRouter();
   const sessionDate = parseISO('scheduledTime' in session ? session.scheduledTime : session.date);
   const now = new Date();
@@ -48,11 +48,9 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
   const status = 'status' in session ? session.status.toUpperCase() : 'SCHEDULED';
   if (status === 'SCHEDULED' || status === 'IN-PROGRESS') {
     if (category === "Practice with AI") {
-        // AI sessions can always be started if not completed.
         canJoin = session.status !== 'completed';
         const queryParams = new URLSearchParams();
         if ('aiTopicOrRole' in session && session.aiTopicOrRole) queryParams.append('topic', session.aiTopicOrRole);
-        // ... add other AI params if they exist ...
         queryParams.append('sourceSessionId', session.id);
         joinPath = `/ai-mock-interview?${queryParams.toString()}`;
     } else {
@@ -102,8 +100,8 @@ const SessionCard = ({ session, onCancel, onReschedule }: { session: PracticeSes
             <Button variant="destructive" size="sm" onClick={() => onCancel(session.id)}>
               <XCircleIcon className="mr-1 h-4 w-4"/>Cancel
             </Button>
-            {category !== "Practice with AI" && ( 
-                 <Button variant="outline" size="sm" onClick={() => onReschedule(session.id)}>
+            {isLiveInterview && ( 
+                 <Button variant="outline" size="sm" onClick={() => onReschedule(session as LiveInterviewSession)}>
                     <Calendar className="mr-1 h-4 w-4"/>Reschedule
                 </Button>
             )}

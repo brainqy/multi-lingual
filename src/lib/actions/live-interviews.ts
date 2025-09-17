@@ -59,7 +59,7 @@ export async function createLiveInterviewSession(sessionData: Omit<LiveInterview
       await sendEmail({
         tenantId: sessionData.tenantId,
         recipientEmail: candidate.name, // The email of the friend
-        type: EmailTemplateType.PRACTICE_INTERVIEW_INVITE,
+        type: 'PRACTICE_INTERVIEW_INVITE',
         placeholders: {
           userName: candidateUser ? candidateUser.name : candidate.name.split('@')[0],
           inviterName: inviter.name,
@@ -198,7 +198,7 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
     }
     
     const dataForDb: any = {
-      status: updateData.status === 'Completed' ? 'completed' : (updateData.status === 'Cancelled' ? 'cancelled' : undefined),
+      status: updateData.status === 'Completed' ? 'completed' : (updateData.status === 'Cancelled' ? 'cancelled' : 'in-progress'),
       recordingReferences: updateData.recordingReferences ? updateData.recordingReferences as any : undefined,
       interviewerScores: updateData.interviewerScores ? updateData.interviewerScores as any : undefined,
       finalScore: updateData.finalScore ? updateData.finalScore as any : undefined,
@@ -223,8 +223,8 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
             let content = '';
             if (updateData.status === 'Cancelled') {
                 content = `${currentUser?.name} cancelled your session: "${originalSession.topic}"`;
-            } else if (updateData.scheduledTime && originalSession.scheduledTime !== updateData.scheduledTime) {
-                content = `${currentUser?.name} requested to reschedule your session: "${originalSession.topic}". Please confirm.`;
+            } else if (updateData.scheduledTime && new Date(originalLiveInterviewData.scheduledTime).toISOString() !== new Date(updateData.scheduledTime).toISOString()) {
+                content = `${currentUser?.name} has rescheduled your session: "${originalSession.topic}". Please review.`;
             }
             
             if (content) {
@@ -247,4 +247,3 @@ export async function updateLiveInterviewSession(sessionId: string, updateData: 
     return null;
   }
 }
-```
