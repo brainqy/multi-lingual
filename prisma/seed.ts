@@ -24,7 +24,7 @@ async function main() {
   await prisma.survey.deleteMany({});
   await prisma.productCompany.deleteMany({});
   await prisma.announcement.deleteMany({});
-  await prisma.platformSettings.deleteMany({});
+  await prisma.resumeTemplate.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.tenant.deleteMany({});
   
@@ -227,6 +227,46 @@ async function main() {
   });
   console.log('Seeded sample surveys.');
 
+  // --- Resume Templates ---
+  await prisma.resumeTemplate.createMany({
+    data: [
+      {
+        id: 'template1',
+        name: 'Modern Professional',
+        description: 'A clean and modern template suitable for corporate and tech roles.',
+        previewImageUrl: 'https://placehold.co/300x400/008080/FFFFFF?text=Modern',
+        category: 'Modern',
+        content: `{"template": "modern", "layout": "single-column"}`,
+      },
+      {
+        id: 'template2',
+        name: 'Creative Minimalist',
+        description: 'A stylish template for creative fields like design and marketing.',
+        previewImageUrl: 'https://placehold.co/300x400/3498db/FFFFFF?text=Creative',
+        category: 'Creative',
+        content: `{"template": "creative", "layout": "two-column-left"}`,
+      },
+      {
+        id: 'template3',
+        name: 'Classic Professional',
+        description: 'A timeless and traditional format, perfect for formal industries.',
+        previewImageUrl: 'https://placehold.co/300x400/2c3e50/FFFFFF?text=Classic',
+        category: 'Professional',
+        content: `{"template": "classic", "layout": "single-column"}`,
+      },
+      {
+        id: 'template4',
+        name: 'Academic CV',
+        description: 'A comprehensive template designed for academic and research positions.',
+        previewImageUrl: 'https://placehold.co/300x400/9b59b6/FFFFFF?text=Academic',
+        category: 'Academic',
+        content: `{"template": "academic", "layout": "single-column-detailed"}`,
+      },
+    ],
+    skipDuplicates: true,
+  });
+  console.log('Seeded resume templates.');
+
 
   // --- OTHER FEATURES ---
   await prisma.appointment.create({
@@ -304,9 +344,12 @@ async function main() {
   console.log('Seeded referral history.');
 
   // Seed platform settings
-  await prisma.platformSettings.create({
-    data: {
-      platformName: "Bhasha Setu",
+  await prisma.platformSettings.upsert({
+    where: { id: 'settings' },
+    update: {},
+    create: {
+      id: 'settings',
+      platformName: "JobMatch AI",
       maintenanceMode: false,
       communityFeedEnabled: true,
       autoModeratePosts: true,
