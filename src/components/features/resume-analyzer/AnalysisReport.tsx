@@ -21,12 +21,12 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface AnalysisReportProps {
     analysisReport: AnalyzeResumeAndJobDescriptionOutput;
@@ -187,9 +187,9 @@ export default function AnalysisReport({
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Save Resume Version</DialogTitle>
-                            <DialogDescription>
+                            <DialogUIDescription>
                                 Give this new resume version a name to save it to your "My Resumes" list.
-                            </DialogDescription>
+                            </DialogUIDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                            <div className="grid grid-cols-4 items-center gap-4">
