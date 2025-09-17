@@ -1,5 +1,4 @@
 
-'use server';
 
 import type { EmailTemplateType } from '@prisma/client';
 

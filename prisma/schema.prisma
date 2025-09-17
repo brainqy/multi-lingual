@@ -216,6 +216,7 @@ model ResumeScanHistory {
   scanDate           DateTime @default(now())
   matchScore         Int?
   bookmarked         Boolean?
+  reportData         Json?
 }
 
 model CommunityPost {
