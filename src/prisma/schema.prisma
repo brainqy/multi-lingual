@@ -10,168 +10,176 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id                               String             @id @default(cuid())
-  name                             String
-  email                            String             @unique
-  password                         String?
-  role                             UserRole           @default(user)
-  profilePictureUrl                String?
-  tenantId                         String
-  tenant                           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt                        DateTime           @default(now())
-  sessionId                        String?
-  lastLogin                        DateTime?
-  status                           UserStatus?
-  dailyStreak                      Int?
-  longestStreak                    Int?
-  lastStreakCheck                  DateTime?
-  xpPoints                         Int?
-  earnedBadges                     String[]
-  challengeTopics                  Json? // Storing InterviewQuestionCategory[]
-  challengeProgress                Json? // Record<string, { current: number; target: number }>
-  completedChallengeIds            String[]
-  currentFlipChallenge             Json? // DailyChallenge
-  flipChallengeAssignedAt          DateTime?
-  flipChallengeProgressStart       Json? // Record<string, number>
-  dateOfBirth                      DateTime?
-  gender                           String?
-  mobileNumber                     String?
-  currentAddress                   String?
-  graduationYear                   String?
-  degreeProgram                    String?
-  department                       String?
-  currentJobTitle                  String?
-  currentOrganization              String?
-  industry                         String?
-  workLocation                     String?
-  linkedInProfile                  String?
-  yearsOfExperience                String?
-  skills                           String[]
-  areasOfSupport                   Json?
-  timeCommitment                   String?
-  preferredEngagementMode          String?
-  lookingForSupportType            String?
-  helpNeededDescription            String?
-  shareProfileConsent              Boolean?
-  featureInSpotlightConsent        Boolean?
-  resumeText                       String?
-  careerInterests                  String?
-  bio                              String?
-  userApiKey                       String?
-  interests                        String[]
-  isDistinguished                  Boolean?
-  appointmentCoinCost              Int?
-  referralCode                     String?
-  streakFreezes                    Int?
-  emailNotificationsEnabled        Boolean?
-  appNotificationsEnabled          Boolean?
-  gamificationNotificationsEnabled Boolean?
-  referralNotificationsEnabled     Boolean?
-  dashboardWidgets                 Json?
-  resumeProfiles                   ResumeProfile[]
-  jobApplications                  JobApplication[]
-  communityPosts                   CommunityPost[]
-  notifications                    Notification[]
-  activities                       Activity[]
-  affiliateProfile                 Affiliate?
-  nominationsAsNominee             Nomination[]       @relation("Nominee")
-  nominationsAsNominator           Nomination[]       @relation("Nominator")
-  votes                            Vote[]
-  requesterAppointments            Appointment[]      @relation("RequesterAppointments")
-  alumniAppointments               Appointment[]      @relation("AlumniAppointments")
-  galleryEventsCreated             GalleryEvent[]
-  referralHistory                  ReferralHistory[]
-  promoCodeRedemptions             UserPromoCodeRedemption[]
-  surveyResponses                  SurveyResponse[]
-  mockInterviewSessions            MockInterviewSession[]
-  interviewScores                  InterviewerScore[]
+  id                                String                      @id @default(cuid())
+  name                              String
+  email                             String                      @unique
+  password                          String?
+  role                              UserRole                    @default(user)
+  profilePictureUrl                 String?
+  tenantId                          String
+  sessionId                         String?
+  lastLogin                         DateTime?
+  createdAt                         DateTime                    @default(now())
+  status                            UserStatus?                 @default(active)
+  
+  // Gamification
+  dailyStreak                       Int?
+  longestStreak                     Int?
+  lastStreakCheck                   DateTime?
+  xpPoints                          Int?
+  earnedBadges                      String[]
+  challengeTopics                   String[]
+  challengeProgress                 Json?
+  completedChallengeIds             String[]
+  currentFlipChallenge              Json?
+  flipChallengeAssignedAt           DateTime?
+  flipChallengeProgressStart        Json?
+  
+  // Professional Details
+  dateOfBirth                       DateTime?
+  gender                            String?
+  mobileNumber                      String?
+  currentAddress                    String?
+  graduationYear                    String?
+  degreeProgram                     String?
+  department                        String?
+  currentJobTitle                   String?
+  currentOrganization               String?
+  industry                          String?
+  workLocation                      String?
+  linkedInProfile                   String?
+  yearsOfExperience                 String?
+  skills                            String[]
+  
+  // Engagement
+  areasOfSupport                    String[]
+  timeCommitment                    String?
+  preferredEngagementMode           String?
+  
+  // Support Seeking
+  lookingForSupportType             String?
+  helpNeededDescription             String?
+  
+  // Consents
+  shareProfileConsent               Boolean?
+  featureInSpotlightConsent         Boolean?
+  
+  // Additional Info
+  resumeText                        String?
+  careerInterests                   String?
+  bio                               String?
+  userApiKey                        String?
+  interests                         String[]
+  isDistinguished                   Boolean?
+  appointmentCoinCost               Int?
+  referralCode                      String?                     @unique
+  streakFreezes                     Int?
+  
+  // Settings
+  emailNotificationsEnabled         Boolean?
+  appNotificationsEnabled           Boolean?
+  gamificationNotificationsEnabled  Boolean?
+  referralNotificationsEnabled      Boolean?
+  dashboardWidgets                  Json?
+
+  tenant                            Tenant                      @relation(fields: [tenantId], references: [id])
+  jobApplications                   JobApplication[]
+  resumeProfiles                    ResumeProfile[]
+  resumeScanHistories               ResumeScanHistory[]
+  communityPosts                    CommunityPost[]
+  communityComments                 CommunityComment[]
+  notifications                     Notification[]
+  appointmentsAsRequester           Appointment[]               @relation("RequesterAppointments")
+  appointmentsAsAlumni              Appointment[]               @relation("AlumniAppointments")
+  galleryEventsCreated              GalleryEvent[]
+  wallet                            Wallet?
+  referralHistory                   ReferralHistory[]
+  affiliateProfile                  Affiliate?
+  nominationsMade                   Nomination[]                @relation("Nominator")
+  nominationsReceived               Nomination[]                @relation("Nominee")
+  votes                             Vote[]
+  awardWins                         Award[]
+  surveyResponses                   SurveyResponse[]
+  promoCodeRedemptions              UserPromoCodeRedemption[]
 
   @@index([tenantId])
 }
 
-enum UserRole {
-  user
-  admin
-  manager
-}
-
-enum UserStatus {
-  active
-  inactive
-  suspended
-  pending
-  PENDING_DELETION
-}
-
 model Tenant {
-  id        String          @id @default(cuid())
-  name      String
-  domain    String?         @unique
-  createdAt DateTime        @default(now())
-  users     User[]
-  settings  TenantSettings?
+  id          String   @id @default(cuid())
+  name        String
+  domain      String?  @unique
+  createdAt   DateTime @default(now())
+
+  users                User[]
+  jobOpenings          JobOpening[]
+  resumeProfiles       ResumeProfile[]
+  resumeScanHistories  ResumeScanHistory[]
+  communityPosts       CommunityPost[]
+  appointments         Appointment[]
+  galleryEvents        GalleryEvent[]
+  referralHistory      ReferralHistory[]
+  settings             TenantSettings?
+  announcements        Announcement[]
+  promoCodes           PromoCode[]
+  surveys              Survey[]
+  activities           Activity[]
+  emailTemplates       EmailTemplate[]
 }
 
 model TenantSettings {
-  id                           String     @id @default(cuid())
-  tenantId                     String     @unique
-  tenant                       Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  allowPublicSignup            Boolean    @default(true)
+  id                           String  @id @default(cuid())
+  tenantId                     String  @unique
+  allowPublicSignup            Boolean @default(true)
   customLogoUrl                String?
   primaryColor                 String?
   accentColor                  String?
   features                     Json?
-  createdAt                    DateTime   @default(now())
-  updatedAt                    DateTime   @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
-model PlatformSettings {
-  id                              String    @id @default(cuid())
-  platformName                    String
-  maintenanceMode                 Boolean   @default(false)
-  communityFeedEnabled            Boolean   @default(true)
-  autoModeratePosts               Boolean   @default(true)
-  jobBoardEnabled                 Boolean   @default(true)
-  maxJobPostingDays               Int       @default(30)
-  gamificationEnabled             Boolean   @default(true)
-  xpForLogin                      Int       @default(10)
-  xpForNewPost                    Int       @default(20)
-  resumeAnalyzerEnabled           Boolean   @default(true)
-  aiResumeWriterEnabled           Boolean   @default(true)
-  coverLetterGeneratorEnabled     Boolean   @default(true)
-  mockInterviewEnabled            Boolean   @default(true)
-  aiMockInterviewCost             Int       @default(25)
-  referralsEnabled                Boolean   @default(true)
-  affiliateProgramEnabled         Boolean   @default(true)
-  alumniConnectEnabled            Boolean   @default(true)
-  defaultAppointmentCost          Int       @default(10)
-  featureRequestsEnabled          Boolean   @default(true)
-  allowTenantCustomBranding       Boolean   @default(true)
-  allowTenantEmailCustomization   Boolean   @default(false)
-  allowUserApiKey                 Boolean?
-  defaultProfileVisibility        String    @default("alumni_only")
-  maxResumeUploadsPerUser         Int?      @default(5)
-  defaultTheme                    String?   @default("light")
-  enablePublicProfilePages        Boolean?  @default(false)
-  sessionTimeoutMinutes           Int?      @default(60)
-  maxEventRegistrationsPerUser    Int?
-  globalAnnouncement              String?
-  pointsForAffiliateSignup        Int?
-  walletEnabled                   Boolean?  @default(true)
-  aiResumeAnalysisCost            Int?      @default(10)
-  aiAlumniConnectionRecCost       Int?      @default(5)
+model JobApplication {
+  id                 String               @id @default(cuid())
+  userId             String
+  tenantId           String
+  companyName        String
+  jobTitle           String
+  status             JobApplicationStatus @default(Saved)
+  dateApplied        DateTime
+  notes              String[]
+  jobDescription     String?
+  location           String?
+  applicationUrl     String?
+  salary             String?
+  resumeIdUsed       String?
+  coverLetterText    String?
+  reminderDate       DateTime?
+  sourceJobOpeningId String?
+  
+  user    User     @relation(fields: [userId], references: [id])
+  tenant  Tenant   @relation(fields: [tenantId], references: [id])
+  interviews Interview[]
+  
+  @@index([userId])
 }
 
-model Language {
-  code String @id
-  name String
+model Interview {
+  id               String   @id @default(cuid())
+  jobApplicationId String
+  date             DateTime
+  type             String
+  interviewer      String
+  notes            String?
+
+  jobApplication JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
 }
 
 model ResumeProfile {
   id           String    @id @default(cuid())
   userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenantId     String
   name         String
   resumeText   String?   @db.Text
@@ -179,61 +187,111 @@ model ResumeProfile {
   updatedAt    DateTime  @updatedAt
   lastAnalyzed DateTime?
 
+  user   User   @relation(fields: [userId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  
   @@index([userId])
 }
 
-model ResumeScanHistory {
-  id                 String    @id @default(cuid())
+model ResumeScanHistoryItem {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  userId               String
+  resumeId             String
+  resumeName           String
+  jobTitle             String
+  companyName          String
+  scanDate             DateTime @default(now())
+  matchScore           Int?
+  resumeTextSnapshot   String   @db.Text
+  jobDescriptionText   String   @db.Text
+  reportData           Json?
+  bookmarked           Boolean? @default(false)
+
+  user   User   @relation(fields: [userId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  
+  @@index([userId])
+}
+
+model CommunityPost {
+  id                 String   @id @default(cuid())
   tenantId           String
   userId             String
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resumeId           String
-  resumeName         String
-  jobTitle           String
-  companyName        String
-  scanDate           DateTime  @default(now())
-  matchScore         Int?
-  resumeTextSnapshot String    @db.Text
-  jobDescriptionText String    @db.Text
-  bookmarked         Boolean?  @default(false)
+  userName           String
+  userAvatar         String?
+  content            String?  @db.Text
+  type               String // 'text', 'poll', 'event', 'request'
+  imageUrl           String?
+  tags               String[]
+  moderationStatus   String
+  flagCount          Int?
+  flagReasons        String[]
+  flaggedBy          String[] @default([])
+  likes              Int?     @default(0)
+  likedBy            String[] @default([])
+  isPinned           Boolean? @default(false)
+  timestamp          DateTime @default(now())
+  
+  // For Polls
+  pollOptions        Json?
+  votedBy            String[] @default([])
 
+  // For Events
+  eventTitle         String?
+  eventDate          DateTime?
+  eventLocation      String?
+  attendees          Int?
+  capacity           Int?
+  registeredBy       String[] @default([])
+  
+  // For Requests
+  assignedTo         String?
+  status             String? // 'open', 'in progress', 'completed'
+
+  user     User     @relation(fields: [userId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  comments CommunityComment[]
+  bookmarkedBy String[] @default([])
+
+  @@index([userId])
+  @@index([tenantId])
+}
+
+model CommunityComment {
+    id        String   @id @default(cuid())
+    postId    String?
+    blogPostId String?
+    userId    String
+    userName  String
+    userAvatar String?
+    comment   String   @db.Text
+    timestamp DateTime @default(now())
+    parentId  String?
+
+    user User @relation(fields: [userId], references: [id])
+    post CommunityPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+    blogPost BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+    parent   CommunityComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    replies  CommunityComment[] @relation("CommentReplies")
+
+    @@index([postId])
+    @@index([blogPostId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // 'system', 'mention', 'event'
+  content   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
   @@index([userId])
 }
 
-model JobApplication {
-  id                 String               @id @default(cuid())
-  userId             String
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenantId           String
-  companyName        String
-  jobTitle           String
-  status             String
-  dateApplied        DateTime
-  notes              String[]
-  jobDescription     String?              @db.Text
-  location           String?
-  applicationUrl     String?
-  salary             String?
-  resumeIdUsed       String?
-  coverLetterText    String?              @db.Text
-  reminderDate       DateTime?
-  sourceJobOpeningId String?
-  interviews         Interview[]
-
-  @@index([userId])
-}
-
-model Interview {
-  id               String         @id @default(cuid())
-  jobApplicationId String
-  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  date             DateTime
-  type             String
-  interviewer      String
-  notes            String?        @db.Text
-
-  @@index([jobApplicationId])
-}
 
 model JobOpening {
   id               String   @id @default(cuid())
@@ -243,158 +301,48 @@ model JobOpening {
   location         String
   description      String   @db.Text
   datePosted       DateTime @default(now())
-  type             String
+  type             String   // Full-time, Part-time, Internship, Contract, Mentorship
   applicationLink  String?
   postedByAlumniId String?
   alumniName       String?
-}
 
-model CommunityPost {
-  id                 String              @id @default(cuid())
-  tenantId           String
-  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userId             String
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName           String
-  userAvatar         String?
-  content            String?             @db.Text
-  type               String
-  imageUrl           String?
-  tags               String[]
-  moderationStatus   String
-  flagCount          Int?
-  flagReasons        String[]
-  flaggedBy          String[]
-  likes              Int?
-  likedBy            String[]
-  isPinned           Boolean?
-  timestamp          DateTime            @default(now())
-  comments           CommunityComment[]
-  pollOptions        Json?
-  votedBy            String[]
-  eventTitle         String?
-  eventDate          DateTime?
-  eventLocation      String?
-  attendees          Int?
-  capacity           Int?
-  registeredBy       String[]
-  assignedTo         String?
-  status             String?
-
-  @@index([tenantId])
-  @@index([userId])
-}
-
-model CommunityComment {
-  id         String          @id @default(cuid())
-  postId     String?
-  post       CommunityPost?  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  blogPostId String?
-  blogPost   BlogPost?       @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
-  userId     String
-  userName   String
-  userAvatar String?
-  comment    String
-  timestamp  DateTime        @default(now())
-  parentId   String?
-  parent     CommunityComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  replies    CommunityComment[] @relation("CommentReplies")
-
-  @@index([postId])
-  @@index([blogPostId])
-}
-
-model Announcement {
-  id              String      @id @default(cuid())
-  title           String
-  content         String      @db.Text
-  startDate       DateTime
-  endDate         DateTime?
-  status          String
-  createdByUserId String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  tenantId        String?
-  targetTenantId  String?
-  targetRole      UserRole?
-  deletedAt       DateTime?
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  type      String
-  content   String
-  link      String?
-  isRead    Boolean  @default(false)
-
-  @@index([userId])
-}
-
-model Activity {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  tenantId    String?
-  description String
-  timestamp   DateTime @default(now())
-
-  @@index([userId])
-}
-
-model Badge {
-  id                 String  @id @default(cuid())
-  name               String
-  description        String
-  icon               String
-  xpReward           Int?
-  triggerCondition   String?
-  streakFreezeReward Int?
-}
-
-model GamificationRule {
-  actionId    String @id
-  description String
-  xpPoints    Int
-}
-
-model DailyChallenge {
-  id           String   @id @default(cuid())
-  title        String
-  description  String
-  category     String
-  difficulty   String
-  xpReward     Int?
-  type         String
-  solution     String?  @db.Text
-  tasks        Json?
-  createdAt    DateTime @default(now())
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Appointment {
-  id                String   @id @default(cuid())
-  tenantId          String
-  requesterUserId   String
-  requesterUser     User     @relation("RequesterAppointments", fields: [requesterUserId], references: [id], onDelete: Cascade)
-  alumniUserId      String
-  alumniUser        User     @relation("AlumniAppointments", fields: [alumniUserId], references: [id], onDelete: Cascade)
-  title             String
-  dateTime          DateTime
-  status            String
-  notes             String?
-  withUser          String
-  costInCoins       Int
-  reminderDate      DateTime?
-  isAssignedByAdmin Boolean?
+  id              String   @id @default(cuid())
+  tenantId        String
+  requesterUserId String
+  alumniUserId    String
+  title           String
+  dateTime        DateTime
+  status          String // Pending, Confirmed, Cancelled, Completed
+  notes           String?
+  withUser        String
+  costInCoins     Int
+  reminderDate    DateTime?
+  isAssignedByAdmin Boolean? @default(false)
 
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  requester User   @relation("RequesterAppointments", fields: [requesterUserId], references: [id])
+  alumni    User   @relation("AlumniAppointments", fields: [alumniUserId], references: [id])
   @@index([requesterUserId])
   @@index([alumniUserId])
 }
 
+model Language {
+  code String @id
+  name String @unique
+}
+
+model Tour {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  completedSteps Json
+}
+
 model GalleryEvent {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   tenantId        String
   title           String
   date            DateTime
@@ -402,257 +350,219 @@ model GalleryEvent {
   description     String?
   dataAiHint      String?
   createdByUserId String
-  creator         User      @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
   attendeeUserIds String[]
-  approved        Boolean?  @default(false)
+  approved        Boolean? @default(true)
   isPlatformGlobal Boolean? @default(false)
   deletedAt       DateTime?
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
+  createdBy User   @relation(fields: [createdByUserId], references: [id])
 }
 
 model Wallet {
-  id           String              @id @default(cuid())
-  userId       String              @unique
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  coins        Int                 @default(0)
-  flashCoins   Json?
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  coins       Int      @default(0)
+  flashCoins  Json?
+  
+  user User @relation(fields: [userId], references: [id])
   transactions WalletTransaction[]
 }
 
 model WalletTransaction {
   id          String   @id @default(cuid())
   walletId    String
-  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
   description String
   amount      Float
-  type        String
-  currency    String
+  type        String // 'credit' or 'debit'
+  currency    String // 'coins' or 'xp'
   date        DateTime @default(now())
 
-  @@index([walletId])
+  wallet Wallet @relation(fields: [walletId], references: [id])
 }
 
 model PromoCode {
-  id          String                    @id @default(cuid())
-  tenantId    String?
-  code        String                    @unique
+  id          String   @id @default(cuid())
+  tenantId    String
+  code        String   @unique
   description String
-  rewardType  String
-  rewardValue Int
+  rewardType  String   // 'coins', 'xp', 'premium_days', 'flash_coins', 'streak_freeze'
+  rewardValue Float
   expiresAt   DateTime?
-  usageLimit  Int                       @default(0)
-  timesUsed   Int                       @default(0)
-  isActive    Boolean                   @default(true)
-  createdAt   DateTime                  @default(now())
+  usageLimit  Int
+  timesUsed   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
   deletedAt   DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
   redemptions UserPromoCodeRedemption[]
 }
 
 model UserPromoCodeRedemption {
   userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   promoCodeId String
-  promoCode   PromoCode  @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
-  redeemedAt  DateTime   @default(now())
+  redeemedAt  DateTime @default(now())
 
+  user      User      @relation(fields: [userId], references: [id])
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id])
+  
   @@id([userId, promoCodeId])
 }
 
-model ReferralHistory {
-  id                 String   @id @default(cuid())
-  referrerUserId     String
-  referrerUser       User     @relation(fields: [referrerUserId], references: [id], onDelete: Cascade)
-  referredEmailOrName String
-  status             String
-  rewardAmount       Int?
-  referralDate       DateTime
-  tenantId           String?
+model ReferralHistoryItem {
+    id String @id @default(cuid())
+    referrerUserId String
+    referredEmailOrName String
+    status String
+    rewardAmount Int?
+    referralDate DateTime @default(now())
+    tenantId String
 
-  @@index([referrerUserId])
-}
-
-model MockInterviewSession {
-  id                   String                 @id @default(cuid())
-  userId               String
-  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic                String
-  jobDescription       String?                @db.Text
-  status               String
-  createdAt            DateTime               @default(now())
-  questions            Json?
-  answers              MockInterviewAnswer[]
-  overallFeedback      Json?
-  overallScore         Int?
-  timerPerQuestion     Int?
-  difficulty           String?
-  questionCategories   String[]
-  recordingReferences  Json?
-  interviewerScores    InterviewerScore[]
-  finalScore           Json?
-  liveInterviewData    Json?
-  tenantId             String
-  tenant               Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-}
-
-model MockInterviewAnswer {
-  id                     String               @id @default(cuid())
-  mockInterviewSessionId String
-  mockInterviewSession   MockInterviewSession @relation(fields: [mockInterviewSessionId], references: [id], onDelete: Cascade)
-  questionId             String
-  questionText           String
-  userAnswer             String               @db.Text
-  aiFeedback             String?              @db.Text
-  aiScore                Int?
-  strengths              String[]
-  areasForImprovement    String[]
-  suggestedImprovements  String[]
-}
-
-model InterviewerScore {
-  id                   String               @id @default(cuid())
-  mockInterviewSessionId String
-  mockInterviewSession   MockInterviewSession @relation(fields: [mockInterviewSessionId], references: [id], onDelete: Cascade)
-  questionId           String
-  correctnessPercentage Int
-  notes                String?              @db.Text
-  scoredByUserId       String
-  scoredByUser         User                 @relation(fields: [scoredByUserId], references: [id], onDelete: Cascade)
-}
-
-model InterviewQuestion {
-  id              String   @id @default(cuid())
-  questionText    String   @db.Text
-  category        String
-  difficulty      String?
-  isMCQ           Boolean? @default(false)
-  mcqOptions      Json?
-  correctAnswer   String?
-  answerOrTip     String   @db.Text
-  tags            String[]
-  approved        Boolean? @default(true)
-  createdBy       String?
-  createdAt       DateTime @default(now())
-  rating          Float?
-  ratingsCount    Int?
-  userRatings     Json?
-  userComments    Json?
-  bookmarkedBy    String[]
-  baseScore       Int?
-}
-
-model BlogPost {
-  id           String             @id @default(cuid())
-  tenantId     String
-  userId       String
-  userName     String
-  userAvatar   String?
-  title        String
-  slug         String             @unique
-  author       String
-  date         DateTime
-  imageUrl     String
-  content      String             @db.Text
-  excerpt      String
-  tags         String[]
-  comments     CommunityComment[]
-  bookmarkedBy String[]
-}
-
-model BlogGenerationSettings {
-  id                      String   @id @default(cuid())
-  generationIntervalHours Int
-  topics                  String[]
-  style                   String?
-  lastGenerated           DateTime?
-}
-
-model CommissionTier {
-  id                   String      @id @default(cuid())
-  name                 String      @unique
-  milestoneRequirement Int // Number of signups to reach this tier
-  commissionRate       Float // e.g., 0.15 for 15%
-  affiliates           Affiliate[]
+    referrer User @relation(fields: [referrerUserId], references: [id])
+    tenant Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Affiliate {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name             String
-  email            String
-  status           String
-  affiliateCode    String            @unique
-  commissionRate   Float
-  totalEarned      Float             @default(0)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  commissionTierId String
-  commissionTier   CommissionTier    @relation(fields: [commissionTierId], references: [id])
-  clicks           AffiliateClick[]
-  signups          AffiliateSignup[]
+  id                 String            @id @default(cuid())
+  userId             String            @unique
+  name               String
+  email              String
+  status             String            // 'pending', 'approved', 'rejected', 'suspended'
+  affiliateCode      String            @unique
+  commissionRate     Float
+  totalEarned        Float             @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  commissionTierId   String
+  
+  user               User              @relation(fields: [userId], references: [id])
+  commissionTier     CommissionTier    @relation(fields: [commissionTierId], references: [id])
+  clicks             AffiliateClick[]
+  signups            AffiliateSignup[]
 }
 
 model AffiliateClick {
   id                String   @id @default(cuid())
   affiliateId       String
-  affiliate         Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
   timestamp         DateTime @default(now())
   convertedToSignup Boolean  @default(false)
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id])
 }
 
 model AffiliateSignup {
-  id                 String    @id @default(cuid())
-  affiliateId        String
-  affiliate          Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  newUserId          String
-  signupDate         DateTime  @default(now())
-  commissionEarned   Float?
+  id                String   @id @default(cuid())
+  affiliateId       String
+  newUserId         String   @unique
+  signupDate        DateTime @default(now())
+  commissionEarned  Float?
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id])
+  newUser   User      @relation(fields: [newUserId], references: [id])
+}
+
+model CommissionTier {
+  id                   String      @id @default(cuid())
+  name                 String      @unique
+  milestoneRequirement Int         // e.g., number of signups
+  commissionRate       Float       // e.g., 0.15 for 15%
+  
+  affiliates           Affiliate[]
 }
 
 model AwardCategory {
   id          String  @id @default(cuid())
   name        String  @unique
   description String?
-  awards      Award[]
+  
+  awards Award[]
 }
 
 model Award {
-  id                  String       @id @default(cuid())
+  id                  String   @id @default(cuid())
   title               String
   description         String
   categoryId          String
-  category            AwardCategory @relation(fields: [categoryId], references: [id])
   nominationStartDate DateTime
   nominationEndDate   DateTime
   votingStartDate     DateTime
   votingEndDate       DateTime
-  status              String
+  status              String   // 'Draft', 'Nominating', 'Voting', 'Completed'
   winnerId            String?
-  winner              User?        @relation(fields: [winnerId], references: [id], onDelete: SetNull)
-  nominations         Nomination[]
+  
+  category    AwardCategory  @relation(fields: [categoryId], references: [id])
+  winner      User?          @relation(fields: [winnerId], references: [id])
+  nominations Nomination[]
 }
 
 model Nomination {
   id            String   @id @default(cuid())
   awardId       String
-  award         Award    @relation(fields: [awardId], references: [id], onDelete: Cascade)
   nomineeId     String
-  nominee       User     @relation("Nominee", fields: [nomineeId], references: [id], onDelete: Cascade)
   nominatorId   String
-  nominator     User     @relation("Nominator", fields: [nominatorId], references: [id], onDelete: Cascade)
   justification String
   createdAt     DateTime @default(now())
-  votes         Vote[]
+
+  award     Award @relation(fields: [awardId], references: [id])
+  nominee   User  @relation("Nominee", fields: [nomineeId], references: [id])
+  nominator User  @relation("Nominator", fields: [nominatorId], references: [id])
+  votes     Vote[]
+
+  @@unique([awardId, nomineeId])
 }
 
 model Vote {
   id           String     @id @default(cuid())
   nominationId String
-  nomination   Nomination @relation(fields: [nominationId], references: [id], onDelete: Cascade)
   voterId      String
-  voter        User       @relation(fields: [voterId], references: [id], onDelete: Cascade)
 
+  nomination Nomination @relation(fields: [nominationId], references: [id])
+  voter      User       @relation(fields: [voterId], references: [id])
+  
   @@unique([nominationId, voterId])
 }
+
+model Survey {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  tenantId    String
+  createdAt   DateTime @default(now())
+  steps       Json
+
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  responses SurveyResponse[]
+}
+
+model SurveyResponse {
+  id            String   @id @default(cuid())
+  userId        String
+  userName      String
+  surveyId      String
+  surveyName    String
+  responseDate  DateTime @default(now())
+  data          Json
+
+  user   User   @relation(fields: [userId], references: [id])
+  survey Survey @relation(fields: [surveyId], references: [id])
+}
+
+model ResumeTemplate {
+  id                String    @id @default(cuid())
+  name              String
+  description       String
+  previewImageUrl   String
+  category          String
+  dataAiHint        String?
+  content           String    @db.Text
+  headerColor       String?
+  bodyColor         String?
+  headerFontSize    String?
+  textAlign         String?
+  deletedAt         DateTime?
+}
+
 
 model PromotionalContent {
   id             String    @id @default(cuid())
@@ -673,6 +583,20 @@ model PromotionalContent {
   updatedAt      DateTime  @updatedAt
 }
 
+model Activity {
+    id String @id @default(cuid())
+    userId String
+    tenantId String
+    description String
+    timestamp DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+    tenant Tenant @relation(fields: [tenantId], references: [id])
+
+    @@index([userId])
+    @@index([tenantId])
+}
+
 model EmailTemplate {
   id        String            @id @default(cuid())
   tenantId  String
@@ -682,52 +606,26 @@ model EmailTemplate {
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
+  tenant Tenant @relation(fields: [tenantId], references: [id])
   @@unique([tenantId, type])
 }
 
-enum EmailTemplateType {
-  WELCOME
-  TENANT_WELCOME
-  APPOINTMENT_CONFIRMATION
-  PASSWORD_RESET
-  PRACTICE_INTERVIEW_INVITE
-}
-
-model Survey {
-  id           String           @id @default(cuid())
-  name         String           @unique
-  description  String
-  tenantId     String
-  createdAt    DateTime         @default(now())
-  steps        Json
-  responses    SurveyResponse[]
-}
-
-model SurveyResponse {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  surveyId     String
-  survey       Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  surveyName   String
-  userName     String
-  responseDate DateTime @default(now())
-  data         Json
-  tenantId     String
-}
 
 model FeatureRequest {
-  id          String   @id @default(cuid())
-  tenantId    String
-  userId      String
-  userName    String
-  userAvatar  String?
-  title       String
-  description String
-  status      String
-  timestamp   DateTime @default(now())
-  upvotes     Int
+  id           String   @id @default(cuid())
+  tenantId     String
+  userId       String
+  userName     String
+  userAvatar   String?
+  title        String
+  description  String   @db.Text
+  status       String   // Pending, In Progress, Completed, Rejected
+  timestamp    DateTime @default(now())
+  upvotes      Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id])
 }
+
 
 model ProductCompany {
   id            String   @id @default(cuid())
@@ -743,17 +641,93 @@ model ProductCompany {
   updatedAt     DateTime @updatedAt
 }
 
-model ResumeTemplate {
-  id              String   @id @default(cuid())
-  name            String
-  description     String
-  previewImageUrl String
-  category        String
-  dataAiHint      String?
-  content         String   @db.Text
-  headerColor     String?
-  bodyColor       String?
-  headerFontSize  String?
-  textAlign       String?
-  deletedAt       DateTime?
+model MockInterviewSession {
+  id                   String        @id @default(cuid())
+  userId               String
+  tenantId             String?
+  topic                String
+  description          String?
+  jobDescription       String?       @db.Text
+  status               String        // 'pending', 'in-progress', 'completed', 'cancelled'
+  createdAt            DateTime      @default(now())
+  questions            Json?         // Array of MockInterviewQuestion
+  answers              Json?         // Array of MockInterviewAnswer
+  overallFeedback      Json?         // GenerateOverallInterviewFeedbackOutput
+  overallScore         Float?
+  timerPerQuestion     Int?
+  difficulty           String?       // 'Easy', 'Medium', 'Hard'
+  questionCategories   String[]
+  recordingReferences  Json?
+  
+  // For live interviews
+  liveInterviewData    Json?         // Contains participants, scheduledTime
+  interviewerScores    Json?         // Array of InterviewerScore
+  finalScore           Json?
+
+  user                 User          @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
+
+model DailyChallenge {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  category     String
+  difficulty   String   // 'Easy', 'Medium', 'Hard'
+  xpReward     Int?
+  type         String   // 'standard', 'flip'
+  solution     String?  @db.Text
+  tasks        Json?    // For flip challenges
+  createdAt    DateTime @default(now())
+}
+
+model InterviewQuestion {
+  id            String   @id @default(cuid())
+  questionText  String   @db.Text
+  category      String
+  difficulty    String?  // 'Easy', 'Medium', 'Hard'
+  isMCQ         Boolean? @default(false)
+  mcqOptions    Json?
+  correctAnswer String?
+  answerOrTip   String   @db.Text
+  tags          String[]
+  approved      Boolean? @default(false)
+  createdBy     String?  // userId
+  createdAt     String?
+  rating        Float?
+  ratingsCount  Int?
+  userRatings   Json?
+  userComments  Json?
+  bookmarkedBy  String[] @default([])
+  baseScore     Int?
+}
+
+enum UserRole {
+  user
+  manager
+  admin
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+  pending
+  PENDING_DELETION
+}
+
+enum JobApplicationStatus {
+  Saved
+  Applied
+  Interviewing
+  Offer
+  Rejected
+}
+
+enum EmailTemplateType {
+  WELCOME
+  TENANT_WELCOME
+  APPOINTMENT_CONFIRMATION
+  PASSWORD_RESET
+  PRACTICE_INTERVIEW_INVITE
 }
