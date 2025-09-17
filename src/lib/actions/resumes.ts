@@ -1,10 +1,12 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
 import type { ResumeProfile, ResumeScanHistoryItem, UserProfile } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { logAction, logError } from '@/lib/logger';
+import { Prisma } from '@prisma/client';
 
 /**
  * Fetches all resume profiles for a specific user.
@@ -124,6 +126,7 @@ export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'i
         ...rest,
         userId,
         tenantId,
+        reportData: rest.reportData ? (rest.reportData as Prisma.JsonObject) : Prisma.JsonNull,
       },
     });
     

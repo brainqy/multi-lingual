@@ -115,6 +115,7 @@ export default function ResumeAnalyzerPage() {
         resumeTextSnapshot: resumeText,
         jobDescriptionText: jobDescription,
         matchScore: detailedReportRes.overallQualityScore ?? detailedReportRes.hardSkillsScore ?? 0,
+        reportData: detailedReportRes, // Save the full report
         bookmarked: false,
       };
 

@@ -1,4 +1,5 @@
 
+
 import type { Locale } from '@/locales';
 import { z } from 'zod';
 import { type UserRole as PrismaUserRole, type EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
@@ -406,6 +407,7 @@ export interface ResumeScanHistoryItem {
     matchScore: number | null;
     resumeTextSnapshot: string;
     jobDescriptionText: string;
+    reportData: AnalyzeResumeAndJobDescriptionOutput | null;
     bookmarked?: boolean;
 }
 

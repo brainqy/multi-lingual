@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -6,12 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { History, Star, Trash2 } from "lucide-react";
-import type { ResumeScanHistoryItem, ResumeProfile } from '@/types';
+import type { ResumeScanHistoryItem, ResumeProfile, AnalyzeResumeAndJobDescriptionOutput } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from "@/lib/utils";
 import ScoreCircle from '@/components/ui/score-circle';
-import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
 import { updateScanHistory, deleteScanHistory } from '@/lib/actions/resumes';
 
 interface ScanHistoryProps {
@@ -52,31 +52,18 @@ export default function ScanHistory({
     return filtered;
   }, [scanHistory, historyFilter]);
 
-  const handleViewReport = async (item: ResumeScanHistoryItem) => {
-    if (!item.resumeTextSnapshot || !item.jobDescriptionText) {
-      toast({ title: "Cannot View Report", description: "Missing data for this historical scan.", variant: "destructive" });
+  const handleViewReport = (item: ResumeScanHistoryItem) => {
+    if (!item.reportData) {
+      toast({ title: "Cannot View Report", description: "Historical report data is missing for this scan. You may need to re-analyze.", variant: "destructive" });
       return;
     }
     
-    toast({ title: "Loading Historical Scan...", description: "Re-generating analysis." });
-    setIsLoading(true);
-
-    try {
-      const report = await analyzeResumeAndJobDescription({
-        resumeText: item.resumeTextSnapshot,
-        jobDescriptionText: item.jobDescriptionText,
-        jobTitle: item.jobTitle || undefined,
-        companyName: item.companyName || undefined,
-      });
-      setAnalysisReport(report);
-      toast({ title: "Historical Report Loaded", description: "The analysis report has been re-generated." });
-    } catch (error: any) {
-      toast({ title: "Report Load Failed", description: error.message || "Could not load report.", variant: "destructive" });
-      setAnalysisReport(null);
-    } finally {
-      setIsLoading(false);
-      const reportSection = document.getElementById('analysis-report-section');
-      if (reportSection) reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setAnalysisReport(item.reportData as AnalyzeResumeAndJobDescriptionOutput);
+    toast({ title: "Historical Report Loaded", description: "Displaying the saved analysis report." });
+    
+    const reportSection = document.getElementById('analysis-report-section');
+    if (reportSection) {
+      reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -111,7 +98,7 @@ export default function ScanHistory({
         <CardTitle className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <History className="h-7 w-7 text-primary" /> Resume Scan History
         </CardTitle>
-        <CardDescription>Review your past resume analyses. Click "View Report" to reload and re-analyze.</CardDescription>
+        <CardDescription>Review your past resume analyses. Click "View Report" to load the saved analysis.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
