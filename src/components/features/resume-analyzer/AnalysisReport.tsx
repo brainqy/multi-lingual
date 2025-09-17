@@ -25,6 +25,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 interface AnalysisReportProps {
     analysisReport: AnalyzeResumeAndJobDescriptionOutput;
@@ -183,7 +185,30 @@ export default function AnalysisReport({
             {isSaveDialogOpen && (
                 <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
                     <DialogContent>
-                        {/* ... Save Dialog Content ... */}
+                        <DialogHeader>
+                            <DialogTitle>Save Resume Version</DialogTitle>
+                            <DialogDescription>
+                                Give this new resume version a name to save it to your "My Resumes" list.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="resume-name" className="text-right">Name</Label>
+                                <Input
+                                    id="resume-name"
+                                    value={newResumeName}
+                                    onChange={(e) => setNewResumeName(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder={`Resume for ${jobTitle}`}
+                                />
+                           </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button onClick={handleSaveResume} type="button">Save Resume</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             )}
