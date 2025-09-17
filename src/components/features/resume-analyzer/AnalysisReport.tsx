@@ -15,7 +15,7 @@ import {
     Target, ListX, Sparkles, RefreshCcw, WandSparkles, ClipboardCopy, Check, Save,
     Loader2
 } from "lucide-react";
-import type { AnalyzeResumeAndJobDescriptionOutput, AtsFormattingIssue } from '@/types';
+import type { AnalyzeResumeAndJobDescriptionOutput, AtsFormattingIssue, ResumeProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +27,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { createResumeProfile } from '@/lib/actions/resumes';
 
 interface AnalysisReportProps {
     analysisReport: AnalyzeResumeAndJobDescriptionOutput;
@@ -80,6 +82,7 @@ export default function AnalysisReport({
     const [isDownloading, setIsDownloading] = useState(false);
     const [copied, setCopied] = useState(false);
     const { toast } = useToast();
+    const { user: currentUser } = useAuth();
 
     const categoryIssues = useMemo(() => {
         if (!analysisReport) return {};
@@ -95,8 +98,38 @@ export default function AnalysisReport({
     
     const handleDownloadReport = async () => { /* ... implementation from original file ... */ };
     const handlePowerEdit = () => setIsPowerEditDialogOpen(true);
-    const openSaveDialog = () => setIsSaveDialogOpen(true);
-    const handleSaveResume = () => { /* ... implementation from original file ... */ };
+    const openSaveDialog = () => {
+        const defaultName = `Resume for ${jobTitle || 'New Role'} - ${new Date().toLocaleDateString()}`;
+        setNewResumeName(defaultName);
+        setIsSaveDialogOpen(true);
+    };
+    const handleSaveResume = async () => {
+        if (!currentUser) {
+          toast({ title: "Error", description: "You must be logged in to save.", variant: "destructive" });
+          return;
+        }
+        if (!newResumeName.trim()) {
+          toast({ title: "Name Required", description: "Please provide a name for this resume version.", variant: "destructive" });
+          return;
+        }
+    
+        const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
+          userId: currentUser.id,
+          tenantId: currentUser.tenantId,
+          name: newResumeName,
+          resumeText: resumeText,
+        };
+        
+        const newProfile = await createResumeProfile(newResumeData);
+    
+        if (newProfile) {
+          toast({ title: "Resume Saved!", description: `"${newResumeName}" has been saved to 'My Resumes'.` });
+          setIsSaveDialogOpen(false);
+        } else {
+          toast({ title: "Save Failed", description: "Could not save the resume profile.", variant: "destructive" });
+        }
+      };
+
     const handleNavigateToIssue = (tab: string, sectionId: string) => { /* ... implementation from original file ... */ };
 
     return (
