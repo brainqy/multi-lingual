@@ -41,7 +41,9 @@ export async function createActivity(activityData: Omit<Activity, 'id' | 'timest
     try {
         const dataForDb: any = {
             ...restOfData,
-            tenantId: tenantId,
+            tenant: {
+                connect: { id: tenantId },
+            },
         };
 
         if (userId) {
@@ -67,7 +69,7 @@ export async function createActivity(activityData: Omit<Activity, 'id' | 'timest
         });
         return newActivity as unknown as Activity;
     } catch (error) {
-        logError('[ActivityAction] Error creating activity', error, { userId });
+        logError('[ActivityAction] Error creating activity', error, { userId, tenantId });
         return null;
     }
 }
