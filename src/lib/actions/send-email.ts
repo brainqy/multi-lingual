@@ -152,7 +152,7 @@ export async function sendEmail({
       from: `"${tenant.name}" <${process.env.GMAIL_EMAIL}>`,
       to: recipientEmail,
       subject: subject,
-      html: body,
+      html: body, // Use 'html' property to send HTML content
     };
     logAction('[SendEmail] 15. Mail options prepared. Sending email...', { from: mailOptions.from, to: mailOptions.to, subject: mailOptions.subject });
 
