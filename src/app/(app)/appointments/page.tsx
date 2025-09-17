@@ -160,10 +160,9 @@ export default function AppointmentsPage() {
   };
 
   const onRescheduleSubmit = async (data: RescheduleFormData) => {
-    if (!appointmentToReschedule) return;
+    if (!appointmentToReschedule || !currentUser) return;
 
     const newDateTime = new Date(data.preferredDate);
-    // Correctly parse time like "9:30 AM"
     const timeParts = data.preferredTimeSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
 
     if (timeParts) {
@@ -171,21 +170,26 @@ export default function AppointmentsPage() {
         const minute = parseInt(timeParts[2], 10);
         const ampm = timeParts[3].toUpperCase();
 
-        if (ampm === 'PM' && hour !== 12) {
-            hour += 12;
-        }
-        if (ampm === 'AM' && hour === 12) { // Midnight case
-            hour = 0;
-        }
+        if (ampm === 'PM' && hour !== 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0;
         newDateTime.setHours(hour, minute, 0, 0);
+    } else {
+        toast({ title: "Invalid Time", description: "Could not parse the selected time slot.", variant: "destructive" });
+        return;
     }
 
     const partner = getPartnerDetails(appointmentToReschedule);
-    const updated = await updateAppointment(appointmentToReschedule.id, { dateTime: newDateTime.toISOString(), status: 'Pending' });
+    const updated = await updateAppointment(appointmentToReschedule.id, {
+      dateTime: newDateTime.toISOString(),
+      notes: data.message ? `Reschedule reason: ${data.message}` : 'Rescheduled by user.',
+    });
 
     if (updated) {
         setAppointments(prev => prev.map(appt => appt.id === appointmentToReschedule.id ? updated : appt));
-        toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: partner?.name || "the other party" }) });
+        toast({
+            title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }),
+            description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: partner?.name || "the other party" })
+        });
         setIsRescheduleDialogOpen(false);
     } else {
         toast({ title: "Reschedule Failed", description: "Could not send reschedule request.", variant: "destructive" });

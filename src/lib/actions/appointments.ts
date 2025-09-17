@@ -83,6 +83,16 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
 export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>): Promise<Appointment | null> {
   logAction('Updating appointment', { appointmentId, status: updateData.status });
   try {
+    const originalAppointment = await db.appointment.findUnique({ where: { id: appointmentId } });
+    if (!originalAppointment) return null;
+    
+    const isReschedule = !!updateData.dateTime && originalAppointment.dateTime.toISOString() !== updateData.dateTime;
+    
+    // If it's a reschedule, reset status to Pending
+    if (isReschedule) {
+      updateData.status = 'Pending';
+    }
+
     const updatedAppointment = await db.appointment.update({
       where: { id: appointmentId },
       data: {
@@ -91,6 +101,8 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
       },
     });
 
+    const currentUser = await db.user.findFirst({ where: { appointmentsAsRequester: { some: { id: appointmentId } } } }); // Simplified way to find who initiated the change
+    
     // Send notifications based on status change
     if (updateData.status === 'Confirmed') {
         await createNotification({
@@ -109,7 +121,19 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
             link: '/appointments',
             isRead: false,
         });
+    } else if (isReschedule) {
+      // Notify the *other* party about the reschedule request
+      const userToNotifyId = originalAppointment.requesterUserId === currentUser?.id ? originalAppointment.alumniUserId : originalAppointment.requesterUserId;
+      const initiatorName = currentUser?.name || "The other party";
+      await createNotification({
+        userId: userToNotifyId,
+        type: 'event',
+        content: `${initiatorName} has requested to reschedule your appointment for "${updatedAppointment.title}". Please review.`,
+        link: '/appointments',
+        isRead: false,
+      });
     }
+
 
     return updatedAppointment as unknown as Appointment;
   } catch (error) {
