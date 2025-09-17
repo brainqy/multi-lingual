@@ -6,6 +6,7 @@ import type { Appointment, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
 import { getDashboardData } from './dashboard';
+import { getUserByEmail } from '../data-services/users';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -42,8 +43,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
   const { tenantId, ...restOfData } = appointmentData;
   logAction('Creating appointment', { requester: restOfData.requesterUserId, alumni: restOfData.alumniUserId, tenantId });
   try {
-    const dashboardData = await getDashboardData();
-    const requesterUser = dashboardData.users.find((u: UserProfile) => u.id === restOfData.requesterUserId);
+    const requesterUser = await db.user.findUnique({ where: { id: restOfData.requesterUserId }});
 
     if (!requesterUser) {
         throw new Error(`Requester user with ID ${restOfData.requesterUserId} not found.`);
@@ -80,13 +80,13 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
  * @param updateData The data to update.
  * @returns The updated Appointment object or null if failed.
  */
-export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>): Promise<Appointment | null> {
+export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>, currentUserId?: string): Promise<Appointment | null> {
   logAction('Updating appointment', { appointmentId, status: updateData.status });
   try {
     const originalAppointment = await db.appointment.findUnique({ where: { id: appointmentId } });
     if (!originalAppointment) return null;
     
-    const isReschedule = !!updateData.dateTime && originalAppointment.dateTime.toISOString() !== updateData.dateTime;
+    const isReschedule = !!updateData.dateTime && new Date(originalAppointment.dateTime).toISOString() !== new Date(updateData.dateTime).toISOString();
     
     // If it's a reschedule, reset status to Pending
     if (isReschedule) {
@@ -100,8 +100,8 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
         dateTime: updateData.dateTime ? new Date(updateData.dateTime) : undefined,
       },
     });
-
-    const currentUser = await db.user.findFirst({ where: { appointmentsAsRequester: { some: { id: appointmentId } } } }); // Simplified way to find who initiated the change
+    
+    const currentUser = currentUserId ? await db.user.findUnique({ where: { id: currentUserId }}) : null;
     
     // Send notifications based on status change
     if (updateData.status === 'Confirmed') {
@@ -113,7 +113,7 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
             isRead: false,
         });
     } else if (updateData.status === 'Cancelled') {
-        const userToNotify = updatedAppointment.requesterUserId; // Assuming the one who didn't cancel gets notified
+        const userToNotify = updatedAppointment.requesterUserId === currentUserId ? updatedAppointment.alumniUserId : updatedAppointment.requesterUserId;
         await createNotification({
             userId: userToNotify,
             type: 'system',
@@ -121,10 +121,10 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
             link: '/appointments',
             isRead: false,
         });
-    } else if (isReschedule) {
+    } else if (isReschedule && currentUser) {
       // Notify the *other* party about the reschedule request
-      const userToNotifyId = originalAppointment.requesterUserId === currentUser?.id ? originalAppointment.alumniUserId : originalAppointment.requesterUserId;
-      const initiatorName = currentUser?.name || "The other party";
+      const userToNotifyId = originalAppointment.requesterUserId === currentUser.id ? originalAppointment.alumniUserId : originalAppointment.requesterUserId;
+      const initiatorName = currentUser.name || "The other party";
       await createNotification({
         userId: userToNotifyId,
         type: 'event',
