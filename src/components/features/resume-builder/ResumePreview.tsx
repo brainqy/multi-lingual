@@ -25,12 +25,16 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
     };
 
     const renderTemplate = () => {
-      switch (templateId) {
-        case 'template2':
-        case 'template4': // Let's use creative for academic for now
+      // Use the category from the template data to decide which component to render.
+      // This is more robust than hardcoding template IDs.
+      const templateCategory = template?.category?.toLowerCase();
+      
+      switch (templateCategory) {
+        case 'creative':
+        case 'academic': // Let's use creative for academic for now
           return <CreativeTemplate data={data} styles={styles} />;
-        case 'template1':
-        case 'template3':
+        case 'modern':
+        case 'professional':
         default:
           return <ModernTemplate data={data} styles={styles} />;
       }
