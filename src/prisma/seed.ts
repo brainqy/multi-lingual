@@ -236,7 +236,7 @@ async function main() {
         description: 'A clean and modern template suitable for corporate and tech roles.',
         previewImageUrl: 'https://placehold.co/300x400/008080/FFFFFF?text=Modern',
         category: 'Modern',
-        content: `{"template": "modern", "layout": "single-column"}`,
+        content: `{"layout": "single-column"}`,
       },
       {
         id: 'template2',
@@ -244,7 +244,7 @@ async function main() {
         description: 'A stylish template for creative fields like design and marketing.',
         previewImageUrl: 'https://placehold.co/300x400/3498db/FFFFFF?text=Creative',
         category: 'Creative',
-        content: `{"template": "creative", "layout": "two-column-left"}`,
+        content: `{"layout": "two-column-left"}`,
       },
       {
         id: 'template3',
@@ -252,7 +252,7 @@ async function main() {
         description: 'A timeless and traditional format, perfect for formal industries.',
         previewImageUrl: 'https://placehold.co/300x400/2c3e50/FFFFFF?text=Classic',
         category: 'Professional',
-        content: `{"template": "classic", "layout": "single-column"}`,
+        content: `{"layout": "single-column"}`,
       },
       {
         id: 'template4',
@@ -260,7 +260,7 @@ async function main() {
         description: 'A comprehensive template designed for academic and research positions.',
         previewImageUrl: 'https://placehold.co/300x400/9b59b6/FFFFFF?text=Academic',
         category: 'Academic',
-        content: `{"template": "academic", "layout": "single-column-detailed"}`,
+        content: `{"layout": "single-column-detailed"}`,
       },
     ],
     skipDuplicates: true,

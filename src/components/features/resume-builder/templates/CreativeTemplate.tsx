@@ -19,6 +19,15 @@ interface TemplateProps {
 }
 
 const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId }: TemplateProps) => {
+  let layout = 'single-column'; // Default layout
+  try {
+    const content = JSON.parse(data.templateId || '{}');
+    layout = content.layout || 'single-column';
+  } catch (e) {
+    // Ignore parsing errors, use default
+  }
+
+
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
       <li key={index} className="text-sm">{line.startsWith('-') ? line.substring(1).trim() : line.trim()}</li>
@@ -31,11 +40,9 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
         selectedElementId === id ? "bg-primary/20 ring-2 ring-primary" : "hover:bg-primary/5"
     );
   };
-
-  return (
-    <div className="p-6 font-sans text-gray-800 bg-white flex" style={{ color: styles.bodyColor }}>
-      {/* Left Sidebar */}
-      <div className="w-1/3 bg-gray-100 p-4 rounded-l-lg">
+  
+  const SidebarContent = () => (
+     <>
         <div className={getSectionClasses('header')} onClick={() => onSelectElement('header')}>
             <h1 className="text-2xl font-bold text-gray-900" style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}>{data.header.fullName}</h1>
             <p className="text-md font-medium mb-4" style={{ color: styles.headerColor }}>{data.experience[0]?.jobTitle || 'Aspiring Professional'}</p>
@@ -69,10 +76,11 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
             ))}
           </div>
         )}
-      </div>
+     </>
+  );
 
-      {/* Main Content */}
-      <div className="w-2/3 p-6" style={{ textAlign: styles.textAlign }}>
+  const MainContent = () => (
+     <>
         {data.summary && (
           <div className={cn("mb-4", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
             <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>Profile</h2>
@@ -101,7 +109,31 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
                 {data.additionalDetails.interests && <div><h3 className="text-sm font-semibold inline-flex items-center gap-1"><Heart className="h-4 w-4"/>Interests</h3><p className="text-xs pl-5">{data.additionalDetails.interests}</p></div>}
             </div>
         )}
-      </div>
+     </>
+  );
+
+
+  return (
+    <div className="p-6 font-sans text-gray-800 bg-white" style={{ color: styles.bodyColor }}>
+        {layout === 'two-column-left' ? (
+            <div className="flex">
+                <div className="w-1/3 bg-gray-100 p-4 rounded-l-lg">
+                    <SidebarContent/>
+                </div>
+                <div className="w-2/3 p-6" style={{ textAlign: styles.textAlign }}>
+                    <MainContent/>
+                </div>
+            </div>
+        ) : (
+            <div>
+                <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                   <SidebarContent/>
+                </div>
+                <div className="p-6" style={{ textAlign: styles.textAlign }}>
+                   <MainContent/>
+                </div>
+            </div>
+        )}
     </div>
   );
 };
