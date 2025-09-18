@@ -67,7 +67,7 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
 
 
 export default function ResumeBuilderPage() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -77,6 +77,7 @@ export default function ResumeBuilderPage() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
     if (!user) return;
@@ -175,6 +176,7 @@ export default function ResumeBuilderPage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
+    logger.log('handleTemplateSelect: Template ID received!', { templateId });
     setIsTemplateDialogOpen(false);
     // Update URL, which will trigger the useEffect to reload the data with the new template
     router.push(`/resume-builder?templateId=${templateId}`);
