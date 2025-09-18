@@ -148,11 +148,11 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
         default:
             if (sectionId.startsWith('custom-')) {
                 const key = sectionId.replace('custom-', '');
-                const value = data.additionalDetails?.main[key] || data.additionalDetails?.sidebar[key];
+                const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(key);
+                const value = isSidebarSection ? data.additionalDetails?.sidebar[key] : data.additionalDetails?.main[key];
                 
                 if (!value) return null;
 
-                const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(key);
                 const headingClass = isSidebarSection
                     ? "text-sm font-bold uppercase tracking-wider mb-1"
                     : "text-lg font-bold tracking-wide border-b-2 pb-1 mb-2";
@@ -162,14 +162,14 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                         <h2 className={headingClass} style={{ color: styles?.headerColor, borderColor: !isSidebarSection && styles?.headerColor ? `${styles.headerColor}30` : undefined }}>
                             {key.replace(/_/g, ' ')}
                         </h2>
-                        <p 
-                            className="text-xs text-gray-700 whitespace-pre-line"
+                        <div 
+                            className={isSidebarSection ? "text-xs text-gray-700 whitespace-pre-line" : "text-sm text-gray-700 whitespace-pre-line"}
                             contentEditable
                             suppressContentEditableWarning
                             onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
                         >
-                            {value}
-                        </p>
+                            {formatResponsibilities(value)}
+                        </div>
                     </SortableSection>
                 );
             }
@@ -182,6 +182,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.main.hasOwnProperty(key);
     }
+    // Default main sections
     return ['summary', 'experience'].includes(id);
   });
   
@@ -190,6 +191,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.sidebar.hasOwnProperty(key);
     }
+    // Default sidebar sections
     return ['skills', 'education'].includes(id);
   });
   
@@ -219,6 +221,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                 <aside className="w-1/3 bg-gray-100 p-4 rounded-lg">
                     <SidebarContent/>
                 </aside>
+                 <div className="w-px bg-gray-200"></div>
                 <main className="w-2/3 p-4" style={{ textAlign: styles?.textAlign }}>
                     <MainContent/>
                 </main>
