@@ -182,7 +182,6 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.main.hasOwnProperty(key);
     }
-    // Default main sections
     return ['summary', 'experience'].includes(id);
   });
   
@@ -191,13 +190,11 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.sidebar.hasOwnProperty(key);
     }
-    // Default sidebar sections
-    return ['skills', 'education'].includes(id);
+    return ['header', 'skills', 'education'].includes(id);
   });
   
   const SidebarContent = () => (
      <div className="space-y-4">
-        {renderSection('header')}
         {sidebarSections.map(id => renderSection(id))}
      </div>
   );
@@ -228,11 +225,11 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
             </div>
         ) : (
             <div>
-                <div className="bg-gray-100 p-4 rounded-lg mb-4">
-                   <SidebarContent/>
+                <div className="mb-4">
+                   {renderSection('header')}
                 </div>
                 <main className="p-4" style={{ textAlign: styles?.textAlign }}>
-                   <MainContent/>
+                   {sectionOrder.filter(id => id !== 'header').map(id => renderSection(id))}
                 </main>
             </div>
         )}
