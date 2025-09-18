@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,7 +49,6 @@ export default function TemplateEditorPage() {
         initialResumeData = { ...getInitialResumeData(null), ...parsedContent, templateId: currentTemplate.id };
       } catch (e) {
         console.error("Failed to parse template content, using default data.", e);
-        toast({ title: "Template Load Error", description: "Could not parse template styles.", variant: "destructive" });
         initialResumeData = getInitialResumeData(null);
         initialResumeData.templateId = currentTemplate.id;
       }
@@ -64,7 +63,7 @@ export default function TemplateEditorPage() {
     
     setResumeData(initialResumeData);
     setIsLoading(false);
-  }, [templateId, isNewTemplate, toast]);
+  }, [templateId, isNewTemplate]);
 
   useEffect(() => {
     loadData();
@@ -144,7 +143,7 @@ export default function TemplateEditorPage() {
         return newData;
     });
   };
-
+  
   const handleAddCustomSection = () => {
     const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
     if (!sectionName || !sectionName.trim()) return;
@@ -160,6 +159,14 @@ export default function TemplateEditorPage() {
     setResumeData(prev => {
         if (!prev) return null;
         const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
+        
+        // Check if the key already exists in either main or sidebar
+        if ((prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) || 
+            (prev.additionalDetails?.sidebar && prev.additionalDetails.sidebar.hasOwnProperty(key))) {
+             toast({ title: "Section Exists", description: `A section named "${sectionName}" already exists.`, variant: "destructive" });
+            return prev;
+        }
+        
         const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
         if (!newDetails[column]) {
             newDetails[column] = {};
@@ -168,28 +175,29 @@ export default function TemplateEditorPage() {
         
         const newSectionOrder = [...(prev.sectionOrder || []), `custom-${key}`];
 
+        toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
         return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
-    toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
   };
-
+  
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
     const fullKey = `custom-${sectionKey}`;
-    if (resumeData?.sectionOrder.includes(fullKey)) {
-        toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
-        return;
-    }
-
+    
     setResumeData(prev => {
-        if (!prev) return null;
-        const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
-        if (!newDetails.main) newDetails.main = {};
-        newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
-        const newSectionOrder = [...prev.sectionOrder, fullKey];
-        return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
-    });
+      if (!prev) return null;
+      if (prev.sectionOrder.includes(fullKey)) {
+        toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
+        return prev;
+      }
 
-    toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
+      const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+      if (!newDetails.main) newDetails.main = {};
+      newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
+      const newSectionOrder = [...prev.sectionOrder, fullKey];
+      
+      toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
+      return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
+    });
   };
 
 
