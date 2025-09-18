@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { arrayMove } from '@dnd-kit/sortable';
 import { useAuth } from '@/hooks/use-auth';
 import { Slider } from '@/components/ui/slider';
 import TemplateSelectionDialog from '@/components/features/resume-builder/TemplateSelectionDialog';
@@ -69,7 +69,6 @@ export default function TemplateEditorPage() {
         const initialData = getInitialResumeData(userData);
         const hydratedJsonString = template(initialData);
         const parsedData = JSON.parse(hydratedJsonString);
-         // GUARANTEE sectionOrder exists for backward compatibility
         if (!parsedData.sectionOrder) {
             parsedData.sectionOrder = defaultSectionOrder;
         }
@@ -90,14 +89,24 @@ export default function TemplateEditorPage() {
     if (isNewTemplate) {
       const defaultTemplate = templates.find(t => t.id === 'template2') || templates[0];
       if (defaultTemplate) {
-        setResumeData(processTemplate(defaultTemplate.content, sampleUserData));
+        const initialData = processTemplate(defaultTemplate.content, sampleUserData);
+        // Ensure sectionOrder exists on new templates
+        if (!initialData.sectionOrder) {
+          initialData.sectionOrder = defaultSectionOrder;
+        }
+        setResumeData(initialData);
       } else {
         setResumeData(getInitialResumeData(sampleUserData));
       }
     } else {
       const templateToEdit = templates.find(t => t.id === templateId);
       if (templateToEdit && templateToEdit.content) {
-        setResumeData(processTemplate(templateToEdit.content, sampleUserData));
+        const parsedData = processTemplate(templateToEdit.content, sampleUserData);
+        // Ensure sectionOrder for older templates without it
+        if (!parsedData.sectionOrder) {
+          parsedData.sectionOrder = defaultSectionOrder;
+        }
+        setResumeData(parsedData);
       } else {
         toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive" });
         setResumeData(getInitialResumeData(sampleUserData));
@@ -124,7 +133,7 @@ export default function TemplateEditorPage() {
     
     if (selectedElementId.startsWith('custom-')) {
         const key = selectedElementId.replace('custom-', '');
-        const sectionData = resumeData.additionalDetails?.main[key] ?? resumeData.additionalDetails?.sidebar[key];
+        const sectionData = resumeData.additionalDetails?.main?.[key] ?? resumeData.additionalDetails?.sidebar?.[key];
         return { title: `Custom Section: ${key.replace(/_/g, ' ')}`, data: { [key]: sectionData } };
     }
 
@@ -262,7 +271,7 @@ export default function TemplateEditorPage() {
     }
     
     setIsSaving(true);
-    const result = await updateResumeTemplate(templateId, { content: JSON.stringify(resumeData) });
+    const result = await updateResumeTemplate(templateId, { content: JSON.stringify(resumeData), description: "Updated via editor" });
 
     if (result) {
       toast({ title: "Template Saved", description: `Template has been saved.` });
@@ -316,7 +325,16 @@ export default function TemplateEditorPage() {
   const handleTemplateSelect = (template: ResumeTemplate) => {
     if (!resumeData || !template) return;
     
-    setResumeData(processTemplate(template.content, sampleUserData));
+    const parsedData = processTemplate(template.content, sampleUserData);
+    if (!parsedData.sectionOrder) {
+        parsedData.sectionOrder = defaultSectionOrder;
+    }
+
+    setResumeData(prev => prev ? ({
+      ...parsedData,
+      header: prev.header, // Preserve the user's header info
+    }) : null);
+    
     setIsTemplateDialogOpen(false);
     toast({
         title: "Template Changed",
@@ -337,7 +355,6 @@ export default function TemplateEditorPage() {
   
   return (
     <>
-    <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
     <div className="h-screen w-screen bg-muted flex flex-col">
       <header className="flex-shrink-0 bg-card border-b p-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -373,18 +390,20 @@ export default function TemplateEditorPage() {
           </div>
         </aside>
 
-        <main className="flex-1 flex justify-center overflow-auto p-8">
-            <div className="w-auto h-full" style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}>
-                <ResumePreview 
-                  ref={resumePreviewRef} 
-                  resumeData={resumeData}
-                  templates={allTemplates}
-                  onSelectElement={setSelectedElementId} 
-                  selectedElementId={selectedElementId}
-                  onDataChange={handleDataChange}
-                />
-            </div>
-        </main>
+        <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <main className="flex-1 flex justify-center overflow-auto p-8">
+              <div className="w-auto h-full" style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}>
+                  <ResumePreview 
+                    ref={resumePreviewRef} 
+                    resumeData={resumeData}
+                    templates={allTemplates}
+                    onSelectElement={setSelectedElementId} 
+                    selectedElementId={selectedElementId}
+                    onDataChange={handleDataChange}
+                  />
+              </div>
+          </main>
+        </DndContext>
 
         <aside className="w-72 bg-card border-l p-4 overflow-y-auto">
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Property Inspector</h2>
@@ -459,7 +478,6 @@ export default function TemplateEditorPage() {
         </aside>
       </div>
     </div>
-    </DndContext>
     <TemplateSelectionDialog
         isOpen={isTemplateDialogOpen}
         onClose={() => setIsTemplateDialogOpen(false)}

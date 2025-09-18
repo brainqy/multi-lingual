@@ -110,7 +110,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
 
     if (sectionId.startsWith('custom-')) {
         const key = sectionId.replace('custom-', '');
-        const value = data.additionalDetails?.main[key] || data.additionalDetails?.sidebar[key];
+        const value = data.additionalDetails?.main?.[key] || data.additionalDetails?.sidebar?.[key];
         if (!value) return null;
         return (
             <SortableSection id={sectionId} onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
