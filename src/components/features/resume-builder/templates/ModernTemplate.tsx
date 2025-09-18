@@ -20,8 +20,8 @@ interface TemplateProps {
 const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId }: TemplateProps) => {
     let layout = 'single-column'; // Default layout
     try {
-        const content = JSON.parse(data.templateId || '{}');
-        layout = content.layout || 'single-column';
+        const templateContent = JSON.parse(data.templateId || '{}');
+        layout = templateContent.layout || 'single-column';
     } catch (e) {
         // Ignore parsing errors, use default
     }

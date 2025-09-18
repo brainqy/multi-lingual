@@ -21,8 +21,9 @@ interface TemplateProps {
 const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId }: TemplateProps) => {
   let layout = 'single-column'; // Default layout
   try {
-    const content = JSON.parse(data.templateId || '{}');
-    layout = content.layout || 'single-column';
+    // The templateId field in ResumeBuilderData actually holds the content JSON string for the selected template.
+    const templateContent = JSON.parse(data.templateId || '{}');
+    layout = templateContent.layout || 'single-column';
   } catch (e) {
     // Ignore parsing errors, use default
   }
@@ -115,14 +116,17 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
 
   return (
     <div className="p-6 font-sans text-gray-800 bg-white" style={{ color: styles.bodyColor }}>
-        {layout === 'two-column-left' ? (
-            <div className="flex">
-                <div className="w-1/3 bg-gray-100 p-4 rounded-l-lg">
+        {layout.startsWith('two-column') ? (
+            <div className={cn(
+              "flex",
+              layout === 'two-column-right' ? 'flex-row-reverse' : 'flex-row'
+            )}>
+                <aside className="w-1/3 bg-gray-100 p-4 rounded-lg">
                     <SidebarContent/>
-                </div>
-                <div className="w-2/3 p-6" style={{ textAlign: styles.textAlign }}>
+                </aside>
+                <main className="w-2/3 p-6" style={{ textAlign: styles.textAlign }}>
                     <MainContent/>
-                </div>
+                </main>
             </div>
         ) : (
             <div>
