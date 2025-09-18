@@ -83,6 +83,7 @@ export default function TemplateEditorPage() {
           const parsedData = JSON.parse(templateToEdit.content);
           // GUARANTEE sectionOrder exists for backward compatibility
           if (!parsedData.sectionOrder) {
+            logger.log('loadData: Parsed content is missing sectionOrder, adding default.');
             parsedData.sectionOrder = defaultSectionOrder;
           }
           logger.log('loadData: Parsed content from template');
@@ -94,6 +95,7 @@ export default function TemplateEditorPage() {
         }
       } else {
         // Fallback if template is not found
+        logger.log('loadData: Template not found, using default.');
         setResumeData(getInitialResumeData(user));
       }
     }
@@ -285,6 +287,7 @@ export default function TemplateEditorPage() {
 
     const dataToSave: Partial<ResumeTemplate> = {
         name: resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
+        description: `Custom template created by ${resumeData.header.fullName || 'a user'}.`,
         category: "Custom",
         previewImageUrl: "https://placehold.co/300x400/7d3c98/FFFFFF?text=Custom",
         content: JSON.stringify(contentToSave),
@@ -340,6 +343,7 @@ export default function TemplateEditorPage() {
       
       // Ensure sectionOrder exists for backward compatibility
       if (!templateData.sectionOrder) {
+        logger.log('handleTemplateSelect: Template content is missing sectionOrder, adding default.');
         templateData.sectionOrder = defaultSectionOrder;
       }
 
