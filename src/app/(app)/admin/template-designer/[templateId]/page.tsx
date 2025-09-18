@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,8 +35,8 @@ export default function TemplateEditorPage() {
     setIsLoading(true);
     const templates = await getResumeTemplates();
     setAllTemplates(templates);
-  
-    let initialResumeData = getInitialResumeData(null);
+
+    let initialResumeData: ResumeBuilderData;
     let currentTemplate: ResumeTemplate | undefined;
   
     if (!isNewTemplate) {
@@ -45,19 +45,19 @@ export default function TemplateEditorPage() {
   
     if (currentTemplate) {
       try {
-        // Content is now always a JSON string
         const parsedContent = JSON.parse(currentTemplate.content);
-        initialResumeData = { ...initialResumeData, ...parsedContent, templateId: currentTemplate.id };
+        initialResumeData = { ...getInitialResumeData(null), ...parsedContent, templateId: currentTemplate.id };
       } catch (e) {
         console.error("Failed to parse template content, using default data.", e);
         toast({ title: "Template Load Error", description: "Could not parse template styles.", variant: "destructive" });
+        initialResumeData = getInitialResumeData(null);
         initialResumeData.templateId = currentTemplate.id;
       }
     } else {
+      initialResumeData = getInitialResumeData(null);
       initialResumeData.templateId = templates.length > 0 ? templates[0].id : 'template1';
     }
     
-    // Ensure sectionOrder exists
     if (!initialResumeData.sectionOrder) {
       initialResumeData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
     }
@@ -149,9 +149,7 @@ export default function TemplateEditorPage() {
     const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
     if (!sectionName || !sectionName.trim()) return;
 
-    const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
     let column: 'main' | 'sidebar' = 'main';
-
     if (resumeData?.layout?.startsWith('two-column')) {
         const selectedColumn = prompt("Add to which column? (Type 'main' or 'sidebar')", 'main');
         if (selectedColumn && (selectedColumn.toLowerCase() === 'sidebar' || selectedColumn.toLowerCase() === 'side')) {
@@ -161,6 +159,7 @@ export default function TemplateEditorPage() {
 
     setResumeData(prev => {
         if (!prev) return null;
+        const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
         const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
         if (!newDetails[column]) {
             newDetails[column] = {};
@@ -175,26 +174,22 @@ export default function TemplateEditorPage() {
   };
 
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
-    setResumeData(prev => {
-      if (!prev) return null;
-
-      const fullKey = `custom-${sectionKey}`;
-      // Check if the section already exists in the order array
-      if (prev.sectionOrder.includes(fullKey)) {
+    const fullKey = `custom-${sectionKey}`;
+    if (resumeData?.sectionOrder.includes(fullKey)) {
         toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
-        return prev;
-      }
-      
-      const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
-      if (!newDetails.main) newDetails.main = {};
+        return;
+    }
 
-      newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
-      
-      const newSectionOrder = [...prev.sectionOrder, fullKey];
-
-      toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
-      return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
+    setResumeData(prev => {
+        if (!prev) return null;
+        const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+        if (!newDetails.main) newDetails.main = {};
+        newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
+        const newSectionOrder = [...prev.sectionOrder, fullKey];
+        return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
+
+    toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
   };
 
 
@@ -292,7 +287,7 @@ export default function TemplateEditorPage() {
           </div>
         </aside>
 
-        <main className="flex-1 flex justify-center overflow-auto p-8">
+        <main className="flex-1 flex justify-start overflow-auto p-8">
             <div className="w-auto h-full">
                 <ResumePreview 
                 ref={resumePreviewRef} 
