@@ -18,6 +18,7 @@ import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useAuth } from '@/hooks/use-auth';
 import { Slider } from '@/components/ui/slider';
+import TemplateSelectionDialog from '@/components/features/resume-builder/TemplateSelectionDialog';
 
 export default function TemplateEditorPage() {
   const params = useParams();
@@ -35,8 +36,9 @@ export default function TemplateEditorPage() {
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(70);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
 
-  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
+  const loadData = useCallback(async (resumeId: string | null, templateIdParam: string | null) => {
     if (!user) return;
     setIsLoading(true);
     const templates = await getResumeTemplates();
@@ -54,8 +56,8 @@ export default function TemplateEditorPage() {
             console.error("Could not parse content from template, using default structure.", e);
         }
       }
-    } else if (templateId && templateId !== 'new') {
-        const template = templates.find(t => t.id === templateId);
+    } else if (templateIdParam && templateIdParam !== 'new') {
+        const template = templates.find(t => t.id === templateIdParam);
         if (template && template.content) {
             try {
                 const parsedData = JSON.parse(template.content);
@@ -157,6 +159,15 @@ export default function TemplateEditorPage() {
     const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
     if (!sectionName || !sectionName.trim()) return;
 
+    if (resumeData?.sectionOrder.some(s => s.replace('custom-', '').replace(/_/g, ' ') === sectionName.trim().toLowerCase())) {
+        toast({
+          title: 'Section Exists',
+          description: `A section named "${sectionName}" already exists.`,
+          variant: 'destructive',
+        });
+        return;
+    }
+    
     let column: 'main' | 'sidebar' = 'main';
     if (resumeData?.layout?.startsWith('two-column')) {
         const selectedColumn = prompt("Add to which column? (Type 'main' or 'sidebar')", 'main');
@@ -167,15 +178,6 @@ export default function TemplateEditorPage() {
 
     const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
     const fullKey = `custom-${key}`;
-    
-    if (resumeData?.sectionOrder.includes(fullKey)) {
-        toast({
-          title: 'Section Exists',
-          description: `A section named "${sectionName}" already exists.`,
-          variant: 'destructive',
-        });
-        return;
-    }
     
     setResumeData(prev => {
       if (!prev) return prev;
@@ -207,7 +209,7 @@ export default function TemplateEditorPage() {
         const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
         if (!newDetails.main) newDetails.main = {};
         newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
-        const newSectionOrder = [...prev.sectionOrder, fullKey];
+        const newSectionOrder = [...(prev.sectionOrder || []), fullKey];
         return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
 
@@ -261,6 +263,35 @@ export default function TemplateEditorPage() {
     }
   };
   
+  const handleTemplateSelect = (template: ResumeTemplate) => {
+    if (!resumeData || !template) return;
+    
+    try {
+      const templateData = JSON.parse(template.content) as ResumeBuilderData;
+      
+      // Smart merge: keep user's header, adopt template's content and styles
+      const mergedData: ResumeBuilderData = {
+        ...templateData, // Start with template data
+        header: resumeData.header, // Keep existing user header
+        templateId: template.id, // Update to the new template ID
+      };
+
+      setResumeData(mergedData);
+      setIsTemplateDialogOpen(false);
+      toast({
+        title: "Template Changed",
+        description: `Switched to "${template.name}". Your personal details have been preserved.`,
+      });
+    } catch (e) {
+      console.error("Failed to parse template content:", e);
+      toast({
+        title: "Error Applying Template",
+        description: "The selected template has invalid content.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   const commonSections = [
     { key: 'awards', title: 'Awards', icon: Award },
     { key: 'certifications', title: 'Certifications', icon: BookCheck },
@@ -273,6 +304,7 @@ export default function TemplateEditorPage() {
   }
   
   return (
+    <>
     <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
     <div className="h-screen w-screen bg-muted flex flex-col">
       <header className="flex-shrink-0 bg-card border-b p-3 flex justify-between items-center">
@@ -329,6 +361,7 @@ export default function TemplateEditorPage() {
               <CardTitle className="text-base">{selectedElementData?.title || 'Global Styles'}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+               <Button onClick={() => setIsTemplateDialogOpen(true)} variant="outline" className="w-full">Change Template</Button>
                <div className="space-y-1">
                  <Label htmlFor="layout-select" className="text-xs">Layout</Label>
                  <Select value={resumeData.layout} onValueChange={handleLayoutChange}>
@@ -395,5 +428,13 @@ export default function TemplateEditorPage() {
       </div>
     </div>
     </DndContext>
+    <TemplateSelectionDialog
+        isOpen={isTemplateDialogOpen}
+        onClose={() => setIsTemplateDialogOpen(false)}
+        onSelect={handleTemplateSelect}
+        templates={allTemplates}
+        currentTemplateId={resumeData.templateId}
+    />
+    </>
   );
 }
