@@ -85,7 +85,7 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
                 style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
                 className="w-[210mm]" // Fixed A4 width
             >
-                <Card ref={ref} id="resume-preview-content" className="shadow-lg border-slate-300">
+                <Card ref={ref} className="shadow-lg border-slate-300">
                   <CardContent className="p-0">
                     {renderTemplate()}
                     <p className="text-center text-[8px] text-slate-400 mt-4 p-2">
