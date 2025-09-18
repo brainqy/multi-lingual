@@ -25,46 +25,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getResumeProfiles } from "@/lib/actions/resumes";
 import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
+import { getInitialResumeData } from '@/lib/resume-builder-helpers';
 
 const logger = {
     log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
 };
-
-const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
-  if (!user) {
-    return {
-      header: { fullName: "", phone: "", email: "", linkedin: "", portfolio: "", address: "" },
-      experience: [],
-      education: [],
-      skills: [],
-      summary: "",
-      additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-      templateId: 'template1', // Fallback templateId
-    };
-  }
-  return {
-    header: {
-      fullName: user.name || "",
-      phone: user.mobileNumber || "",
-      email: user.email || "",
-      linkedin: user.linkedInProfile || "",
-      portfolio: "",
-      address: user.currentAddress || "",
-    },
-    experience: [],
-    education: [],
-    skills: user.skills || [],
-    summary: user.bio || "",
-    additionalDetails: {
-      awards: "",
-      certifications: "",
-      languages: "",
-      interests: (user.interests || []).join(", "),
-    },
-    templateId: 'template1', // Default templateId
-  };
-};
-
 
 export default function ResumeBuilderPage() {
   const { user } = useAuth();
@@ -292,7 +257,7 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} />
+          <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} onSelectElement={() => {}} selectedElementId={null} />
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
