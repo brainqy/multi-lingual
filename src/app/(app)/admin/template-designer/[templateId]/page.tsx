@@ -19,6 +19,8 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import { useAuth } from '@/hooks/use-auth';
 import { Slider } from '@/components/ui/slider';
 import TemplateSelectionDialog from '@/components/features/resume-builder/TemplateSelectionDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 const logger = {
   log: (message: string, ...args: any[]) => console.log(`[TemplateEditorPage] ${message}`, ...args),
@@ -59,6 +61,10 @@ export default function TemplateEditorPage() {
   logger.log('useState: zoomLevel', { zoomLevel });
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   logger.log('useState: isTemplateDialogOpen', { isTemplateDialogOpen });
+
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateDescription, setNewTemplateDescription] = useState('');
 
   const loadData = useCallback(async () => {
     logger.log('loadData called');
@@ -275,42 +281,68 @@ export default function TemplateEditorPage() {
   };
 
 
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = async (name?: string, description?: string) => {
     logger.log('handleSaveChanges called');
     if (!resumeData) {
       logger.log('handleSaveChanges: No resume data.');
       return;
     }
-    setIsSaving(true);
-    
-    const contentToSave = { ...resumeData };
 
+    if (isNewTemplate) {
+        setNewTemplateName(resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Custom Template");
+        setNewTemplateDescription(`Custom template based on "${resumeData.header.jobTitle || 'general role'}".`);
+        setIsSaveDialogOpen(true);
+        return;
+    }
+    
+    // Logic for updating an existing template
+    setIsSaving(true);
     const dataToSave: Partial<ResumeTemplate> = {
-        name: resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
-        description: `Custom template created by ${resumeData.header.fullName || 'a user'}.`,
+        name: name || resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
+        description: description || `Custom template created by ${resumeData.header.fullName || 'a user'}.`,
         category: "Custom",
         previewImageUrl: "https://placehold.co/300x400/7d3c98/FFFFFF?text=Custom",
-        content: JSON.stringify(contentToSave),
+        content: JSON.stringify(resumeData),
     };
-
-    let result;
-    if (isNewTemplate) {
-      logger.log('handleSaveChanges: Creating new template.');
-      result = await createResumeTemplate(dataToSave as any);
-    } else {
-      logger.log('handleSaveChanges: Updating existing template.', { templateId });
-      result = await updateResumeTemplate(templateId, dataToSave);
-    }
+    
+    const result = await updateResumeTemplate(templateId, dataToSave);
 
     if (result) {
-      logger.log('handleSaveChanges: Save successful.', { result });
-      toast({ title: isNewTemplate ? "Template Created" : "Template Saved", description: `Template "${result.name}" has been saved.` });
-      if (isNewTemplate) {
-        router.push(`/admin/template-designer/${result.id}`);
-      }
+      logger.log('handleSaveChanges: Update successful.', { result });
+      toast({ title: "Template Saved", description: `Template "${result.name}" has been saved.` });
     } else {
-      logger.log('handleSaveChanges: Save failed.');
+      logger.log('handleSaveChanges: Update failed.');
       toast({ title: "Error", description: "Failed to save template.", variant: "destructive" });
+    }
+    setIsSaving(false);
+  };
+
+  const handleCreateNewTemplate = async () => {
+    if (!newTemplateName.trim() || !newTemplateDescription.trim()) {
+        toast({ title: "Error", description: "Name and description are required.", variant: "destructive" });
+        return;
+    }
+
+    setIsSaving(true);
+    setIsSaveDialogOpen(false);
+
+    const dataToSave: Partial<ResumeTemplate> = {
+        name: newTemplateName,
+        description: newTemplateDescription,
+        category: "Custom",
+        previewImageUrl: "https://placehold.co/300x400/7d3c98/FFFFFF?text=Custom",
+        content: JSON.stringify(resumeData),
+    };
+    
+    const result = await createResumeTemplate(dataToSave as any);
+    
+    if (result) {
+        logger.log('handleSaveChanges: Create successful.', { result });
+        toast({ title: "Template Created", description: `Template "${result.name}" has been saved.` });
+        router.push(`/admin/template-designer/${result.id}`);
+    } else {
+        logger.log('handleSaveChanges: Create failed.');
+        toast({ title: "Error", description: "Failed to create template.", variant: "destructive" });
     }
     setIsSaving(false);
   };
@@ -396,7 +428,7 @@ export default function TemplateEditorPage() {
           <Button variant="outline" size="sm">
             <Eye className="mr-2 h-4 w-4" /> Preview
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSaveChanges} disabled={isSaving}>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => handleSaveChanges()} disabled={isSaving}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
             <Save className="mr-2 h-4 w-4" /> {isSaving ? "Saving..." : "Save Template"}
           </Button>
@@ -514,6 +546,30 @@ export default function TemplateEditorPage() {
         templates={allTemplates}
         currentTemplateId={resumeData.templateId}
     />
+    <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Save New Template</DialogTitle>
+                <DialogDescription>
+                    Provide a name and description for your new custom template.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <div>
+                    <Label htmlFor="template-name">Template Name</Label>
+                    <Input id="template-name" value={newTemplateName} onChange={e => setNewTemplateName(e.target.value)} />
+                </div>
+                <div>
+                    <Label htmlFor="template-description">Description</Label>
+                    <Textarea id="template-description" value={newTemplateDescription} onChange={e => setNewTemplateDescription(e.target.value)} />
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                <Button onClick={handleCreateNewTemplate}>Create Template</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
