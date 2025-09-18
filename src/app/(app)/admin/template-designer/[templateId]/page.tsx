@@ -45,6 +45,7 @@ export default function TemplateEditorPage() {
   
     if (currentTemplate) {
       try {
+        // Content is now always a JSON string
         const parsedContent = JSON.parse(currentTemplate.content);
         initialResumeData = { ...initialResumeData, ...parsedContent, templateId: currentTemplate.id };
       } catch (e) {
@@ -291,17 +292,17 @@ export default function TemplateEditorPage() {
           </div>
         </aside>
 
-        <main className="flex-1 flex items-center justify-center overflow-auto p-8">
-          <div className="w-full h-full max-w-4xl">
-            <ResumePreview 
-              ref={resumePreviewRef} 
-              resumeData={resumeData}
-              templates={allTemplates}
-              onSelectElement={setSelectedElementId} 
-              selectedElementId={selectedElementId}
-              onDataChange={handleDataChange}
-            />
-          </div>
+        <main className="flex-1 flex justify-center overflow-auto p-8">
+            <div className="w-auto h-full">
+                <ResumePreview 
+                ref={resumePreviewRef} 
+                resumeData={resumeData}
+                templates={allTemplates}
+                onSelectElement={setSelectedElementId} 
+                selectedElementId={selectedElementId}
+                onDataChange={handleDataChange}
+                />
+            </div>
         </main>
 
         <aside className="w-72 bg-card border-l p-4 overflow-y-auto">
