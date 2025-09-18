@@ -78,77 +78,55 @@ export default function ResumeBuilderPage() {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   
-  useEffect(() => {
-    async function loadTemplates() {
-      const templates = await getResumeTemplates();
-      setAllTemplates(templates);
-      if (!resumeData.templateId && templates.length > 0) {
-        setResumeData(prev => ({...prev, templateId: templates[0].id}));
-      }
-    }
-    loadTemplates();
-  }, [resumeData.templateId]);
-  
-
-  const loadResumeForEditing = useCallback(async (resumeId: string) => {
+  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
     if (!user) return;
-    toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
-    const userResumes = await getResumeProfiles(user.id);
-    const resumeToEdit = userResumes.find(r => r.id === resumeId);
-    if (resumeToEdit && resumeToEdit.resumeText) {
-        try {
-            const parsedData = JSON.parse(resumeToEdit.resumeText);
-            setResumeData(parsedData);
-            setEditingResumeId(resumeToEdit.id);
-        } catch (e) {
-            console.error("Failed to parse resume data:", e);
-            toast({ title: "Error Loading Resume", description: "The selected resume data is not in the correct format.", variant: "destructive"});
-            setResumeData(getInitialResumeData(user)); // Reset to default
-        }
+    setIsLoading(true);
+
+    const templates = await getResumeTemplates();
+    setAllTemplates(templates);
+
+    if (resumeId) {
+      toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
+      const userResumes = await getResumeProfiles(user.id);
+      const resumeToEdit = userResumes.find(r => r.id === resumeId);
+      if (resumeToEdit && resumeToEdit.resumeText) {
+          try {
+              const parsedData = JSON.parse(resumeToEdit.resumeText);
+              setResumeData(parsedData);
+              setEditingResumeId(resumeToEdit.id);
+          } catch (e) {
+              console.error("Failed to parse resume data:", e);
+              toast({ title: "Error Loading Resume", description: "The selected resume data is not in the correct format.", variant: "destructive"});
+              setResumeData(getInitialResumeData(user)); // Reset to default
+          }
+      } else {
+          toast({ title: "Resume Not Found", description: "Could not find the selected resume.", variant: "destructive"});
+      }
+    } else if (templateId) {
+       const template = templates.find(t => t.id === templateId);
+       if (template) {
+         setResumeData(prev => ({ ...getInitialResumeData(user), templateId: template.id }));
+         setEditingResumeId(null);
+       } else {
+         toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
+       }
     } else {
-        toast({ title: "Resume Not Found", description: "Could not find the selected resume.", variant: "destructive"});
+      // Default to the first available template if no params
+      const defaultTemplateId = templates.length > 0 ? templates[0].id : 'template1';
+      setResumeData(prev => ({...getInitialResumeData(user), templateId: defaultTemplateId}));
+      setEditingResumeId(null);
     }
+
+    setIsLoading(false);
   }, [user, toast]);
-
-  const loadTemplateForEditing = useCallback((templateId: string) => {
-    toast({ title: "Loading Template...", description: "Preparing the builder with your selected template." });
-    const template = allTemplates.find(t => t.id === templateId);
-    if (template) {
-      const newHeader: ResumeHeaderData = {
-        fullName: user?.name || "Your Name",
-        phone: user?.mobileNumber || "Your Phone",
-        email: user?.email || "your.email@example.com",
-        linkedin: user?.linkedInProfile || "",
-        portfolio: "",
-        address: user?.currentAddress || "",
-      };
-      setResumeData({
-        header: newHeader,
-        summary: user?.bio || "Professional summary here...",
-        experience: [],
-        education: [],
-        skills: user?.skills || [],
-        additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-        templateId: template.id,
-      });
-      setEditingResumeId(null); // It's a new resume based on a template
-    } else {
-      toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
-    }
-  }, [user, toast, allTemplates]);
-
+  
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
     const templateId = searchParams.get('templateId');
-    if (resumeId) {
-      loadResumeForEditing(resumeId);
-    } else if (templateId && allTemplates.length > 0) {
-      loadTemplateForEditing(templateId);
-    } else if (user) {
-      setResumeData(getInitialResumeData(user));
-      setEditingResumeId(null);
+    if(user) {
+        loadData(resumeId, templateId);
     }
-  }, [user, searchParams, loadResumeForEditing, loadTemplateForEditing, allTemplates]);
+  }, [user, searchParams, loadData]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -197,15 +175,9 @@ export default function ResumeBuilderPage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
-    logger.log('handleTemplateSelect: Received templateId in page', { templateId });
-    logger.log('handleTemplateSelect: Current resumeData BEFORE update', { currentTemplateId: resumeData.templateId });
-    setResumeData(prev => {
-      const newData = { ...prev, templateId };
-      logger.log('handleTemplateSelect: New resumeData AFTER update', { newTemplateId: newData.templateId });
-      return newData;
-    });
     setIsTemplateDialogOpen(false);
-    toast({ title: "Template Changed", description: "The resume preview has been updated." });
+    // Update URL, which will trigger the useEffect to reload the data with the new template
+    router.push(`/resume-builder?templateId=${templateId}`);
   };
 
   const handleSaveComplete = (newResumeId: string) => {
