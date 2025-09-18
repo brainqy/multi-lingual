@@ -3,31 +3,29 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  const hostname = request.headers.get('host') || '';
-  const pathname = url.pathname;
+  const { pathname } = url;
 
+  // Skip middleware for API, internal Next.js routes, and static files.
   const isApiOrInternal = pathname.startsWith('/api/') || pathname.startsWith('/_next/') || /\.(png|ico|svg|jpg|jpeg|css|js)$/.test(pathname);
   if (isApiOrInternal) {
     return NextResponse.next();
   }
 
-  // Handle localhost and production domains
-  const domainParts = hostname.replace('localhost', 'app.localhost').split('.'); // Treat localhost like myapp.localhost
-  const subdomain = domainParts.length > 2 ? domainParts[0] : null;
+  const hostname = request.headers.get('host') || '';
   
-  // Create a new response object so we can modify its headers.
-  const response = NextResponse.next();
+  // Adjusted regex to better handle localhost with ports
+  const localhostMatch = hostname.match(/^(.*?)\.localhost(:\d+)?$/);
+  const potentialSubdomain = localhostMatch ? localhostMatch[1] : (hostname.split('.').length > 2 && hostname.split('.')[0] !== 'www') ? hostname.split('.')[0] : null;
 
-  // The tenantId 'platform' is used for the main domain without a subdomain.
-  const tenantId = subdomain || 'platform';
-  response.headers.set('X-Tenant-Id', tenantId);
-  console.log(`[Middleware] Host: ${hostname}, Subdomain: ${subdomain}, Tenant ID: ${tenantId}`);
+  const response = NextResponse.next();
+  const tenantId = potentialSubdomain || 'platform';
   
-  // If the user is on a tenant subdomain but tries to access the root public page,
-  // redirect them to the tenant-specific login page.
-  if (subdomain && pathname === '/') {
+  // Set a header with the resolved tenant ID (or domain)
+  response.headers.set('X-Tenant-Id', tenantId);
+
+  // Redirect root path of subdomains to login, but exclude the main platform domain
+  if (potentialSubdomain && potentialSubdomain !== 'platform' && (pathname === '/' )) {
     url.pathname = '/auth/login';
-    console.log(`[Middleware] Redirecting from root of subdomain '${subdomain}' to ${url.pathname}`);
     return NextResponse.redirect(url);
   }
 

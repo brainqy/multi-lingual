@@ -5,30 +5,46 @@ import { getUserByEmail, createUser, updateUser } from '@/lib/data-services/user
 import type { UserProfile } from '@/types';
 import { db } from '@/lib/db';
 import { logAction, logError } from '@/lib/logger';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeFirebaseAdmin } from '../firebase-admin';
+
+initializeFirebaseAdmin();
 
 /**
- * Handles user login, scoped to a specific tenant.
+ * Handles user login, scoped to a specific tenant identified by the request headers.
  * @param email The user's email address.
  * @param password The user's password.
- * @param tenantId The ID of the tenant from the URL subdomain.
  * @returns The user profile if login is successful, otherwise null.
  */
-export async function loginUser(email: string, password?: string, tenantId?: string): Promise<UserProfile | null> {
+export async function loginUser(email: string, password?: string, tenantIdFromContext?: string): Promise<UserProfile | null> {
   try {
     const user = await db.user.findFirst({
-      where: {
-        email: email,
-      },
+      where: { email: email },
     });
 
     if (user) {
-      const isPlatformLogin = !tenantId || tenantId === 'platform';
+      const isPlatformLogin = !tenantIdFromContext || tenantIdFromContext === 'platform';
       
+      let tenant = null;
+      if (!isPlatformLogin && tenantIdFromContext) {
+        // Find tenant by ID or custom domain from the identifier.
+        tenant = await db.tenant.findFirst({
+          where: { OR: [{ domain: tenantIdFromContext }, { id: tenantIdFromContext }] },
+        });
+        if (!tenant) {
+            logError('Login failed: Tenant not found by identifier', { email, identifier: tenantIdFromContext });
+            return null; // The specified tenant subdomain does not exist.
+        }
+      }
+      
+      const tenantId = tenant ? tenant.id : 'platform';
+
       if (user.role === 'admin' && !isPlatformLogin) {
-        logError('Admin login attempt failed on tenant subdomain', { email, tenantId });
+        logError('Admin login attempt failed on tenant subdomain', { email, identifier: tenantIdFromContext });
         return null;
       }
       
+      // A user's tenantId must match the resolved tenantId from the subdomain.
       if (user.role !== 'admin' && user.tenantId !== tenantId) {
         logError('User login attempt failed due to tenant mismatch', { email, userTenant: user.tenantId, loginTenant: tenantId });
         return null;
@@ -51,9 +67,60 @@ export async function loginUser(email: string, password?: string, tenantId?: str
   }
 }
 
+export async function loginOrSignupWithGoogle(
+  idToken: string,
+  tenantId?: string
+): Promise<{ success: boolean; user: UserProfile | null; message?: string }> {
+  try {
+    if (!idToken) {
+      return { success: false, user: null, message: 'Authorization token not found.' };
+    }
+
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const { email, name, picture } = decodedToken;
+
+    if (!email) {
+      return { success: false, user: null, message: 'Email not found in Google token.' };
+    }
+    
+    const effectiveTenantId = tenantId || 'platform';
+
+    let user = await getUserByEmail(email);
+
+    if (user) {
+      // User exists, log them in
+      const sessionId = `session-${Date.now()}`;
+      user = await updateUser(user.id, { sessionId, lastLogin: new Date().toISOString(), profilePictureUrl: picture });
+      logAction('Google login successful for existing user', { userId: user?.id, email, tenantId: user?.tenantId });
+    } else {
+      // User does not exist, create a new one
+      user = await createUser({
+        name: name || email.split('@')[0],
+        email: email,
+        role: 'user',
+        tenantId: effectiveTenantId,
+        status: 'active',
+        profilePictureUrl: picture,
+      });
+
+      if (!user) {
+        throw new Error('Failed to create new user account after Google sign-in.');
+      }
+      logAction('Google signup successful for new user', { userId: user.id, email, tenantId: user.tenantId });
+    }
+
+    return { success: true, user };
+  } catch (error) {
+    logError('Exception during loginOrSignupWithGoogle', error, {});
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return { success: false, user: null, message };
+  }
+}
+
+
 /**
  * Handles new user registration.
- * @param userData The data for the new user, including password.
+ * @param userData The data for the new user, including the password.
  * @returns An object with success status, a message, and the user object if successful.
  */
 export async function signupUser(userData: { name: string; email: string; role: 'user' | 'admin'; password?: string; tenantId?: string; }): Promise<{ success: boolean; user: UserProfile | null; message?: string; error?: string }> {
@@ -68,8 +135,10 @@ export async function signupUser(userData: { name: string; email: string; role: 
         error: "Account Exists",
       };
     }
+    
+    const finalTenantId = userData.tenantId || 'platform';
 
-    const newUser = await createUser(userData);
+    const newUser = await createUser({ ...userData, tenantId: finalTenantId });
 
     if (newUser) {
       logAction('New user signup successful', { userId: newUser.id, email: newUser.email, tenantId: newUser.tenantId, sessionId: newUser.sessionId });
@@ -140,5 +209,34 @@ export async function changePassword(data: { userId: string; currentPassword?: s
   } catch (error) {
     logError('[AuthAction] Exception during password change', error, { userId: data.userId });
     return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Resets a user's password using a token (base64 email).
+ * @param data Object containing the token and the new password.
+ * @returns A success or error object.
+ */
+export async function resetPassword(data: { token: string; newPassword?: string }): Promise<{ success: boolean; error?: string }> {
+  logAction('Attempting to reset password', { token: data.token });
+  try {
+    const email = Buffer.from(data.token, 'base64').toString('ascii');
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      logError('[AuthAction] User not found for password reset', {}, { email });
+      return { success: false, error: "Invalid token or user not found." };
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: { password: data.newPassword },
+    });
+
+    logAction('Password reset successfully', { userId: user.id });
+    return { success: true };
+  } catch (error) {
+    logError('[AuthAction] Exception during password reset', error, { token: data.token });
+    return { success: false, error: "An unexpected error occurred during password reset." };
   }
 }

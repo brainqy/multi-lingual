@@ -1,193 +1,149 @@
 
 'use server';
 
-import type { UserProfile, Tenant } from '@/types';
 import { db } from '@/lib/db';
-import { Prisma } from '@prisma/client';
-import { sendEmail } from '../actions/send-email';
+import type { UserProfile, UserRole, UserStatus } from '@/types';
+import { logAction, logError } from '@/lib/logger';
 import { getWallet } from '../actions/wallet';
+import { headers } from 'next/headers';
 
-const log = console.log;
-
-export async function getUsers(tenantId?: string): Promise<UserProfile[]> {
-  log(`[DataService] Fetching users for tenant: ${tenantId || 'all'}`);
+/**
+ * Fetches users from the database, scoped by the tenant ID.
+ * @param tenantId The ID of the tenant to fetch users for. If null/undefined, fetches all users (admin action).
+ * @returns A promise that resolves to an array of UserProfile objects.
+ */
+export async function getUsers(tenantId?: string | null): Promise<UserProfile[]> {
+  logAction('Fetching users', { tenantId });
   try {
+    const whereClause: any = {};
+    if (tenantId && tenantId !== 'platform') {
+      whereClause.tenantId = tenantId;
+    }
     const users = await db.user.findMany({
-      where: tenantId ? { tenantId } : {},
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: whereClause,
+      orderBy: { name: 'asc' },
     });
     return users as unknown as UserProfile[];
   } catch (error) {
-    console.error('[DataService] Error fetching users:', error);
+    logError('[User Dataservice] Error fetching users', error, { tenantId });
     return [];
   }
 }
 
-async function generateUniqueReferralCode(name: string): Promise<string> {
-    let code = '';
-    let isUnique = false;
-    let attempts = 0;
-    const maxAttempts = 10;
-
-    // Sanitize name to create a base for the code
-    const namePart = name.replace(/\s+/g, '').substring(0, 4).toUpperCase();
-
-    while (!isUnique && attempts < maxAttempts) {
-        // Generate a random part to ensure uniqueness
-        const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-        code = `${namePart}${randomPart}`;
-
-        // Check if the code already exists in the database
-        const existingUser = await db.user.findUnique({
-            where: { referralCode: code },
-        });
-
-        if (!existingUser) {
-            isUnique = true;
-        }
-        attempts++;
-    }
-
-    if (!isUnique) {
-        // Fallback for the rare case of repeated collisions
-        code = `REF${Date.now()}`;
-    }
-
-    return code;
-}
+/**
+ * Fetches a single user by their email address.
+ * @param email The email of the user to fetch.
+ * @returns The user profile or null if not found.
+ */
 export async function getUserByEmail(email: string): Promise<UserProfile | null> {
-  log(`[DataService] Fetching user by email: ${email}`);
-  const user = await db.user.findUnique({
-    where: { email },
-  });
-  if (!user) {
-      return null;
-  }
-  return user as unknown as UserProfile;
-}
-
-export async function getUserById(id: string): Promise<UserProfile | null> {
-  log(`[DataService] Fetching user by id: ${id}`);
-  const user = await db.user.findUnique({
-    where: { id },
-  });
-  return user as unknown as UserProfile | null;
-}
-
-export async function createUser(data: Partial<UserProfile>): Promise<UserProfile | null> {
-    if (!data.name || !data.email || !data.role) {
-        throw new Error("Name, email, and role are required to create a user.");
-    }
-
-    const defaultTenantId = 'platform'; // Fallback to platform if no tenant ID is provided
-    const tenantId = data.tenantId || defaultTenantId;
-    const password = data.password;
-    const referralCode = await generateUniqueReferralCode(data.name);
-
-    const newUserPayload = {
-        id: `user-${Date.now()}`,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        status: data.status || 'active',
-        lastLogin: new Date(),
-        createdAt: new Date(),
-        password: password,
-        sessionId: `session-${Date.now()}`,
-        currentJobTitle: data.currentJobTitle || '',
-        skills: data.skills || [],
-        bio: data.bio || '',
-        profilePictureUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.email}.png`,
-        xpPoints: 0,
-        dailyStreak: 1, // Start with a 1-day streak
-        longestStreak: 1,
-        totalActiveDays: 1,
-        weeklyActivity: [0, 0, 0, 0, 0, 0, 1], // Mark today as active
-        earnedBadges: [],
-        interviewCredits: 5,
-        isDistinguished: false,
-        streakFreezes: 1, // Start with one free pass
-        referralCode: referralCode,
-    };
-    
-    log(`[DataService] Creating user in real DB: ${data.email} for tenant ${tenantId}`);
-    
-    const tenantExists = await db.tenant.findUnique({
-      where: { id: tenantId },
+  logAction('Fetching user by email', { email });
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
     });
+    return user as unknown as UserProfile | null;
+  } catch (error) {
+    logError('[User Dataservice] Error fetching user by email', error, { email });
+    return null;
+  }
+}
 
-    if (!tenantExists) {
-      log(`[DataService] Tenant ${tenantId} not found, cannot create user.`);
-      throw new Error(`Tenant with ID ${tenantId} does not exist.`);
-    }
-
+/**
+ * Creates a new user in the database. Requires an explicit tenantId.
+ * @param userData The data for the new user, including the tenantId.
+ * @returns The newly created user profile or null.
+ */
+export async function createUser(userData: {
+  name?: string;
+  email: string;
+  role: UserRole;
+  password?: string;
+  status?: UserStatus;
+  tenantId: string; // tenantId is now required
+  profilePictureUrl?: string;
+}): Promise<UserProfile | null> {
+  logAction('Creating user', { email: userData.email, tenantId: userData.tenantId });
+  try {
     const newUser = await db.user.create({
       data: {
-        ...(newUserPayload as any),
-        tenant: {
-          connect: {
-            id: tenantId,
-          },
-        },
+        name: userData.name || userData.email,
+        email: userData.email,
+        password: userData.password, // In a real app, this should be hashed
+        role: userData.role,
+        tenantId: userData.tenantId, // Use the provided tenantId
+        status: userData.status || 'active',
+        sessionId: `session-${Date.now()}`, // Generate an initial session ID
+        profilePictureUrl: userData.profilePictureUrl,
       },
     });
     
     // Create a wallet for the new user
     await getWallet(newUser.id);
-
-
-    // Send welcome email after user is successfully created
-    await sendEmail({
-        tenantId: newUser.tenantId,
-        recipientEmail: newUser.email,
-        type: 'WELCOME',
-        placeholders: {
-            userName: newUser.name,
-            userEmail: newUser.email,
-        }
-    });
-
+    
     return newUser as unknown as UserProfile;
-}
-
-
-export async function updateUser(userId: string, data: Partial<UserProfile>): Promise<UserProfile | null> {
-  log(`[DataService] Updating user: ${userId}`);
-  
-  const { dashboardWidgets, ...restOfData } = data;
-  const cleanData = Object.fromEntries(Object.entries(restOfData).filter(([_, v]) => v !== undefined));
-
-  const dataForDb: Prisma.UserUpdateInput = {
-    ...cleanData,
-  };
-
-  if (dashboardWidgets) {
-    dataForDb.dashboardWidgets = dashboardWidgets as Prisma.JsonObject;
-  }
-
- try {
-    const user = await db.user.update({
-        where: { id: userId },
-        data: dataForDb as any,
-    });
-    return user as unknown as UserProfile | null;
   } catch (error) {
-    console.error(`[DataService] Error updating user ${userId}:`, error);
+    logError('[User Dataservice] Error creating user', error, { email: userData.email });
     return null;
   }
 }
 
-export async function deleteUser(userId: string): Promise<boolean> {
-  log(`[DataService] Deleting user: ${userId}`);
+
+/**
+ * Updates an existing user's profile.
+ * @param userId The ID of the user to update.
+ * @param updateData The data to update.
+ * @returns The updated user profile or null.
+ */
+export async function updateUser(userId: string, updateData: Partial<UserProfile>): Promise<UserProfile | null> {
+  logAction('Updating user', { userId, fields: Object.keys(updateData) });
   try {
+    // This removes any keys with an 'undefined' value, which Prisma doesn't like.
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([_, v]) => v !== undefined)
+    );
+    
+    // Explicitly handle null dateOfBirth from client and convert to undefined for Prisma
+    if (cleanUpdateData.dateOfBirth === null) {
+        cleanUpdateData.dateOfBirth = undefined;
+    }
+
+    const updatedUser = await db.user.update({
+      where: { id: userId },
+      data: {
+        ...cleanUpdateData,
+        // Ensure complex types like weeklyActivity are handled correctly
+        weeklyActivity: updateData.weeklyActivity as any[],
+        challengeProgress: updateData.challengeProgress as any,
+        currentFlipChallenge: updateData.currentFlipChallenge as any,
+        flipChallengeProgressStart: updateData.flipChallengeProgressStart as any,
+        skills: Array.isArray(updateData.skills) ? updateData.skills : undefined,
+        areasOfSupport: Array.isArray(updateData.areasOfSupport) ? updateData.areasOfSupport : undefined,
+      },
+    });
+    return updatedUser as unknown as UserProfile;
+  } catch (error) {
+    logError(`[User Dataservice] Error updating user ${userId}`, error, { userId });
+    return null;
+  }
+}
+
+
+/**
+ * Deletes a user from the database.
+ * @param userId The ID of the user to delete.
+ * @returns A boolean indicating success.
+ */
+export async function deleteUser(userId: string): Promise<boolean> {
+  logAction('Deleting user', { userId });
+  try {
+    // In a real application, you might want to handle related data (e.g., posts, applications)
+    // either by cascading delete in the DB schema or by deleting them here in a transaction.
     await db.user.delete({
       where: { id: userId },
     });
     return true;
   } catch (error) {
-    console.error(`[DataService] Error deleting user ${userId}:`, error);
+    logError(`[User Dataservice] Error deleting user ${userId}`, error, { userId });
     return false;
   }
 }

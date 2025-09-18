@@ -26,9 +26,13 @@ const config: Config = {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
 
-  // Mock lucide-react to prevent errors with icons in tests
+  // Mock lucide-react and genkit modules to prevent errors in tests
   moduleNameMapper: {
     'lucide-react': '<rootDir>/src/__mocks__/lucide-react.js',
+    '^genkit$': '<rootDir>/src/__mocks__/genkit.ts',
+    '^@genkit-ai/.*$': '<rootDir>/src/__mocks__/genkit.ts',
+    '^dotprompt$': '<rootDir>/src/__mocks__/empty.js',
+    '^yaml$': '<rootDir>/src/__mocks__/empty.js',
   },
 };
 

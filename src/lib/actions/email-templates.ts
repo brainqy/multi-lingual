@@ -4,24 +4,7 @@
 import { db } from '@/lib/db';
 import type { EmailTemplate } from '@/types';
 import { logAction, logError } from '@/lib/logger';
-
-const DEFAULT_TEMPLATES = [
-  {
-    type: 'WELCOME',
-    subject: 'Welcome to {{tenantName}}!',
-    body: 'Hi {{userName}},\n\nWelcome to the {{tenantName}} alumni network! We are thrilled to have you as part of our community.\n\nYour username is your email: {{userEmail}}\n\nYou can now log in to explore the platform, connect with fellow alumni, find job opportunities, and access career resources.\n\nBest,\nThe {{tenantName}} Team',
-  },
-  {
-    type: 'APPOINTMENT_CONFIRMATION',
-    subject: 'Your appointment is confirmed: {{appointmentTitle}}',
-    body: 'Hi {{userName}},\n\nThis is a confirmation that your appointment "{{appointmentTitle}}" with {{partnerName}} has been scheduled for {{appointmentDateTime}}.\n\nYou can view your appointment details here: {{appointmentLink}}\n\nThanks,\nThe {{tenantName}} Team',
-  },
-  {
-    type: 'PASSWORD_RESET',
-    subject: 'Reset your password for {{tenantName}}',
-    body: 'Hi {{userName}},\n\nA password reset was requested for your account. Please click the link below to set a new password:\n\n{{resetLink}}\n\nIf you did not request this, you can safely ignore this email.\n\nThanks,\nThe {{tenantName}} Team',
-  },
-];
+import { DEFAULT_TEMPLATES } from '@/lib/email-defaults';
 
 
 /**

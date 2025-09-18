@@ -7,7 +7,7 @@
     "detailsDesc": "Use this code or link to promote JobMatch AI.",
     "codeLabel": "Your Unique Affiliate Code",
     "linkLabel": "Your Affiliate Link",
-    "commissionRate": "Commission Rate",
+    "commissionRate": "Your current commission rate",
     "shareLink": "Share Affiliate Link",
     "performance": "Affiliate Performance",
     "performanceDesc": "Track your clicks, signups, and earnings.",
@@ -25,21 +25,56 @@
     "howItWorksCardTitle": "How It Works",
     "howItWorks": [
       {
-        "title": "Share Your Link",
-        "description": "Distribute your unique referral link through social media, email, or your website."
+        "title": "Share Your Link"
       },
       {
-        "title": "New User Signs Up",
-        "description": "A new user signs up on JobMatch AI through your unique referral link."
+        "title": "New User Signs Up"
       },
       {
-        "title": "Earn Commission",
-        "description": "You earn a commission for qualifying purchases or subscriptions made by your referred user."
+        "title": "Earn Commission"
       },
       {
-        "title": "Get Paid",
-        "description": "Track your earnings and receive payouts, typically on a monthly basis."
+        "title": "Get Paid"
       }
-    ]
+    ],
+    "toast": {
+      "copied": {
+        "title": "Copied to Clipboard",
+        "description": "Affiliate code/link copied!"
+      },
+      "copyFailed": {
+        "title": "Copy Failed",
+        "description": "Could not copy text."
+      },
+      "applicationSubmitted": {
+        "title": "Affiliate Application Submitted",
+        "description": "Your application is pending approval. You will be notified once reviewed."
+      }
+    },
+    "becomePartner": {
+      "title": "Become an Affiliate Partner",
+      "description": "Join our affiliate program to earn rewards by sharing JobMatch AI.",
+      "instruction": "Click the button below to submit your application. It will be reviewed by our team.",
+      "applyButton": "Apply to Become an Affiliate"
+    },
+    "status": {
+      "pending": {
+        "title": "Application Pending",
+        "description": "Your affiliate application is currently under review. We'll notify you once a decision is made."
+      },
+      "rejected": {
+        "title": "Application Status",
+        "description": "We regret to inform you that your affiliate application was not approved at this time. For more details, please contact support."
+      }
+    },
+    "nextTier": {
+      "title": "Next Commission Tier: {tierName}",
+      "description": "Reach {requirement} signups to increase your commission rate to {rate}%!",
+      "currentSignups": "{count} Signups",
+      "goal": "{count} Goal"
+    },
+    "filters": {
+      "allTime": "All Time"
+    }
   }
 }

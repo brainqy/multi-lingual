@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useI18n } from "@/hooks/use-i18n";
@@ -27,9 +28,9 @@ const userSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   role: z.enum(['user', 'manager', 'admin']),
-  tenantId: z.string().min(1, "Tenant is required."),
   status: z.enum(['active', 'inactive', 'suspended', 'pending', 'PENDING_DELETION']),
-  password: z.string().optional(), // Password is now optional
+  password: z.string().optional(),
+  tenantId: z.string().min(1, "Tenant is required."),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -67,9 +68,8 @@ export default function UserManagementPage() {
   const fetchAllData = useCallback(async () => {
     if (!currentUser) return;
     setIsLoading(true);
-    const tenantIdToFetch = currentUser.role === 'admin' ? undefined : currentUser.tenantId;
     const [usersFromDb, tenantsFromDb] = await Promise.all([
-      getUsers(tenantIdToFetch),
+      getUsers(),
       getTenants()
     ]);
     setAllUsers(usersFromDb);
@@ -112,8 +112,8 @@ export default function UserManagementPage() {
         email: '', 
         role: 'user', 
         status: 'active', 
-        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : '', 
-        password: '' 
+        password: '',
+        tenantId: currentUser.role === 'manager' ? currentUser.tenantId : '',
     });
     setIsFormDialogOpen(true);
   };
@@ -126,8 +126,8 @@ export default function UserManagementPage() {
       email: user.email,
       role: user.role,
       status: user.status || 'active',
-      tenantId: user.tenantId,
       password: '', // Don't expose password
+      tenantId: user.tenantId,
     });
     setIsFormDialogOpen(true);
   };
@@ -146,16 +146,17 @@ export default function UserManagementPage() {
         await fetchAllData(); // Refetch after update
       }
     } else {
-      // Password is no longer required when an admin creates a user
-      const tenantIdForNewUser = currentUser.role === 'manager' ? currentUser.tenantId : data.tenantId;
-
+      if (!data.tenantId) {
+        toast({ title: "Error", description: "A tenant must be selected for the new user.", variant: "destructive" });
+        return;
+      }
       const newUser = await createUser({
         name: data.name,
         email: data.email,
         role: data.role as UserRole,
-        tenantId: tenantIdForNewUser,
         status: data.status as UserStatus,
-        password: data.password, // Pass it if provided, can be used for initial setup
+        password: data.password,
+        tenantId: data.tenantId,
       });
       
       if (newUser) {
@@ -221,20 +222,23 @@ export default function UserManagementPage() {
 
         for (let i = 1; i < rows.length; i++) {
           const values = rows[i].split(',').map(v => v.trim());
+          const roleFromCsv = values[roleIndex] as UserRole;
+          const isValidRole = ['user', 'manager', 'admin'].includes(roleFromCsv);
+
           const newUserCsv: Partial<CsvUser> = {
             name: values[nameIndex],
             email: values[emailIndex],
-            role: values[roleIndex] as UserRole,
+            role: isValidRole ? roleFromCsv : 'user', // Default to 'user' if role is invalid or missing
             tenantId: values[tenantIdIndex],
           };
 
-          if (newUserCsv.email && !currentUsers.some(u => u.email === newUserCsv.email)) {
+          if (newUserCsv.email && !currentUsers.some(u => u.email === newUserCsv.email) && newUserCsv.tenantId) {
             creationPromises.push(createUser({
               name: newUserCsv.name,
               email: newUserCsv.email,
-              role: newUserCsv.role,
+              role: newUserCsv.role!,
+              status: 'active',
               tenantId: newUserCsv.tenantId,
-              status: 'active'
             }));
             addedCount++;
           }
@@ -295,18 +299,18 @@ export default function UserManagementPage() {
                 </span>
             </div>
             <div className="text-sm text-muted-foreground space-y-1 border-t pt-3">
-                <p><strong>Role:</strong> <span className="capitalize">{user.role}</span></p>
-                {currentUser.role === 'admin' && <p><strong>Tenant:</strong> {getTenantName(user.tenantId)}</p>}
-                <p><strong>Streak Freezes:</strong> {user.streakFreezes ?? 0}</p>
+                <p><strong>{t("userManagement.table.role")}:</strong> <span className="capitalize">{user.role}</span></p>
+                {currentUser.role === 'admin' && <p><strong>{t("userManagement.table.tenant")}:</strong> {getTenantName(user.tenantId)}</p>}
+                <p><strong>{t("userManagement.userCard.streakFreezes")}:</strong> {user.streakFreezes ?? 0}</p>
             </div>
              <div className="flex justify-end gap-2 border-t pt-3">
                 <Button variant="outline" size="sm" onClick={() => openEditUserDialog(user)}>
-                    <Edit3 className="h-4 w-4 mr-1" /> Edit
+                    <Edit3 className="h-4 w-4 mr-1" /> {t("userManagement.userCard.editButton")}
                 </Button>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm" disabled={user.id === currentUser?.id}>
-                            <Trash2 className="h-4 w-4 mr-1" /> Delete
+                            <Trash2 className="h-4 w-4 mr-1" /> {t("userManagement.userCard.deleteButton")}
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -482,10 +486,34 @@ export default function UserManagementPage() {
             </div>
             {!editingUser && (
               <div>
-                <Label htmlFor="password">{t("userManagement.form.passwordLabel")} (Optional)</Label>
+                <Label htmlFor="password">{t("userManagement.form.passwordLabel")}</Label>
                 <Controller name="password" control={control} render={({ field }) => <Input id="password" type="password" {...field} />} />
                 <p className="text-xs text-muted-foreground mt-1">{t("userManagement.form.passwordHelpAdmin")}</p>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+              </div>
+            )}
+            {currentUser.role === 'admin' && (
+              <div>
+                <Label htmlFor="tenantId">{t("userManagement.form.tenantLabel")}</Label>
+                <Controller
+                  name="tenantId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!!editingUser}>
+                      <SelectTrigger id="tenantId">
+                        <SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tenants.map(tenant => (
+                          <SelectItem key={tenant.id} value={tenant.id}>
+                            {tenant.name} ({tenant.id})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                 {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -517,22 +545,6 @@ export default function UserManagementPage() {
                 )} />
               </div>
             </div>
-            {currentUser.role === 'admin' && (
-              <div>
-                <Label htmlFor="tenantId">{t("userManagement.form.tenantLabel")}</Label>
-                <Controller name="tenantId" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={editingUser?.role === 'admin'}>
-                    <SelectTrigger id="tenantId"><SelectValue placeholder={t("userManagement.form.tenantPlaceholder")} /></SelectTrigger>
-                    <SelectContent>
-                      {tenants.map(tenant => (
-                        <SelectItem key={tenant.id} value={tenant.id}>{tenant.name} ({tenant.id})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )} />
-                {errors.tenantId && <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>}
-              </div>
-            )}
 
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">{t("common.cancel")}</Button></DialogClose>

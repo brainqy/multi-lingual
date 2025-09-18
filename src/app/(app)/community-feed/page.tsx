@@ -27,6 +27,7 @@ import Image from 'next/image';
 import { createCommunityPost, getCommunityPosts, addCommentToPost, updateCommunityPost, toggleLikePost, togglePollVote, toggleEventRegistration, toggleFlagPost } from '@/lib/actions/community';
 import { getUsers } from "@/lib/data-services/users";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { createAppointment } from '@/lib/actions/appointments';
 
 
 const postSchema = z.object({
@@ -175,9 +176,9 @@ export default function CommunityFeedPage() {
       type: 'text',
       imageUrl: '',
       pollOptions: [{ option: '', votes: 0 }, { option: '', votes: 0 }],
-      eventDate: z.string().optional(),
-      eventLocation: z.string().optional(),
-      eventTitle: z.string().optional(),
+      eventDate: '',
+      eventLocation: '',
+      eventTitle: '',
       attendees: 0,
       capacity: 0,
     }
@@ -189,10 +190,13 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     setIsLoading(true);
     const [fetchedPosts, fetchedUsers] = await Promise.all([
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
       getUsers()
     ]);
-    setPosts(fetchedPosts);
+    setPosts(fetchedPosts.map(p => ({
+      ...p,
+      bookmarkedBy: p.bookmarkedBy || [],
+    })));
     setAllUsers(fetchedUsers);
     setIsLoading(false);
   }, [currentUser]);
@@ -203,8 +207,17 @@ export default function CommunityFeedPage() {
 
   const mostActiveUsers = useMemo(() => {
     if (!allUsers.length || !currentUser) return [];
-    return [...allUsers]
-      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active' && (currentUser.role === 'admin' || user.tenantId === currentUser.tenantId || user.tenantId === 'platform'))
+
+    let usersToFilter = allUsers;
+
+    // If the current user is a manager, only show users from their tenant.
+    if (currentUser.role === 'manager') {
+        usersToFilter = allUsers.filter(user => user.tenantId === currentUser.tenantId);
+    }
+    // Admins will see users from all tenants by default (no filtering here).
+
+    return usersToFilter
+      .filter(user => user.xpPoints && user.xpPoints > 0 && user.status === 'active')
       .sort((a, b) => (b.xpPoints || 0) - (a.xpPoints || 0))
       .slice(0, 5);
   }, [allUsers, currentUser]);
@@ -240,17 +253,17 @@ export default function CommunityFeedPage() {
       const updatedPost = await updateCommunityPost(editingPost.id, updatedPostData);
 
       if (updatedPost) {
-        setPosts(prev => prev.map(p => p.id === editingPost.id ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === editingPost.id ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Updated", description: "Your post has been updated." });
       } else {
         toast({ title: "Error", description: "Failed to update post.", variant: "destructive" });
       }
     } else {
       const newPostData: Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned'> = {
-        tenantId: currentUser.tenantId || 'platform',
         userId: currentUser.id,
         userName: currentUser.name,
         userAvatar: currentUser.profilePictureUrl,
+        tenantId: currentUser.tenantId,
         content: data.content,
         type: data.type,
         imageUrl: data.type === 'text' ? (data.imageUrl || undefined) : undefined,
@@ -266,10 +279,10 @@ export default function CommunityFeedPage() {
         status: data.type === 'request' ? 'open' as const : undefined,
       };
 
-      const newPost = await createCommunityPost(newPostData);
+      const newPost = await createCommunityPost(newPostData as Omit<CommunityPost, 'id' | 'timestamp' | 'comments' | 'bookmarkedBy' | 'votedBy' | 'registeredBy' | 'flaggedBy' | 'likes' | 'likedBy' | 'isPinned' | 'tenantId'>);
       
       if (newPost) {
-        setPosts(prev => [newPost, ...prev]);
+        setPosts(prev => [{ ...newPost, bookmarkedBy: [] }, ...prev]);
         toast({ title: "Post Created", description: "Your post has been added to the feed." });
       } else {
         toast({ title: "Error", description: "Failed to create post.", variant: "destructive" });
@@ -322,7 +335,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await togglePollVote(postId, optionIndex, currentUser.id);
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       toast({ title: updatedPost.message });
     } else {
       toast({ title: "Error", description: "Could not process vote.", variant: "destructive" });
@@ -332,16 +345,16 @@ export default function CommunityFeedPage() {
   const handleAssign = async (postId: string, userName: string) => {
     if (!currentUser) return;
     const postToUpdate = posts.find(p => p.id === postId);
-    if (postToUpdate?.type !== 'request' || postToUpdate.assignedTo) {
+    if (!postToUpdate || postToUpdate.type !== 'request' || postToUpdate.assignedTo) {
       toast({ title: "Already Assigned", description: "This request is already assigned to someone." });
       return;
     }
 
     const updatedPost = await updateCommunityPost(postId, { assignedTo: userName, status: 'in progress' });
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       
-      const newAppointmentData = {
+      const newAppointmentData: Omit<Appointment, 'id'> = {
           tenantId: postToUpdate.tenantId,
           requesterUserId: postToUpdate.userId,
           alumniUserId: currentUser.id,
@@ -353,6 +366,8 @@ export default function CommunityFeedPage() {
           costInCoins: 0,
       };
       
+      await createAppointment(newAppointmentData);
+
       toast({ title: "Request Assigned & Appointment Created", description: "You've been assigned, and an appointment placeholder has been added to your 'Appointments' page." });
     }
   };
@@ -361,7 +376,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await toggleEventRegistration(postId, currentUser.id);
     if (updatedPost) {
-      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
       toast({ title: updatedPost.message });
     } else {
       toast({ title: "Error", description: "Could not process registration.", variant: "destructive" });
@@ -406,7 +421,7 @@ export default function CommunityFeedPage() {
 
     const updatedPost = await toggleFlagPost(postToFlag.id, currentUser.id, flagReason);
     if (updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postToFlag.id ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postToFlag.id ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: updatedPost.message });
     } else {
         toast({ title: "Error", description: "Failed to update flag status.", variant: "destructive" });
@@ -418,7 +433,7 @@ export default function CommunityFeedPage() {
   const handleApprovePost = async (postId: string) => {
     const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'visible', flagCount: 0, flagReasons: [] });
     if(updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Approved", description: "The post is now visible." });
     }
   };
@@ -426,7 +441,7 @@ export default function CommunityFeedPage() {
   const handleRemovePost = async (postId: string) => {
     const updatedPost = await updateCommunityPost(postId, { moderationStatus: 'removed' });
     if(updatedPost) {
-        setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+        setPosts(prev => prev.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
         toast({ title: "Post Removed", description: "The post has been removed.", variant: "destructive" });
     }
   };
@@ -435,7 +450,7 @@ export default function CommunityFeedPage() {
     if (!currentUser) return;
     const updatedPost = await toggleLikePost(postId, currentUser.id);
     if (updatedPost) {
-      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? updatedPost : p));
+      setPosts(prevPosts => prevPosts.map(p => p.id === postId ? { ...updatedPost, bookmarkedBy: p.bookmarkedBy } : p));
     } else {
       toast({ title: "Error", description: "Could not update like.", variant: "destructive" });
     }
@@ -478,7 +493,8 @@ export default function CommunityFeedPage() {
     const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
     
     return posts.filter(post => {
-      const isVisibleForTenant = currentUser.role === 'admin' || post.tenantId === 'platform' || post.tenantId === currentUser.tenantId;
+      // A user should only see posts from their own tenant.
+      const isVisibleForTenant = post.tenantId === currentUser.tenantId;
       if (!isVisibleForTenant) return false;
 
       const isRemoved = post.moderationStatus === 'removed';

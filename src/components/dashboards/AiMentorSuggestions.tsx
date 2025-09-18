@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,7 +11,9 @@ import type { UserProfile } from "@/types";
 import { personalizedConnectionRecommendations, type PersonalizedConnectionRecommendationsOutput } from '@/ai/flows/personalized-connection-recommendations';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { useAuth } from '@/hooks/use-auth';
+import { useSettings } from '@/contexts/settings-provider';
 
 interface AiMentorSuggestionsProps {
     currentUser: UserProfile;
@@ -23,10 +26,27 @@ export default function AiMentorSuggestions({ currentUser, allAlumni }: AiMentor
     const [suggestions, setSuggestions] = useState<RecommendedConnection[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const { settings } = useSettings();
+    const { wallet, refreshWallet } = useAuth();
 
     const fetchRecommendations = useCallback(async () => {
         setIsLoading(true);
         try {
+            // Pre-flight check for coins
+            const usesPlatformKey = !currentUser.userApiKey;
+            if (usesPlatformKey && settings?.aiAlumniConnectionRecCost) {
+                if (!wallet || wallet.coins < settings.aiAlumniConnectionRecCost) {
+                    toast({
+                        title: "Insufficient Coins",
+                        description: `AI Mentor Suggestions cost ${settings.aiAlumniConnectionRecCost} coins.`,
+                        variant: "default",
+                        duration: 5000,
+                    });
+                    setSuggestions([]); // Clear suggestions if they can't afford it
+                    return;
+                }
+            }
+
             const userProfileText = `
                 Current Role: ${currentUser.currentJobTitle || 'Not specified'}
                 Skills: ${(currentUser.skills || []).join(', ')}
@@ -34,14 +54,14 @@ export default function AiMentorSuggestions({ currentUser, allAlumni }: AiMentor
             `;
 
             const availableAlumniForAI = allAlumni
-                .filter(a => a.id !== currentUser.id && a.offersHelpWith && a.offersHelpWith.length > 0)
+                .filter(a => a.id !== currentUser.id && a.areasOfSupport && a.areasOfSupport.length > 0)
                 .map(a => ({
                     id: a.id,
                     name: a.name,
                     currentJobTitle: a.currentJobTitle || 'N/A',
-                    company: a.company || 'N/A',
+                    company: a.currentOrganization || 'N/A',
                     skills: a.skills || [],
-                    offersHelpWith: a.offersHelpWith,
+                    offersHelpWith: a.areasOfSupport,
                 }));
             
             if (availableAlumniForAI.length === 0) {
@@ -53,19 +73,27 @@ export default function AiMentorSuggestions({ currentUser, allAlumni }: AiMentor
                 userProfileText,
                 careerInterests: currentUser.careerInterests || 'General career advancement',
                 availableAlumni: availableAlumniForAI,
+                userId: usesPlatformKey ? currentUser.id : undefined,
+                apiKey: currentUser.userApiKey || undefined,
             });
+
+            if (usesPlatformKey && settings?.aiAlumniConnectionRecCost) {
+                await refreshWallet();
+            }
+            
             setSuggestions(result.suggestedConnections);
         } catch (error) {
             console.error("Failed to fetch mentor recommendations:", error);
+            const errorMessage = (error as Error).message || "There was an issue connecting to the AI service.";
             toast({
                 title: "Could not fetch AI recommendations",
-                description: "There was an issue connecting to the AI service.",
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, allAlumni, toast]);
+    }, [currentUser, allAlumni, toast, settings, wallet, refreshWallet]);
 
     useEffect(() => {
         fetchRecommendations();

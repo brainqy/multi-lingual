@@ -15,16 +15,20 @@ import {
     Target, ListX, Sparkles, RefreshCcw, WandSparkles, ClipboardCopy, Check, Save,
     Loader2
 } from "lucide-react";
-import type { AnalyzeResumeAndJobDescriptionOutput, AtsFormattingIssue } from '@/types';
+import type { AnalyzeResumeAndJobDescriptionOutput, AtsFormattingIssue, ResumeProfile } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ScoreCircle from '@/components/ui/score-circle';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { PowerEditDialog } from '@/components/features/resume-analyzer/PowerEditDialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { createResumeProfile } from '@/lib/actions/resumes';
 
 interface AnalysisReportProps {
     analysisReport: AnalyzeResumeAndJobDescriptionOutput;
@@ -78,6 +82,7 @@ export default function AnalysisReport({
     const [isDownloading, setIsDownloading] = useState(false);
     const [copied, setCopied] = useState(false);
     const { toast } = useToast();
+    const { user: currentUser } = useAuth();
 
     const categoryIssues = useMemo(() => {
         if (!analysisReport) return {};
@@ -93,8 +98,38 @@ export default function AnalysisReport({
     
     const handleDownloadReport = async () => { /* ... implementation from original file ... */ };
     const handlePowerEdit = () => setIsPowerEditDialogOpen(true);
-    const openSaveDialog = () => setIsSaveDialogOpen(true);
-    const handleSaveResume = () => { /* ... implementation from original file ... */ };
+    const openSaveDialog = () => {
+        const defaultName = `Resume for ${jobTitle || 'New Role'} - ${new Date().toLocaleDateString()}`;
+        setNewResumeName(defaultName);
+        setIsSaveDialogOpen(true);
+    };
+    const handleSaveResume = async () => {
+        if (!currentUser) {
+          toast({ title: "Error", description: "You must be logged in to save.", variant: "destructive" });
+          return;
+        }
+        if (!newResumeName.trim()) {
+          toast({ title: "Name Required", description: "Please provide a name for this resume version.", variant: "destructive" });
+          return;
+        }
+    
+        const newResumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'> = {
+          userId: currentUser.id,
+          tenantId: currentUser.tenantId,
+          name: newResumeName,
+          resumeText: resumeText,
+        };
+        
+        const newProfile = await createResumeProfile(newResumeData);
+    
+        if (newProfile) {
+          toast({ title: "Resume Saved!", description: `"${newResumeName}" has been saved to 'My Resumes'.` });
+          setIsSaveDialogOpen(false);
+        } else {
+          toast({ title: "Save Failed", description: "Could not save the resume profile.", variant: "destructive" });
+        }
+      };
+
     const handleNavigateToIssue = (tab: string, sectionId: string) => { /* ... implementation from original file ... */ };
 
     return (
@@ -183,7 +218,30 @@ export default function AnalysisReport({
             {isSaveDialogOpen && (
                 <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
                     <DialogContent>
-                        {/* ... Save Dialog Content ... */}
+                        <DialogHeader>
+                            <DialogTitle>Save Resume Version</DialogTitle>
+                            <DialogUIDescription>
+                                Give this new resume version a name to save it to your "My Resumes" list.
+                            </DialogUIDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="resume-name" className="text-right">Name</Label>
+                                <Input
+                                    id="resume-name"
+                                    value={newResumeName}
+                                    onChange={(e) => setNewResumeName(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder={`Resume for ${jobTitle}`}
+                                />
+                           </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button onClick={handleSaveResume} type="button">Save Resume</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             )}

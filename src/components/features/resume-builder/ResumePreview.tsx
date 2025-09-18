@@ -4,18 +4,27 @@
 import React, { forwardRef } from 'react';
 import type { ResumeBuilderData, ResumeTemplate } from "@/types";
 import { Card, CardContent } from '@/components/ui/card';
-import { sampleResumeTemplates } from '@/lib/sample-data';
 import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
 
 interface ResumePreviewProps {
-  data: ResumeBuilderData;
-  templateId: string;
+  resumeData: ResumeBuilderData;
+  templates: ResumeTemplate[];
 }
 
+const logger = {
+    log: (message: string, ...args: any[]) => console.log(`[ResumePreview] ${message}`, ...args),
+};
+
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
-  ({ data, templateId }, ref) => {
-    const template = sampleResumeTemplates.find(t => t.id === templateId);
+  ({ resumeData, templates }, ref) => {
+    const { templateId } = resumeData;
+    logger.log('--- ResumePreview Render Start ---');
+    logger.log('Received props:', { resumeData, templatesCount: templates.length });
+    logger.log('Extracted templateId for lookup:', { templateId });
+
+    const template = templates.find(t => t.id === templateId);
+    logger.log('Found template object for current ID:', { templateName: template?.name, templateCategory: template?.category });
 
     const styles = {
       headerColor: template?.headerColor,
@@ -25,17 +34,23 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
     };
 
     const renderTemplate = () => {
-      switch (templateId) {
-        case 'template2':
-        case 'template4': // Let's use creative for academic for now
-          return <CreativeTemplate data={data} styles={styles} />;
-        case 'template1':
-        case 'template3':
+      const templateCategory = template?.category?.toLowerCase();
+      logger.log('Determined template category:', { templateCategory });
+      
+      switch (templateCategory) {
+        case 'creative':
+        case 'academic':
+          logger.log('Rendering: CreativeTemplate');
+          return <CreativeTemplate data={resumeData} styles={styles} />;
+        case 'modern':
+        case 'professional':
         default:
-          return <ModernTemplate data={data} styles={styles} />;
+          logger.log('Rendering: ModernTemplate (default)');
+          return <ModernTemplate data={resumeData} styles={styles} />;
       }
     };
 
+    logger.log('--- ResumePreview Render End ---');
     return (
       <div className="sticky top-6">
         <div className="flex justify-between items-center mb-2">

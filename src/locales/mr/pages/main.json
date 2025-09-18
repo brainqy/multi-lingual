@@ -58,5 +58,224 @@
         "description": "इव्हेंट गॅलरीतून काढला आहे."
       }
     }
+  },
+  "emailTemplates": {
+    "title": "ईमेल टेम्पलेट व्यवस्थापन",
+    "description": "तुमच्या भाडेकरूच्या वापरकर्त्यांना पाठवलेले स्वयंचलित ईमेल सानुकूलित करा. डायनॅमिक सामग्री समाविष्ट करण्यासाठी प्लेसहोल्डर वापरा.",
+    "editingTitle": "संपादन: {type}",
+    "editingDescription": "या ईमेलचा विषय आणि मुख्य भाग सुधारित करा.",
+    "saveButton": "बदल जतन करा",
+    "types": {
+      "WELCOME": "स्वागत ईमेल",
+      "TENANT_WELCOME": "भाडेकरू स्वागत (व्यवस्थापक)",
+      "APPOINTMENT_CONFIRMATION": "अपॉइंटमेंट पुष्टीकरण",
+      "PASSWORD_RESET": "पासवर्ड रीसेट",
+      "PRACTICE_INTERVIEW_INVITE": "सराव मुलाखत आमंत्रण"
+    },
+    "placeholders": {
+      "title": "प्लेसहोल्डर",
+      "userName": "प्राप्तकर्त्याचे पूर्ण नाव.",
+      "tenantName": "तुमच्या संस्थेचे/भाडेकरूचे नाव.",
+      "resetLink": "पासवर्ड रीसेटसाठी URL (केवळ पासवर्ड रीसेट).",
+      "appointmentTitle": "अपॉइंटमेंटचे शीर्षक (केवळ अपॉइंटमेंट).",
+      "partnerName": "अपॉइंटमेंटमधील दुसऱ्या व्यक्तीचे नाव.",
+      "appointmentDateTime": "अपॉइंटमेंटची स्वरूपित तारीख आणि वेळ.",
+      "appointmentLink": "अपॉइंटमेंट तपशील पाहण्यासाठी लिंक."
+    },
+    "form": {
+      "subjectLabel": "ईमेल विषय",
+      "bodyLabel": "ईमेल बॉडी"
+    },
+    "toast": {
+      "updated": {
+        "title": "टेम्पलेट जतन केले",
+        "description": "\"{type}\" टेम्पलेट अद्यतनित केले आहे."
+      }
+    }
+  },
+   "activityLog": {
+    "title": "क्रियाकलाप लॉग",
+    "recentActivities": "अलीकडील क्रियाकलाप",
+    "description": "JobMatch AI मधील तुमच्या अलीकडील क्रिया आणि सिस्टम इव्हेंटचा लॉग.",
+    "noActivities": "अद्याप कोणतेही क्रियाकलाप रेकॉर्ड केलेले नाहीत."
+  },
+  "appointments": {
+    "title": "माझ्या भेटी",
+    "scheduleNew": "नवीन शेड्यूल करा",
+    "pageDescription": "तुमच्या शेड्यूल केलेल्या भेटी, मॉक मुलाखती आणि नियुक्त केलेल्या समुदाय विनंत्या पहा आणि व्यवस्थापित करा.",
+    "filters": "फिल्टर",
+    "status": "स्थिती",
+    "alumniName": "माजी विद्यार्थ्यांचे नाव",
+    "searchByName": "नावाने शोधा...",
+    "dateRange": "तारीख श्रेणी",
+    "startDate": "सुरुवात तारीख",
+    "endDate": "शेवटची तारीख",
+    "noAppointments": "कोणत्याही भेटी आढळल्या नाहीत",
+    "tryAdjustingFilters": "तुमचे फिल्टर समायोजित करण्याचा प्रयत्न करा.",
+    "noScheduled": "तुमच्याकडे कोणत्याही भेटी किंवा नियुक्त केलेल्या विनंत्या नाहीत.",
+    "withUser": "{name} सोबत {incoming}",
+    "incomingRequest": "(येणारी विनंती)",
+    "dateTime": "तारीख आणि वेळ",
+    "reminder": "स्मरणपत्र {when}",
+    "today": "आज",
+    "inDays": "{count} दिवसात",
+    "notes": "नोट्स",
+    "joinMeeting": "मीटिंगमध्ये सामील व्हा",
+    "markCompleted": "पूर्ण झाले म्हणून चिन्हांकित करा",
+    "manageReschedule": "पुन्हा शेड्यूल करा",
+    "accept": "स्वीकारा",
+    "decline": "नाकारा",
+    "provideFeedback": "अभिप्राय द्या",
+    "cancelledMsg": "ही भेट रद्द करण्यात आली होती.",
+    "assignedCommunityRequests": "नियुक्त समुदाय विनंत्या",
+    "request": "विनंती",
+    "untitledRequest": "अनामिक विनंती",
+    "from": "कडून",
+    "communityFeed": "समुदाय फीड",
+    "assignedToYou": "तुम्हाला नियुक्त",
+    "tags": "टॅग",
+    "viewOnFeed": "फीडवर पहा",
+    "toastJoinMeeting": "मीटिंगमध्ये सामील होत आहे (मॉक)",
+    "toastJoinMeetingDesc": "हे व्हिडिओ कॉन्फरन्सिंग लिंक सुरू करेल.",
+    "toastConfirmed": "भेट निश्चित!",
+    "toastConfirmedDesc": "भेट स्वीकारली गेली आहे.",
+    "toastDeclined": "भेट नाकारली",
+    "toastDeclinedDesc": "भेट विनंती नाकारली गेली आहे.",
+    "toastCompleted": "भेट पूर्ण झाली",
+    "toastCompletedDesc": "भेट पूर्ण झाली म्हणून चिन्हांकित केली आहे.",
+    "toastReschedule": "पुन्हा शेड्यूल करण्याची विनंती पाठवली",
+    "toastRescheduleDesc": "{user} यांना पुन्हा शेड्यूल करण्याची विनंती पाठवली आहे.",
+    "toastFeedback": "अभिप्राय सादर केला",
+    "toastFeedbackDesc": "{user} सोबतच्या तुमच्या सत्रावरील अभिप्रायाबद्दल धन्यवाद.",
+    "statuses": {
+      "Pending": "प्रलंबित",
+      "Confirmed": "निश्चित",
+      "Cancelled": "रद्द",
+      "Completed": "पूर्ण"
+    }
+  },
+  "bookmarks": {
+    "title": "माझे बुकमार्क",
+    "filter": "बुकमार्क फिल्टर करा",
+    "all": "सर्व बुकमार्क",
+    "posts": "समुदाय पोस्ट",
+    "blogs": "ब्लॉग पोस्ट",
+    "questions": "मुलाखतीचे प्रश्न",
+    "resumeScans": "रेझ्युमे स्कॅन",
+    "noPosts": "तुम्ही अद्याप कोणतेही समुदाय पोस्ट बुकमार्क केलेले नाहीत.",
+    "noBlogs": "तुम्ही अद्याप कोणतेही ब्लॉग लेख बुकमार्क केलेले नाहीत.",
+    "noQuestions": "तुम्ही अद्याप कोणतेही मुलाखतीचे प्रश्न बुकमार्क केलेले नाहीत.",
+    "suggestedAnswer": "सुचवलेले उत्तर/टीप",
+    "mcqOptions": "MCQ पर्याय",
+    "removeBookmark": "बुकमार्क काढा",
+    "noResumeScans": "तुम्ही अद्याप कोणतेही रेझ्युमे स्कॅन अहवाल बुकमार्क केलेले नाहीत.",
+    "scannedWith": "यासह स्कॅन केले",
+    "viewReport": "अहवाल पहा",
+    "toast": {
+      "removed": {
+        "title": "बुकमार्क काढला",
+        "post": "पोस्ट तुमच्या बुकमार्कमधून काढले आहे.",
+        "blog": "ब्लॉग पोस्ट तुमच्या बुकमार्कमधून काढले आहे.",
+        "question": "प्रश्न तुमच्या बुकमार्कमधून काढला आहे.",
+        "scan": "रेझ्युमे स्कॅन तुमच्या बुकमार्कमधून काढले आहे."
+      }
+    }
+  },
+    "aiResumeWriter": {
+    "title": "एआय रेझ्युमे लेखक",
+    "description": "एआयच्या मदतीने विविध भूमिका आणि उद्योगांसाठी तुमचा रेझ्युमे अनुकूल करा. विद्यमान रेझ्युमे निवडा किंवा तुमची सामग्री पेस्ट करा, नंतर तुमचे लक्ष्य निर्दिष्ट करा.",
+    "selectResumeLabel": "विद्यमान रेझ्युमे निवडा",
+    "selectResumePlaceholder": "-- किंवा खाली टाइप/पेस्ट करा --",
+    "baseResumeLabel": "आधार रेझ्युमे मजकूर",
+    "baseResumePlaceholder": "तुमचा वर्तमान रेझ्युमे मजकूर येथे पेस्ट करा...",
+    "targetRoleLabel": "लक्ष्य भूमिका / नोकरी शीर्षक",
+    "targetRolePlaceholder": "उदा., वरिष्ठ सॉफ्टवेअर अभियंता, उत्पादन व्यवस्थापक",
+    "targetIndustryLabel": "लक्ष्य उद्योग (पर्यायी)",
+    "targetIndustryPlaceholder": "उदा., फिनटेक, हेल्थकेअर टेक्नॉलॉजी",
+    "skillsToHighlightLabel": "हायलाइट करण्यासाठी कौशल्ये (अल्पविरामाने वेगळे, पर्यायी)",
+    "skillsToHighlightPlaceholder": "उदा., प्रकल्प व्यवस्थापन, पायथन, डेटा व्हिज्युअलायझेशन",
+    "toneLabel": "इच्छित टोन",
+    "tonePlaceholder": "टोन निवडा",
+    "tones": {
+      "professional": "व्यावसायिक",
+      "creative": "सर्जनशील",
+      "concise": "संक्षिप्त",
+      "technical": "तांत्रिक"
+    },
+    "additionalInstructionsLabel": "अतिरिक्त सूचना (पर्यायी)",
+    "additionalInstructionsPlaceholder": "उदा., नेतृत्व अनुभवावर जोर द्या, ते स्टार्टअप वातावरणासाठी योग्य बनवा.",
+    "generateButton": "रेझ्युमे प्रकार तयार करा",
+    "generatingMessage": "एआय तुमचा रेझ्युमे प्रकार तयार करत आहे...",
+    "generatedResumeTitle": "तयार केलेला रेझ्युमे प्रकार",
+    "generatedResumeDescription": "खालील एआय-व्युत्पन्न रेझ्युमे मजकूर तपासा. तुम्ही ते संपादित करू शकता किंवा कॉपी करू शकता.",
+    "saveButton": "तयार केलेला रेझ्युमे जतन करा",
+    "defaultSaveName": "{role} ({date}) साठी प्रकार",
+    "saveDialog": {
+      "title": "रेझ्युमे आवृत्ती जतन करा",
+      "description": "तुमच्या \"माझे रेझ्युमे\" सूचीमध्ये जतन करण्यासाठी या नवीन रेझ्युमे आवृत्तीला एक नाव द्या.",
+      "nameLabel": "नाव",
+      "saveButton": "रेझ्युमे जतन करा"
+    },
+    "toast": {
+      "mustBeLoggedIn": "हे वैशिष्ट्य वापरण्यासाठी तुम्ही लॉग इन केलेले असणे आवश्यक आहे.",
+      "baseResumeRequired": "कृपया बेस रेझ्युमे मजकूर प्रदान करा.",
+      "targetRoleRequired": "कृपया लक्ष्य भूमिका निर्दिष्ट करा.",
+      "generationSuccess": {
+        "title": "रेझ्युमे प्रकार तयार झाला",
+        "description": "नवीन रेझ्युमे आवृत्ती खाली तयार आहे."
+      },
+      "generationFailed": {
+        "title": "तयार करण्यात अयशस्वी",
+        "description": "रेझ्युमे प्रकार तयार करताना एक त्रुटी आली."
+      },
+      "noResumeToSave": "जतन करण्यासाठी कोणताही तयार केलेला रेझ्युमे नाही.",
+      "nameRequired": {
+        "title": "नाव आवश्यक",
+        "description": "कृपया रेझ्युमे प्रोफाइलसाठी एक नाव द्या."
+      },
+      "saveSuccess": {
+        "title": "रेझ्युमे जतन केले",
+        "description": "\"{name}\" 'माझे रेझ्युमे' मध्ये जतन केले आहे."
+      },
+      "saveFailed": {
+        "title": "जतन करण्यात अयशस्वी",
+        "description": "रेझ्युमे जतन करता आला नाही."
+      },
+      "copied": "कव्हर लेटर कॉपी केले!"
+    }
+  },
+  "coverLetterGenerator": {
+    "title": "एआय कव्हर लेटर जनरेटर",
+    "description": "तुमच्या प्रोफाइल माहितीचा वापर करून विशिष्ट जॉब वर्णनासाठी तयार केलेले वैयक्तिकृत कव्हर लेटर तयार करा.",
+    "jobTitleLabel": "नोकरीचे शीर्षक",
+    "jobTitlePlaceholder": "उदा., वरिष्ठ विपणन व्यवस्थापक",
+    "companyNameLabel": "कंपनीचे नाव",
+    "companyNamePlaceholder": "उदा., ॲक्मे इनोव्हेशन्स लि.",
+    "jobDescriptionLabel": "नोकरीचे वर्णन",
+    "jobDescriptionPlaceholder": "येथे संपूर्ण नोकरीचे वर्णन पेस्ट करा...",
+    "userProfileInfoLabel": "वापरकर्ता प्रोफाइल माहिती (एआय द्वारे वापरलेली)",
+    "profileInfoNote": "तुमची तपशीलवार प्रोफाइल आणि रेझ्युमे मजकूर एआय द्वारे वापरला जातो",
+    "viewProfileLink": "पूर्ण प्रोफाइल पहा/संपादित करा",
+    "additionalNotesLabel": "एआयसाठी अतिरिक्त नोट्स (पर्यायी)",
+    "additionalNotesPlaceholder": "उदा., माझ्या अलीकडील एक्स प्रकल्पाचा उल्लेख करा, या भूमिकेसाठी विशेषतः वाय कौशल्यावर जोर द्या.",
+    "generateButton": "कव्हर लेटर तयार करा",
+    "generatingMessage": "एआय तुमचे कव्हर लेटर तयार करत आहे...",
+    "generatedCoverLetterTitle": "तयार केलेले कव्हर लेटर",
+    "generatedCoverLetterDescription": "एआय-व्युत्पन्न कव्हर लेटर तपासा. तुम्ही ते संपादित करू शकता किंवा कॉपी करू शकता.",
+    "toast": {
+      "mustBeLoggedIn": "हे वैशिष्ट्य वापरण्यासाठी तुम्ही लॉग इन केलेले असणे आवश्यक आहे.",
+      "jobDescriptionRequired": "कृपया नोकरीचे वर्णन द्या.",
+      "companyNameRequired": "कृपया कंपनीचे नाव प्रविष्ट करा.",
+      "jobTitleRequired": "कृपया नोकरीचे शीर्षक प्रविष्ट करा.",
+      "generationSuccess": {
+        "title": "कव्हर लेटर तयार झाले",
+        "description": "तुमचे वैयक्तिकृत कव्हर लेटर खाली तयार आहे."
+      },
+      "generationFailed": {
+        "title": "तयार करण्यात अयशस्वी",
+        "description": "कव्हर लेटर तयार करताना एक त्रुटी आली."
+      },
+      "copied": "कव्हर लेटर कॉपी केले!"
+    }
   }
 }

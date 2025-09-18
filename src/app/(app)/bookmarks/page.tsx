@@ -41,7 +41,7 @@ export default function BookmarksPage() {
       if (!user) return;
       setIsLoading(true);
       const [posts, blogs, questions, scans] = await Promise.all([
-        getCommunityPosts(user.tenantId, user.id),
+        getCommunityPosts(user.id),
         getBlogPosts(),
         getInterviewQuestions(),
         getScanHistory(user.id)
@@ -60,24 +60,24 @@ export default function BookmarksPage() {
   const handleUnbookmarkPost = (postId: string) => {
     // This would be an API call in a real app
     setBookmarkedPosts(prev => prev.filter(p => p.id !== postId));
-    toast({ title: "Bookmark Removed", description: "Post has been removed from your bookmarks." });
+    toast({ title: t("bookmarks.toast.removed.title"), description: t("bookmarks.toast.removed.post") });
   };
   
   const handleUnbookmarkBlog = (blogId: string) => {
     setBookmarkedBlogs(prev => prev.filter(b => b.id !== blogId));
-    toast({ title: "Bookmark Removed", description: "Blog post has been removed from your bookmarks." });
+    toast({ title: t("bookmarks.toast.removed.title"), description: t("bookmarks.toast.removed.blog") });
   };
 
   const handleUnbookmarkQuestion = (questionId: string) => {
     // This would be an API call
     setBookmarkedQuestions(prev => prev.filter(q => q.id !== questionId));
-    toast({ title: "Bookmark Removed", description: "Question has been removed from your bookmarks." });
+    toast({ title: t("bookmarks.toast.removed.title"), description: t("bookmarks.toast.removed.question") });
   };
   
   const handleUnbookmarkScan = (scanId: string) => {
     // This would be an API call
     setBookmarkedResumeScans(prev => prev.filter(s => s.id !== scanId));
-    toast({ title: "Bookmark Removed", description: "Resume scan has been removed from your bookmarks." });
+    toast({ title: t("bookmarks.toast.removed.title"), description: t("bookmarks.toast.removed.scan") });
   };
 
   const getCategoryIcon = (category: InterviewQuestionCategory) => {
@@ -198,12 +198,12 @@ export default function BookmarksPage() {
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-3 pt-1 space-y-3">
                       <div className="bg-primary/5 p-3 rounded-md">
-                          <p className="text-xs font-semibold text-primary mb-1">Suggested Answer/Tip:</p>
+                          <p className="text-xs font-semibold text-primary mb-1">{t("bookmarks.suggestedAnswer")}:</p>
                           <p className="text-xs text-foreground whitespace-pre-line">{q.answerOrTip}</p>
                       </div>
                       {q.isMCQ && q.mcqOptions && q.mcqOptions.length > 0 && (
                           <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground">MCQ Options:</p>
+                          <p className="text-xs font-semibold text-muted-foreground">{t("bookmarks.mcqOptions")}:</p>
                           {q.mcqOptions.filter(opt => opt && opt.trim() !== "").map((opt, i) => (
                               <p key={i} className={cn("text-xs pl-2", q.correctAnswer === opt && "font-bold text-green-600 flex items-center gap-1")}>
                               {q.correctAnswer === opt && <CheckCircleIcon className="h-3 w-3"/>} {optionLetters[i]}. {opt}
@@ -213,7 +213,7 @@ export default function BookmarksPage() {
                       )}
                       <div className="text-right">
                         <Button variant="outline" size="sm" onClick={() => handleUnbookmarkQuestion(q.id)}>
-                          <Bookmark className="mr-2 h-4 w-4" /> Remove Bookmark
+                          <Bookmark className="mr-2 h-4 w-4" /> {t("bookmarks.removeBookmark")}
                         </Button>
                       </div>
                     </AccordionContent>
@@ -240,14 +240,14 @@ export default function BookmarksPage() {
                         <ScoreCircle score={scan.matchScore || 0} size="sm" />
                         <div className="flex-1">
                             <h4 className="font-semibold text-foreground">{scan.jobTitle} at {scan.companyName}</h4>
-                            <p className="text-sm text-muted-foreground">Scanned with: {scan.resumeName}</p>
+                            <p className="text-sm text-muted-foreground">{t("bookmarks.scannedWith")}: {scan.resumeName}</p>
                             <p className="text-xs text-muted-foreground mt-1">
                                 {format(parseISO(scan.scanDate), 'MMM dd, yyyy - p')}
                             </p>
                         </div>
                         <div className="flex gap-2 self-start sm:self-center">
                             <Button variant="outline" size="sm" asChild>
-                                <Link href={`/resume-analyzer?scanId=${scan.id}`}>View Report</Link>
+                                <Link href={`/resume-analyzer?scanId=${scan.id}`}>{t("bookmarks.viewReport")}</Link>
                             </Button>
                             <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 h-9 w-9" onClick={() => handleUnbookmarkScan(scan.id)} title="Remove Bookmark">
                                 <Trash2 className="h-4 w-4" />

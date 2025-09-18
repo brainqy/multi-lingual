@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import Confetti from "react-confetti";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
-import { updateWallet } from "@/lib/actions/wallet";
+import { getWallet, updateWallet } from "@/lib/actions/wallet";
 import { useI18n } from "@/hooks/use-i18n";
 
 

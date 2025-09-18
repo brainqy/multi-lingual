@@ -19,7 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription as DialogUIDescription } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -55,7 +55,7 @@ export default function AppointmentsPage() {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [allUsers, setAllUsers] = useState<AlumniProfile[]>([]);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatuses, setFilterStatuses] = useState<Set<AppointmentStatus>>(new Set());
@@ -88,10 +88,10 @@ export default function AppointmentsPage() {
     const [userAppointments, users, posts] = await Promise.all([
       getAppointments(currentUser.id),
       getUsers(),
-      getCommunityPosts(currentUser.tenantId, currentUser.id),
+      getCommunityPosts(currentUser.id),
     ]);
     setAppointments(userAppointments);
-    setAllUsers(users as AlumniProfile[]);
+    setAllUsers(users as UserProfile[]);
     setCommunityPosts(posts);
     setIsLoading(false);
   }, [currentUser]);
@@ -108,7 +108,7 @@ export default function AppointmentsPage() {
     return 'text-gray-600 bg-gray-100';
   };
 
-  const getPartnerDetails = useCallback((appointment: Appointment | null): AlumniProfile | undefined => {
+  const getPartnerDetails = useCallback((appointment: Appointment | null): UserProfile | undefined => {
     if (!currentUser || !appointment) return undefined;
     const partnerId = appointment.requesterUserId === currentUser.id ? appointment.alumniUserId : appointment.requesterUserId;
     return allUsers.find(u => u.id === partnerId);
@@ -122,7 +122,7 @@ export default function AppointmentsPage() {
   }, [communityPosts, currentUser]);
 
   const updateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, successToast: { title: string, description: string }, variant?: "destructive") => {
-    const updated = await updateAppointment(appointmentId, { status });
+    const updated = await updateAppointment(appointmentId, { status }, currentUser?.id);
     if(updated) {
         setAppointments(prev => prev.map(appt => appt.id === appointmentId ? updated : appt));
         toast({ title: successToast.title, description: successToast.description, variant });
@@ -160,22 +160,37 @@ export default function AppointmentsPage() {
   };
 
   const onRescheduleSubmit = async (data: RescheduleFormData) => {
-    if (!appointmentToReschedule) return;
+    if (!appointmentToReschedule || !currentUser) return;
+
     const newDateTime = new Date(data.preferredDate);
-    const timeParts = data.preferredTimeSlot.match(/(\d+)(AM|PM)/);
+    // Simple time parsing from "9:30 AM" format
+    const timeParts = data.preferredTimeSlot.match(/(\d+):(\d+)\s*(AM|PM)/i);
+
     if (timeParts) {
-      let hour = parseInt(timeParts[1]);
-      if (timeParts[2] === 'PM' && hour !== 12) hour += 12;
-      if (timeParts[2] === 'AM' && hour === 12) hour = 0;
-      newDateTime.setHours(hour, 0, 0, 0);
+        let hour = parseInt(timeParts[1], 10);
+        const minute = parseInt(timeParts[2], 10);
+        const ampm = timeParts[3].toUpperCase();
+
+        if (ampm === 'PM' && hour !== 12) hour += 12;
+        if (ampm === 'AM' && hour === 12) hour = 0; // Midnight case
+        newDateTime.setHours(hour, minute, 0, 0);
+    } else {
+        toast({ title: "Invalid Time", description: "Could not parse the selected time slot.", variant: "destructive" });
+        return;
     }
 
     const partner = getPartnerDetails(appointmentToReschedule);
-    const updated = await updateAppointment(appointmentToReschedule.id, { dateTime: newDateTime.toISOString(), status: 'Pending' });
+    const updated = await updateAppointment(appointmentToReschedule.id, {
+      dateTime: newDateTime.toISOString(),
+      notes: data.message ? `Reschedule reason: ${data.message}` : 'Rescheduled by user.',
+    }, currentUser.id);
 
     if (updated) {
         setAppointments(prev => prev.map(appt => appt.id === appointmentToReschedule.id ? updated : appt));
-        toast({ title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }), description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: partner?.name || "the other party" }) });
+        toast({
+            title: t("appointments.toastReschedule", { default: "Reschedule Request Sent" }),
+            description: t("appointments.toastRescheduleDesc", { default: "A reschedule request has been sent to {user}.", user: partner?.name || "the other party" })
+        });
         setIsRescheduleDialogOpen(false);
     } else {
         toast({ title: "Reschedule Failed", description: "Could not send reschedule request.", variant: "destructive" });
@@ -245,7 +260,7 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="appointments-page">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <CalendarDays className="h-8 w-8" /> {t("appointments.title", { default: "My Appointments" })}
@@ -309,7 +324,7 @@ export default function AppointmentsPage() {
       ) : (
         <>
           {filteredAppointments.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2" data-testid="appointments-list">
               {filteredAppointments.map((appt) => {
                 const partner = getPartnerDetails(appt);
                 const isCurrentUserRequester = appt.requesterUserId === currentUser.id;
@@ -319,7 +334,7 @@ export default function AppointmentsPage() {
                 const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager';
 
                 return (
-                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <Card key={appt.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300" data-testid={`appointment-card-${appt.id}`}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{appt.title}</CardTitle>
@@ -417,7 +432,43 @@ export default function AppointmentsPage() {
       )}
 
       <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
-        {/* Reschedule Dialog Content... */}
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Reschedule Appointment</DialogTitle>
+            <DialogUIDescription>
+              Select a new date and time for your appointment.
+            </DialogUIDescription>
+          </DialogHeader>
+          <form onSubmit={handleRescheduleSubmit(onRescheduleSubmit)} className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="reschedule-date">New Preferred Date</Label>
+                <Controller name="preferredDate" control={rescheduleControl} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
+                {rescheduleErrors.preferredDate && <p className="text-sm text-destructive mt-1">{rescheduleErrors.preferredDate.message}</p>}
+              </div>
+              <div>
+                <Label htmlFor="reschedule-time">New Preferred Time</Label>
+                <Controller name="preferredTimeSlot" control={rescheduleControl} render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="reschedule-time"><SelectValue placeholder="Select time" /></SelectTrigger>
+                    <SelectContent>
+                      {PreferredTimeSlots.map(slot => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )} />
+                {rescheduleErrors.preferredTimeSlot && <p className="text-sm text-destructive mt-1">{rescheduleErrors.preferredTimeSlot.message}</p>}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="reschedule-message">Message (Optional)</Label>
+              <Controller name="message" control={rescheduleControl} render={({ field }) => <Textarea id="reschedule-message" {...field} placeholder="Reason for rescheduling..."/>} />
+            </div>
+            <DialogFooter>
+              <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+              <Button type="submit">Send Request</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       
        <Dialog open={isReassignDialogOpen} onOpenChange={setIsReassignDialogOpen}>
@@ -460,10 +511,40 @@ export default function AppointmentsPage() {
       </Dialog>
 
       <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
-        {/* Feedback Dialog Content... */}
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle className="text-2xl flex items-center gap-2"><FeedbackIcon className="h-6 w-6 text-primary"/>Provide Feedback</DialogTitle>
+                <DialogUIDescription>Your feedback helps improve the community.</DialogUIDescription>
+            </DialogHeader>
+            <form onSubmit={handleFeedbackSubmit(onFeedbackSubmit)} className="space-y-4 py-4">
+                <div>
+                    <Label>Overall Rating</Label>
+                    <Controller
+                        name="rating"
+                        control={feedbackControl}
+                        render={({ field }) => (
+                            <div className="flex items-center gap-1 mt-1">
+                                {[1,2,3,4,5].map(star => (
+                                    <button key={star} type="button" onClick={() => field.onChange(star)}>
+                                        <StarIcon className={cn("h-6 w-6", star <= (field.value || 0) ? "text-yellow-500 fill-yellow-400" : "text-gray-300")}/>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    />
+                    {feedbackErrors.rating && <p className="text-sm text-destructive mt-1">{feedbackErrors.rating.message}</p>}
+                </div>
+                <div>
+                    <Label htmlFor="feedback-comments">Comments (Optional)</Label>
+                    <Controller name="comments" control={feedbackControl} render={({field}) => <Textarea id="feedback-comments" {...field} placeholder="Share your experience..."/>}/>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline" type="button">Cancel</Button></DialogClose>
+                    <Button type="submit">Submit Feedback</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
       </Dialog>
     </div>
   );
 }
-
-    

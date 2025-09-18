@@ -1,10 +1,12 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
-import type { ResumeProfile, ResumeScanHistoryItem } from '@/types';
+import type { ResumeProfile, ResumeScanHistoryItem, UserProfile } from '@/types';
 import { checkAndAwardBadges } from './gamification';
 import { logAction, logError } from '@/lib/logger';
+import { Prisma } from '@prisma/client';
 
 /**
  * Fetches all resume profiles for a specific user.
@@ -33,14 +35,19 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
  * @returns The newly created ResumeProfile object or null if failed.
  */
 export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'>): Promise<ResumeProfile | null> {
-  logAction('Creating resume profile', { userId: resumeData.userId, name: resumeData.name });
+  const { userId, tenantId, ...rest } = resumeData;
+  logAction('Creating resume profile', { userId, name: rest.name });
   try {
     const newResume = await db.resumeProfile.create({
-      data: resumeData,
+      data: {
+        ...rest,
+        userId,
+        tenantId,
+      },
     });
     return newResume as unknown as ResumeProfile;
   } catch (error) {
-    logError('[ResumeAction] Error creating resume profile', error, { userId: resumeData.userId });
+    logError('[ResumeAction] Error creating resume profile', error, { userId });
     return null;
   }
 }
@@ -111,10 +118,16 @@ export async function getScanHistory(userId: string): Promise<ResumeScanHistoryI
  * @returns The newly created ResumeScanHistoryItem object or null if failed.
  */
 export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'id' | 'scanDate'>): Promise<ResumeScanHistoryItem | null> {
-  logAction('Creating scan history entry', { userId: scanData.userId, jobTitle: scanData.jobTitle });
+  const { userId, tenantId, ...rest } = scanData;
+  logAction('Creating scan history entry', { userId, jobTitle: rest.jobTitle });
   try {
     const newScan = await db.resumeScanHistory.create({
-      data: scanData,
+      data: {
+        ...rest,
+        userId,
+        tenantId,
+        reportData: rest.reportData ? (rest.reportData as Prisma.JsonObject) : Prisma.JsonNull,
+      },
     });
     
     // Award badges after action

@@ -47,7 +47,16 @@ export default function AnalyticsDashboardPage() {
     retentionData,
     coinStats,
   } = useMemo(() => {
-    if (!dashboardData) return { kpiStats: {}, userGrowthData: [], featureAdoptionData: [], tenantActivityData: [], retentionData: [], coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] } };
+    if (!dashboardData) {
+      return {
+        kpiStats: { totalUsers: 0, newSignups: 0, dau: 0, mau: 0, stickiness: 0 },
+        userGrowthData: [],
+        featureAdoptionData: [],
+        tenantActivityData: [],
+        retentionData: [],
+        coinStats: { totalInCirculation: 0, totalEarned: 0, totalSpent: 0, spendingByCategory: [], topEarners: [], topSpenders: [] }
+      };
+    }
     
     const { from, to } = dateRange || {};
     const filteredUsers = dashboardData.users.filter((u: UserProfile) => {
@@ -88,11 +97,11 @@ export default function AnalyticsDashboardPage() {
     }
 
     const featureData = [
-        { name: 'Resume Scans', count: dashboardData.resumeScans.length },
-        { name: 'Job Apps', count: dashboardData.jobApplications.length },
-        { name: 'Community Posts', count: dashboardData.communityPosts.length },
-        { name: 'Appointments', count: dashboardData.appointments.length },
-        { name: 'Mock Interviews', count: dashboardData.mockInterviews.length },
+        { name: t("adminAnalytics.features.resumeScans"), count: dashboardData.resumeScans.length },
+        { name: t("adminAnalytics.features.jobApps"), count: dashboardData.jobApplications.length },
+        { name: t("adminAnalytics.features.communityPosts"), count: dashboardData.communityPosts.length },
+        { name: t("adminAnalytics.features.appointments"), count: dashboardData.appointments.length },
+        { name: t("adminAnalytics.features.mockInterviews"), count: dashboardData.mockInterviews.length },
     ];
 
     const tenantData = dashboardData.tenants.map((tenant: Tenant) => ({
@@ -135,14 +144,14 @@ export default function AnalyticsDashboardPage() {
     }
 
     const retention = Object.entries(cohorts).map(([date, data]) => ({
-      cohort: `Week of ${format(new Date(date), 'MMM d')}`,
+      cohort: t("adminAnalytics.retention.cohortDate", { date: format(new Date(date), 'MMM d') }),
       total: data.total,
       weeks: data.retained.map(count => (data.total > 0 ? parseFloat(((count / data.total) * 100).toFixed(1)) : 0))
-    })).sort((a,b) => new Date(b.cohort.replace('Week of ', '')).getTime() - new Date(a.cohort.replace('Week of ', '')).getTime());
+    })).sort((a,b) => new Date(b.cohort.replace(t("adminAnalytics.retention.cohortPrefix"), '')).getTime() - new Date(a.cohort.replace(t("adminAnalytics.retention.cohortPrefix"), '')).getTime());
 
 
     return { kpiStats: kpis, userGrowthData: growthData, featureAdoptionData: featureData, tenantActivityData: tenantData, retentionData: retention, coinStats: dashboardData.coinStats };
-  }, [dashboardData, dateRange, selectedTenantId]);
+  }, [dashboardData, dateRange, selectedTenantId, t]);
   
   const getRetentionColor = (percentage: number) => {
     if (percentage > 50) return 'bg-primary/80 text-primary-foreground';
@@ -173,20 +182,20 @@ export default function AnalyticsDashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <BarChart className="h-8 w-8" />
-            Platform Analytics
+            {t("adminAnalytics.pageTitle")}
           </h1>
           <CardDescription>
-            Insights into user growth, engagement, and feature adoption.
+            {t("adminAnalytics.pageDescription")}
           </CardDescription>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
            <DatePickerWithRange date={dateRange} setDate={setDateRange} />
            <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Select Tenant" />
+                    <SelectValue placeholder={t("adminAnalytics.filters.selectTenant")} />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Tenants</SelectItem>
+                    <SelectItem value="all">{t("adminAnalytics.filters.allTenants")}</SelectItem>
                     {dashboardData?.tenants.map((t: Tenant) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                 </SelectContent>
            </Select>
@@ -194,17 +203,17 @@ export default function AnalyticsDashboardPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
-        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users2/>Total Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.totalUsers}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users/>New Signups (Period)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.newSignups}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>Daily Active Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.dau}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>Monthly Active Users</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.mau}</p></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Percent/>Stickiness (DAU/MAU)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.stickiness}%</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users2/>{t("adminAnalytics.kpi.totalUsers")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.totalUsers}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Users/>{t("adminAnalytics.kpi.newSignups")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.newSignups}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>{t("adminAnalytics.kpi.dau")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.dau}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Activity/>{t("adminAnalytics.kpi.mau")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.mau}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><Percent/>{t("adminAnalytics.kpi.stickiness")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{kpiStats.stickiness}%</p></CardContent></Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>User Growth Trends</CardTitle>
-          <CardDescription>New user signups over the selected period.</CardDescription>
+          <CardTitle>{t("adminAnalytics.charts.userGrowth.title")}</CardTitle>
+          <CardDescription>{t("adminAnalytics.charts.userGrowth.description")}</CardDescription>
         </CardHeader>
         <CardContent className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -213,7 +222,7 @@ export default function AnalyticsDashboardPage() {
               <XAxis dataKey="date" tick={{fontSize: 12}} />
               <YAxis allowDecimals={false}/>
               <Tooltip />
-              <RechartsBar dataKey="signups" fill="hsl(var(--primary))" name="New Signups"/>
+              <RechartsBar dataKey="signups" fill="hsl(var(--primary))" name={t("adminAnalytics.charts.userGrowth.legend")}/>
             </RechartsBarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -221,17 +230,17 @@ export default function AnalyticsDashboardPage() {
       
        <Card>
         <CardHeader>
-          <CardTitle>User Retention by Signup Week</CardTitle>
-          <CardDescription>Percentage of new users who returned in the weeks following their signup.</CardDescription>
+          <CardTitle>{t("adminAnalytics.retention.title")}</CardTitle>
+          <CardDescription>{t("adminAnalytics.retention.description")}</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
-                <th className="p-2 text-left font-medium text-muted-foreground">Cohort</th>
-                <th className="p-2 text-center font-medium text-muted-foreground">New Users</th>
+                <th className="p-2 text-left font-medium text-muted-foreground">{t("adminAnalytics.retention.cohortColumn")}</th>
+                <th className="p-2 text-center font-medium text-muted-foreground">{t("adminAnalytics.retention.newUsersColumn")}</th>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <th key={i} className="p-2 text-center font-medium text-muted-foreground">Week {i}</th>
+                  <th key={i} className="p-2 text-center font-medium text-muted-foreground">{t("adminAnalytics.retention.weekColumn", { week: i })}</th>
                 ))}
               </tr>
             </thead>
@@ -255,8 +264,8 @@ export default function AnalyticsDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Feature Adoption</CardTitle>
-            <CardDescription>Total usage count for key platform features.</CardDescription>
+            <CardTitle>{t("adminAnalytics.charts.featureAdoption.title")}</CardTitle>
+            <CardDescription>{t("adminAnalytics.charts.featureAdoption.description")}</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
              <ResponsiveContainer width="100%" height="100%">
@@ -272,8 +281,8 @@ export default function AnalyticsDashboardPage() {
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Tenant Leaderboard</CardTitle>
-            <CardDescription>Most active tenants by user count and activity score.</CardDescription>
+            <CardTitle>{t("adminAnalytics.charts.tenantLeaderboard.title")}</CardTitle>
+            <CardDescription>{t("adminAnalytics.charts.tenantLeaderboard.description")}</CardDescription>
           </CardHeader>
            <CardContent className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -283,8 +292,8 @@ export default function AnalyticsDashboardPage() {
                 <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 10}}/>
                 <Tooltip />
                 <Legend />
-                <RechartsBar dataKey="userCount" fill="hsl(var(--chart-1))" name="Total Users" />
-                <RechartsBar dataKey="activityScore" fill="hsl(var(--chart-2))" name="Activity Score"/>
+                <RechartsBar dataKey="userCount" fill="hsl(var(--chart-1))" name={t("adminAnalytics.charts.tenantLeaderboard.legendUsers")} />
+                <RechartsBar dataKey="activityScore" fill="hsl(var(--chart-2))" name={t("adminAnalytics.charts.tenantLeaderboard.legendActivity")}/>
               </RechartsBarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -293,20 +302,20 @@ export default function AnalyticsDashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Coins className="h-6 w-6 text-primary"/>Coin Economy</CardTitle>
-          <CardDescription>Overview of the platform's virtual currency.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Coins className="h-6 w-6 text-primary"/>{t("adminAnalytics.coinEconomy.title")}</CardTitle>
+          <CardDescription>{t("adminAnalytics.coinEconomy.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-3">
-            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><DollarSign/>Total in Circulation</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalInCirculation.toLocaleString()}</p></CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowUpCircle className="text-green-500"/>Total Earned (All Time)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalEarned.toLocaleString()}</p></CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowDownCircle className="text-red-500"/>Total Spent (All Time)</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalSpent.toLocaleString()}</p></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><DollarSign/>{t("adminAnalytics.coinEconomy.totalInCirculation")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalInCirculation.toLocaleString()}</p></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowUpCircle className="text-green-500"/>{t("adminAnalytics.coinEconomy.totalEarned")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalEarned.toLocaleString()}</p></CardContent></Card>
+            <Card><CardHeader><CardTitle className="text-sm font-medium flex items-center gap-1"><ArrowDownCircle className="text-red-500"/>{t("adminAnalytics.coinEconomy.totalSpent")}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{coinStats.totalSpent.toLocaleString()}</p></CardContent></Card>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-1">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>Coin Spending by Feature</CardTitle>
-                    <CardDescription>What users are spending their coins on.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5 text-primary"/>{t("adminAnalytics.coinEconomy.spendingByCategory")}</CardTitle>
+                    <CardDescription>{t("adminAnalytics.coinEconomy.spendingDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -321,12 +330,12 @@ export default function AnalyticsDashboardPage() {
                 </CardContent>
             </Card>
             <Card className="lg:col-span-2">
-              <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>Top Users</CardTitle><CardDescription>Most engaged users in the coin economy.</CardDescription></CardHeader>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary"/>{t("adminAnalytics.coinEconomy.topUsers")}</CardTitle><CardDescription>{t("adminAnalytics.coinEconomy.topUsersDescription")}</CardDescription></CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                      <h4 className="font-semibold mb-2">Top Earners</h4>
+                      <h4 className="font-semibold mb-2">{t("adminAnalytics.coinEconomy.topEarners")}</h4>
                       <Table>
-                          <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Earned</TableHead></TableRow></TableHeader>
+                          <TableHeader><TableRow><TableHead>{t("adminAnalytics.coinEconomy.userColumn")}</TableHead><TableHead className="text-right">{t("adminAnalytics.coinEconomy.coinsEarnedColumn")}</TableHead></TableRow></TableHeader>
                           <TableBody>
                               {coinStats.topEarners.map((user: {name: string, value: number}, index: number) => (
                                   <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>
@@ -335,9 +344,9 @@ export default function AnalyticsDashboardPage() {
                       </Table>
                   </div>
                   <div>
-                      <h4 className="font-semibold mb-2">Top Spenders</h4>
+                      <h4 className="font-semibold mb-2">{t("adminAnalytics.coinEconomy.topSpenders")}</h4>
                       <Table>
-                          <TableHeader><TableRow><TableHead>User</TableHead><TableHead className="text-right">Coins Spent</TableHead></TableRow></TableHeader>
+                          <TableHeader><TableRow><TableHead>{t("adminAnalytics.coinEconomy.userColumn")}</TableHead><TableHead className="text-right">{t("adminAnalytics.coinEconomy.coinsSpentColumn")}</TableHead></TableRow></TableHeader>
                           <TableBody>
                               {coinStats.topSpenders.map((user: {name: string, value: number}, index: number) => (
                                   <TableRow key={index}><TableCell>{user.name}</TableCell><TableCell className="text-right font-semibold">{user.value.toLocaleString()}</TableCell></TableRow>

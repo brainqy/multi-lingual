@@ -23,7 +23,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { User, KeyRound, Mail, Gift, Eye, EyeOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { samplePlatformSettings } from "@/lib/sample-data";
+import { getTenantByIdentifier } from "@/lib/actions/tenants";
 
 export function SignupForm() {
   const { signup } = useAuth();
@@ -31,16 +31,30 @@ export function SignupForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const platformName = t("appName", { default: "Bhasha Setu" });
   const [tenantId, setTenantId] = useState<string | undefined>(undefined);
+  const [tenantName, setTenantName] = useState<string | null>(null);
 
   useEffect(() => {
     // This runs on the client, so window is available.
-    const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    // Handles localhost (e.g., 'brainqy.localhost') and production (e.g., 'brainqy.jobmatch.ai')
-    if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
-        setTenantId(parts[0]);
+    async function resolveTenant() {
+      const hostname = window.location.hostname;
+      const parts = hostname.split('.');
+      const identifier = parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost' ? parts[0] : undefined;
+      
+      if (identifier) {
+        const tenant = await getTenantByIdentifier(identifier);
+        if (tenant) {
+          setTenantId(tenant.id);
+          setTenantName(tenant.name);
+        } else {
+            // Handle case where subdomain is invalid, maybe show an error
+            setTenantName('Invalid Tenant');
+        }
+      } else {
+          setTenantName(platformName);
+      }
     }
-  }, []);
+    resolveTenant();
+  }, [platformName]);
 
   const formSchema = z.object({
     name: z.string().min(1, { message: t("validation.required", { default: "This field is required."}) }),
@@ -73,7 +87,7 @@ export function SignupForm() {
         <CardTitle className="text-3xl font-headline text-center text-primary">
           <h1>{t("signup.title", { default: "Join Bhasha Setu" })}</h1>
         </CardTitle>
-        <CardDescription className="text-center">{tenantId ? `Joining: ${tenantId}` : platformName}</CardDescription>
+        <CardDescription className="text-center">{tenantName || platformName}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

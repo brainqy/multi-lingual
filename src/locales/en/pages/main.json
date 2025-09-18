@@ -59,36 +59,223 @@
       }
     }
   },
-  "emailTemplates": {
+    "emailTemplates": {
     "title": "Email Template Management",
     "description": "Customize the automated emails sent to users in your tenant. Use placeholders to include dynamic content.",
     "editingTitle": "Editing: {type}",
     "editingDescription": "Modify the subject and body of this email.",
     "saveButton": "Save Changes",
     "types": {
-        "WELCOME": "Welcome Email",
-        "APPOINTMENT_CONFIRMATION": "Appointment Confirmation",
-        "PASSWORD_RESET": "Password Reset"
+      "WELCOME": "Welcome Email",
+      "TENANT_WELCOME": "Tenant Welcome (Manager)",
+      "APPOINTMENT_CONFIRMATION": "Appointment Confirmation",
+      "PASSWORD_RESET": "Password Reset",
+      "PRACTICE_INTERVIEW_INVITE": "Practice Interview Invite"
     },
     "placeholders": {
-        "title": "Placeholders",
-        "{{userName}}": "The recipient's full name.",
-        "{{tenantName}}": "The name of your organization/tenant.",
-        "{{resetLink}}": "URL for password reset (Password Reset only).",
-        "{{appointmentTitle}}": "Title of the appointment (Appointment only).",
-        "{{partnerName}}": "Name of the other person in the appointment.",
-        "{{appointmentDateTime}}": "Formatted date and time of the appointment.",
-        "{{appointmentLink}}": "Link to view the appointment details."
+      "title": "Placeholders",
+      "userName": "The recipient's full name.",
+      "tenantName": "The name of your organization/tenant.",
+      "resetLink": "URL for password reset (Password Reset only).",
+      "appointmentTitle": "Title of the appointment (Appointment only).",
+      "partnerName": "Name of the other person in the appointment.",
+      "appointmentDateTime": "Formatted date and time of the appointment.",
+      "appointmentLink": "Link to view the appointment details."
     },
     "form": {
-        "subjectLabel": "Email Subject",
-        "bodyLabel": "Email Body"
+      "subjectLabel": "Email Subject",
+      "bodyLabel": "Email Body"
     },
     "toast": {
-        "updated": {
-            "title": "Template Saved",
-            "description": "The \"{type}\" template has been updated."
-        }
+      "updated": {
+        "title": "Template Saved",
+        "description": "The \"{type}\" template has been updated."
+      }
+    }
+  },
+  "activityLog": {
+    "title": "Activity Log",
+    "recentActivities": "Recent Activities",
+    "description": "A log of your recent actions and system events within JobMatch AI.",
+    "noActivities": "No activities recorded yet."
+  },
+  "appointments": {
+    "title": "My Appointments",
+    "scheduleNew": "Schedule New",
+    "pageDescription": "View and manage your scheduled appointments, mock interviews, and assigned community requests.",
+    "filters": "Filters",
+    "status": "Status",
+    "alumniName": "Alumni Name",
+    "searchByName": "Search by name...",
+    "dateRange": "Date Range",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "noAppointments": "No Appointments Found",
+    "tryAdjustingFilters": "Try adjusting your filters.",
+    "noScheduled": "You have no appointments or assigned requests.",
+    "withUser": "With {name} {incoming}",
+    "incomingRequest": "(Incoming Request)",
+    "dateTime": "Date & Time",
+    "reminder": "Reminder {when}",
+    "today": "today",
+    "inDays": "in {count} days",
+    "notes": "Notes",
+    "joinMeeting": "Join Meeting",
+    "markCompleted": "Mark as Completed",
+    "manageReschedule": "Reschedule",
+    "accept": "Accept",
+    "decline": "Decline",
+    "provideFeedback": "Provide Feedback",
+    "cancelledMsg": "This appointment was cancelled.",
+    "assignedCommunityRequests": "Assigned Community Requests",
+    "request": "Request",
+    "untitledRequest": "Untitled Request",
+    "from": "From",
+    "communityFeed": "Community Feed",
+    "assignedToYou": "Assigned to you",
+    "tags": "Tags",
+    "viewOnFeed": "View on Feed",
+    "toastJoinMeeting": "Joining Meeting (Mock)",
+    "toastJoinMeetingDesc": "This would launch the video conferencing link.",
+    "toastConfirmed": "Appointment Confirmed!",
+    "toastConfirmedDesc": "The appointment has been accepted.",
+    "toastDeclined": "Appointment Declined",
+    "toastDeclinedDesc": "The appointment request has been declined.",
+    "toastCompleted": "Appointment Completed",
+    "toastCompletedDesc": "The appointment has been marked as complete.",
+    "toastReschedule": "Reschedule Request Sent",
+    "toastRescheduleDesc": "A reschedule request has been sent to {user}.",
+    "toastFeedback": "Feedback Submitted",
+    "toastFeedbackDesc": "Thank you for your feedback on your session with {user}.",
+    "statuses": {
+      "Pending": "Pending",
+      "Confirmed": "Confirmed",
+      "Cancelled": "Cancelled",
+      "Completed": "Completed"
+    }
+  },
+  "bookmarks": {
+    "title": "My Bookmarks",
+    "filter": "Filter bookmarks",
+    "all": "All Bookmarks",
+    "posts": "Community Posts",
+    "blogs": "Blog Posts",
+    "questions": "Interview Questions",
+    "resumeScans": "Resume Scans",
+    "noPosts": "You haven't bookmarked any community posts yet.",
+    "noBlogs": "You haven't bookmarked any blog articles yet.",
+    "noQuestions": "You haven't bookmarked any interview questions yet.",
+    "suggestedAnswer": "Suggested Answer/Tip",
+    "mcqOptions": "MCQ Options",
+    "removeBookmark": "Remove Bookmark",
+    "noResumeScans": "You haven't bookmarked any resume scan reports yet.",
+    "scannedWith": "Scanned with",
+    "viewReport": "View Report",
+    "toast": {
+      "removed": {
+        "title": "Bookmark Removed",
+        "post": "Post has been removed from your bookmarks.",
+        "blog": "Blog post has been removed from your bookmarks.",
+        "question": "Question has been removed from your bookmarks.",
+        "scan": "Resume scan has been removed from your bookmarks."
+      }
+    }
+  },
+    "aiResumeWriter": {
+    "title": "AI Resume Writer",
+    "description": "Adapt your resume for different roles and industries with AI assistance. Select an existing resume or paste your content, then specify your target.",
+    "selectResumeLabel": "Select Existing Resume",
+    "selectResumePlaceholder": "-- Or type/paste below --",
+    "baseResumeLabel": "Base Resume Text",
+    "baseResumePlaceholder": "Paste your current resume text here...",
+    "targetRoleLabel": "Target Role / Job Title",
+    "targetRolePlaceholder": "e.g., Senior Software Engineer, Product Manager",
+    "targetIndustryLabel": "Target Industry (Optional)",
+    "targetIndustryPlaceholder": "e.g., Fintech, Healthcare Technology",
+    "skillsToHighlightLabel": "Skills to Highlight (comma-separated, Optional)",
+    "skillsToHighlightPlaceholder": "e.g., Project Management, Python, Data Visualization",
+    "toneLabel": "Desired Tone",
+    "tonePlaceholder": "Select tone",
+    "tones": {
+      "professional": "Professional",
+      "creative": "Creative",
+      "concise": "Concise",
+      "technical": "Technical"
+    },
+    "additionalInstructionsLabel": "Additional Instructions (Optional)",
+    "additionalInstructionsPlaceholder": "e.g., Emphasize leadership experience, make it suitable for a startup environment.",
+    "generateButton": "Generate Resume Variant",
+    "generatingMessage": "AI is crafting your resume variant...",
+    "generatedResumeTitle": "Generated Resume Variant",
+    "generatedResumeDescription": "Review the AI-generated resume text below. You can edit it or copy it.",
+    "saveButton": "Save Generated Resume",
+    "defaultSaveName": "Variant for {role} ({date})",
+    "saveDialog": {
+      "title": "Save Resume Version",
+      "description": "Give this new resume version a name to save it to your \"My Resumes\" list.",
+      "nameLabel": "Name",
+      "saveButton": "Save Resume"
+    },
+    "toast": {
+      "mustBeLoggedIn": "You must be logged in to use this feature.",
+      "baseResumeRequired": "Please provide base resume text.",
+      "targetRoleRequired": "Please specify the target role.",
+      "generationSuccess": {
+        "title": "Resume Variant Generated",
+        "description": "The new resume version is ready below."
+      },
+      "generationFailed": {
+        "title": "Generation Failed",
+        "description": "An error occurred while generating the resume variant."
+      },
+      "noResumeToSave": "No generated resume to save.",
+      "nameRequired": {
+        "title": "Name Required",
+        "description": "Please provide a name for the resume profile."
+      },
+      "saveSuccess": {
+        "title": "Resume Saved",
+        "description": "\"{name}\" has been saved to 'My Resumes'."
+      },
+      "saveFailed": {
+        "title": "Save Failed",
+        "description": "Could not save the resume."
+      },
+      "copied": "Cover letter copied!"
+    }
+  },
+  "coverLetterGenerator": {
+    "title": "AI Cover Letter Generator",
+    "description": "Create a personalized cover letter tailored to a specific job description using your profile information.",
+    "jobTitleLabel": "Job Title",
+    "jobTitlePlaceholder": "e.g., Senior Marketing Manager",
+    "companyNameLabel": "Company Name",
+    "companyNamePlaceholder": "e.g., Acme Innovations Ltd.",
+    "jobDescriptionLabel": "Job Description",
+    "jobDescriptionPlaceholder": "Paste the full job description here...",
+    "userProfileInfoLabel": "User Profile Information (Used by AI)",
+    "profileInfoNote": "Your detailed profile & resume text are used by the AI",
+    "viewProfileLink": "View/Edit Full Profile",
+    "additionalNotesLabel": "Additional Notes for AI (Optional)",
+    "additionalNotesPlaceholder": "e.g., Mention my recent X project, Emphasize Y skill specifically for this role.",
+    "generateButton": "Generate Cover Letter",
+    "generatingMessage": "AI is crafting your cover letter...",
+    "generatedCoverLetterTitle": "Generated Cover Letter",
+    "generatedCoverLetterDescription": "Review the AI-generated cover letter. You can edit it or copy it.",
+    "toast": {
+      "mustBeLoggedIn": "You must be logged in to use this feature.",
+      "jobDescriptionRequired": "Please provide the job description.",
+      "companyNameRequired": "Please enter the company name.",
+      "jobTitleRequired": "Please enter the job title.",
+      "generationSuccess": {
+        "title": "Cover Letter Generated",
+        "description": "Your personalized cover letter is ready below."
+      },
+      "generationFailed": {
+        "title": "Generation Failed",
+        "description": "An error occurred while generating the cover letter."
+      },
+      "copied": "Cover letter copied!"
     }
   }
 }

@@ -2,10 +2,11 @@
 'use server';
 
 import { db } from '@/lib/db';
-import type { Appointment } from '@/types';
+import type { Appointment, UserProfile } from '@/types';
 import { logAction, logError } from '@/lib/logger';
 import { createNotification } from './notifications';
 import { getDashboardData } from './dashboard';
+import { getUserByEmail } from '../data-services/users';
 
 /**
  * Fetches all appointments for a specific user, both as requester and alumni.
@@ -39,19 +40,20 @@ export async function getAppointments(userId: string): Promise<Appointment[]> {
  * @returns The newly created Appointment object or null if failed.
  */
 export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment | null> {
-  logAction('Creating appointment', { requester: appointmentData.requesterUserId, alumni: appointmentData.alumniUserId });
+  const { tenantId, ...restOfData } = appointmentData;
+  logAction('Creating appointment', { requester: restOfData.requesterUserId, alumni: restOfData.alumniUserId, tenantId });
   try {
-    const dashboardData = await getDashboardData();
-    const requesterUser = dashboardData.users.find(u => u.id === appointmentData.requesterUserId);
+    const requesterUser = await db.user.findUnique({ where: { id: restOfData.requesterUserId }});
 
     if (!requesterUser) {
-        throw new Error(`Requester user with ID ${appointmentData.requesterUserId} not found.`);
+        throw new Error(`Requester user with ID ${restOfData.requesterUserId} not found.`);
     }
 
     const newAppointment = await db.appointment.create({
       data: {
-        ...appointmentData,
-        dateTime: new Date(appointmentData.dateTime),
+        ...restOfData,
+        tenantId: tenantId,
+        dateTime: new Date(restOfData.dateTime),
       },
     });
 
@@ -66,7 +68,7 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
 
     return newAppointment as unknown as Appointment;
   } catch (error) {
-    logError('[AppointmentAction] Error creating appointment', error, { requester: appointmentData.requesterUserId });
+    logError('[AppointmentAction] Error creating appointment', error, { requester: restOfData.requesterUserId });
     return null;
   }
 }
@@ -78,9 +80,19 @@ export async function createAppointment(appointmentData: Omit<Appointment, 'id'>
  * @param updateData The data to update.
  * @returns The updated Appointment object or null if failed.
  */
-export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>): Promise<Appointment | null> {
+export async function updateAppointment(appointmentId: string, updateData: Partial<Omit<Appointment, 'id'>>, currentUserId?: string): Promise<Appointment | null> {
   logAction('Updating appointment', { appointmentId, status: updateData.status });
   try {
+    const originalAppointment = await db.appointment.findUnique({ where: { id: appointmentId } });
+    if (!originalAppointment) return null;
+    
+    const isReschedule = !!updateData.dateTime && new Date(originalAppointment.dateTime).toISOString() !== new Date(updateData.dateTime).toISOString();
+    
+    // If it's a reschedule, reset status to Pending
+    if (isReschedule) {
+      updateData.status = 'Pending';
+    }
+
     const updatedAppointment = await db.appointment.update({
       where: { id: appointmentId },
       data: {
@@ -88,7 +100,9 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
         dateTime: updateData.dateTime ? new Date(updateData.dateTime) : undefined,
       },
     });
-
+    
+    const currentUser = currentUserId ? await db.user.findUnique({ where: { id: currentUserId }}) : null;
+    
     // Send notifications based on status change
     if (updateData.status === 'Confirmed') {
         await createNotification({
@@ -99,7 +113,7 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
             isRead: false,
         });
     } else if (updateData.status === 'Cancelled') {
-        const userToNotify = updatedAppointment.requesterUserId; // Assuming the one who didn't cancel gets notified
+        const userToNotify = updatedAppointment.requesterUserId === currentUserId ? updatedAppointment.alumniUserId : updatedAppointment.requesterUserId;
         await createNotification({
             userId: userToNotify,
             type: 'system',
@@ -107,7 +121,19 @@ export async function updateAppointment(appointmentId: string, updateData: Parti
             link: '/appointments',
             isRead: false,
         });
+    } else if (isReschedule && currentUser) {
+      // Notify the *other* party about the reschedule request
+      const userToNotifyId = originalAppointment.requesterUserId === currentUser.id ? originalAppointment.alumniUserId : originalAppointment.requesterUserId;
+      const initiatorName = currentUser.name || "The other party";
+      await createNotification({
+        userId: userToNotifyId,
+        type: 'event',
+        content: `${initiatorName} has requested to reschedule your appointment for "${updatedAppointment.title}". Please review.`,
+        link: '/appointments',
+        isRead: false,
+      });
     }
+
 
     return updatedAppointment as unknown as Appointment;
   } catch (error) {

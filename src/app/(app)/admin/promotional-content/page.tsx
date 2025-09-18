@@ -13,13 +13,15 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Save, Megaphone, PlusCircle, Edit3, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { PromotionalContent } from '@/types';
+import type { PromotionalContent, Tenant, UserRole } from '@/types';
 import AccessDeniedMessage from '@/components/ui/AccessDeniedMessage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from '@/hooks/use-i18n';
 import { getPromotionalContent, createPromotionalContent, updatePromotionalContent, deletePromotionalContent } from '@/lib/actions/promotional-content';
 import { useAuth } from '@/hooks/use-auth';
+import { getTenants } from '@/lib/actions/tenants';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const promoSchema = z.object({
   id: z.string().optional(),
@@ -34,11 +36,14 @@ const promoSchema = z.object({
   gradientFrom: z.string().optional(),
   gradientVia: z.string().optional(),
   gradientTo: z.string().optional(),
+  targetTenantId: z.string().optional(),
+  targetRole: z.string().optional(),
 });
 type PromoFormData = z.infer<typeof promoSchema>;
 
 export default function PromotionalContentPage() {
   const [contentItems, setContentItems] = useState<PromotionalContent[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<PromotionalContent | null>(null);
@@ -46,18 +51,22 @@ export default function PromotionalContentPage() {
   const { user: currentUser } = useAuth();
   const { t } = useI18n();
 
-  const { control, handleSubmit, reset } = useForm<PromoFormData>({
+  const { control, handleSubmit, reset, watch } = useForm<PromoFormData>({
     resolver: zodResolver(promoSchema),
   });
   
   useEffect(() => {
-    async function loadContent() {
+    async function loadData() {
       setIsLoading(true);
-      const items = await getPromotionalContent();
+      const [items, tenantData] = await Promise.all([
+        getPromotionalContent(),
+        getTenants(),
+      ]);
       setContentItems(items);
+      setTenants(tenantData);
       setIsLoading(false);
     }
-    loadContent();
+    loadData();
   }, []);
   
   if (!currentUser || currentUser.role !== 'admin') {
@@ -66,7 +75,11 @@ export default function PromotionalContentPage() {
 
   const openEditDialog = (content: PromotionalContent) => {
     setEditingContent(content);
-    reset(content);
+    reset({
+        ...content,
+        targetTenantId: content.targetTenantId || 'all',
+        targetRole: content.targetRole || 'all',
+    });
     setIsDialogOpen(true);
   };
   
@@ -82,20 +95,28 @@ export default function PromotionalContentPage() {
       isActive: false,
       gradientFrom: 'from-primary/80',
       gradientVia: 'via-primary',
-      gradientTo: 'to-accent/80'
+      gradientTo: 'to-accent/80',
+      targetTenantId: 'all',
+      targetRole: 'all',
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = async (data: PromoFormData) => {
+    const finalData = {
+      ...data,
+      targetTenantId: data.targetTenantId === 'all' ? null : data.targetTenantId,
+      targetRole: data.targetRole === 'all' ? null : data.targetRole as UserRole,
+    };
+    
     if (editingContent) {
-      const updated = await updatePromotionalContent(editingContent.id, data);
+      const updated = await updatePromotionalContent(editingContent.id, finalData);
       if (updated) {
         setContentItems(prev => prev.map(item => item.id === editingContent.id ? updated : item));
         toast({ title: t("promotionalContent.toast.updated.title"), description: t("promotionalContent.toast.updated.description", { title: data.title }) });
       }
     } else {
-      const created = await createPromotionalContent(data as Omit<PromotionalContent, 'id'>);
+      const created = await createPromotionalContent(finalData as Omit<PromotionalContent, 'id'>);
       if (created) {
         setContentItems(prev => [created, ...prev]);
         toast({ title: t("promotionalContent.toast.created.title"), description: t("promotionalContent.toast.created.description", { title: data.title }) });
@@ -114,6 +135,12 @@ export default function PromotionalContentPage() {
     }
   };
   
+  const getAudienceDisplay = (item: PromotionalContent) => {
+    const tenantName = item.targetTenantId ? tenants.find(t => t.id === item.targetTenantId)?.name || item.targetTenantId : 'All Tenants';
+    const roleName = item.targetRole ? item.targetRole.charAt(0).toUpperCase() + item.targetRole.slice(1) : 'All Roles';
+    return `${tenantName} / ${roleName}`;
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -142,6 +169,7 @@ export default function PromotionalContentPage() {
                   <TableHeader>
                       <TableRow>
                           <TableHead>{t("promotionalContent.table.title")}</TableHead>
+                          <TableHead>Audience</TableHead>
                           <TableHead>{t("promotionalContent.table.status")}</TableHead>
                           <TableHead className="text-right">{t("promotionalContent.table.actions")}</TableHead>
                       </TableRow>
@@ -150,6 +178,7 @@ export default function PromotionalContentPage() {
                       {contentItems.map(item => (
                           <TableRow key={item.id}>
                               <TableCell className="font-medium">{item.title}</TableCell>
+                              <TableCell className="capitalize">{getAudienceDisplay(item)}</TableCell>
                               <TableCell>
                                 <span className={`px-2 py-0.5 text-xs rounded-full ${item.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                                   {item.isActive ? t("promotionalContent.status.active") : t("promotionalContent.status.inactive")}
@@ -181,23 +210,57 @@ export default function PromotionalContentPage() {
                       <Label htmlFor="description">{t("promotionalContent.form.descriptionLabel")}</Label>
                       <Controller name="description" control={control} render={({ field }) => <Textarea id="description" {...field} rows={3} />} />
                   </div>
-                  <div>
-                      <Label htmlFor="imageUrl">{t("promotionalContent.form.imageUrlLabel")}</Label>
-                      <Controller name="imageUrl" control={control} render={({ field }) => <Input id="imageUrl" {...field} />} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                          <Label htmlFor="imageUrl">{t("promotionalContent.form.imageUrlLabel")}</Label>
+                          <Controller name="imageUrl" control={control} render={({ field }) => <Input id="imageUrl" {...field} />} />
+                      </div>
+                      <div>
+                          <Label htmlFor="imageAlt">{t("promotionalContent.form.imageAltLabel")}</Label>
+                          <Controller name="imageAlt" control={control} render={({ field }) => <Input id="imageAlt" {...field} />} />
+                      </div>
                   </div>
-                  <div>
-                      <Label htmlFor="imageAlt">{t("promotionalContent.form.imageAltLabel")}</Label>
-                      <Controller name="imageAlt" control={control} render={({ field }) => <Input id="imageAlt" {...field} />} />
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                          <Label htmlFor="buttonText">{t("promotionalContent.form.buttonTextLabel")}</Label>
+                          <Controller name="buttonText" control={control} render={({ field }) => <Input id="buttonText" {...field} />} />
+                      </div>
+                      <div>
+                          <Label htmlFor="buttonLink">{t("promotionalContent.form.buttonLinkLabel")}</Label>
+                          <Controller name="buttonLink" control={control} render={({ field }) => <Input id="buttonLink" {...field} />} />
+                      </div>
                   </div>
-                  <div>
-                      <Label htmlFor="buttonText">{t("promotionalContent.form.buttonTextLabel")}</Label>
-                      <Controller name="buttonText" control={control} render={({ field }) => <Input id="buttonText" {...field} />} />
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="targetTenantId">Target Tenant</Label>
+                          <Controller name="targetTenantId" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                               <SelectTrigger><SelectValue/></SelectTrigger>
+                               <SelectContent>
+                                   <SelectItem value="all">All Tenants</SelectItem>
+                                   {tenants.map(tenant => (
+                                       <SelectItem key={tenant.id} value={tenant.id}>{tenant.name}</SelectItem>
+                                   ))}
+                               </SelectContent>
+                            </Select>
+                          )} />
+                        </div>
+                        <div>
+                          <Label htmlFor="targetRole">Target Role</Label>
+                          <Controller name="targetRole" control={control} render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value || 'all'}>
+                               <SelectTrigger><SelectValue/></SelectTrigger>
+                               <SelectContent>
+                                   <SelectItem value="all">All Roles</SelectItem>
+                                   <SelectItem value="user">User</SelectItem>
+                                   <SelectItem value="manager">Manager</SelectItem>
+                                   <SelectItem value="admin">Admin</SelectItem>
+                               </SelectContent>
+                            </Select>
+                          )} />
+                        </div>
                   </div>
-                  <div>
-                      <Label htmlFor="buttonLink">{t("promotionalContent.form.buttonLinkLabel")}</Label>
-                      <Controller name="buttonLink" control={control} render={({ field }) => <Input id="buttonLink" {...field} />} />
-                  </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 pt-2">
                     <Controller name="isActive" control={control} render={({ field }) => <Switch id="isActive" checked={field.value} onCheckedChange={field.onChange} />} />
                     <Label htmlFor="isActive">{t("promotionalContent.form.showOnDashboardLabel")}</Label>
                   </div>

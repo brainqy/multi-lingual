@@ -8,6 +8,8 @@
     "referralCodeLabel": "Your Referral Code",
     "referralLinkLabel": "Your Referral Link",
     "copyButton": "Copy",
+    "copyCodeButton": "Copy Code",
+    "copyLinkButton": "Copy Link",
     "shareButton": "Share",
     "statsCardTitle": "Your Stats",
     "statsCardDescription": "Track your referral performance.",
@@ -55,6 +57,14 @@
     "toastShareAPINotSupported": {
       "title": "Share API Not Supported",
       "description": "Your browser doesn't support the Web Share API. Link copied to clipboard instead."
+    },
+    "share": {
+      "title": "Join me on JobMatch AI!",
+      "text": "Use my referral code {code} to sign up for JobMatch AI! {referralLink}"
+    },
+    "featureDisabled": {
+      "title": "Feature Disabled",
+      "message": "The referral program is currently disabled by the platform administrator."
     }
   }
 }

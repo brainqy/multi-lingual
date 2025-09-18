@@ -24,133 +24,108 @@ export default function JobTrackerPage() {
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
-    console.log("[JobTrackerPage DEBUG] 1. Starting fetchData.");
     if (!currentUser) {
-      console.log("[JobTrackerPage DEBUG] 2. No current user, aborting fetchData.");
       return;
     }
-    console.log("[JobTrackerPage DEBUG] 3. Setting isLoading to true.");
     setIsLoading(true);
-    const [userApps, userResumes] = await Promise.all([
-      getUserJobApplications(currentUser.id),
-      getResumeProfiles(currentUser.id),
-    ]);
-    console.log("[JobTrackerPage DEBUG] 4. Fetched data:", { userAppsCount: userApps.length, userResumesCount: userResumes.length });
-    setApplications(userApps);
-    setResumes(userResumes);
-    console.log("[JobTrackerPage DEBUG] 5. State updated with fetched data. Setting isLoading to false.");
-    setIsLoading(false);
+    try {
+      const [userApps, userResumes] = await Promise.all([
+        getUserJobApplications(currentUser.id),
+        getResumeProfiles(currentUser.id),
+      ]);
+      setApplications(userApps);
+      setResumes(userResumes);
+    } catch (err) {
+      console.error("Error fetching job tracker data:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentUser]);
 
   useEffect(() => {
-    console.log("[JobTrackerPage DEBUG] useEffect triggered to call fetchData.");
     fetchData();
   }, [fetchData]);
 
   const handleEdit = (app: JobApplication) => {
-    console.log("[JobTrackerPage DEBUG] handleEdit called for application:", app);
     setEditingApplication(app);
     setIsDialogOpen(true);
-    console.log("[JobTrackerPage DEBUG] Dialog opened for editing.");
   };
 
   const handleDelete = async (id: string) => {
-    console.log("[JobTrackerPage DEBUG] handleDelete called for ID:", id);
     const success = await deleteJobApplication(id);
     if(success) {
-      console.log("[JobTrackerPage DEBUG] Deletion successful. Updating state.");
       setApplications(apps => apps.filter(app => app.id !== id));
       toast({ title: t("jobTracker.toast.appDeleted.title"), description: t("jobTracker.toast.appDeleted.description") });
     } else {
-      console.error("[JobTrackerPage DEBUG] Deletion failed.");
       toast({ title: "Error", description: "Failed to delete application.", variant: "destructive"});
     }
+    setIsDialogOpen(false);
+    setEditingApplication(null);
   };
 
   const handleMoveApplication = async (appId: string, newStatus: JobApplicationStatus) => {
-    console.log(`[JobTrackerPage DEBUG] handleMoveApplication called. App ID: ${appId}, New Status: ${newStatus}`);
     const originalApplication = applications.find(app => app.id === appId);
     if (!originalApplication) {
-      console.error("[JobTrackerPage DEBUG] Original application not found for move.");
       return;
     }
     
-    console.log("[JobTrackerPage DEBUG] Optimistically updating UI.");
     setApplications(prevApps => prevApps.map(app => app.id === appId ? { ...app, status: newStatus } : app));
 
     const updatedApp = await updateJobApplication(appId, { status: newStatus });
     if(updatedApp) {
-      console.log("[JobTrackerPage DEBUG] Server update successful:", updatedApp);
       toast({ title: t("jobTracker.toast.appMoved.title"), description: t("jobTracker.toast.appMoved.description", { jobTitle: updatedApp.jobTitle, newStatus: t(`jobTracker.statuses.${newStatus}`) }) });
     } else {
-      console.error("[JobTrackerPage DEBUG] Server update failed. Reverting UI.");
       setApplications(prevApps => prevApps.map(app => app.id === appId ? originalApplication : app));
       toast({ title: "Error", description: "Could not move application.", variant: "destructive" });
     }
   };
 
   const openNewApplicationDialog = () => {
-    console.log("[JobTrackerPage DEBUG] openNewApplicationDialog called.");
     setEditingApplication(null);
     setIsDialogOpen(true);
-    console.log("[JobTrackerPage DEBUG] Dialog opened for new application.");
   };
 
   const onDialogClose = () => {
-    console.log("[JobTrackerPage DEBUG] onDialogClose called.");
     setIsDialogOpen(false);
     setEditingApplication(null);
   }
 
-  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[]) => {
-    console.log("[JobTrackerPage DEBUG] 1. onDialogSave called with data:", { applicationData, interviews });
-    if (!currentUser) {
-      console.error("[JobTrackerPage DEBUG] 2. No current user found. Aborting save.");
-      return;
-    }
+  const onDialogSave = async (applicationData: Partial<Omit<JobApplication, 'id' | 'interviews'>>, interviews: Interview[], notes: string[]) => {
+    if (!currentUser) return;
 
-    // FIX: Ensure date is in ISO format
     const dataForServer = {
       ...applicationData,
-      dateApplied: applicationData.dateApplied ? new Date(applicationData.dateApplied).toISOString() : new Date().toISOString(),
-      interviews: interviews,
+      notes: notes,
+      interviews,
     };
     
     let result: JobApplication | null = null;
     if (editingApplication) {
-      console.log("[JobTrackerPage DEBUG] 4a. Editing mode. Calling updateJobApplication for ID:", editingApplication.id);
       result = await updateJobApplication(editingApplication.id, dataForServer);
       if (result) {
-        console.log("[JobTrackerPage DEBUG] 5a. Update successful. New data:", result);
         setApplications(prev => prev.map(app => app.id === result!.id ? result! : app));
         toast({ title: t("jobTracker.toast.appUpdated.title"), description: t("jobTracker.toast.appUpdated.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
       }
     } else {
-      console.log("[JobTrackerPage DEBUG] 4b. Create mode. Calling createJobApplication.");
       const dataToCreate = {
         ...dataForServer,
         userId: currentUser.id,
-        tenantId: currentUser.tenantId,
       };
       result = await createJobApplication(dataToCreate as Omit<JobApplication, 'id'>);
       if (result) {
-        console.log("[JobTrackerPage DEBUG] 5b. Create successful. New data:", result);
         setApplications(prev => [result!, ...prev]);
         toast({ title: t("jobTracker.toast.appAdded.title"), description: t("jobTracker.toast.appAdded.description", { jobTitle: result.jobTitle, companyName: result.companyName }) });
       }
     }
 
     if (!result) {
-      console.error("[JobTrackerPage DEBUG] 6. Save/update operation failed. Result is null.");
       toast({ title: "Error", description: "Failed to save application.", variant: "destructive" });
-      await fetchData(); // Refetch to ensure UI consistency on failure
+      await fetchData(); 
     }
     
-    console.log("[JobTrackerPage DEBUG] 7. Closing dialog and resetting state.");
     setIsDialogOpen(false);
     setEditingApplication(null);
   }
-
 
   if (isLoading) {
     return (
@@ -184,6 +159,7 @@ export default function JobTrackerPage() {
             isOpen={isDialogOpen}
             onClose={onDialogClose}
             onSave={onDialogSave}
+            onDelete={handleDelete}
             editingApplication={editingApplication}
             resumes={resumes}
         />

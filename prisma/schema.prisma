@@ -90,6 +90,7 @@ model User {
   referredBy              ReferralHistory?          @relation("ReferredUser", fields: [referredByReferralId], references: [id])
   affiliateProfile        Affiliate?
   affiliateSignups        AffiliateSignup[]
+  createdAnnouncements             Announcement[]         @relation("CreatedAnnouncements")
   promoCodeRedemptions    UserPromoCodeRedemption[]
   mockInterviewSessions   MockInterviewSession[]
   nominationsMade         Nomination[]              @relation("NominatorRelation")
@@ -123,6 +124,7 @@ model Tenant {
   surveyResponses     SurveyResponse[]
   galleryEvents       GalleryEvent[]
   emailTemplates      EmailTemplate[]
+  mockInterviewSessions MockInterviewSession[]
 }
 
 model TenantSettings {
@@ -214,6 +216,7 @@ model ResumeScanHistory {
   scanDate           DateTime @default(now())
   matchScore         Int?
   bookmarked         Boolean?
+  reportData         Json?
 }
 
 model CommunityPost {
@@ -328,6 +331,8 @@ model PlatformSettings {
   globalAnnouncement            String?
   pointsForAffiliateSignup      Int?
   walletEnabled                 Boolean?
+  aiResumeAnalysisCost            Int?      @default(10)
+  aiAlumniConnectionRecCost       Int?      @default(5)
 }
 
 model DailyChallenge {
@@ -488,6 +493,7 @@ model SurveyResponse {
   survey       Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   userId       String
   userName     String
+  surveyName   String
   tenantId     String
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
   responseDate DateTime @default(now())
@@ -495,20 +501,22 @@ model SurveyResponse {
 }
 
 model Announcement {
-  id             String    @id @default(cuid())
-  title          String
-  content        String    @db.Text
-  startDate      DateTime
-  endDate        DateTime?
-  audience       String    // 'All Users', 'Specific Tenant', 'Specific Role'
-  audienceTarget String?
-  status         String    // 'Draft', 'Published', 'Archived'
-  createdBy      String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  tenantId       String?
-  deletedAt      DateTime?
+  id               String    @id @default(cuid())
+  title            String
+  content          String    @db.Text
+  startDate        DateTime
+  endDate          DateTime?
+  status           String // 'Draft', 'Published', 'Archived'
+  createdByUserId  String
+  createdBy        User      @relation("CreatedAnnouncements", fields: [createdByUserId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  tenantId         String? // The tenant this announcement BELONGS to (creator's tenant)
+  deletedAt        DateTime?
+  targetTenantId   String?   // The tenant this announcement is TARGETED at (null for platform-wide)
+  targetRole       UserRole? // The role this announcement is TARGETED at (null for all roles)
 }
+
 
 model SystemAlert {
   id        String   @id @default(cuid())
@@ -569,6 +577,8 @@ model PromotionalContent {
   gradientVia  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  targetTenantId     String?
+  targetRole     UserRole?
 }
 
 model PromoCode {
@@ -638,6 +648,7 @@ model MockInterviewSession {
   id                  String                @id @default(cuid())
   userId              String
   user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   topic               String
   description         String?
   jobDescription      String?               @db.Text
@@ -651,8 +662,23 @@ model MockInterviewSession {
   difficulty          String?
   questionCategories  String[]
   recordingReferences Json?
+  interviewerScores    InterviewerScore[]
+  finalScore           Json?
+  tenantId             String
+  liveInterviewData    Json?
+ 
 }
 
+model InterviewerScore {
+  id                      String   @id @default(cuid())
+  mockInterviewSessionId  String
+  mockInterviewSession    MockInterviewSession @relation(fields: [mockInterviewSessionId], references: [id], onDelete: Cascade)
+  questionId              String
+  correctnessPercentage   Int
+  notes                   String?
+
+  @@index([mockInterviewSessionId])
+}
 model ProductCompany {
   id            String  @id @default(cuid())
   name          String
@@ -738,7 +764,15 @@ enum EmailTemplateType {
   WELCOME
   APPOINTMENT_CONFIRMATION
   PASSWORD_RESET
+  TENANT_WELCOME
+  PRACTICE_INTERVIEW_INVITE
 }
+enum UserRole {
+  user
+  manager
+  admin
+}
+
 model EmailTemplate {
   id        String            @id @default(cuid())
   tenantId  String

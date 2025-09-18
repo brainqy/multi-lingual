@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { User, Mail, Briefcase, Sparkles, Upload, Save, CalendarDays, Users, HelpCircle, CheckSquare, Settings as SettingsIcon, Phone, MapPin, GraduationCap, Building, LinkIcon, Brain, Handshake, Clock, MessageCircle, Info, CheckCircle as CheckCircleIcon, XCircle, Edit3, Loader2, ThumbsUp, PlusCircle as PlusCircleIcon } from "lucide-react";
-import { sampleUserProfile, graduationYears, sampleTenants } from "@/lib/sample-data";
+import { graduationYears } from "@/lib/utils";
 import type { UserProfile, Gender, DegreeProgram, Industry, SupportArea, TimeCommitment, EngagementMode, SupportTypeSought } from "@/types";
 import { DegreePrograms, Industries, AreasOfSupport as AreasOfSupportOptions, TimeCommitments, EngagementModes, SupportTypesSought as SupportTypesSoughtOptions, Genders, SupportTypesSought } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,7 @@ import { updateUser } from '@/lib/data-services/users';
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  dateOfBirth: z.date().optional(),
+  dateOfBirth: z.date().optional().nullable(),
   gender: z.enum(Genders).optional(),
   mobileNumber: z.string().optional(),
   currentAddress: z.string().optional(),
@@ -53,7 +53,6 @@ const profileSchema = z.object({
   areasOfSupport: z.array(z.enum(AreasOfSupportOptions)).optional(), 
   timeCommitment: z.enum(TimeCommitments).optional(), 
   preferredEngagementMode: z.enum(EngagementModes).optional(), 
-  otherComments: z.string().optional(),
   
   lookingForSupportType: z.enum(SupportTypesSought).optional(),
   helpNeededDescription: z.string().optional(),
@@ -70,9 +69,21 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 type SuggestedSkill = SuggestDynamicSkillsOutput['suggestedSkills'][0];
 
+// Helper function to convert server data to form data
+const convertUserProfileToFormData = (user: UserProfile): ProfileFormData => {
+  return {
+    ...user,
+    skills: user.skills?.join(', ') || '',
+    areasOfSupport: user.areasOfSupport || [],
+    dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
+    shareProfileConsent: user.shareProfileConsent ?? true,
+    featureInSpotlightConsent: user.featureInSpotlightConsent ?? false,
+  };
+};
+
 export default function ProfilePage() {
   const { t } = useI18n();
-  const { user, login } = useAuth(); // Use auth context
+  const { user, refreshUser } = useAuth(); // Use auth context
   const [isEditing, setIsEditing] = useState(false); 
   const [suggestedSkills, setSuggestedSkills] = useState<SuggestedSkill[] | null>(null);
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
@@ -85,14 +96,7 @@ export default function ProfilePage() {
   
   useEffect(() => {
     if (user) {
-      reset({
-        ...user,
-        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : undefined,
-        skills: user.skills?.join(', ') || '',
-        areasOfSupport: user.areasOfSupport || [],
-        shareProfileConsent: user.shareProfileConsent ?? true,
-        featureInSpotlightConsent: user.featureInSpotlightConsent ?? false,
-      });
+      reset(convertUserProfileToFormData(user));
     }
   }, [user, reset]);
 
@@ -125,7 +129,7 @@ export default function ProfilePage() {
 
     const updatedProfileData: Partial<UserProfile> = {
       ...data,
-      dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : undefined,
+      dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString() : undefined,
       skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
       areasOfSupport: data.areasOfSupport as SupportArea[] || [],
       degreeProgram: data.degreeProgram,
@@ -138,11 +142,10 @@ export default function ProfilePage() {
     const updatedUser = await updateUser(user.id, updatedProfileData);
 
     if (updatedUser) {
-      // Re-login to update the user in the auth context
-      await login(updatedUser.email);
+      await refreshUser();
       setIsEditing(false); 
       setIsProfileSavedDialogOpen(true);
-      reset(updatedUser); // Reset form to show new clean state
+      reset(convertUserProfileToFormData(updatedUser)); // Reset form to show new clean state
     } else {
       toast({
         title: "Update Failed",
@@ -304,12 +307,12 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Controller name="dateOfBirth" control={control} render={({ field }) => <DatePicker date={field.value} setDate={field.onChange} />} />
+                  <Controller name="dateOfBirth" control={control} render={({ field }) => <DatePicker date={field.value ?? undefined} setDate={field.onChange} />} />
                   {errors.dateOfBirth && <p className="text-sm text-destructive mt-1">{errors.dateOfBirth.message}</p>}
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="gender">Gender</Label>
-                  <Controller name="gender" control={control} render={({ field }) => (
+                  <Controller name="gender" control={control} defaultValue={user.gender} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="gender"><SelectValue placeholder="Select Gender" /></SelectTrigger>
                       <SelectContent>
@@ -332,7 +335,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="graduationYear">Graduation Year</Label>
-                  <Controller name="graduationYear" control={control} render={({ field }) => (
+                  <Controller name="graduationYear" control={control} defaultValue={user.graduationYear} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="graduationYear"><SelectValue placeholder="Select Year" /></SelectTrigger>
                       <SelectContent>
@@ -343,7 +346,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="degreeProgram">Degree / Program</Label>
-                  <Controller name="degreeProgram" control={control} render={({ field }) => (
+                  <Controller name="degreeProgram" control={control} defaultValue={user.degreeProgram} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="degreeProgram"><SelectValue placeholder="Select Degree" /></SelectTrigger>
                       <SelectContent>
@@ -370,7 +373,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="industry">Industry</Label>
-                  <Controller name="industry" control={control} render={({ field }) => (
+                  <Controller name="industry" control={control} defaultValue={user.industry} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="industry"><SelectValue placeholder="Select Industry" /></SelectTrigger>
                       <SelectContent>
@@ -404,6 +407,7 @@ export default function ProfilePage() {
                 <Controller
                   name="areasOfSupport"
                   control={control}
+                  defaultValue={user.areasOfSupport || []}
                   render={({ field }) => (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
                       {AreasOfSupportOptions.map((area) => (
@@ -430,7 +434,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="timeCommitment" className="flex items-center gap-1"><Clock className="h-4 w-4 text-muted-foreground"/>Time Commitment (per month)</Label>
-                  <Controller name="timeCommitment" control={control} render={({ field }) => (
+                  <Controller name="timeCommitment" control={control} defaultValue={user.timeCommitment} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="timeCommitment"><SelectValue placeholder="Select Time Commitment" /></SelectTrigger>
                       <SelectContent>
@@ -441,7 +445,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="preferredEngagementMode" className="flex items-center gap-1"><MessageCircle className="h-4 w-4 text-muted-foreground"/>Preferred Engagement Mode</Label>
-                  <Controller name="preferredEngagementMode" control={control} render={({ field }) => (
+                  <Controller name="preferredEngagementMode" control={control} defaultValue={user.preferredEngagementMode} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="preferredEngagementMode"><SelectValue placeholder="Select Engagement Mode" /></SelectTrigger>
                       <SelectContent>
@@ -451,16 +455,12 @@ export default function ProfilePage() {
                   )} />
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="otherComments" className="flex items-center gap-1"><Info className="h-4 w-4 text-muted-foreground"/>Other Engagement Comments/Notes</Label>
-                <Controller name="otherComments" control={control} render={({ field }) => <Textarea id="otherComments" placeholder="Any other ways you'd like to contribute..." {...field} />} />
-              </div>
 
               {renderSectionHeader("Support You're Looking For", HelpCircle, "What kind of help or connections are you seeking from the alumni network?")}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <Label htmlFor="lookingForSupportType">Type of Support</Label>
-                  <Controller name="lookingForSupportType" control={control} render={({ field }) => (
+                  <Controller name="lookingForSupportType" control={control} defaultValue={user.lookingForSupportType} render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="lookingForSupportType"><SelectValue placeholder="Select Support Type (Optional)" /></SelectTrigger>
                       <SelectContent>
@@ -479,7 +479,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Share profile with other alumni for relevant collaboration?</Label>
-                  <Controller name="shareProfileConsent" control={control} render={({ field }) => (
+                  <Controller name="shareProfileConsent" control={control} defaultValue={user.shareProfileConsent} render={({ field }) => (
                     <RadioGroup onValueChange={(val) => field.onChange(val === "true")} value={String(field.value)} className="flex space-x-4">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="share-yes" /><Label htmlFor="share-yes" className="font-normal">Yes</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="share-no" /><Label htmlFor="share-no" className="font-normal">No</Label></div>
@@ -488,7 +488,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Feature on alumni dashboard or spotlight?</Label>
-                  <Controller name="featureInSpotlightConsent" control={control} render={({ field }) => (
+                  <Controller name="featureInSpotlightConsent" control={control} defaultValue={user.featureInSpotlightConsent} render={({ field }) => (
                     <RadioGroup onValueChange={(val) => field.onChange(val === "true")} value={String(field.value)} className="flex space-x-4">
                       <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="feature-yes" /><Label htmlFor="feature-yes" className="font-normal">Yes</Label></div>
                       <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="feature-no" /><Label htmlFor="feature-no" className="font-normal">No</Label></div>
@@ -532,7 +532,7 @@ export default function ProfilePage() {
                    <Button type="submit" disabled={!isDirty} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Save className="mr-2 h-4 w-4" /> Save Changes
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => { setIsEditing(false); reset(); }}>
+                  <Button type="button" variant="outline" onClick={() => { setIsEditing(false); user && reset(convertUserProfileToFormData(user)); }}>
                     Cancel
                   </Button>
                 </div>

@@ -9,7 +9,7 @@ import UserDashboard from "@/components/dashboards/UserDashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import DailyStreakPopup from "@/components/features/DailyStreakPopup";
 import WelcomeTourDialog from '@/components/features/WelcomeTourDialog';
-import { userDashboardTourSteps, adminDashboardTourSteps, managerDashboardTourSteps } from "@/lib/sample-data";
+import { userDashboardTourSteps, adminDashboardTourSteps, managerDashboardTourSteps } from "@/lib/tour-steps";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {

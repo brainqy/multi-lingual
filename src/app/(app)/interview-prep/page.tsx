@@ -21,10 +21,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { getAppointments, createAppointment } from '@/lib/actions/appointments';
 import { getCreatedQuizzes } from '@/lib/actions/quizzes';
 import { createMockInterviewSession } from '@/lib/actions/interviews';
+import { getLiveInterviewSessions as getLiveInterviewSessionsAction, createLiveInterviewSession, updateLiveInterviewSession } from "@/lib/actions/live-interviews";
 import { getUserByEmail } from '@/lib/data-services/users';
 import { useSettings } from '@/contexts/settings-provider';
 import { updateWallet } from '@/lib/actions/wallet';
 import AccessDeniedMessage from '@/components/ui/AccessDeniedMessage';
+import RescheduleSessionDialog from '@/components/features/interview-prep/RescheduleSessionDialog';
 
 const logger = {
   log: (message: string, ...args: any[]) => console.log(`[InterviewPrepPage] ${message}`, ...args),
@@ -33,13 +35,16 @@ const logger = {
 
 export default function InterviewPracticeHubPage() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
-  const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
+  const [practiceSessions, setPracticeSessions] = useState<(PracticeSession | LiveInterviewSession)[]>([]);
   const [allBankQuestions, setAllBankQuestions] = useState<InterviewQuestion[]>([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [createdQuizzes, setCreatedQuizzes] = useState<MockInterviewSession[]>([]);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<InterviewQuestion | null>(null);
   
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
+  const [sessionToReschedule, setSessionToReschedule] = useState<LiveInterviewSession | null>(null);
+
   const router = useRouter();
   const { toast } = useToast();
   const { user: currentUser, wallet, refreshWallet } = useAuth();
@@ -52,34 +57,38 @@ export default function InterviewPracticeHubPage() {
     setIsLoadingQuestions(false);
   }, []);
 
+  const loadData = useCallback(async () => {
+      if (!currentUser) return;
+      const [appointments, quizzes, liveSessions] = await Promise.all([
+        getAppointments(currentUser.id),
+        getCreatedQuizzes(currentUser.id),
+        getLiveInterviewSessionsAction(currentUser.id),
+      ]);
+
+      const expertPracticeSessions = appointments
+        .filter(a => a.title.includes("Practice Session"))
+        .map(a => ({
+          id: a.id,
+          userId: currentUser.id,
+          date: new Date(a.dateTime).toISOString(),
+          category: "Practice with Experts",
+          type: a.title,
+          language: "English",
+          status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
+          topic: a.title, 
+          createdAt: new Date(a.dateTime).toISOString(), 
+        })) as PracticeSession[];
+      
+      setPracticeSessions([...expertPracticeSessions, ...liveSessions]);
+      setCreatedQuizzes(quizzes);
+    }, [currentUser]);
+
   useEffect(() => {
     if (currentUser) {
-      const loadData = async () => {
-        const [appointments, quizzes] = await Promise.all([
-          getAppointments(currentUser.id),
-          getCreatedQuizzes(currentUser.id),
-        ]);
-
-        const userPracticeSessions = appointments
-          .filter(a => a.title.includes("Practice Session")) // Simple filter for demo
-          .map(a => ({
-            id: a.id,
-            userId: currentUser.id,
-            date: new Date(a.dateTime).toISOString(),
-            category: "Practice with Experts",
-            type: a.title,
-            language: "English",
-            status: a.status === 'Confirmed' ? 'SCHEDULED' : a.status.toUpperCase(),
-            topic: a.title, 
-            createdAt: new Date(a.dateTime).toISOString(), 
-          })) as PracticeSession[];
-        setPracticeSessions(userPracticeSessions);
-        setCreatedQuizzes(quizzes);
-      };
       loadData();
       fetchQuestions();
     }
-  }, [currentUser, fetchQuestions]);
+  }, [currentUser, fetchQuestions, loadData]);
 
   const handleStartPracticeSetup = useCallback(() => {
     setIsSetupDialogOpen(true);
@@ -144,47 +153,31 @@ export default function InterviewPracticeHubPage() {
             toast({ title: "Error", description: "Could not create AI practice session.", variant: "destructive" });
         }
     } else {
-      logger.log('4. Session type is "experts" or "friends". Preparing to create an appointment.');
-      const expertUser = await getUserByEmail('admin@bhashasetu.com');
-      if (!expertUser) {
-        logger.log('4.1. Could not find expert user (admin@bhashasetu.com). Aborting.');
-        toast({ title: "Error", description: "Could not find an available expert to book.", variant: "destructive" });
-        return;
-      }
-      logger.log('4.2. Found expert user:', expertUser.id);
+      logger.log('4. Session type is "experts" or "friends". Preparing to create session.');
       
-      const newAppointmentData: Omit<Appointment, 'id'> = {
+      const sessionTitle = newSessionConfig.type === 'experts' 
+        ? `Practice Session with Expert: ${newSessionConfig.topics.join(', ')}`
+        : `Practice Interview with ${newSessionConfig.friendEmail}`;
+      
+      const newSessionData: Omit<LiveInterviewSession, 'id'> = {
         tenantId: currentUser.tenantId,
-        requesterUserId: currentUser.id,
-        alumniUserId: expertUser.id, // Use a real user ID
-        title: `Practice Session: ${newSessionConfig.topics.join(', ')}`,
-        dateTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
-        status: 'Pending',
-        withUser: newSessionConfig.type === 'experts' ? 'Industry Expert' : newSessionConfig.friendEmail,
-        notes: newSessionConfig.type === 'friends' ? `Invitation sent to ${newSessionConfig.friendEmail}` : `Category: ${newSessionConfig.interviewCategory}`
+        title: sessionTitle,
+        participants: [
+            { userId: currentUser.id, name: currentUser.name, role: "interviewer", profilePictureUrl: currentUser.profilePictureUrl },
+            newSessionConfig.type === 'friends' ? { userId: `invited-${newSessionConfig.friendEmail}`, name: newSessionConfig.friendEmail!, role: "candidate", profilePictureUrl: `https://avatar.vercel.sh/${newSessionConfig.friendEmail}.png` } :
+            { userId: 'expert-placeholder', name: 'Industry Expert', role: 'candidate', profilePictureUrl: 'https://avatar.vercel.sh/expert.png' }
+        ],
+        scheduledTime: newSessionConfig.dateTime?.toISOString() || new Date().toISOString(),
+        status: 'Scheduled',
+        preSelectedQuestions: [],
       };
       
-      logger.log('5. Calling createAppointment with data:', newAppointmentData);
-      const newAppointment = await createAppointment(newAppointmentData);
+      const newSession = await createLiveInterviewSession(newSessionData);
 
-      if (newAppointment) {
-        logger.log('6. Appointment created successfully in DB. ID:', newAppointment.id);
-        const newPracticeSession: PracticeSession = {
-          id: newAppointment.id,
-          userId: newAppointment.requesterUserId,
-          date: new Date(newAppointment.dateTime).toISOString(),
-          category: newSessionConfig.type === 'experts' ? "Practice with Experts" : "Practice with Friends",
-          type: newAppointment.title,
-          language: "English",
-          status: 'SCHEDULED',
-          topic: newAppointment.title,
-          createdAt: new Date().toISOString(), // Use current time for createdAt
-        };
-        logger.log('7. Adding new practice session to local state:', newPracticeSession);
-        setPracticeSessions(prev => [...prev, newPracticeSession]);
-        toast({ title: "Session Booked!", description: "Your new practice session is scheduled and visible in 'My Appointments'." });
+      if (newSession) {
+        setPracticeSessions(prev => [...prev, newSession]);
+        toast({ title: "Session Booked!", description: "Your new practice session is scheduled." });
       } else {
-        logger.log('8. Failed to create appointment in DB.');
         toast({ title: "Booking Failed", description: "Could not schedule the practice session.", variant: "destructive" });
       }
     }
@@ -197,10 +190,28 @@ export default function InterviewPracticeHubPage() {
     setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));
     toast({ title: "Session Cancelled", description: "The practice session has been cancelled.", variant: "destructive" });
   };
+  
+  const handleOpenRescheduleDialog = (session: LiveInterviewSession) => {
+    setSessionToReschedule(session);
+    setIsRescheduleDialogOpen(true);
+  };
+  
+  const handleRescheduleSubmit = async (newDateTime: Date) => {
+    if (!sessionToReschedule || !currentUser) return;
+    
+    const updatedSession = await updateLiveInterviewSession(
+      sessionToReschedule.id, 
+      { scheduledTime: newDateTime.toISOString() },
+      currentUser.id
+    );
 
-  const handleRescheduleSession = (sessionId: string) => {
-    toast({ title: "Reschedule Mocked", description: "Rescheduling functionality for this session is not yet implemented." });
-    console.log("Reschedule requested for session:", sessionId);
+    if (updatedSession) {
+        setPracticeSessions(prev => prev.map(s => s.id === updatedSession.id ? updatedSession : s));
+        toast({ title: "Session Rescheduled", description: "The session time has been updated and participants notified." });
+    } else {
+        toast({ title: "Reschedule Failed", description: "Could not update the session time.", variant: "destructive" });
+    }
+    setIsRescheduleDialogOpen(false);
   };
   
   const handleOpenNewQuestionDialog = () => {
@@ -298,7 +309,7 @@ export default function InterviewPracticeHubPage() {
       <PracticeSessionList 
         practiceSessions={practiceSessions}
         onCancelSession={handleCancelPracticeSession}
-        onRescheduleSession={handleRescheduleSession}
+        onRescheduleSession={(session) => handleOpenRescheduleDialog(session as LiveInterviewSession)}
       />
       
       <CreatedQuizzesList
@@ -331,6 +342,15 @@ export default function InterviewPracticeHubPage() {
             onSubmit={handleQuestionFormSubmit}
             editingQuestion={editingQuestion}
             currentUser={currentUser}
+        />
+      )}
+      
+      {sessionToReschedule && (
+        <RescheduleSessionDialog
+          isOpen={isRescheduleDialogOpen}
+          onClose={() => setIsRescheduleDialogOpen(false)}
+          session={sessionToReschedule}
+          onSubmit={handleRescheduleSubmit}
         />
       )}
     </div>

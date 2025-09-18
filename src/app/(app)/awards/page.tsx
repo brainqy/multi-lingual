@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Award as AwardIcon, UserPlus, Send, Loader2, CalendarDays, ThumbsUp, Crown, Vote, Trophy } from "lucide-react";
-import { format, isWithinInterval, parseISO, intervalToDuration } from 'date-fns';
+import { format, isWithinInterval, parseISO, intervalToDuration, type Duration } from 'date-fns';
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -161,7 +161,7 @@ export default function AwardsPage() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12" data-testid="awards-page">
       <div className="text-center">
           <AwardIcon className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Awards & Recognition</h1>

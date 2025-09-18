@@ -21,13 +21,12 @@ import { useI18n } from "@/hooks/use-i18n";
 import { Mail, ArrowLeft } from "lucide-react";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
-import { samplePlatformSettings } from "@/lib/sample-data";
 
 export function ForgotPasswordForm() {
   const { t } = useI18n();
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const platformName = samplePlatformSettings.platformName;
+  const platformName = t("appName", { default: "Bhasha Setu" });
 
   const formSchema = z.object({
     email: z.string().email({ message: t("validation.email", { default: "Please enter a valid email address."}) }),

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, type FormEvent } from 'react';
@@ -10,9 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, UploadCloud, ArrowRight, Loader2, HelpCircle } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import type { ResumeProfile } from '@/types';
+import type { ResumeProfile, ResumeBuilderData } from '@/types';
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
+import { convertResumeDataToText } from '@/lib/utils';
 
 interface ResumeInputFormProps {
   resumes: ResumeProfile[];
@@ -47,7 +49,18 @@ export default function ResumeInputForm({ resumes, isLoading, onSubmit, initialR
   useEffect(() => {
     const selectedResume = resumes.find(r => r.id === selectedResumeId);
     if (selectedResume) {
-      setResumeText(selectedResume.resumeText ?? '');
+      let textToSet = selectedResume.resumeText ?? '';
+      // Check if the resumeText is a JSON string from the builder
+      if (textToSet.trim().startsWith('{')) {
+        try {
+          const resumeJson: ResumeBuilderData = JSON.parse(textToSet);
+          textToSet = convertResumeDataToText(resumeJson);
+        } catch (e) {
+          console.error("Failed to parse resume JSON, using raw text.", e);
+          // It's not valid JSON, so we'll just use the raw text.
+        }
+      }
+      setResumeText(textToSet);
       toast({ title: "Resume Loaded", description: `Loaded content for ${selectedResume.name}.` });
     }
   }, [selectedResumeId, resumes, toast]);

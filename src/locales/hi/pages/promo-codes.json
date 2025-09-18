@@ -30,7 +30,8 @@
       "coins": "सिक्के",
       "flash_coins": "फ्लैश सिक्के",
       "xp": "XP",
-      "premium_days": "प्रीमियम दिन"
+      "premium_days": "प्रीमियम दिन",
+      "streak_freeze": "स्ट्रीक फ्रीज"
     },
     "dialog": {
       "editTitle": "प्रोमो कोड संपादित करें",

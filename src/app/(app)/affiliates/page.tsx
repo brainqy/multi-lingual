@@ -99,9 +99,9 @@ export default function AffiliatesPage() {
   const copyToClipboard = (text: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-      toast({ title: "Copied to Clipboard", description: "Affiliate code/link copied!" });
+      toast({ title: t("affiliates.toast.copied.title"), description: t("affiliates.toast.copied.description") });
     }).catch(err => {
-      toast({ title: "Copy Failed", description: "Could not copy text.", variant: "destructive" });
+      toast({ title: t("affiliates.toast.copyFailed.title"), description: t("affiliates.toast.copyFailed.description"), variant: "destructive" });
     });
   };
 
@@ -125,7 +125,7 @@ export default function AffiliatesPage() {
 
     if (created) {
         setUserAffiliateProfile(created);
-        toast({ title: "Affiliate Application Submitted", description: "Your application is pending approval. You will be notified once reviewed."});
+        toast({ title: t("affiliates.toast.applicationSubmitted.title"), description: t("affiliates.toast.applicationSubmitted.description")});
     } else {
         toast({ title: "Error", description: "Could not submit your application. Please try again.", variant: "destructive"});
     }
@@ -144,12 +144,12 @@ export default function AffiliatesPage() {
       return (
         <Card className="shadow-lg text-center">
           <CardHeader>
-            <CardTitle>Become an Affiliate Partner</CardTitle>
-            <CardDescription>Join our affiliate program to earn rewards by sharing JobMatch AI.</CardDescription>
+            <CardTitle>{t("affiliates.becomePartner.title")}</CardTitle>
+            <CardDescription>{t("affiliates.becomePartner.description")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">Click the button below to submit your application. It will be reviewed by our team.</p>
-            <Button onClick={handleBecomeAffiliate}>Apply to Become an Affiliate</Button>
+            <p className="mb-4">{t("affiliates.becomePartner.instruction")}</p>
+            <Button onClick={handleBecomeAffiliate}>{t("affiliates.becomePartner.applyButton")}</Button>
           </CardContent>
         </Card>
       );
@@ -160,8 +160,8 @@ export default function AffiliatesPage() {
         <Card className="shadow-lg text-center">
           <CardHeader>
             <Hourglass className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
-            <CardTitle>Application Pending</CardTitle>
-            <CardDescription>Your affiliate application is currently under review. We'll notify you once a decision is made.</CardDescription>
+            <CardTitle>{t("affiliates.status.pending.title")}</CardTitle>
+            <CardDescription>{t("affiliates.status.pending.description")}</CardDescription>
           </CardHeader>
         </Card>
       );
@@ -172,8 +172,8 @@ export default function AffiliatesPage() {
         <Card className="shadow-lg text-center">
           <CardHeader>
             <XCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
-            <CardTitle>Application Status</CardTitle>
-            <CardDescription>We regret to inform you that your affiliate application was not approved at this time. For more details, please contact support.</CardDescription>
+            <CardTitle>{t("affiliates.status.rejected.title")}</CardTitle>
+            <CardDescription>{t("affiliates.status.rejected.description")}</CardDescription>
           </CardHeader>
         </Card>
       );
@@ -202,21 +202,21 @@ export default function AffiliatesPage() {
                 <Button variant="outline" onClick={() => copyToClipboard(affiliateLink)}><LinkIcon className="h-4 w-4"/></Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">Your current commission rate: <strong className="text-primary">{(userAffiliateProfile.commissionRate * 100).toFixed(0)}%</strong> ({userAffiliateProfile.commissionTier?.name || 'Standard'})</p>
+            <p className="text-sm text-muted-foreground">{t("affiliates.commissionRate")}: <strong className="text-primary">{(userAffiliateProfile.commissionRate * 100).toFixed(0)}%</strong> ({userAffiliateProfile.commissionTier?.name || 'Standard'})</p>
           </CardContent>
         </Card>
         
         {nextTier && (
           <Card className="shadow-lg">
               <CardHeader>
-                  <CardTitle>Next Commission Tier: {nextTier.name}</CardTitle>
-                  <CardDescription>Reach {nextTier.milestoneRequirement} signups to increase your commission rate to {(nextTier.commissionRate * 100).toFixed(0)}%!</CardDescription>
+                  <CardTitle>{t("affiliates.nextTier.title", { tierName: nextTier.name })}</CardTitle>
+                  <CardDescription>{t("affiliates.nextTier.description", { requirement: nextTier.milestoneRequirement, rate: (nextTier.commissionRate * 100).toFixed(0) })}</CardDescription>
               </CardHeader>
               <CardContent>
                   <Progress value={progressToNextTier} className="w-full h-3 mb-1" />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{userSignups.length} Signups</span>
-                      <span>{nextTier.milestoneRequirement} Goal</span>
+                      <span>{t("affiliates.nextTier.currentSignups", { count: userSignups.length })}</span>
+                      <span>{t("affiliates.nextTier.goal", { count: nextTier.milestoneRequirement })}</span>
                   </div>
               </CardContent>
           </Card>
@@ -231,7 +231,7 @@ export default function AffiliatesPage() {
                 <TabsList>
                   <TabsTrigger value="7d">7d</TabsTrigger>
                   <TabsTrigger value="30d">30d</TabsTrigger>
-                  <TabsTrigger value="all">All Time</TabsTrigger>
+                  <TabsTrigger value="all">{t("affiliates.filters.allTime")}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>

@@ -1,0 +1,50 @@
+{
+  "awards": {
+    "pageTitle": "Awards & Recognition",
+    "pageDescription": "Nominate deserving alumni for their outstanding achievements and contributions, and vote for the winners.",
+    "noActiveAwardsTitle": "No Active Awards",
+    "noActiveAwardsDescription": "There are no awards currently open for nomination or voting. Check back later!",
+    "winnerAnnounced": "Winner Announced!",
+    "viewProfileButton": "View Profile",
+    "nominateButton": "Nominate",
+    "viewAndVoteButton": "View & Vote",
+    "votingEndedButton": "Voting Ended",
+    "comingSoonButton": "Coming Soon",
+    "nominationPeriodLabel": "Nomination",
+    "votingPeriodLabel": "Voting",
+    "timeLeft": "left",
+    "nominationDialog": {
+      "title": "Nominate for: {awardTitle}",
+      "description": "Select a user and provide a justification for your nomination.",
+      "nomineeLabel": "Nominee",
+      "nomineePlaceholder": "Select a user to nominate...",
+      "justificationLabel": "Justification",
+      "justificationPlaceholder": "Explain why this person deserves the award...",
+      "submitButton": "Submit Nomination"
+    },
+    "votingDialog": {
+      "title": "Vote for: {awardTitle}",
+      "description": "Review the nominees and cast your vote. You can only vote once.",
+      "noNominees": "No nominations were submitted for this award.",
+      "voteButton": "Vote"
+    },
+    "toast": {
+      "nominationSubmitted": {
+        "title": "Nomination Submitted!",
+        "description": "Thank you for recognizing a deserving member of our community."
+      },
+      "nominationFailed": {
+        "title": "Nomination Failed",
+        "description": "An unexpected error occurred."
+      },
+      "voteCast": {
+        "title": "Vote Cast!",
+        "description": "Your vote has been recorded."
+      },
+      "voteFailed": {
+        "title": "Voting Failed",
+        "description": "An unexpected error occurred."
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db } from '@/lib/db';
@@ -33,6 +34,8 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
           coverLetterGeneratorEnabled: true,
           mockInterviewEnabled: true,
           aiMockInterviewCost: 25,
+          aiResumeAnalysisCost: 10,
+          aiAlumniConnectionRecCost: 5,
           referralsEnabled: true,
           affiliateProgramEnabled: true,
           alumniConnectEnabled: true,
@@ -73,6 +76,8 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
         coverLetterGeneratorEnabled: true,
         mockInterviewEnabled: true,
         aiMockInterviewCost: 25,
+        aiResumeAnalysisCost: 10,
+        aiAlumniConnectionRecCost: 5,
         referralsEnabled: true,
         affiliateProgramEnabled: true,
         alumniConnectEnabled: true,

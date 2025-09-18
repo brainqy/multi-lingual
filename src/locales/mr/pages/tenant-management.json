@@ -1,2 +1,76 @@
 
-{}
+{
+  "tenantManagement": {
+    "title": "टेन्ट व्यवस्थापन",
+    "description": "प्लॅटफॉर्मवरील सर्व संघटनात्मक टेन्टचे पर्यवेक्षण आणि व्यवस्थापन करा.",
+    "createNewButton": "नवीन टेन्ट तयार करा",
+    "tenantListTitle": "सध्याचे टेन्ट",
+    "noTenantsFound": "अद्याप कोणतेही टेन्ट ऑनबोर्ड केलेले नाहीत. सुरू करण्यासाठी 'नवीन टेन्ट तयार करा' वर क्लिक करा.",
+    "editActionMock": "टेन्ट {tenantId} साठी संपादन क्रिया मॉक आहे.",
+    "deleteActionToast": "टेन्ट '{tenantName}' आणि त्याचा सर्व डेटा काढला गेला आहे.",
+    "table": {
+      "name": "टेन्टचे नाव",
+      "id": "टेन्ट आयडी",
+      "createdAt": "तयार केल्याची तारीख",
+      "publicSignup": "सार्वजनिक साइनअप",
+      "actions": "क्रिया"
+    }
+  },
+  "tenantOnboarding": {
+    "title": "टेन्ट ऑनबोर्डिंग विझार्ड",
+    "toast": {
+      "tenantCreated": {
+        "title": "टेन्ट तयार झाला!",
+        "description": "{tenantName} यशस्वीरित्या ऑनबोर्ड झाला आहे."
+      }
+    },
+    "steps": {
+      "basicInfo": "मूलभूत माहिती",
+      "branding": "ब्रँडिंग",
+      "features": "वैशिष्ट्ये",
+      "adminUser": "प्रशासक वापरकर्ता",
+      "review": "पुनरावलोकन आणि तयार करा"
+    },
+    "currentStep": "पायरी {current} पैकी {total}",
+    "formLabels": {
+      "tenantName": "टेन्टचे नाव (उदा., विद्यापीठाचे नाव, कंपनी)",
+      "tenantDomain": "टेन्ट डोमेन (पर्यायी)",
+      "tenantDomainPlaceholder": "उदा., myuni.JobMatch.ai",
+      "customLogoUrl": "सानुकूल लोगो URL (पर्यायी)",
+      "customLogoUrlPlaceholder": "https://example.com/logo.png",
+      "primaryColor": "प्राथमिक रंग (HSL किंवा Hex)",
+      "primaryColorPlaceholder": "उदा., hsl(180 100% 25%) किंवा #008080",
+      "accentColor": "ॲक्सेंट रंग (HSL किंवा Hex)",
+      "accentColorPlaceholder": "उदा., hsl(180 100% 30%) किंवा #009999",
+      "coreFeaturesTitle": "मुख्य वैशिष्ट्ये",
+      "featureCommunityFeed": "कम्युनिटी फीड",
+      "featureJobBoard": "जॉब बोर्ड",
+      "featureGamification": "गेमिफिकेशन (XP आणि बॅज)",
+      "featureWallet": "डिजिटल वॉलेट (नाणी)",
+      "featureEventRegistration": "इव्हेंट नोंदणी",
+      "signupTitle": "साइनअप सेटिंग्ज",
+      "allowPublicSignup": "सार्वजनिक साइनअपला परवानगी द्या",
+      "adminFullName": "प्रारंभिक प्रशासकाचे पूर्ण नाव",
+      "adminEmail": "प्रशासक ईमेल",
+      "adminPassword": "प्रशासक पासवर्ड"
+    },
+    "reviewSection": {
+      "title": "तपशील तपासा",
+      "nameLabel": "नाव:",
+      "domainLabel": "डोमेन:",
+      "logoUrlLabel": "लोगो URL:",
+      "primaryColorLabel": "प्राथमिक रंग:",
+      "accentColorLabel": "ॲक्सेंट रंग:",
+      "publicSignupLabel": "सार्वजनिक साइनअप:",
+      "featuresLabel": "सक्षम वैशिष्ट्ये:",
+      "initialAdminUserTitle": "प्रारंभिक प्रशासक वापरकर्ता",
+      "emailLabel": "ईमेल:"
+    },
+    "buttons": {
+      "previous": "मागे",
+      "next": "पुढे",
+      "createTenant": "टेन्ट तयार करा",
+      "finish": "पूर्ण करा"
+    }
+  }
+}

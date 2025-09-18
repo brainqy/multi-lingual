@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import AccessDeniedMessage from "@/components/ui/AccessDeniedMessage";
 import { getResumeTemplates, createResumeTemplate, updateResumeTemplate, deleteResumeTemplate } from "@/lib/actions/templates";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const templateSchema = z.object({
   id: z.string().optional(),
@@ -27,6 +28,11 @@ const templateSchema = z.object({
   category: z.string().min(1, "Category is required"),
   dataAiHint: z.string().optional(),
   content: z.string().min(50, "Template content is required"),
+  // New styling fields
+  headerColor: z.string().optional(),
+  bodyColor: z.string().optional(),
+  headerFontSize: z.string().optional(),
+  textAlign: z.enum(['left', 'center', 'right']).optional(),
 });
 
 type TemplateFormData = z.infer<typeof templateSchema>;
@@ -70,7 +76,7 @@ export default function TemplateDesignerPage() {
         toast({ title: "Template Updated", description: `Template "${data.name}" has been saved.` });
       }
     } else {
-      const created = await createResumeTemplate(data);
+      const created = await createResumeTemplate(data as Omit<ResumeTemplate, 'id'>);
       if (created) {
         setTemplates(prev => [created, ...prev]);
         toast({ title: "Template Created", description: `New template "${data.name}" has been added.` });
@@ -88,6 +94,10 @@ export default function TemplateDesignerPage() {
       previewImageUrl: "https://placehold.co/300x400.png?text=New+Template",
       category: "Modern",
       content: "[Your Name]\n[Contact Info]\n...",
+      headerColor: '',
+      bodyColor: '',
+      headerFontSize: '1.5rem',
+      textAlign: 'left',
     });
     setIsFormDialogOpen(true);
   };
@@ -139,16 +149,47 @@ export default function TemplateDesignerPage() {
             </div>
             <div>
               <Label htmlFor="template-category">Category</Label>
-              <Controller name="category" control={control} render={({ field }) => <Input id="template-category" {...field} placeholder="e.g., Modern, Creative, Functional" />} />
+              <Controller name="category" control={control} render={({ field }) => <Input id="template-category" {...field} placeholder="e.g., Modern, Creative, Professional" />} />
             </div>
-            <div>
+             <div>
               <Label htmlFor="template-img">Preview Image URL</Label>
               <Controller name="previewImageUrl" control={control} render={({ field }) => <Input id="template-img" {...field} />} />
             </div>
+            
+            <h3 className="text-lg font-semibold pt-4 border-t">Styling Options</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                  <Label htmlFor="template-headerColor">Header Color</Label>
+                  <Controller name="headerColor" control={control} render={({ field }) => <Input id="template-headerColor" {...field} placeholder="e.g., #008080 or hsl(180 100% 25%)" />} />
+               </div>
+               <div>
+                  <Label htmlFor="template-bodyColor">Body Text Color</Label>
+                  <Controller name="bodyColor" control={control} render={({ field }) => <Input id="template-bodyColor" {...field} placeholder="e.g., #333333" />} />
+               </div>
+               <div>
+                  <Label htmlFor="template-headerFontSize">Header Font Size</Label>
+                  <Controller name="headerFontSize" control={control} render={({ field }) => <Input id="template-headerFontSize" {...field} placeholder="e.g., 1.5rem, 24px" />} />
+               </div>
+               <div>
+                  <Label htmlFor="template-textAlign">Text Align</Label>
+                  <Controller name="textAlign" control={control} render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue/></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">Left</SelectItem>
+                        <SelectItem value="center">Center</SelectItem>
+                        <SelectItem value="right">Right</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )} />
+               </div>
+            </div>
+
             <div>
               <Label htmlFor="template-content">Template Content (Placeholder Text)</Label>
               <Controller name="content" control={control} render={({ field }) => <Textarea id="template-content" {...field} rows={8} />} />
             </div>
+
             <DialogFooter>
               <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
               <Button type="submit">{editingTemplate ? "Save Changes" : "Create Template"}</Button>

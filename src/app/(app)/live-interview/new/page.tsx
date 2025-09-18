@@ -1,19 +1,21 @@
 
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, Settings, Users, Send, ListChecks, AlertTriangle, Info } from "lucide-react";
+import { Video, Settings, Users, Send, ListChecks, AlertTriangle, Info, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import type { LiveInterviewSession, MockInterviewQuestion } from '@/types';
+import type { LiveInterviewSession, MockInterviewQuestion, UserProfile } from '@/types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { sampleLiveInterviewSessions, sampleInterviewQuestions, sampleUserProfile } from "@/lib/sample-data";
+import { useAuth } from "@/hooks/use-auth";
+import { getInterviewQuestions } from "@/lib/actions/questions";
+import { createLiveInterviewSession } from "@/lib/actions/live-interviews";
 
 
 export default function NewLiveInterviewPage() {
@@ -22,10 +24,23 @@ export default function NewLiveInterviewPage() {
   const [questionIdsInput, setQuestionIdsInput] = useState(''); 
   const { toast } = useToast();
   const router = useRouter(); 
-  const currentUser = sampleUserProfile;
+  const { user: currentUser, isLoading } = useAuth();
+  const [allQuestions, setAllQuestions] = useState<MockInterviewQuestion[]>([]);
+
+  useEffect(() => {
+    async function loadQuestions() {
+      const questions = await getInterviewQuestions();
+      setAllQuestions(questions);
+    }
+    loadQuestions();
+  }, []);
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!currentUser) {
+        toast({ title: "Not Authenticated", description: "You must be logged in to create a session.", variant: "destructive" });
+        return;
+    }
     if (!title.trim()) {
       toast({ title: "Title Required", description: "Please enter an interview title.", variant: "destructive" });
       return;
@@ -36,14 +51,12 @@ export default function NewLiveInterviewPage() {
       return;
     }
 
-    const newSessionId = `live-session-${Date.now()}`;
-    
     const preSelectedQuestions: MockInterviewQuestion[] = questionIdsInput
         .split(',')
         .map(id => id.trim())
         .filter(id => id)
         .map(id => {
-            const questionFromBank = sampleInterviewQuestions.find(q => q.id === id);
+            const questionFromBank = allQuestions.find(q => q.id === id);
             if (questionFromBank) {
                 return { 
                     id: questionFromBank.id, 
@@ -58,8 +71,7 @@ export default function NewLiveInterviewPage() {
         .filter(q => q !== null) as MockInterviewQuestion[];
 
 
-    const newSession: LiveInterviewSession = {
-      id: newSessionId,
+    const newSessionData: Omit<LiveInterviewSession, 'id'> = {
       tenantId: currentUser.tenantId, 
       title: title,
       participants: [
@@ -76,15 +88,23 @@ export default function NewLiveInterviewPage() {
       preSelectedQuestions: preSelectedQuestions,
     };
 
-    sampleLiveInterviewSessions.push(newSession);
+    const newSession = await createLiveInterviewSession(newSessionData);
 
-    toast({
-      title: "Live Interview Session Created!",
-      description: `Session "${title}" has been set up.`,
-      duration: 5000,
-    });
-    router.push(`/live-interview/${newSessionId}`); 
+    if (newSession) {
+        toast({
+        title: "Live Interview Session Created!",
+        description: `Session "${title}" has been set up.`,
+        duration: 5000,
+        });
+        router.push(`/live-interview/${newSession.id}`); 
+    } else {
+        toast({ title: "Error", description: "Failed to create live interview session.", variant: "destructive" });
+    }
   }; 
+  
+  if (isLoading) {
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>;
+  }
 
   return (
     <div className="space-y-8">

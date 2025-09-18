@@ -5,10 +5,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
-import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile } from "@/types";
+import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile, ResumeTemplate } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { sampleResumeTemplates } from "@/lib/sample-data";
 import StepHeaderForm from "@/components/features/resume-builder/StepHeaderForm";
 import StepExperienceForm from "@/components/features/resume-builder/StepExperienceForm";
 import StepEducationForm from "@/components/features/resume-builder/StepEducationForm";
@@ -24,7 +23,12 @@ import type { ResumeProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getResumeProfiles } from "@/lib/actions/resumes";
+import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
+
+const logger = {
+    log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
+};
 
 const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
   if (!user) {
@@ -35,7 +39,7 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
       skills: [],
       summary: "",
       additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-      templateId: sampleResumeTemplates[0].id,
+      templateId: 'template1', // Fallback templateId
     };
   }
   return {
@@ -57,13 +61,13 @@ const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
       languages: "",
       interests: (user.interests || []).join(", "),
     },
-    templateId: sampleResumeTemplates[0].id,
+    templateId: 'template1', // Default templateId
   };
 };
 
 
 export default function ResumeBuilderPage() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -72,66 +76,58 @@ export default function ResumeBuilderPage() {
   const { toast } = useToast();
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const loadResumeForEditing = useCallback(async (resumeId: string) => {
+  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
     if (!user) return;
-    toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
-    const userResumes = await getResumeProfiles(user.id);
-    const resumeToEdit = userResumes.find(r => r.id === resumeId);
-    if (resumeToEdit && resumeToEdit.resumeText) {
-        try {
-            const parsedData = JSON.parse(resumeToEdit.resumeText);
-            setResumeData(parsedData);
-            setEditingResumeId(resumeToEdit.id);
-        } catch (e) {
-            console.error("Failed to parse resume data:", e);
-            toast({ title: "Error Loading Resume", description: "The selected resume data is not in the correct format.", variant: "destructive"});
-            setResumeData(getInitialResumeData(user)); // Reset to default
-        }
-    } else {
-        toast({ title: "Resume Not Found", description: "Could not find the selected resume.", variant: "destructive"});
-    }
-  }, [user, toast]);
+    setIsLoading(true);
 
-  const loadTemplateForEditing = useCallback((templateId: string) => {
-    toast({ title: "Loading Template...", description: "Preparing the builder with your selected template." });
-    const template = sampleResumeTemplates.find(t => t.id === templateId);
-    if (template) {
-      const newHeader: ResumeHeaderData = {
-        fullName: user?.name || "Your Name",
-        phone: user?.mobileNumber || "Your Phone",
-        email: user?.email || "your.email@example.com",
-        linkedin: user?.linkedInProfile || "",
-        portfolio: "",
-        address: user?.currentAddress || "",
-      };
-      setResumeData({
-        header: newHeader,
-        summary: user?.bio || "Professional summary here...",
-        experience: [],
-        education: [],
-        skills: user?.skills || [],
-        additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-        templateId: template.id,
-      });
-      setEditingResumeId(null); // It's a new resume based on a template
-    } else {
-      toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
-    }
-  }, [user, toast]);
+    const templates = await getResumeTemplates();
+    setAllTemplates(templates);
 
+    if (resumeId) {
+      toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
+      const userResumes = await getResumeProfiles(user.id);
+      const resumeToEdit = userResumes.find(r => r.id === resumeId);
+      if (resumeToEdit && resumeToEdit.resumeText) {
+          try {
+              const parsedData = JSON.parse(resumeToEdit.resumeText);
+              setResumeData(parsedData);
+              setEditingResumeId(resumeToEdit.id);
+          } catch (e) {
+              console.error("Failed to parse resume data:", e);
+              toast({ title: "Error Loading Resume", description: "The selected resume data is not in the correct format.", variant: "destructive"});
+              setResumeData(getInitialResumeData(user)); // Reset to default
+          }
+      } else {
+          toast({ title: "Resume Not Found", description: "Could not find the selected resume.", variant: "destructive"});
+      }
+    } else if (templateId) {
+       const template = templates.find(t => t.id === templateId);
+       if (template) {
+         setResumeData(prev => ({ ...getInitialResumeData(user), templateId: template.id }));
+         setEditingResumeId(null);
+       } else {
+         toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
+       }
+    } else {
+      // Default to the first available template if no params
+      const defaultTemplateId = templates.length > 0 ? templates[0].id : 'template1';
+      setResumeData(prev => ({...getInitialResumeData(user), templateId: defaultTemplateId}));
+      setEditingResumeId(null);
+    }
+
+    setIsLoading(false);
+  }, [user, toast]);
+  
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
     const templateId = searchParams.get('templateId');
-    if (resumeId) {
-      loadResumeForEditing(resumeId);
-    } else if (templateId) {
-      loadTemplateForEditing(templateId);
-    } else if (user) {
-      setResumeData(getInitialResumeData(user));
-      setEditingResumeId(null);
+    if(user) {
+        loadData(resumeId, templateId);
     }
-  }, [user, searchParams, loadResumeForEditing, loadTemplateForEditing]);
+  }, [user, searchParams, loadData]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
   const currentStep: ResumeBuilderStep = currentStepInfo.id;
@@ -180,9 +176,10 @@ export default function ResumeBuilderPage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
-    setResumeData(prev => ({ ...prev, templateId }));
+    logger.log('handleTemplateSelect: Template ID received!', { templateId });
     setIsTemplateDialogOpen(false);
-    toast({ title: "Template Changed", description: "The resume preview has been updated." });
+    // Update URL, which will trigger the useEffect to reload the data with the new template
+    router.push(`/resume-builder?templateId=${templateId}`);
   };
 
   const handleSaveComplete = (newResumeId: string) => {
@@ -295,7 +292,7 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview ref={resumePreviewRef} data={resumeData} templateId={resumeData.templateId} />
+          <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} />
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
@@ -311,7 +308,7 @@ export default function ResumeBuilderPage() {
         isOpen={isTemplateDialogOpen}
         onClose={() => setIsTemplateDialogOpen(false)}
         onSelect={handleTemplateSelect}
-        templates={sampleResumeTemplates}
+        templates={allTemplates}
         currentTemplateId={resumeData.templateId}
     />
     </>

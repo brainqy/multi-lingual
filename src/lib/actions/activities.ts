@@ -37,7 +37,7 @@ export async function getActivities(userId?: string): Promise<Activity[]> {
  */
 export async function createActivity(activityData: Omit<Activity, 'id' | 'timestamp'>): Promise<Activity | null> {
     const { userId, tenantId, ...restOfData } = activityData;
-    logAction('Creating activity', { userId, description: restOfData.description });
+    logAction('Creating activity', { userId, description: restOfData.description, tenantId });
     try {
         const dataForDb: any = {
             ...restOfData,
@@ -69,7 +69,7 @@ export async function createActivity(activityData: Omit<Activity, 'id' | 'timest
         });
         return newActivity as unknown as Activity;
     } catch (error) {
-        logError('[ActivityAction] Error creating activity', error, { userId });
+        logError('[ActivityAction] Error creating activity', error, { userId, tenantId });
         return null;
     }
 }

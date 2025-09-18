@@ -3,41 +3,80 @@
 
 import { db } from '@/lib/db';
 import type { Survey, SurveyResponse } from '@/types';
-import { logAction, logError } from '@/lib/logger';
 
 /**
  * Fetches all survey definitions.
  * @returns A promise that resolves to an array of Survey objects.
  */
 export async function getSurveys(): Promise<Survey[]> {
-  logAction('Fetching all surveys');
   try {
     const surveys = await db.survey.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return surveys as unknown as Survey[];
+    // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
+    return surveys.map(s => ({
+      ...s,
+      steps: (s.steps as any)?.set || [],
+    })) as unknown as Survey[];
   } catch (error) {
-    logError('[SurveyAction] Error fetching surveys', error);
+    console.error('[SurveyAction] Error fetching surveys:', error);
     return [];
   }
 }
 
 /**
- * Fetches a single survey definition by its unique name.
+ * Fetches a single survey definition by its unique name and parses its steps.
  * @param name The unique name of the survey.
  * @returns The Survey object or null.
  */
 export async function getSurveyByName(name: string): Promise<Survey | null> {
-  logAction('Fetching survey by name', { name });
   try {
     const survey = await db.survey.findUnique({
       where: { name },
     });
+    if (survey && survey.steps) {
+      // The 'steps' field is a JSON object like { "set": [...] }. We need to extract the array.
+      return { ...survey, steps: (survey.steps as any)?.set || [] } as unknown as Survey;
+    }
     return survey as unknown as Survey | null;
   } catch (error) {
-    logError(`[SurveyAction] Error fetching survey by name ${name}`, error, { name });
+    console.error(`[SurveyAction] Error fetching survey by name ${name}:`, error);
     return null;
   }
+}
+
+/**
+ * Fetches the next available survey for a user that they haven't completed.
+ * @param userId The ID of the user.
+ * @returns The Survey object or null if all surveys are completed or none exist.
+ */
+export async function getSurveyForUser(userId: string): Promise<Survey | null> {
+    try {
+        const allSurveys = await db.survey.findMany({
+            orderBy: { createdAt: 'asc' } // Start with the oldest survey
+        });
+
+        const userResponses = await db.surveyResponse.findMany({
+            where: { userId },
+            select: { surveyId: true }
+        });
+
+        const completedSurveyIds = new Set(userResponses.map(res => res.surveyId));
+
+        for (const survey of allSurveys) {
+            if (!completedSurveyIds.has(survey.id)) { // Check against the actual ID
+                if (survey.steps) {
+                    return { ...survey, steps: (survey.steps as any)?.set || [] } as unknown as Survey;
+                }
+                return survey as unknown as Survey;
+            }
+        }
+
+        return null; // User has completed all available surveys
+    } catch (error) {
+        console.error(`[SurveyAction] Error fetching next survey for user ${userId}:`, error);
+        return null;
+    }
 }
 
 /**
@@ -46,32 +85,37 @@ export async function getSurveyByName(name: string): Promise<Survey | null> {
  * @returns The newly created Survey object or null.
  */
 export async function createSurvey(surveyData: Omit<Survey, 'id' | 'createdAt'>): Promise<Survey | null> {
-  logAction('Creating survey', { name: surveyData.name });
   try {
+    // Wrap the steps array in the { "set": [...] } object structure to match the seed data.
+    const dataForDb: any = {
+      ...surveyData,
+      steps: { set: surveyData.steps },
+    };
+    
     const newSurvey = await db.survey.create({
-      data: surveyData,
+      data: dataForDb,
     });
-    return newSurvey as unknown as Survey;
+    // Parse it back on return to be consistent
+    return { ...newSurvey, steps: (newSurvey.steps as any)?.set || [] } as unknown as Survey;
   } catch (error) {
-    logError('[SurveyAction] Error creating survey', error, { name: surveyData.name });
+    console.error('[SurveyAction] Error creating survey:', error);
     return null;
   }
 }
 
+
 /**
  * Fetches all survey responses, optionally scoped by tenant.
- * @param tenantId Optional tenant ID to filter responses.
+ * @param tenantId Optional tenant ID. If not provided, fetches for the entire platform (admin view).
  * @returns A promise that resolves to an array of SurveyResponse objects.
  */
 export async function getSurveyResponses(tenantId?: string): Promise<SurveyResponse[]> {
-  logAction('Fetching survey responses', { tenantId });
   try {
     const whereClause: any = {};
-    // This assumes a relation or a tenantId field on the user who responded.
-    // Let's assume for now we filter based on a tenantId on the response itself.
-    // This would require adding a tenantId to the SurveyResponse model.
-    if (tenantId) {
-      whereClause.tenantId = tenantId;
+    if (tenantId && tenantId !== 'platform') {
+      const usersInTenant = await db.user.findMany({ where: { tenantId }, select: { id: true } });
+      const userIds = usersInTenant.map(u => u.id);
+      whereClause.userId = { in: userIds };
     }
     
     const responses = await db.surveyResponse.findMany({
@@ -80,7 +124,7 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
     });
     return responses as unknown as SurveyResponse[];
   } catch (error) {
-    logError('[SurveyAction] Error fetching survey responses', error, { tenantId });
+    console.error('[SurveyAction] Error fetching survey responses:', error);
     return [];
   }
 }
@@ -90,15 +134,31 @@ export async function getSurveyResponses(tenantId?: string): Promise<SurveyRespo
  * @param responseData The data for the new response.
  * @returns The newly created SurveyResponse object or null.
  */
-export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate'>): Promise<SurveyResponse | null> {
-  logAction('Creating survey response', { userId: responseData.userId, surveyId: responseData.surveyId });
+export async function createSurveyResponse(responseData: Omit<SurveyResponse, 'id' | 'responseDate' | 'surveyId'>): Promise<SurveyResponse | null> {
   try {
+    const user = await db.user.findUnique({ where: { id: responseData.userId }});
+    if (!user) throw new Error("User not found for survey response");
+
+    const survey = await db.survey.findUnique({ where: { name: responseData.surveyName }});  
+    if (!survey) throw new Error(`Survey with name "${responseData.surveyName}" not found.`);
+    
+    const tenantId = user.tenantId;
+
+    const dataForDb: any = {
+        userId: responseData.userId,
+        userName: responseData.userName,
+        surveyId: survey.id, // Use the correct foreign key
+        surveyName: survey.name,
+        data: responseData.data as any,
+        tenantId: tenantId,
+    };
+    
     const newResponse = await db.surveyResponse.create({
-      data: responseData,
+      data: dataForDb,
     });
     return newResponse as unknown as SurveyResponse;
   } catch (error) {
-    logError('[SurveyAction] Error creating survey response', error, { userId: responseData.userId });
+    console.error('[SurveyAction] Error creating survey response:', error);
     return null;
   }
 }

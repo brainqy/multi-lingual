@@ -18,7 +18,18 @@ interface TemplateSelectionDialogProps {
   currentTemplateId: string;
 }
 
+const logger = {
+    log: (message: string, ...args: any[]) => console.log(`[TemplateSelectionDialog] ${message}`, ...args),
+};
+
 export default function TemplateSelectionDialog({ isOpen, onClose, onSelect, templates, currentTemplateId }: TemplateSelectionDialogProps) {
+  
+  const handleSelect = (templateId: string) => {
+    logger.log('handleSelect: Template clicked!', { templateId });
+    onSelect(templateId);
+    logger.log('handleSelect: onSelect prop called.');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -33,7 +44,7 @@ export default function TemplateSelectionDialog({ isOpen, onClose, onSelect, tem
             {templates.map(template => (
               <Card
                 key={template.id}
-                onClick={() => onSelect(template.id)}
+                onClick={() => handleSelect(template.id)}
                 className={cn(
                   "cursor-pointer hover:shadow-lg hover:border-primary transition-all relative",
                   currentTemplateId === template.id && "border-2 border-primary ring-2 ring-primary ring-offset-2"

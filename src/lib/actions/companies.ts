@@ -10,7 +10,7 @@ import { logAction, logError } from '@/lib/logger';
  * @returns A promise that resolves to an array of ProductCompany objects.
  */
 export async function getCompanies(): Promise<ProductCompany[]> {
-  logAction('Fetching companies');
+  logAction('Fetching product companies');
   try {
     const companies = await db.productCompany.findMany({
       orderBy: {

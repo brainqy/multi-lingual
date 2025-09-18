@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription as DialogUIDescription, DialogFooter as DialogUIFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Settings, Palette, UploadCloud, Bell, Lock, WalletCards, Sun, Moon, Award, Gift, Paintbrush, KeyRound, Code2, Puzzle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { samplePlatformSettings } from "@/lib/sample-data";
 import type { Tenant, UserProfile, PlatformSettings, InterviewQuestionCategory, TourStep, TenantSettings } from "@/types";
 import { ALL_CATEGORIES } from "@/types";
 import {
@@ -31,13 +30,14 @@ import { updateUser } from "@/lib/data-services/users";
 import { getTenants, updateTenant, updateTenantSettings } from "@/lib/actions/tenants";
 import { updatePlatformSettings as updatePlatformSettingsAction } from "@/lib/actions/platform-settings";
 import { changePassword } from "@/lib/actions/auth";
+import { useSettings } from "@/contexts/settings-provider";
 
 export default function SettingsPage() {
   const { t } = useI18n();
   const { toast } = useToast();
   const { user: currentUser, login } = useAuth();
+  const { settings: platformSettings, setSettings: setPlatformSettings } = useSettings();
   
-  const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(samplePlatformSettings);
   const [challengeTopics, setChallengeTopics] = useState<InterviewQuestionCategory[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   

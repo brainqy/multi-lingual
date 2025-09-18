@@ -1,4 +1,5 @@
 
+
 'use server';
 /**
  * @fileOverview Provides AI-driven suggestions for alumni connections.
@@ -11,6 +12,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { AIError } from '@/lib/exceptions';
+import { getPlatformSettings } from '@/lib/actions/platform-settings';
+import { getWallet, updateWallet } from '@/lib/actions/wallet';
 
 const AlumniProfileSchema = z.object({
     id: z.string(),
@@ -25,6 +28,8 @@ const PersonalizedConnectionRecommendationsInputSchema = z.object({
   userProfileText: z.string().describe("A comprehensive summary of the current user's profile, including skills, experience, and career aspirations."),
   careerInterests: z.string().describe("Specific career interests or roles the user is targeting."),
   availableAlumni: z.array(AlumniProfileSchema).describe("A list of available alumni profiles to choose from for recommendations."),
+  userId: z.string().optional().describe("The ID of the user requesting recommendations for coin deduction."),
+  apiKey: z.string().optional().describe("Optional user-provided API key."),
 });
 export type PersonalizedConnectionRecommendationsInput = z.infer<
   typeof PersonalizedConnectionRecommendationsInputSchema
@@ -48,6 +53,19 @@ export type PersonalizedConnectionRecommendationsOutput = z.infer<
 export async function personalizedConnectionRecommendations(
   input: PersonalizedConnectionRecommendationsInput
 ): Promise<PersonalizedConnectionRecommendationsOutput> {
+
+  if (input.userId && !input.apiKey) {
+    const settings = await getPlatformSettings();
+    const cost = settings.aiAlumniConnectionRecCost ?? 0;
+    if (cost > 0) {
+      const wallet = await getWallet(input.userId);
+      if (!wallet || wallet.coins < cost) {
+        throw new Error(`Insufficient funds. This action costs ${cost} coins.`);
+      }
+      await updateWallet(input.userId, { coins: wallet.coins - cost }, `AI Mentor Suggestions`);
+    }
+  }
+
   return personalizedConnectionRecommendationsFlow(input);
 }
 
@@ -104,5 +122,3 @@ const personalizedConnectionRecommendationsFlow = ai.defineFlow(
     return output;
   }
 );
-
-    

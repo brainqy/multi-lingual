@@ -102,7 +102,14 @@ export default function AwardsManagementPage() {
   };
   const onDeleteAward = async (id: string) => { if (await deleteAward(id)) { fetchData(); toast({ title: "Award Deleted" }); }};
   const onAwardSubmit = async (data: AwardFormData) => {
-    const result = editingAward ? await updateAward(editingAward.id, data) : await createAward(data);
+    const dataForServer = {
+        ...data,
+        nominationStartDate: data.nominationStartDate.toISOString(),
+        nominationEndDate: data.nominationEndDate.toISOString(),
+        votingStartDate: data.votingStartDate.toISOString(),
+        votingEndDate: data.votingEndDate.toISOString(),
+    };
+    const result = editingAward ? await updateAward(editingAward.id, dataForServer as any) : await createAward(dataForServer as any);
     if (result) { fetchData(); toast({ title: editingAward ? "Award Updated" : "Award Created" }); }
     setIsAwardDialogOpen(false);
   };

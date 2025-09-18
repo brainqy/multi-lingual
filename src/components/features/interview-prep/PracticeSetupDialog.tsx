@@ -13,12 +13,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { PracticeSessionConfig, DialogStep, InterviewQuestionCategory } from '@/types';
+import type { PracticeSessionConfig, DialogStep, InterviewQuestionCategory, LiveInterviewSession, UserProfile } from '@/types';
 import { ALL_CATEGORIES, PREDEFINED_INTERVIEW_TOPICS } from '@/types';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import PracticeTopicSelection from './PracticeTopicSelection';
 import PracticeDateTimeSelector from './PracticeDateTimeSelector';
 import { useAuth } from '@/hooks/use-auth';
+import { createLiveInterviewSession } from '@/lib/actions/live-interviews';
 
 const friendEmailSchema = z.string().email("Please enter a valid email address.");
 
@@ -48,20 +49,19 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
   });
   const [friendEmailError, setFriendEmailError] = useState<string | null>(null);
 
-  const handleDialogNextStep = () => {
+  const handleDialogNextStep = async () => {
     if (dialogStep === 'selectType') {
       if (!practiceSessionConfig.type) {
         toast({ title: "Error", description: "Please select an interview type.", variant: "destructive" });
         return;
       }
       if (practiceSessionConfig.type === 'friends') {
-        if (!practiceSessionConfig.friendEmail?.trim()) { setFriendEmailError("Please enter a friend's email."); return; }
         const emailValidation = friendEmailSchema.safeParse(practiceSessionConfig.friendEmail);
-        if (!emailValidation.success) { setFriendEmailError(emailValidation.error.errors[0].message); return; }
+        if (!emailValidation.success) { 
+          setFriendEmailError(emailValidation.error.errors[0].message); 
+          return; 
+        }
         setFriendEmailError(null);
-        toast({ title: "Invitation Sent (Mock)", description: `Invitation would be sent to ${practiceSessionConfig.friendEmail}.` });
-        onClose();
-        return; 
       }
       setDialogStep('selectTopics');
     } else if (dialogStep === 'selectTopics') {
@@ -72,7 +72,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
       if (practiceSessionConfig.type === 'ai') {
         setPracticeSessionConfig(prev => ({...prev, aiTopicOrRole: prev.topics.join(', ')}));
         setDialogStep('aiSetupBasic');
-      } else { // 'experts'
+      } else { // 'experts' or 'friends'
         setDialogStep('selectInterviewCategory');
       }
     } else if (dialogStep === 'selectInterviewCategory') {
@@ -143,7 +143,7 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               dialogStep === 'selectType' ? "Choose the type of mock interview you want to practice." :
               dialogStep === 'selectTopics' ? "First, select the high-level topics you want to cover." :
               dialogStep === 'selectInterviewCategory' ? "Now, choose the type of questions for your expert session." :
-              dialogStep === 'selectTimeSlot' ? "Pick a date and time for your expert session." :
+              dialogStep === 'selectTimeSlot' ? "Pick a date and time for your session." :
               "Configure your AI-powered mock interview."
             }
           </DialogDescription>
@@ -175,11 +175,11 @@ export default function PracticeSetupDialog({ isOpen, onClose, onSessionBooked }
               availableTopics={PREDEFINED_INTERVIEW_TOPICS}
               initialSelectedTopics={practiceSessionConfig.topics}
               onSelectionChange={handleTopicSelectionChange}
-              description={practiceSessionConfig.type === 'experts' ? "Select a specific topic for your expert session." : "Select topics for your AI interview."}
+              description={practiceSessionConfig.type === 'experts' ? "Select a specific topic for your expert session." : "Select topics for your session."}
             />
           )}
 
-          {dialogStep === 'selectInterviewCategory' && practiceSessionConfig.type === 'experts' && (
+          {dialogStep === 'selectInterviewCategory' && (practiceSessionConfig.type === 'experts' || practiceSessionConfig.type === 'friends') && (
              <PracticeTopicSelection
               availableTopics={ALL_CATEGORIES}
               initialSelectedTopics={practiceSessionConfig.interviewCategory ? [practiceSessionConfig.interviewCategory] : []}

@@ -55,6 +55,7 @@
       "saveButton": "Save"
     },
     "widgets": {
+      "promotionalSpotlight": "Promotional Spotlight",
       "activeUsersStat": "Active Users Stat",
       "resumesAnalyzedStat": "Resumes Analyzed Stat",
       "communityPostsStat": "Community Posts Stat",

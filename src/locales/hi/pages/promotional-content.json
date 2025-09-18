@@ -2,13 +2,13 @@
 {
   "promotionalContent": {
     "title": "प्रचार सामग्री प्रबंधन",
-    "description": "उपयोगकर्ता डैशबोर्ड पर दिखाई देने वाले प्रचार कार्ड प्रबंधित करें। नई सुविधाओं, घटनाओं, या प्रीमियम ऑफ़र को हाइलाइट करने के लिए इसका उपयोग करें।",
+    "description": "उपयोगकर्ता डैशबोर्ड पर दिखाई देने वाले प्रचार कार्ड प्रबंधित करें। इसका उपयोग नई सुविधाओं, घटनाओं या प्रीमियम ऑफ़र को उजागर करने के लिए करें।",
     "createNewButton": "नई प्रचार सामग्री बनाएं",
     "currentCardsTitle": "वर्तमान प्रचार कार्ड",
     "table": {
       "title": "शीर्षक",
       "status": "स्थिति",
-      "actions": "कार्रवाइयाँ"
+      "actions": "कार्रवाइयां"
     },
     "status": {
       "active": "सक्रिय",
@@ -22,9 +22,9 @@
     "form": {
       "titleLabel": "शीर्षक",
       "descriptionLabel": "विवरण",
-      "imageUrlLabel": "छवि URL",
-      "imageAltLabel": "छवि वैकल्पिक पाठ",
-      "buttonTextLabel": "बटन पाठ",
+      "imageUrlLabel": "छवि यूआरएल",
+      "imageAltLabel": "छवि ऑल्ट टेक्स्ट",
+      "buttonTextLabel": "बटन टेक्स्ट",
       "buttonLinkLabel": "बटन लिंक",
       "showOnDashboardLabel": "उपयोगकर्ता डैशबोर्ड पर दिखाएं"
     },

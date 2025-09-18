@@ -26,10 +26,10 @@ import * as z from "zod";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Image from "next/image";
 import { Switch } from '@/components/ui/switch';
-import { useI18n } from "@/hooks/use-i18n";
-import { createAppointment } from '@/lib/actions/appointments';
+import { useI18n } from '@/hooks/use-i18n';
 import { useAuth } from '@/hooks/use-auth';
 import { getWallet, updateWallet } from '@/lib/actions/wallet';
+import { createAppointment } from '@/lib/actions/appointments';
 
 const bookingSchema = z.object({
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
@@ -49,7 +49,7 @@ export default function AlumniConnectPage() {
 
   const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
-  const [selectedUniversities, setSelectedUniversities] = useState<Set<string>>(new Set());
+  const [selectedOrganizations, setSelectedOrganizations] = useState<Set<string>>(new Set());
 
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [alumniToBook, setAlumniToBook] = useState<AlumniProfile | null>(null);
@@ -68,7 +68,8 @@ export default function AlumniConnectPage() {
 
   const fetchAlumni = useCallback(async () => {
     setIsLoading(true);
-    const users = await getUsers();
+    // Fetch all users, then filter on the client-side based on the current user's tenant.
+    const users = await getUsers(); 
     setAllAlumniData(users as AlumniProfile[]);
     setIsLoading(false);
   }, []);
@@ -79,16 +80,27 @@ export default function AlumniConnectPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities]);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedOrganizations]);
 
-  const distinguishedAlumni = useMemo(() => allAlumniData.filter(a => a.isDistinguished), [allAlumniData]);
-  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.company).filter(Boolean))).sort(), [allAlumniData]);
-  const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills))).sort(), [allAlumniData]);
-  const uniqueUniversities = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.university).filter(Boolean))).sort(), [allAlumniData]);
+  const distinguishedAlumni = useMemo(() => {
+    if (!currentUser) return [];
+    return allAlumniData.filter(a => a.isDistinguished && a.tenantId === currentUser.tenantId);
+  }, [allAlumniData, currentUser]);
+
+  const uniqueCompanies = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
+  const uniqueSkills = useMemo(() => Array.from(new Set(allAlumniData.flatMap(a => a.skills ?? []))).sort(), [allAlumniData]);
+  const uniqueOrganizations = useMemo(() => Array.from(new Set(allAlumniData.map(a => a.currentOrganization).filter((org): org is string => !!org))).sort(), [allAlumniData]);
+
 
   const filteredAlumni = useMemo(() => {
     if (!currentUser) return [];
-    let results = allAlumniData.filter(a => a.id !== currentUser.id); // Exclude self
+
+    // Filter alumni to show only those from the same tenant.
+    let results = allAlumniData.filter(alumni => 
+      alumni.id !== currentUser.id && 
+      alumni.tenantId === currentUser.tenantId
+    );
+
     if (searchTerm) {
       results = results.filter(alumni =>
         alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,16 +108,16 @@ export default function AlumniConnectPage() {
       );
     }
     if (selectedCompanies.size > 0) {
-      results = results.filter(alumni => selectedCompanies.has(alumni.company));
+      results = results.filter(alumni => alumni.currentOrganization && selectedCompanies.has(alumni.currentOrganization));
     }
     if (selectedSkills.size > 0) {
-      results = results.filter(alumni => alumni.skills.some(skill => selectedSkills.has(skill)));
+      results = results.filter(alumni => (alumni.skills ?? []).some(skill => selectedSkills.has(skill)));
     }
-    if (selectedUniversities.size > 0) {
-      results = results.filter(alumni => alumni.university && selectedUniversities.has(alumni.university));
+    if (selectedOrganizations.size > 0) {
+      results = results.filter(alumni => alumni.currentOrganization && selectedOrganizations.has(alumni.currentOrganization));
     }
     return results;
-  }, [searchTerm, selectedCompanies, selectedSkills, selectedUniversities, allAlumniData, currentUser]);
+  }, [searchTerm, selectedCompanies, selectedSkills, selectedOrganizations, allAlumniData, currentUser]);
 
   const paginatedAlumni = useMemo(() => {
     const startIndex = (currentPage - 1) * alumniPerPage;
@@ -265,7 +277,7 @@ export default function AlumniConnectPage() {
       </div>
 
       {distinguishedAlumni.length > 0 && (
-        <Card className="shadow-lg bg-primary/5 border-primary/20">
+        <Card data-testid="distinguished-alumni-carousel" className="shadow-lg bg-primary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-primary flex items-center gap-2">
               <Star className="h-6 w-6" /> {t("alumniConnect.distinguishedTitle", { default: "Most Distinguished Alumni" })}
@@ -291,8 +303,8 @@ export default function AlumniConnectPage() {
                         </Avatar>
                         <h3 className="text-md font-semibold text-foreground">{alumni.name}</h3>
                         <p className="text-xs text-primary">{alumni.currentJobTitle}</p>
-                        <p className="text-xs text-muted-foreground mb-2">{alumni.company}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.shortBio}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{alumni.currentOrganization}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 flex-grow">{alumni.bio}</p>
                       </CardContent>
                       <CardFooter className="p-3 border-t mt-auto">
                         <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "View Profile (Mock)", description: `Viewing profile of ${alumni.name}.`})}>
@@ -316,9 +328,10 @@ export default function AlumniConnectPage() {
 
       <Accordion type="single" collapsible className="w-full bg-card shadow-lg rounded-lg">
         <AccordionItem value="filters">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <FilterIcon className="h-5 w-5" /> {t("alumniConnect.filters", { default: "Filters" })}
+          <AccordionTrigger className="px-6 py-4 hover:no-underline text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <FilterIcon className="h-5 w-5" />
+              <span>{t("alumniConnect.filters", { default: "Filters" })}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-6 pb-6 border-t">
@@ -337,6 +350,7 @@ export default function AlumniConnectPage() {
                           id={`comp-${company}`}
                           checked={selectedCompanies.has(company)}
                           onCheckedChange={() => handleFilterChange(selectedCompanies, company, setSelectedCompanies)}
+                          aria-label={company}
                         />
                         <Label htmlFor={`comp-${company}`} className="font-normal">{company}</Label>
                       </div>
@@ -362,17 +376,17 @@ export default function AlumniConnectPage() {
                 </ScrollArea>
               </div>
               <div>
-                <h4 className="font-medium mb-2">{t("alumniConnect.university", { default: "University" })}</h4>
+                <h4 className="font-medium mb-2">{t("alumniConnect.university", { default: "Organization" })}</h4>
                 <ScrollArea className="h-40 pr-3">
                   <div className="space-y-2">
-                    {uniqueUniversities.map(uni => (
-                      <div key={uni} className="flex items-center space-x-2">
+                    {uniqueOrganizations.map(org => (
+                      <div key={org} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`uni-${uni}`}
-                          checked={selectedUniversities.has(uni)}
-                          onCheckedChange={() => handleFilterChange(selectedUniversities, uni, setSelectedUniversities)}
+                          id={`org-${org}`}
+                          checked={selectedOrganizations.has(org)}
+                          onCheckedChange={() => handleFilterChange(selectedOrganizations, org, setSelectedOrganizations)}
                         />
-                        <Label htmlFor={`uni-${uni}`} className="font-normal">{uni}</Label>
+                        <Label htmlFor={`org-${org}`} className="font-normal">{org}</Label>
                       </div>
                     ))}
                   </div>
@@ -395,7 +409,7 @@ export default function AlumniConnectPage() {
         </Card>
       ) : (
         <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-testid="alumni-directory-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedAlumni.map(alumni => (
             <Card key={alumni.id} className="shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
               <CardContent className="pt-6 flex-grow">
@@ -406,7 +420,7 @@ export default function AlumniConnectPage() {
                   </Avatar>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">{alumni.name}</h3>
-                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.company}</p>
+                    <p className="text-sm text-primary">{alumni.currentJobTitle} at {alumni.currentOrganization}</p>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                         <Mail className="h-3 w-3 mr-1" /> {alumni.email}
                     </div>
@@ -424,11 +438,11 @@ export default function AlumniConnectPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold mb-1">Offers Help With:</h4>
-                    {renderTags(alumni.offersHelpWith, 3)}
+                    {renderTags(alumni.areasOfSupport, 3)}
                   </div>
                 </div>
-                 <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{alumni.shortBio}</p>
-                 <p className="text-xs text-muted-foreground mb-3"><GraduationCap className="inline h-3 w-3 mr-1"/>{alumni.university}</p>
+                 <p className="text-xs text-muted-foreground mb-1 line-clamp-2">{alumni.bio}</p>
+                 <p className="text-xs text-muted-foreground mb-3"><GraduationCap className="inline h-3 w-3 mr-1"/>{alumni.degreeProgram}</p>
                  {(currentUser.role === 'admin' || currentUser.role === 'manager') && (
                     <div className="flex items-center space-x-2 my-2 p-2 border-t border-b">
                       <Switch
@@ -564,5 +578,3 @@ export default function AlumniConnectPage() {
     </div>
   );
 }
-
-    

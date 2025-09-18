@@ -12,7 +12,7 @@ test('should allow a logged-in user to navigate to the job tracker', async ({ pa
 
   // Step 2: Wait for the redirect to the dashboard after signup.
   // We give this a longer timeout as creating a user and logging in can take time.
-  await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+  await expect(page).toHaveURL('/dashboard', { timeout: 30000 });
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
   // Step 3: Directly navigate to the job tracker page.

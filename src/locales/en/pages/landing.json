@@ -1,0 +1,111 @@
+
+{
+  "landing": {
+    "nav": {
+      "login": "Login",
+      "signup": "Sign Up"
+    },
+    "hero": {
+      "title_part1": "Unlock Your",
+      "title_highlight": "Career Potential",
+      "title_part2": "with AI",
+      "subtitle": "Leverage AI to perfectly match your resume with your dream job. Get insightful analysis, generate tailored documents, practice interviews, and connect with a powerful alumni network.",
+      "cta": "Get Started Free"
+    },
+    "features": {
+      "title": "All The Tools You Need to Succeed",
+      "subtitle": "From crafting the perfect resume to acing the interview and building your network, JobMatch AI provides a comprehensive suite of tools.",
+      "analyzer": {
+        "title": "AI Resume Analyzer",
+        "description": "Get deep insights into your resume's match with job descriptions, ATS compatibility, and keyword optimization."
+      },
+      "writer": {
+        "title": "AI Resume & Cover Letter Writer",
+        "description": "Generate tailored resumes and compelling cover letters in minutes with AI assistance."
+      },
+      "feed": {
+        "title": "Engaging Community Feed",
+        "description": "Share insights, ask questions, participate in polls, and connect with your peers."
+      },
+      "rewards": {
+        "title": "Gamified Rewards & Progress",
+        "description": "Earn XP, unlock badges, and see your progress on the leaderboard as you engage."
+      },
+      "builder": {
+        "title": "Resume Templates & Builder",
+        "description": "Choose from professional templates or build your resume step-by-step."
+      },
+      "tracker": {
+        "title": "Comprehensive Job Tracker",
+        "description": "Organize your job applications in a visual Kanban board, set reminders, and track your progress."
+      },
+      "prep": {
+        "title": "Interview Preparation Hub",
+        "description": "Practice with AI mock interviews, browse a vast question bank, and take custom quizzes."
+      },
+      "connect": {
+        "title": "Alumni Connect Directory",
+        "description": "Network with fellow alumni, find mentors, and book appointments for career guidance."
+      },
+      "events": {
+        "title": "Event Management & Gallery",
+        "description": "Discover and register for alumni events, and browse past event galleries."
+      }
+    },
+    "trending": {
+      "title": "Trending Job Categories",
+      "subtitle": "Explore the most in-demand roles and industries our alumni are thriving in.",
+      "ai": "AI & Machine Learning",
+      "ai_role1": "ML Engineer",
+      "ai_role2": "Data Scientist",
+      "ai_role3": "AI Researcher",
+      "frontend": "Frontend Development",
+      "frontend_role1": "React Developer",
+      "frontend_role2": "Next.js Specialist",
+      "frontend_role3": "UI Engineer",
+      "cloud": "Cloud & DevOps",
+      "cloud_role1": "Cloud Architect",
+      "cloud_role2": "DevOps Engineer",
+      "cloud_role3": "SRE",
+      "product": "Product Management",
+      "product_role1": "Product Manager",
+      "product_role2": "Product Owner",
+      "product_role3": "Technical PM",
+      "explore_cta": "Explore Roles"
+    },
+    "stats": {
+      "title": "Join a Thriving Community",
+      "resumesAnalyzed": "Resumes Analyzed",
+      "placements": "Successful Placements",
+      "alumniNetwork": "Alumni Network",
+      "aiFeaturesUsed": "AI Features Used"
+    },
+    "blog": {
+      "title": "From Our Blog",
+      "subtitle": "Get the latest insights, tips, and success stories to supercharge your career.",
+      "cta": "Read More Posts"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "What is {platformName}?",
+      "a1": "{platformName} is a platform that uses AI to optimize resumes, prepare for interviews, and connect with alumni networks.",
+      "q2": "How does AI Mock Interview work?",
+      "a2": "AI Mock Interview generates questions based on your job role and evaluates your answers with detailed feedback.",
+      "q3": "Is {platformName} free?",
+      "a3": "Yes, you can start using {platformName} for free. Premium features are available with subscription plans.",
+      "q4": "Can I customize my resume templates?",
+      "a4": "Absolutely! JobMatch AI provides customizable templates to suit your needs."
+    },
+    "final_cta": {
+      "title": "Ready to Elevate Your Career?",
+      "subtitle": "Stop guessing and start getting results. Sign up for JobMatch AI today and take the next step in your professional journey.",
+      "cta": "Sign Up For Free"
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact Us"
+    }
+  }
+}

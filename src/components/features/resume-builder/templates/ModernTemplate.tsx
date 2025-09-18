@@ -6,9 +6,15 @@ import type { ResumeBuilderData } from "@/types";
 
 interface TemplateProps {
   data: ResumeBuilderData;
+  styles?: {
+    headerColor?: string;
+    bodyColor?: string;
+    headerFontSize?: string;
+    textAlign?: 'left' | 'center' | 'right';
+  };
 }
 
-const ModernTemplate = ({ data }: TemplateProps) => {
+const ModernTemplate = ({ data, styles = {} }: TemplateProps) => {
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
       <li key={index} className="ml-4 text-xs">{line.startsWith('-') ? line.substring(1).trim() : line.trim()}</li>
@@ -16,10 +22,10 @@ const ModernTemplate = ({ data }: TemplateProps) => {
   };
 
   return (
-    <div className="p-4 text-sm font-sans text-slate-800">
+    <div className="p-4 text-sm font-sans" style={{ color: styles.bodyColor, textAlign: styles.textAlign }}>
       {/* Header Section */}
-      <div className="text-center mb-3 border-b pb-2 border-slate-200">
-        {data.header.fullName && <h1 className="text-xl font-bold">{data.header.fullName}</h1>}
+      <div className="mb-3 border-b pb-2 border-slate-200" style={{ textAlign: 'center' }}>
+        {data.header.fullName && <h1 className="text-xl font-bold" style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}>{data.header.fullName}</h1>}
         <div className="text-xs text-slate-600 flex justify-center gap-x-2 flex-wrap">
           {data.header.phone && <span>{data.header.phone}</span>}
           {data.header.email && <span>| {data.header.email}</span>}
@@ -32,7 +38,7 @@ const ModernTemplate = ({ data }: TemplateProps) => {
       {/* Summary Section */}
       {data.summary && (
         <div className="mb-3">
-          <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Summary</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Summary</h2>
           <p className="text-xs text-slate-700 whitespace-pre-line">{data.summary}</p>
         </div>
       )}
@@ -40,7 +46,7 @@ const ModernTemplate = ({ data }: TemplateProps) => {
       {/* Skills Section */}
       {data.skills.length > 0 && (
         <div className="mb-3">
-          <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Skills</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Skills</h2>
           <p className="text-xs text-slate-700">{data.skills.join(" • ")}</p>
         </div>
       )}
@@ -48,7 +54,7 @@ const ModernTemplate = ({ data }: TemplateProps) => {
       {/* Experience Section */}
       {data.experience.length > 0 && (
         <div className="mb-3">
-          <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">Experience</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Experience</h2>
           {data.experience.map((exp, index) => (
             <div key={exp.id || index} className="mb-2">
               <h3 className="text-sm font-semibold text-slate-700">{exp.jobTitle}</h3>
@@ -63,7 +69,7 @@ const ModernTemplate = ({ data }: TemplateProps) => {
       {/* Education Section */}
       {data.education.length > 0 && (
         <div className="mb-3">
-          <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">Education</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Education</h2>
           {data.education.map((edu, index) => (
             <div key={edu.id || index} className="mb-1.5">
               <h3 className="text-sm font-semibold text-slate-700">{edu.degree} {edu.major && `- ${edu.major}`}</h3>
@@ -80,25 +86,25 @@ const ModernTemplate = ({ data }: TemplateProps) => {
         <div className="mt-3 pt-2 border-t border-slate-200">
           {data.additionalDetails.awards && data.additionalDetails.awards.length > 0 && (
             <div className="mb-1.5">
-              <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Awards</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Awards</h2>
               <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.awards}</p>
             </div>
           )}
           {data.additionalDetails.certifications && data.additionalDetails.certifications.length > 0 && (
             <div className="mb-1.5">
-              <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Certifications</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Certifications</h2>
               <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.certifications}</p>
             </div>
           )}
           {data.additionalDetails.languages && data.additionalDetails.languages.length > 0 && (
             <div className="mb-1.5">
-              <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Languages</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Languages</h2>
               <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.languages}</p>
             </div>
           )}
           {data.additionalDetails.interests && data.additionalDetails.interests.length > 0 && (
             <div className="mb-1.5">
-              <h2 className="text-xs font-bold uppercase text-slate-500 tracking-wider mb-0.5">Interests</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Interests</h2>
               <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.interests}</p>
             </div>
           )}
