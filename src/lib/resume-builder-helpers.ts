@@ -55,7 +55,7 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
       'JavaScript', 'TypeScript', 'React', 'Node.js', 'Express', 'Python', 'SQL', 'MongoDB', 'Docker', 'AWS', 'Agile Methodologies', 'CI/CD'
     ],
     additionalDetails: { main: {}, sidebar: {} },
-    templateId: 'template1', // Fallback templateId
+    templateId: 'template1', 
     layout: 'single-column',
     sectionOrder: defaultSectionOrder,
     styles: {

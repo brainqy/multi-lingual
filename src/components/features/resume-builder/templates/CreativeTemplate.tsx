@@ -72,18 +72,12 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                     <h1 
                       className="text-2xl font-bold text-gray-900" 
                       style={{ color: styles?.headerColor, fontSize: styles?.headerFontSize }}
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onDataChange('header.fullName', e.currentTarget.textContent || '')}
                     >
                       {data.header.fullName}
                     </h1>
                     <p 
                       className="text-md font-medium mb-4" 
                       style={{ color: styles?.headerColor }}
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => onDataChange('header.jobTitle', e.currentTarget.textContent || '')}
                     >
                       {data.header.jobTitle || 'Aspiring Professional'}
                     </p>
@@ -97,7 +91,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                 </div>
             );
         case 'skills':
-            return data.skills.length > 0 ? (
+            return data.skills && data.skills.length > 0 ? (
                 <SortableSection id="skills" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
                     <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Skills</h2>
                     <div className="flex flex-wrap gap-1">
@@ -106,7 +100,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                 </SortableSection>
             ) : null;
         case 'education':
-            return data.education.length > 0 ? (
+            return data.education && data.education.length > 0 ? (
                 <SortableSection id="education" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
                     <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
                     {data.education.map((edu, index) => (
@@ -124,16 +118,13 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                     <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles?.headerColor, borderColor: styles?.headerColor ? `${styles.headerColor}30` : undefined }}>Profile</h2>
                     <p 
                         className="text-sm text-gray-700 whitespace-pre-line"
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => onDataChange('summary', e.currentTarget.textContent || '')}
                     >
                         {data.summary}
                     </p>
                 </SortableSection>
             ) : null;
         case 'experience':
-            return data.experience.length > 0 ? (
+            return data.experience && data.experience.length > 0 ? (
                 <SortableSection id="experience" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
                     <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles?.headerColor, borderColor: styles?.headerColor ? `${styles.headerColor}30` : undefined }}>Experience</h2>
                     {data.experience.map((exp, index) => (
@@ -164,11 +155,8 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                         </h2>
                         <div 
                             className={isSidebarSection ? "text-xs text-gray-700 whitespace-pre-line" : "text-sm text-gray-700 whitespace-pre-line"}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
                         >
-                            {formatResponsibilities(value)}
+                            {value}
                         </div>
                     </SortableSection>
                 );
@@ -182,6 +170,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.main.hasOwnProperty(key);
     }
+    // Standard sections for main column
     return ['summary', 'experience'].includes(id);
   });
   
@@ -190,11 +179,13 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
       const key = id.replace('custom-', '');
       return data.additionalDetails?.sidebar.hasOwnProperty(key);
     }
-    return ['header', 'skills', 'education'].includes(id);
+    // Standard sections for sidebar
+    return ['skills', 'education'].includes(id);
   });
   
   const SidebarContent = () => (
      <div className="space-y-4">
+        {renderSection('header')}
         {sidebarSections.map(id => renderSection(id))}
      </div>
   );
@@ -210,7 +201,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
         className={cn("p-4 text-gray-800 bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]", getFontClass())}
         style={{ color: styles?.bodyColor }}
     >
-        {layout.startsWith('two-column') ? (
+        {layout && layout.startsWith('two-column') ? (
             <div className={cn(
               "flex gap-4 h-full",
               layout === 'two-column-right' ? 'flex-row-reverse' : 'flex-row'
@@ -224,14 +215,10 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                 </main>
             </div>
         ) : (
-            <div>
-                <div className="mb-4">
-                   {renderSection('header')}
-                </div>
-                <main className="p-4" style={{ textAlign: styles?.textAlign }}>
-                   {sectionOrder.filter(id => id !== 'header').map(id => renderSection(id))}
-                </main>
-            </div>
+             <div className="space-y-4">
+                {renderSection('header')}
+                {sectionOrder.filter(id => id !== 'header').map(id => renderSection(id))}
+             </div>
         )}
     </div>
   );
