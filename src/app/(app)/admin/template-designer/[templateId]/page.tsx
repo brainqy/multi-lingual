@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useAuth } from '@/hooks/use-auth';
+import { Slider } from '@/components/ui/slider';
 
 export default function TemplateEditorPage() {
   const params = useParams();
@@ -32,51 +33,57 @@ export default function TemplateEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(70);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
+    if (!user) return;
     setIsLoading(true);
     const templates = await getResumeTemplates();
     setAllTemplates(templates);
-
+  
     let initialResumeData: ResumeBuilderData = getInitialResumeData(user);
-
-    if (!isNewTemplate) {
-      const currentTemplate = templates.find(t => t.id === templateId);
-      if (currentTemplate) {
+  
+    if (resumeId && !isNewTemplate) {
+      toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
+      const userResumes = await getResumeProfiles(user.id);
+      const resumeToEdit = userResumes.find(r => r.id === resumeId);
+      if (resumeToEdit && resumeToEdit.resumeText) {
         try {
-          // Merge saved content with a default structure to ensure all keys are present
-          const parsedContent = JSON.parse(currentTemplate.content);
-          initialResumeData = { 
-            ...initialResumeData, 
-            ...parsedContent,
-            header: { ...initialResumeData.header, ...parsedContent.header },
-            styles: { ...initialResumeData.styles, ...parsedContent.styles },
-            additionalDetails: {
-                main: { ...initialResumeData.additionalDetails?.main, ...parsedContent.additionalDetails?.main },
-                sidebar: { ...initialResumeData.additionalDetails?.sidebar, ...parsedContent.additionalDetails?.sidebar }
-            },
-            templateId: currentTemplate.id 
-          };
+          const parsedData = JSON.parse(resumeToEdit.resumeText);
+          initialResumeData = { ...getInitialResumeData(user), ...parsedData };
+          setEditingResumeId(resumeToEdit.id);
         } catch (e) {
-          console.error("Failed to parse template content, using default data.", e);
-          initialResumeData.templateId = currentTemplate.id; // Still assign the correct ID
+          toast({ title: "Error Loading Resume", description: "Could not parse resume data.", variant: "destructive" });
+        }
+      }
+    } else if (templateId) {
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        initialResumeData.templateId = template.id;
+        try {
+            const parsedContent = JSON.parse(template.content);
+            initialResumeData.layout = parsedContent.layout || initialResumeData.layout;
+        } catch (e) {
+             console.error("Could not parse layout from template, using default.");
         }
       }
     }
-    
-    // Ensure sectionOrder always exists
+  
     if (!initialResumeData.sectionOrder || initialResumeData.sectionOrder.length === 0) {
       initialResumeData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
     }
-    
+  
     setResumeData(initialResumeData);
     setIsLoading(false);
-  }, [templateId, isNewTemplate, user]);
-
+  }, [user, isNewTemplate, toast]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const resumeId = searchParams.get('resumeId');
+    const templateId = searchParams.get('templateId');
+    if(user) {
+        loadData(resumeId, templateId);
+    }
+  }, [user, searchParams, loadData]);
   
   const selectedElementData = useMemo(() => {
     if (!selectedElementId || !resumeData) return null;
@@ -166,7 +173,11 @@ export default function TemplateEditorPage() {
     }
 
     setResumeData(prev => {
-        if (!prev) return null;
+        if (!prev) {
+             toast({ title: "Error", description: "Resume data not available.", variant: "destructive" });
+             return prev;
+        }
+        
         const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
         
         if ((prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) || 
@@ -190,22 +201,21 @@ export default function TemplateEditorPage() {
   
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
     const fullKey = `custom-${sectionKey}`;
-    
-    if (resumeData?.sectionOrder.includes(fullKey)) {
-      toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
-      return;
-    }
-    
-    setResumeData(prev => {
-      if (!prev) return null;
 
-      const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
-      if (!newDetails.main) newDetails.main = {};
-      newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
-      const newSectionOrder = [...prev.sectionOrder, fullKey];
+    setResumeData(prev => {
+        if (!prev) return prev;
+        if (prev.sectionOrder.includes(fullKey)) {
+            toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
+            return prev;
+        }
+
+        const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+        if (!newDetails.main) newDetails.main = {};
+        newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
+        const newSectionOrder = [...prev.sectionOrder, fullKey];
       
-      toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
-      return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
+        toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
+        return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
   };
 
@@ -305,7 +315,7 @@ export default function TemplateEditorPage() {
         </aside>
 
         <main className="flex-1 flex justify-start overflow-auto p-8">
-            <div className="w-auto h-full">
+            <div className="w-auto h-full" style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top left' }}>
                 <ResumePreview 
                 ref={resumePreviewRef} 
                 resumeData={resumeData}
@@ -362,6 +372,17 @@ export default function TemplateEditorPage() {
                    </SelectContent>
                  </Select>
                </div>
+                <div className="space-y-3 pt-2">
+                    <Label htmlFor="zoom-slider" className="text-xs">Zoom ({zoomLevel}%)</Label>
+                    <Slider
+                        id="zoom-slider"
+                        min={30}
+                        max={100}
+                        step={10}
+                        value={[zoomLevel]}
+                        onValueChange={(value) => setZoomLevel(value[0])}
+                    />
+                </div>
             </CardContent>
           </Card>
         </aside>

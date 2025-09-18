@@ -56,13 +56,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
     );
   };
 
-  const renderSection = (sectionId: string, location: 'main' | 'sidebar' | 'header') => {
-    const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(sectionId.replace('custom-', ''));
-    const isMainSection = data.additionalDetails?.main.hasOwnProperty(sectionId.replace('custom-', ''));
-
-    if (location === 'sidebar' && !isSidebarSection && sectionId.startsWith('custom-')) return null;
-    if (location === 'main' && !isMainSection && sectionId.startsWith('custom-')) return null;
-
+  const renderSection = (sectionId: string) => {
     switch (sectionId) {
         case 'header':
             return (
@@ -146,17 +140,18 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
         default:
             if (sectionId.startsWith('custom-')) {
                 const key = sectionId.replace('custom-', '');
-                const value = isSidebarSection ? data.additionalDetails?.sidebar[key] : data.additionalDetails?.main[key];
+                const value = data.additionalDetails?.main[key] || data.additionalDetails?.sidebar[key];
                 
                 if (!value) return null;
 
-                const headingClass = location === 'main' 
-                    ? "text-lg font-bold tracking-wide border-b-2 pb-1 mb-2"
-                    : "text-sm font-bold uppercase tracking-wider mb-1";
+                const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(key);
+                const headingClass = isSidebarSection
+                    ? "text-sm font-bold uppercase tracking-wider mb-1"
+                    : "text-lg font-bold tracking-wide border-b-2 pb-1 mb-2";
                 
                 return (
                     <SortableSection id={sectionId} onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                        <h2 className={headingClass} style={{ color: styles?.headerColor, borderColor: location === 'main' && styles?.headerColor ? `${styles.headerColor}30` : undefined }}>
+                        <h2 className={headingClass} style={{ color: styles?.headerColor, borderColor: !isSidebarSection && styles?.headerColor ? `${styles.headerColor}30` : undefined }}>
                             {key.replace(/_/g, ' ')}
                         </h2>
                         <p 
@@ -174,16 +169,32 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
     }
   };
   
+  const mainSections = sectionOrder.filter(id => {
+    if (id.startsWith('custom-')) {
+      const key = id.replace('custom-', '');
+      return data.additionalDetails?.main.hasOwnProperty(key);
+    }
+    return ['summary', 'experience'].includes(id);
+  });
+  
+  const sidebarSections = sectionOrder.filter(id => {
+     if (id.startsWith('custom-')) {
+      const key = id.replace('custom-', '');
+      return data.additionalDetails?.sidebar.hasOwnProperty(key);
+    }
+    return ['skills', 'education'].includes(id);
+  });
+  
   const SidebarContent = () => (
      <div className="space-y-4">
-        {renderSection('header', 'header')}
-        {sectionOrder.map(id => renderSection(id, 'sidebar'))}
+        {renderSection('header')}
+        {sidebarSections.map(id => renderSection(id))}
      </div>
   );
 
   const MainContent = () => (
      <div className="space-y-4">
-        {sectionOrder.map(id => renderSection(id, 'main'))}
+        {mainSections.map(id => renderSection(id))}
      </div>
   );
 

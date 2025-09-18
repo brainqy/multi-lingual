@@ -166,16 +166,20 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
     }
   };
 
+  const MainContent = () => (
+    <div className="space-y-3">
+      {sectionOrder.map(sectionId => (
+        <div key={sectionId}>
+            {renderSection(sectionId)}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="p-6 text-sm font-sans bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
       <Header />
-      <div className="space-y-3">
-        {sectionOrder.map(sectionId => (
-            <div key={sectionId}>
-                {renderSection(sectionId)}
-            </div>
-        ))}
-      </div>
+      <MainContent />
     </div>
   );
 };
