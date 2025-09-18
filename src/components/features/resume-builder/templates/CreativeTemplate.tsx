@@ -8,32 +8,13 @@ import { cn } from '@/lib/utils';
 
 interface TemplateProps {
   data: ResumeBuilderData;
-  styles?: {
-    headerColor?: string;
-    bodyColor?: string;
-    headerFontSize?: string;
-    textAlign?: 'left' | 'center' | 'right';
-  };
   onSelectElement: (elementId: string | null) => void;
   selectedElementId: string | null;
   onDataChange: (field: string, value: string) => void;
 }
 
-const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
-  let layout = 'single-column';
-  try {
-    const parsedContent = JSON.parse(data.templateId || '{}');
-    if (parsedContent.layout) {
-      layout = parsedContent.layout;
-    } else {
-      // Fallback for old string-based templateId
-      const templateDetails = JSON.parse(data.templateId || '{}');
-      layout = templateDetails.layout || 'single-column';
-    }
-  } catch (e) {
-    // Fallback for completely invalid JSON or old format
-    layout = 'single-column';
-  }
+const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
+  const { layout, styles } = data;
 
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
@@ -53,7 +34,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
         <div className={getSectionClasses('header')} onClick={() => onSelectElement('header')}>
             <h1 
               className="text-2xl font-bold text-gray-900" 
-              style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}
+              style={{ color: styles?.headerColor, fontSize: styles?.headerFontSize }}
               contentEditable
               suppressContentEditableWarning
               onBlur={(e) => onDataChange('header.fullName', e.currentTarget.textContent || '')}
@@ -62,7 +43,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
             </h1>
             <p 
               className="text-md font-medium mb-4" 
-              style={{ color: styles.headerColor }}
+              style={{ color: styles?.headerColor }}
               contentEditable
               suppressContentEditableWarning
               onBlur={(e) => onDataChange('experience.0.jobTitle', e.currentTarget.textContent || '')}
@@ -71,16 +52,16 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
             </p>
             
             <div className="space-y-3 text-xs">
-            {data.header.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.email}</span></div>}
-            {data.header.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.phone}</span></div>}
-            {data.header.address && <div className="flex items-center gap-2"><Home className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.address}</span></div>}
-            {data.header.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-3 w-3" style={{ color: styles.headerColor }}/><a href={`https://${data.header.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a></div>}
+            {data.header.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" style={{ color: styles?.headerColor }}/><span>{data.header.email}</span></div>}
+            {data.header.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" style={{ color: styles?.headerColor }}/><span>{data.header.phone}</span></div>}
+            {data.header.address && <div className="flex items-center gap-2"><Home className="h-3 w-3" style={{ color: styles?.headerColor }}/><span>{data.header.address}</span></div>}
+            {data.header.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-3 w-3" style={{ color: styles?.headerColor }}/><a href={`https://${data.header.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a></div>}
             </div>
         </div>
         
         {data.skills.length > 0 && (
           <div className={cn("mt-4", getSectionClasses('skills'))} onClick={() => onSelectElement('skills')}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Skills</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Skills</h2>
             <div className="flex flex-wrap gap-1">
               {data.skills.map(skill => <span key={skill} className="bg-primary/20 text-primary-darker text-xs px-2 py-0.5 rounded-full">{skill}</span>)}
             </div>
@@ -89,7 +70,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
 
         {data.education.length > 0 && (
           <div className={cn("mt-4", getSectionClasses('education'))} onClick={() => onSelectElement('education')}>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Education</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
             {data.education.map((edu, index) => (
               <div key={edu.id || index} className="mb-2 text-xs">
                 <h3 className="font-semibold text-gray-800">{edu.degree}</h3>
@@ -99,6 +80,25 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
             ))}
           </div>
         )}
+        {data.additionalDetails?.sidebar && Object.entries(data.additionalDetails.sidebar).map(([key, value]) => {
+            if (!value) return null;
+            const sectionId = `custom-${key}`;
+            return (
+                <div key={key} className={cn("mt-4", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
+                    <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>
+                        {key.replace(/_/g, ' ')}
+                    </h2>
+                    <p 
+                        className="text-xs text-gray-700 whitespace-pre-line"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
+                    >
+                        {value}
+                    </p>
+                </div>
+            );
+        })}
      </>
   );
 
@@ -106,7 +106,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
      <>
         {data.summary && (
           <div className={cn("mb-4", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
-            <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>Profile</h2>
+            <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles?.headerColor, borderColor: styles?.headerColor ? `${styles.headerColor}30` : undefined }}>Profile</h2>
             <p 
                 className="text-sm text-gray-700 whitespace-pre-line"
                 contentEditable
@@ -120,7 +120,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
 
         {data.experience.length > 0 && (
           <div className={cn("mb-4", getSectionClasses('experience'))} onClick={() => onSelectElement('experience')}>
-            <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>Experience</h2>
+            <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles?.headerColor, borderColor: styles?.headerColor ? `${styles.headerColor}30` : undefined }}>Experience</h2>
             {data.experience.map((exp, index) => (
               <div key={exp.id || index} className="mb-3">
                 <h3 className="text-md font-semibold text-gray-800">{exp.jobTitle}</h3>
@@ -131,12 +131,12 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
           </div>
         )}
 
-        {data.additionalDetails && Object.entries(data.additionalDetails).map(([key, value]) => {
+        {data.additionalDetails?.main && Object.entries(data.additionalDetails.main).map(([key, value]) => {
             if (!value) return null;
             const sectionId = `custom-${key}`;
             return (
                 <div key={key} className={cn("mt-4", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
-                    <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>
+                    <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles?.headerColor, borderColor: styles?.headerColor ? `${styles.headerColor}30` : undefined }}>
                         {key.replace(/_/g, ' ')}
                     </h2>
                     <p 
@@ -155,7 +155,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
 
 
   return (
-    <div className="p-6 font-sans text-gray-800 bg-white" style={{ color: styles.bodyColor }}>
+    <div className="p-6 font-sans text-gray-800 bg-white" style={{ color: styles?.bodyColor }}>
         {layout.startsWith('two-column') ? (
             <div className={cn(
               "flex",
@@ -164,7 +164,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
                 <aside className="w-1/3 bg-gray-100 p-4 rounded-lg">
                     <SidebarContent/>
                 </aside>
-                <main className="w-2/3 p-6" style={{ textAlign: styles.textAlign }}>
+                <main className="w-2/3 p-6" style={{ textAlign: styles?.textAlign }}>
                     <MainContent/>
                 </main>
             </div>
@@ -173,9 +173,9 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
                 <div className="bg-gray-100 p-4 rounded-lg mb-4">
                    <SidebarContent/>
                 </div>
-                <div className="p-6" style={{ textAlign: styles.textAlign }}>
+                <main className="p-6" style={{ textAlign: styles?.textAlign }}>
                    <MainContent/>
-                </div>
+                </main>
             </div>
         )}
     </div>

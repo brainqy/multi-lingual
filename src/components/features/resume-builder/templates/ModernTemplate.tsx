@@ -7,26 +7,13 @@ import { cn } from '@/lib/utils';
 
 interface TemplateProps {
   data: ResumeBuilderData;
-  styles?: {
-    headerColor?: string;
-    bodyColor?: string;
-    headerFontSize?: string;
-    textAlign?: 'left' | 'center' | 'right';
-  };
   onSelectElement: (elementId: string | null) => void;
   selectedElementId: string | null;
   onDataChange: (field: string, value: string) => void;
 }
 
-const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
-    let layout = 'single-column';
-    try {
-      const parsedContent = data.templateId ? JSON.parse(data.templateId) : {};
-      layout = parsedContent.layout || 'single-column';
-    } catch (e) {
-      // Fallback for when templateId is just a string like "template1"
-      layout = 'single-column';
-    }
+const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
+  const { layout, styles } = data;
 
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
@@ -45,7 +32,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
      <div className={cn("mb-3 border-b pb-2 border-slate-200", getSectionClasses('header'))} style={{ textAlign: 'center' }} onClick={() => onSelectElement('header')}>
         {data.header.fullName && <h1 
             className="text-xl font-bold" 
-            style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}
+            style={{ color: styles?.headerColor, fontSize: styles?.headerFontSize }}
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => onDataChange('header.fullName', e.currentTarget.textContent || '')}
@@ -65,7 +52,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         {/* Summary Section */}
         {data.summary && (
             <div className={cn("mb-3", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Summary</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Summary</h2>
             <p 
                 className="text-xs text-slate-700 whitespace-pre-line"
                 contentEditable
@@ -80,7 +67,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         {/* Skills Section */}
         {data.skills.length > 0 && (
             <div className={cn("mb-3", getSectionClasses('skills'))} onClick={() => onSelectElement('skills')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Skills</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Skills</h2>
             <p 
                 className="text-xs text-slate-700"
                 contentEditable
@@ -93,7 +80,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         {/* Experience Section */}
         {data.experience.length > 0 && (
             <div className={cn("mb-3", getSectionClasses('experience'))} onClick={() => onSelectElement('experience')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Experience</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Experience</h2>
             {data.experience.map((exp, index) => (
                 <div key={exp.id || index} className="mb-2">
                 <h3 className="text-sm font-semibold text-slate-700">{exp.jobTitle}</h3>
@@ -108,7 +95,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         {/* Education Section */}
         {data.education.length > 0 && (
             <div className={cn("mb-3", getSectionClasses('education'))} onClick={() => onSelectElement('education')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles.headerColor }}>Education</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
             {data.education.map((edu, index) => (
                 <div key={edu.id || index} className="mb-1.5">
                 <h3 className="text-sm font-semibold text-slate-700">{edu.degree} {edu.major && `- ${edu.major}`}</h3>
@@ -121,12 +108,12 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         )}
         
         {/* Additional Details Section */}
-        {data.additionalDetails && Object.entries(data.additionalDetails).map(([key, value]) => {
+        {data.additionalDetails?.main && Object.entries(data.additionalDetails.main).map(([key, value]) => {
             if (!value) return null;
             const sectionId = `custom-${key}`;
             return (
                 <div key={key} className={cn("mt-3 pt-2 border-t border-slate-200", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
-                    <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>
+                    <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>
                         {key.replace(/_/g, ' ')}
                     </h2>
                     <p 
@@ -144,7 +131,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
   );
 
   return (
-    <div className="p-4 text-sm font-sans" style={{ color: styles.bodyColor, textAlign: styles.textAlign }}>
+    <div className="p-4 text-sm font-sans" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
       <Header />
       <Content />
     </div>

@@ -35,25 +35,23 @@ export default function TemplateEditorPage() {
     const templates = await getResumeTemplates();
     setAllTemplates(templates);
   
+    let initialResumeData = getInitialResumeData(null);
     let currentTemplate: ResumeTemplate | undefined;
+  
     if (!isNewTemplate) {
       currentTemplate = templates.find(t => t.id === templateId);
     }
   
-    let initialResumeData = getInitialResumeData(null);
-  
     if (currentTemplate) {
       try {
-        const parsedContent = JSON.parse(currentTemplate.content || '{}');
-        // Merge parsed content into the initial data, which has the full structure
+        const parsedContent = JSON.parse(currentTemplate.content);
         initialResumeData = { ...initialResumeData, ...parsedContent, templateId: currentTemplate.id };
       } catch (e) {
         console.error("Failed to parse template content, using default data.", e);
-        toast({ title: "Template Load Error", description: "Could not parse template styles, using defaults.", variant: "destructive" });
-        initialResumeData.templateId = currentTemplate.id; // Still assign the correct ID
+        toast({ title: "Template Load Error", description: "Could not parse template styles.", variant: "destructive" });
+        initialResumeData.templateId = currentTemplate.id;
       }
     } else {
-      // For new templates, use default data but allow selecting the first template
       initialResumeData.templateId = templates.length > 0 ? templates[0].id : 'template1';
     }
     
@@ -84,24 +82,21 @@ export default function TemplateEditorPage() {
     return { title: "Editing Element", data: {} };
   }, [selectedElementId, resumeData]);
 
-  const handleStyleChange = (property: keyof ResumeBuilderData, value: any) => {
+  const handleStyleChange = (property: keyof ResumeBuilderData['styles'], value: any) => {
     if (!resumeData) return;
-    setResumeData(prev => prev ? ({ ...prev, [property]: value }) : null);
+    setResumeData(prev => prev ? ({ 
+        ...prev, 
+        styles: {
+            ...prev.styles,
+            [property]: value 
+        } 
+    }) : null);
   };
   
   const handleLayoutChange = (newLayout: string) => {
     if (!resumeData) return;
-    try {
-        const currentContent = resumeData.templateId ? JSON.parse(resumeData.templateId) : {};
-        const newContent = { ...currentContent, layout: newLayout };
-        setResumeData(prev => prev ? ({ ...prev, templateId: JSON.stringify(newContent) }) : null);
-    } catch {
-        // If parsing fails, create a new object
-        const newContent = { layout: newLayout };
-        setResumeData(prev => prev ? ({ ...prev, templateId: JSON.stringify(newContent) }) : null);
-    }
+    setResumeData(prev => prev ? ({ ...prev, layout: newLayout }) : null);
   };
-
 
   const handleDataChange = (field: string, value: string) => {
     if (!resumeData || !selectedElementId) return;
@@ -130,8 +125,13 @@ export default function TemplateEditorPage() {
              newData.skills = value.split(',').map(s => s.trim());
         } else if (section.startsWith('custom')) {
             const customKey = section.split('-')[1];
-            if (!newData.additionalDetails) newData.additionalDetails = {};
-            (newData.additionalDetails as any)[customKey] = value;
+            if (!newData.additionalDetails) newData.additionalDetails = { main: {}, sidebar: {} };
+            // Find which column it's in and update
+            if (newData.additionalDetails.main.hasOwnProperty(customKey)) {
+                newData.additionalDetails.main[customKey] = value;
+            } else if (newData.additionalDetails.sidebar.hasOwnProperty(customKey)) {
+                newData.additionalDetails.sidebar[customKey] = value;
+            }
         }
 
         return newData;
@@ -139,16 +139,29 @@ export default function TemplateEditorPage() {
   };
 
   const handleAddCustomSection = () => {
-    const sectionName = prompt("Enter a name for the new section (e.g., Projects, Publications):");
-    if (sectionName && sectionName.trim()) {
-        const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
-        setResumeData(prev => {
-            if (!prev) return null;
-            const newDetails = { ...(prev.additionalDetails || {}), [key]: `- New detail in your ${sectionName} section.` };
-            return { ...prev, additionalDetails: newDetails };
-        });
-        toast({ title: "Section Added", description: `"${sectionName}" has been added.` });
+    const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
+    if (!sectionName || !sectionName.trim()) return;
+
+    const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
+    let column: 'main' | 'sidebar' = 'main';
+
+    if (resumeData?.layout?.startsWith('two-column')) {
+        const selectedColumn = prompt("Add to which column? (Type 'main' or 'sidebar')", 'main');
+        if (selectedColumn && (selectedColumn.toLowerCase() === 'sidebar' || selectedColumn.toLowerCase() === 'side')) {
+            column = 'sidebar';
+        }
     }
+
+    setResumeData(prev => {
+        if (!prev) return null;
+        const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+        if (!newDetails[column]) {
+            newDetails[column] = {};
+        }
+        newDetails[column][key] = `- New detail in your ${sectionName} section.`;
+        return { ...prev, additionalDetails: newDetails };
+    });
+    toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
   };
 
 
@@ -156,18 +169,13 @@ export default function TemplateEditorPage() {
     if (!resumeData) return;
     setIsSaving(true);
     
-    // Combine resume data with the layout/style content
-    const fullContent = {
-      ...resumeData,
-      // The templateId field is confusingly used for content in some places.
-      // We should ideally refactor this, but for now we'll ensure it's a JSON string.
-    };
-    
+    const { templateId: currentTemplateId, ...contentToSave } = resumeData;
+
     const dataToSave: Partial<ResumeTemplate> = {
         name: resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
         category: "Custom",
         previewImageUrl: "https://placehold.co/300x400/7d3c98/FFFFFF?text=Custom",
-        content: JSON.stringify(fullContent),
+        content: JSON.stringify(contentToSave),
     };
 
     let result;
@@ -192,12 +200,6 @@ export default function TemplateEditorPage() {
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
   
-  let currentLayout = 'single-column';
-  try {
-    currentLayout = JSON.parse(resumeData.templateId || '{}').layout || 'single-column';
-  } catch (e) { /* use default */ }
-
-
   return (
     <div className="h-screen w-screen bg-muted flex flex-col">
       <header className="flex-shrink-0 bg-card border-b p-3 flex justify-between items-center">
@@ -247,7 +249,7 @@ export default function TemplateEditorPage() {
             <CardContent className="space-y-4">
                <div className="space-y-1">
                  <Label htmlFor="layout-select" className="text-xs">Layout</Label>
-                 <Select value={currentLayout} onValueChange={handleLayoutChange}>
+                 <Select value={resumeData.layout} onValueChange={handleLayoutChange}>
                    <SelectTrigger id="layout-select">
                      <SelectValue placeholder="Select layout" />
                    </SelectTrigger>
@@ -260,19 +262,19 @@ export default function TemplateEditorPage() {
                </div>
                <div className="space-y-1">
                  <Label htmlFor="header-color" className="text-xs">Header Color</Label>
-                 <Input id="header-color" value={resumeData.headerColor || ''} onChange={(e) => handleStyleChange('headerColor', e.target.value)} />
+                 <Input id="header-color" value={resumeData.styles?.headerColor || ''} onChange={(e) => handleStyleChange('headerColor', e.target.value)} />
                </div>
                <div className="space-y-1">
                  <Label htmlFor="body-color" className="text-xs">Body Text Color</Label>
-                 <Input id="body-color" value={resumeData.bodyColor || ''} onChange={(e) => handleStyleChange('bodyColor', e.target.value)} />
+                 <Input id="body-color" value={resumeData.styles?.bodyColor || ''} onChange={(e) => handleStyleChange('bodyColor', e.target.value)} />
                </div>
                 <div className="space-y-1">
                  <Label htmlFor="header-font-size" className="text-xs">Header Font Size</Label>
-                 <Input id="header-font-size" value={resumeData.headerFontSize || ''} onChange={(e) => handleStyleChange('headerFontSize', e.target.value)} placeholder="e.g., 24px" />
+                 <Input id="header-font-size" value={resumeData.styles?.headerFontSize || ''} onChange={(e) => handleStyleChange('headerFontSize', e.target.value)} placeholder="e.g., 24px" />
                </div>
                <div className="space-y-1">
                  <Label htmlFor="text-align" className="text-xs">Text Alignment</Label>
-                 <Select value={resumeData.textAlign} onValueChange={(value) => handleStyleChange('textAlign', value as any)}>
+                 <Select value={resumeData.styles?.textAlign} onValueChange={(value) => handleStyleChange('textAlign', value as any)}>
                    <SelectTrigger id="text-align">
                      <SelectValue placeholder="Select alignment" />
                    </SelectTrigger>
