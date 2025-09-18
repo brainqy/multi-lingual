@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import ResumeInputForm from '@/components/features/resume-analyzer/ResumeInputForm';
 import AnalysisReport from '@/components/features/resume-analyzer/AnalysisReport';
 import ScanHistory from '@/components/features/resume-analyzer/ScanHistory';
-import { getResumeProfiles, createScanHistory, updateScanHistory } from '@/lib/actions/resumes';
+import { getResumeProfiles, createScanHistory, updateScanHistory, getScanHistory } from '@/lib/actions/resumes';
 import { useAuth } from '@/hooks/use-auth';
 import { useSettings } from '@/contexts/settings-provider';
 import { convertResumeDataToText } from '@/lib/utils';
