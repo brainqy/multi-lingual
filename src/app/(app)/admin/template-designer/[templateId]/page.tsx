@@ -20,121 +20,62 @@ import { useAuth } from '@/hooks/use-auth';
 import { Slider } from '@/components/ui/slider';
 import TemplateSelectionDialog from '@/components/features/resume-builder/TemplateSelectionDialog';
 
-const logger = {
-    log: (message: string, ...args: any[]) => console.log(`[TemplateEditorPage] ${message}`, ...args),
-};
-
 export default function TemplateEditorPage() {
-  logger.log('0. Component rendering started.');
-
-  logger.log('1. Initializing hooks and state.');
   const params = useParams();
-  logger.log('   - useParams() called.', { params });
   const router = useRouter();
-  logger.log('   - useRouter() called.');
   const searchParams = useSearchParams();
-  logger.log('   - useSearchParams() called.');
   const { toast } = useToast();
-  logger.log('   - useToast() called.');
   const { user } = useAuth();
-  logger.log('   - useAuth() called.', { user });
   const templateId = params.templateId as string;
-  logger.log('   - templateId derived from params.', { templateId });
   const isNewTemplate = templateId === 'new';
-  logger.log('   - isNewTemplate calculated.', { isNewTemplate });
   const resumePreviewRef = useRef<HTMLDivElement>(null);
-  logger.log('   - useRef(resumePreviewRef) created.');
 
-  logger.log('2. Initializing component state.');
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
-  logger.log('   - useState(allTemplates) initialized.', { allTemplates });
   const [resumeData, setResumeData] = useState<ResumeBuilderData | null>(null);
-  logger.log('   - useState(resumeData) initialized.', { resumeData });
   const [isLoading, setIsLoading] = useState(true);
-  logger.log('   - useState(isLoading) initialized.', { isLoading });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  logger.log('   - useState(selectedElementId) initialized.', { selectedElementId });
   const [isSaving, setIsSaving] = useState(false);
-  logger.log('   - useState(isSaving) initialized.', { isSaving });
   const [zoomLevel, setZoomLevel] = useState(70);
-  logger.log('   - useState(zoomLevel) initialized.', { zoomLevel });
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
-  logger.log('   - useState(isTemplateDialogOpen) initialized.', { isTemplateDialogOpen });
 
-  const loadData = useCallback(async (resumeId: string | null, templateIdParam: string | null) => {
-    logger.log('loadData useCallback triggered.', { resumeId, templateIdParam });
+  const loadData = useCallback(async () => {
     if (!user) {
-      logger.log('   - No user found, aborting loadData.');
       return;
     }
-    logger.log('   - Setting isLoading to true.');
     setIsLoading(true);
-    logger.log('   - Fetching resume templates.');
     const templates = await getResumeTemplates();
-    logger.log('   - Fetched templates.', { count: templates.length });
     setAllTemplates(templates);
   
     let initialResumeData: ResumeBuilderData = getInitialResumeData(user);
-    logger.log('   - Generated initial resume data.');
   
     if (!isNewTemplate) {
-      logger.log('   - Not a new template, finding template to edit.', { templateId });
       const templateToEdit = templates.find(t => t.id === templateId);
       if (templateToEdit && templateToEdit.content) {
-        logger.log('   - Found template to edit, parsing content.');
         try {
           const parsedData = JSON.parse(templateToEdit.content);
           initialResumeData = { ...initialResumeData, ...parsedData };
-          logger.log('   - Parsed and merged template content successfully.');
         } catch (e) {
             console.error("Could not parse content from template, using default structure.", e);
-            logger.log('   - ERROR: Could not parse template content.');
+            toast({ title: "Error", description: "Could not parse template content.", variant: "destructive" });
         }
       }
-    } else if (templateIdParam && templateIdParam !== 'new') {
-        logger.log('   - New template flow, but templateIdParam exists.', { templateIdParam });
-        const template = templates.find(t => t.id === templateIdParam);
-        if (template && template.content) {
-            logger.log('   - Found template from param, parsing content.');
-            try {
-                const parsedData = JSON.parse(template.content);
-                initialResumeData = { ...initialResumeData, ...parsedData, templateId: template.id };
-                logger.log('   - Parsed and merged template content from param successfully.');
-            } catch (e) {
-                console.error("Could not parse content from template, using default structure.", e);
-                logger.log('   - ERROR: Could not parse template content from param.');
-            }
-        }
     }
     
-    logger.log('   - Setting final resumeData state.');
     setResumeData(initialResumeData);
-    logger.log('   - Setting isLoading to false.');
     setIsLoading(false);
-  }, [user, isNewTemplate, templateId]);
+  }, [user, isNewTemplate, templateId, toast]);
 
   useEffect(() => {
-    logger.log('useEffect[user, searchParams, loadData, templateId] triggered.');
-    const resumeId = searchParams.get('resumeId');
-    logger.log('   - Got resumeId from searchParams.', { resumeId });
-    const templateIdParam = searchParams.get('templateId');
-    logger.log('   - Got templateIdParam from searchParams.', { templateIdParam });
     if(user) {
-        logger.log('   - User exists, calling loadData.');
-        loadData(resumeId, templateIdParam || templateId);
-    } else {
-        logger.log('   - No user, skipping loadData.');
+        loadData();
     }
-  }, [user, searchParams, loadData, templateId]);
+  }, [user, loadData]);
   
   const selectedElementData = useMemo(() => {
-    logger.log('useMemo[selectedElementId, resumeData] triggered.');
     if (!selectedElementId || !resumeData) {
-      logger.log('   - No selectedElementId or resumeData, returning null.');
       return null;
     }
     
-    logger.log('   - Calculating selectedElementData for:', { selectedElementId });
     if (selectedElementId === 'header') return { title: "Header Section", data: resumeData.header };
     if (selectedElementId === 'summary') return { title: "Summary Section", data: { summary: resumeData.summary } };
     if (selectedElementId === 'experience') return { title: "Experience Section", data: { experience: resumeData.experience } };
@@ -149,17 +90,13 @@ export default function TemplateEditorPage() {
 
     if (selectedElementId === 'additionalDetails') return { title: "Additional Details", data: resumeData.additionalDetails };
 
-    logger.log('   - Defaulting selectedElementData.');
     return { title: "Editing Element", data: {} };
   }, [selectedElementId, resumeData]);
 
   const handleStyleChange = (property: keyof ResumeBuilderData['styles'], value: any) => {
-    logger.log('handleStyleChange called.', { property, value });
     if (!resumeData) {
-      logger.log('   - No resumeData, aborting.');
       return;
     }
-    logger.log('   - Updating resumeData styles.');
     setResumeData(prev => prev ? ({ 
         ...prev, 
         styles: {
@@ -170,26 +107,19 @@ export default function TemplateEditorPage() {
   };
   
   const handleLayoutChange = (newLayout: string) => {
-    logger.log('handleLayoutChange called.', { newLayout });
     if (!resumeData) {
-      logger.log('   - No resumeData, aborting.');
       return;
     }
-    logger.log('   - Updating resumeData layout.');
     setResumeData(prev => prev ? ({ ...prev, layout: newLayout }) : null);
   };
 
   const handleDataChange = (field: string, value: string) => {
-    logger.log('handleDataChange called.', { field, value });
     if (!resumeData || !selectedElementId) {
-      logger.log('   - No resumeData or selectedElementId, aborting.');
       return;
     }
 
     const [section, key, index, subKey] = field.split('.');
-    logger.log('   - Parsed field:', { section, key, index, subKey });
 
-    logger.log('   - Updating resumeData with new value.');
     setResumeData(prev => {
         if (!prev) return null;
         const newData = JSON.parse(JSON.stringify(prev));
@@ -225,16 +155,16 @@ export default function TemplateEditorPage() {
   };
   
   const handleAddCustomSection = () => {
-    logger.log('handleAddCustomSection called.');
     const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
-    logger.log('   - Prompted for section name.', { sectionName });
     if (!sectionName || !sectionName.trim()) {
-      logger.log('   - No section name entered, aborting.');
       return;
     }
+    
+    const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
+    const fullKey = `custom-${key}`;
+    const sectionExists = resumeData?.sectionOrder.some(s => s === fullKey);
 
-    if (resumeData?.sectionOrder.some(s => s.replace('custom-', '').replace(/_/g, ' ') === sectionName.trim().toLowerCase())) {
-        logger.log('   - Section already exists, showing toast.');
+    if (sectionExists) {
         toast({
           title: 'Section Exists',
           description: `A section named "${sectionName}" already exists.`,
@@ -245,18 +175,12 @@ export default function TemplateEditorPage() {
     
     let column: 'main' | 'sidebar' = 'main';
     if (resumeData?.layout?.startsWith('two-column')) {
-        logger.log('   - Two-column layout detected, prompting for column.');
         const selectedColumn = prompt("Add to which column? (Type 'main' or 'sidebar')", 'main');
         if (selectedColumn && (selectedColumn.toLowerCase() === 'sidebar' || selectedColumn.toLowerCase() === 'side')) {
             column = 'sidebar';
         }
-        logger.log('   - Column selected.', { column });
     }
-
-    const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
-    const fullKey = `custom-${key}`;
     
-    logger.log('   - Updating resumeData to add new custom section.');
     setResumeData(prev => {
       if (!prev) return prev;
       const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
@@ -268,7 +192,6 @@ export default function TemplateEditorPage() {
       return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
 
-    logger.log('   - Showing success toast for adding section.');
     toast({
       title: 'Section Added',
       description: `"${sectionName}" added to the ${column} column.`,
@@ -276,16 +199,13 @@ export default function TemplateEditorPage() {
   };
   
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
-    logger.log('handleAddCommonSection called.', { sectionKey, sectionTitle });
     const fullKey = `custom-${sectionKey}`;
     
     if (resumeData?.sectionOrder.includes(fullKey)) {
-        logger.log('   - Common section already exists, showing toast.');
         toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
         return;
     }
     
-    logger.log('   - Updating resumeData to add new common section.');
     setResumeData(prev => {
         if (!prev) return prev;
         const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
@@ -295,22 +215,17 @@ export default function TemplateEditorPage() {
         return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
 
-    logger.log('   - Showing success toast for adding common section.');
     toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
   };
 
 
   const handleSaveChanges = async () => {
-    logger.log('handleSaveChanges called.');
     if (!resumeData) {
-      logger.log('   - No resumeData, aborting save.');
       return;
     }
-    logger.log('   - Setting isSaving to true.');
     setIsSaving(true);
     
     const contentToSave = { ...resumeData };
-    logger.log('   - Prepared content to save.');
 
     const dataToSave: Partial<ResumeTemplate> = {
         name: resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
@@ -318,37 +233,28 @@ export default function TemplateEditorPage() {
         previewImageUrl: "https://placehold.co/300x400/7d3c98/FFFFFF?text=Custom",
         content: JSON.stringify(contentToSave),
     };
-    logger.log('   - Prepared data object for API call.');
 
     let result;
     if (isNewTemplate) {
-      logger.log('   - This is a new template, calling createResumeTemplate.');
       result = await createResumeTemplate(dataToSave as any);
     } else {
-      logger.log('   - This is an existing template, calling updateResumeTemplate.', { templateId });
       result = await updateResumeTemplate(templateId, dataToSave);
     }
 
     if (result) {
-      logger.log('   - Save operation successful.', { result });
       toast({ title: isNewTemplate ? "Template Created" : "Template Saved", description: `Template "${result.name}" has been saved.` });
       if (isNewTemplate) {
-        logger.log('   - Redirecting to the new template editor page.');
         router.push(`/admin/template-designer/${result.id}`);
       }
     } else {
-      logger.log('   - Save operation failed.');
       toast({ title: "Error", description: "Failed to save template.", variant: "destructive" });
     }
-    logger.log('   - Setting isSaving to false.');
     setIsSaving(false);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    logger.log('handleDragEnd called.', { event });
     const { active, over } = event;
     if (over && active.id !== over.id) {
-        logger.log('   - Valid drag event, updating sectionOrder.');
         setResumeData(prev => {
             if (!prev || !prev.sectionOrder) return prev;
             const oldIndex = prev.sectionOrder.indexOf(active.id as string);
@@ -358,40 +264,30 @@ export default function TemplateEditorPage() {
                 sectionOrder: arrayMove(prev.sectionOrder, oldIndex, newIndex),
             };
         });
-    } else {
-        logger.log('   - Invalid drag event, no changes made.');
     }
   };
   
   const handleTemplateSelect = (template: ResumeTemplate) => {
-    logger.log('handleTemplateSelect called.', { templateName: template.name });
     if (!resumeData || !template) {
-      logger.log('   - No resumeData or template, aborting.');
       return;
     }
     
     try {
-      logger.log('   - Parsing template content.');
       const templateData = JSON.parse(template.content) as ResumeBuilderData;
       
-      logger.log('   - Merging current header with new template data.');
       const mergedData: ResumeBuilderData = {
         ...templateData,
         header: resumeData.header,
         templateId: template.id,
       };
 
-      logger.log('   - Updating resumeData state with merged data.');
       setResumeData(mergedData);
-      logger.log('   - Closing template dialog.');
       setIsTemplateDialogOpen(false);
-      logger.log('   - Showing success toast.');
       toast({
         title: "Template Changed",
         description: `Switched to "${template.name}". Your personal details have been preserved.`,
       });
     } catch (e) {
-      logger.log('   - ERROR: Failed to parse template content.', { error: e });
       console.error("Failed to parse template content:", e);
       toast({
         title: "Error Applying Template",
@@ -407,14 +303,11 @@ export default function TemplateEditorPage() {
     { key: 'languages', title: 'Languages', icon: LanguagesIcon },
     { key: 'interests', title: 'Interests', icon: Heart },
   ];
-  logger.log('3. Common sections defined.');
 
   if (isLoading || !resumeData) {
-    logger.log('4. Render check: isLoading or no resumeData. Showing loading spinner.');
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
   
-  logger.log('5. Starting main component render.');
   return (
     <>
     <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -550,3 +443,5 @@ export default function TemplateEditorPage() {
     </>
   );
 }
+
+    
