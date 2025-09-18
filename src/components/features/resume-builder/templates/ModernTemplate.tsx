@@ -55,6 +55,14 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
         selectedElementId === id ? "bg-primary/20 ring-2 ring-primary" : "hover:bg-primary/5"
     );
   };
+  
+  const getFontClass = () => {
+    switch (styles?.fontFamily) {
+        case 'serif': return 'font-serif';
+        case 'mono': return 'font-mono';
+        default: return 'font-sans';
+    }
+  };
 
   const Header = () => (
      <div className={cn("mb-3 border-b pb-2 border-slate-200", getSectionClasses('header'))} style={{ textAlign: 'center' }} onClick={() => onSelectElement('header')}>
@@ -177,7 +185,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
   );
 
   return (
-    <div className="p-6 text-sm font-sans bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
+    <div className={cn("p-6 text-sm bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]", getFontClass())} style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
       <Header />
       <MainContent />
     </div>

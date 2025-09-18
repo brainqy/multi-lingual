@@ -56,6 +56,14 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
     );
   };
 
+  const getFontClass = () => {
+    switch (styles?.fontFamily) {
+        case 'serif': return 'font-serif';
+        case 'mono': return 'font-mono';
+        default: return 'font-sans';
+    }
+  };
+
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
         case 'header':
@@ -200,7 +208,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
 
   return (
     <div 
-        className="p-4 font-sans text-gray-800 bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]" 
+        className={cn("p-4 text-gray-800 bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]", getFontClass())}
         style={{ color: styles?.bodyColor }}
     >
         {layout.startsWith('two-column') ? (

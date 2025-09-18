@@ -959,6 +959,7 @@ export interface ResumeHeaderData {
     linkedin: string;
     portfolio: string;
     address: string;
+    jobTitle: string;
 }
 export interface ResumeExperienceEntry {
     id: string;
@@ -999,6 +1000,7 @@ export interface ResumeBuilderData {
       bodyColor?: string;
       headerFontSize?: string;
       textAlign?: 'left' | 'center' | 'right';
+      fontFamily?: 'sans' | 'serif' | 'mono';
     };
 }
 

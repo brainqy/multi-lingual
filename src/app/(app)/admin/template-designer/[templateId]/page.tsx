@@ -35,7 +35,7 @@ export default function TemplateEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(70);
 
-  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
+  const loadData = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     const templates = await getResumeTemplates();
@@ -43,47 +43,30 @@ export default function TemplateEditorPage() {
   
     let initialResumeData: ResumeBuilderData = getInitialResumeData(user);
   
-    if (resumeId && !isNewTemplate) {
-      toast({ title: "Loading Resume...", description: "Fetching your resume data to edit." });
-      const userResumes = await getResumeProfiles(user.id);
-      const resumeToEdit = userResumes.find(r => r.id === resumeId);
-      if (resumeToEdit && resumeToEdit.resumeText) {
+    if (!isNewTemplate) {
+      const templateToEdit = templates.find(t => t.id === templateId);
+      if (templateToEdit && templateToEdit.content) {
         try {
-          const parsedData = JSON.parse(resumeToEdit.resumeText);
-          initialResumeData = { ...getInitialResumeData(user), ...parsedData };
-          setEditingResumeId(resumeToEdit.id);
+          // Robust parsing: check if content is a string and looks like JSON
+          if (typeof templateToEdit.content === 'string' && templateToEdit.content.trim().startsWith('{')) {
+            const parsedData = JSON.parse(templateToEdit.content);
+            initialResumeData = { ...initialResumeData, ...parsedData };
+          }
         } catch (e) {
-          toast({ title: "Error Loading Resume", description: "Could not parse resume data.", variant: "destructive" });
-        }
-      }
-    } else if (templateId) {
-      const template = templates.find(t => t.id === templateId);
-      if (template) {
-        initialResumeData.templateId = template.id;
-        try {
-            const parsedContent = JSON.parse(template.content);
-            initialResumeData.layout = parsedContent.layout || initialResumeData.layout;
-        } catch (e) {
-             console.error("Could not parse layout from template, using default.");
+            console.error("Could not parse content from template, using default structure.", e);
         }
       }
     }
-  
-    if (!initialResumeData.sectionOrder || initialResumeData.sectionOrder.length === 0) {
-      initialResumeData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
-    }
-  
+    
     setResumeData(initialResumeData);
     setIsLoading(false);
-  }, [user, isNewTemplate, toast]);
+  }, [user, isNewTemplate, templateId]);
 
   useEffect(() => {
-    const resumeId = searchParams.get('resumeId');
-    const templateId = searchParams.get('templateId');
     if(user) {
-        loadData(resumeId, templateId);
+        loadData();
     }
-  }, [user, searchParams, loadData]);
+  }, [user, loadData]);
   
   const selectedElementData = useMemo(() => {
     if (!selectedElementId || !resumeData) return null;
@@ -173,29 +156,35 @@ export default function TemplateEditorPage() {
     }
 
     setResumeData(prev => {
-        if (!prev) {
-             toast({ title: "Error", description: "Resume data not available.", variant: "destructive" });
-             return prev;
-        }
-        
-        const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
-        
-        if ((prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) || 
-            (prev.additionalDetails?.sidebar && prev.additionalDetails.sidebar.hasOwnProperty(key))) {
-             toast({ title: "Section Exists", description: `A section named "${sectionName}" already exists.`, variant: "destructive" });
-            return prev;
-        }
-        
-        const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
-        if (!newDetails[column]) {
-            newDetails[column] = {};
-        }
-        newDetails[column][key] = `- New detail in your ${sectionName} section.`;
-        
-        const newSectionOrder = [...(prev.sectionOrder || []), `custom-${key}`];
+      if (!prev) {
+        return prev;
+      }
+      const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
 
-        toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
-        return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
+      if (
+        (prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) ||
+        (prev.additionalDetails?.sidebar && prev.additionalDetails.sidebar.hasOwnProperty(key))
+      ) {
+        toast({
+          title: 'Section Exists',
+          description: `A section named "${sectionName}" already exists.`,
+          variant: 'destructive',
+        });
+        return prev;
+      }
+
+      const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+      if (!newDetails[column]) {
+        newDetails[column] = {};
+      }
+      newDetails[column][key] = `- New detail in your ${sectionName} section.`;
+      const newSectionOrder = [...(prev.sectionOrder || []), `custom-${key}`];
+
+      toast({
+        title: 'Section Added',
+        description: `"${sectionName}" added to the ${column} column.`,
+      });
+      return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
   };
   
@@ -224,7 +213,7 @@ export default function TemplateEditorPage() {
     if (!resumeData) return;
     setIsSaving(true);
     
-    const { templateId: currentTemplateId, ...contentToSave } = resumeData;
+    const contentToSave = { ...resumeData };
 
     const dataToSave: Partial<ResumeTemplate> = {
         name: resumeData.header.fullName ? `${resumeData.header.fullName}'s Template` : "New Template",
@@ -344,6 +333,17 @@ export default function TemplateEditorPage() {
                      <SelectItem value="single-column">Single Column</SelectItem>
                      <SelectItem value="two-column-left">Two Column - Left Sidebar</SelectItem>
                      <SelectItem value="two-column-right">Two Column - Right Sidebar</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1">
+                 <Label htmlFor="font-family" className="text-xs">Font Family</Label>
+                 <Select value={resumeData.styles?.fontFamily} onValueChange={(value) => handleStyleChange('fontFamily', value)}>
+                   <SelectTrigger id="font-family"><SelectValue placeholder="Select font" /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="sans">Sans-Serif (Default)</SelectItem>
+                     <SelectItem value="serif">Serif</SelectItem>
+                     <SelectItem value="mono">Monospaced</SelectItem>
                    </SelectContent>
                  </Select>
                </div>
