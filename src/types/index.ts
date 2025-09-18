@@ -1,5 +1,4 @@
 
-
 import type { Locale } from '@/locales';
 import { z } from 'zod';
 import { type UserRole as PrismaUserRole, type EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
