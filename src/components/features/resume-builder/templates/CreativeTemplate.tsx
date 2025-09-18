@@ -57,6 +57,12 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
   };
 
   const renderSection = (sectionId: string, location: 'main' | 'sidebar' | 'header') => {
+    const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(sectionId.replace('custom-', ''));
+    const isMainSection = data.additionalDetails?.main.hasOwnProperty(sectionId.replace('custom-', ''));
+
+    if (location === 'sidebar' && !isSidebarSection && sectionId.startsWith('custom-')) return null;
+    if (location === 'main' && !isMainSection && sectionId.startsWith('custom-')) return null;
+
     switch (sectionId) {
         case 'header':
             return (
@@ -140,11 +146,9 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
         default:
             if (sectionId.startsWith('custom-')) {
                 const key = sectionId.replace('custom-', '');
-                const isSidebarSection = data.additionalDetails?.sidebar.hasOwnProperty(key);
-                const isMainSection = data.additionalDetails?.main.hasOwnProperty(key);
                 const value = isSidebarSection ? data.additionalDetails?.sidebar[key] : data.additionalDetails?.main[key];
                 
-                if (!value || (location === 'main' && !isMainSection) || (location === 'sidebar' && !isSidebarSection)) return null;
+                if (!value) return null;
 
                 const headingClass = location === 'main' 
                     ? "text-lg font-bold tracking-wide border-b-2 pb-1 mb-2"
@@ -184,16 +188,19 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
   );
 
   return (
-    <div className="p-6 font-sans text-gray-800 bg-white" style={{ color: styles?.bodyColor }}>
+    <div 
+        className="p-4 font-sans text-gray-800 bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]" 
+        style={{ color: styles?.bodyColor }}
+    >
         {layout.startsWith('two-column') ? (
             <div className={cn(
-              "flex",
+              "flex gap-4 h-full",
               layout === 'two-column-right' ? 'flex-row-reverse' : 'flex-row'
             )}>
                 <aside className="w-1/3 bg-gray-100 p-4 rounded-lg">
                     <SidebarContent/>
                 </aside>
-                <main className="w-2/3 p-6" style={{ textAlign: styles?.textAlign }}>
+                <main className="w-2/3 p-4" style={{ textAlign: styles?.textAlign }}>
                     <MainContent/>
                 </main>
             </div>
@@ -202,7 +209,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
                 <div className="bg-gray-100 p-4 rounded-lg mb-4">
                    <SidebarContent/>
                 </div>
-                <main className="p-6" style={{ textAlign: styles?.textAlign }}>
+                <main className="p-4" style={{ textAlign: styles?.textAlign }}>
                    <MainContent/>
                 </main>
             </div>

@@ -167,7 +167,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
   };
 
   return (
-    <div className="p-4 text-sm font-sans" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
+    <div className="p-6 text-sm font-sans bg-white shadow-lg w-[210mm] min-h-[297mm] aspect-[210/297]" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
       <Header />
       <div className="space-y-3">
         {sectionOrder.map(sectionId => (

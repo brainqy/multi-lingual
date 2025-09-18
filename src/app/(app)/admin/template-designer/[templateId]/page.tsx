@@ -16,11 +16,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function TemplateEditorPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const templateId = params.templateId as string;
   const isNewTemplate = templateId === 'new';
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -36,34 +38,41 @@ export default function TemplateEditorPage() {
     const templates = await getResumeTemplates();
     setAllTemplates(templates);
 
-    let initialResumeData: ResumeBuilderData;
-    let currentTemplate: ResumeTemplate | undefined;
-  
+    let initialResumeData: ResumeBuilderData = getInitialResumeData(user);
+
     if (!isNewTemplate) {
-      currentTemplate = templates.find(t => t.id === templateId);
-    }
-  
-    if (currentTemplate) {
-      try {
-        const parsedContent = JSON.parse(currentTemplate.content);
-        initialResumeData = { ...getInitialResumeData(null), ...parsedContent, templateId: currentTemplate.id };
-      } catch (e) {
-        console.error("Failed to parse template content, using default data.", e);
-        initialResumeData = getInitialResumeData(null);
-        initialResumeData.templateId = currentTemplate.id;
+      const currentTemplate = templates.find(t => t.id === templateId);
+      if (currentTemplate) {
+        try {
+          // Merge saved content with a default structure to ensure all keys are present
+          const parsedContent = JSON.parse(currentTemplate.content);
+          initialResumeData = { 
+            ...initialResumeData, 
+            ...parsedContent,
+            header: { ...initialResumeData.header, ...parsedContent.header },
+            styles: { ...initialResumeData.styles, ...parsedContent.styles },
+            additionalDetails: {
+                main: { ...initialResumeData.additionalDetails?.main, ...parsedContent.additionalDetails?.main },
+                sidebar: { ...initialResumeData.additionalDetails?.sidebar, ...parsedContent.additionalDetails?.sidebar }
+            },
+            templateId: currentTemplate.id 
+          };
+        } catch (e) {
+          console.error("Failed to parse template content, using default data.", e);
+          initialResumeData.templateId = currentTemplate.id; // Still assign the correct ID
+        }
       }
-    } else {
-      initialResumeData = getInitialResumeData(null);
-      initialResumeData.templateId = templates.length > 0 ? templates[0].id : 'template1';
     }
     
-    if (!initialResumeData.sectionOrder) {
+    // Ensure sectionOrder always exists
+    if (!initialResumeData.sectionOrder || initialResumeData.sectionOrder.length === 0) {
       initialResumeData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
     }
     
     setResumeData(initialResumeData);
     setIsLoading(false);
-  }, [templateId, isNewTemplate]);
+  }, [templateId, isNewTemplate, user]);
+
 
   useEffect(() => {
     loadData();
@@ -160,7 +169,6 @@ export default function TemplateEditorPage() {
         if (!prev) return null;
         const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
         
-        // Check if the key already exists in either main or sidebar
         if ((prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) || 
             (prev.additionalDetails?.sidebar && prev.additionalDetails.sidebar.hasOwnProperty(key))) {
              toast({ title: "Section Exists", description: `A section named "${sectionName}" already exists.`, variant: "destructive" });
@@ -183,12 +191,13 @@ export default function TemplateEditorPage() {
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
     const fullKey = `custom-${sectionKey}`;
     
+    if (resumeData?.sectionOrder.includes(fullKey)) {
+      toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
+      return;
+    }
+    
     setResumeData(prev => {
       if (!prev) return null;
-      if (prev.sectionOrder.includes(fullKey)) {
-        toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
-        return prev;
-      }
 
       const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
       if (!newDetails.main) newDetails.main = {};

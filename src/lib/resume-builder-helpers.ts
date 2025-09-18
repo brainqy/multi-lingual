@@ -4,48 +4,30 @@
 import type { UserProfile, ResumeBuilderData } from "@/types";
 
 export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
+  // Now returns a blank structure with common sections pre-ordered but empty.
   const defaultSectionOrder = ['summary', 'experience', 'education', 'skills'];
   
-  if (!user) {
-    return {
-      header: { fullName: "", phone: "", email: "", linkedin: "", portfolio: "", address: "" },
-      experience: [],
-      education: [],
-      skills: [],
-      summary: "",
-      additionalDetails: { main: {}, sidebar: {} },
-      templateId: 'template1', // Fallback templateId
-      layout: 'single-column',
-      sectionOrder: defaultSectionOrder,
-      styles: {
-        textAlign: 'left',
-      },
-    };
-  }
   return {
     header: {
-      fullName: user.name || "",
-      phone: user.mobileNumber || "",
-      email: user.email || "",
-      linkedin: user.linkedInProfile || "",
+      fullName: user?.name || "Your Name",
+      phone: user?.mobileNumber || "",
+      email: user?.email || "",
+      linkedin: user?.linkedInProfile || "",
       portfolio: "",
-      address: user.currentAddress || "",
+      address: user?.currentAddress || "",
+      jobTitle: user?.currentJobTitle || "Your Job Title",
     },
-    experience: [],
-    education: [],
-    skills: user.skills || [],
-    summary: user.bio || "",
-    additionalDetails: {
-      main: {
-        interests: (user.interests || []).join(", "),
-      },
-      sidebar: {}
-    },
-    templateId: 'template1', // Default templateId
+    summary: "", // Start with an empty summary
+    experience: [], // Start with no experience entries
+    education: [], // Start with no education entries
+    skills: [], // Start with no skills
+    additionalDetails: { main: {}, sidebar: {} },
+    templateId: 'template1', // Fallback templateId
     layout: 'single-column',
     sectionOrder: defaultSectionOrder,
     styles: {
       textAlign: 'left',
+      headerFontSize: '24px',
     },
   };
 };
