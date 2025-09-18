@@ -1,14 +1,30 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { ResumeTemplate } from '@/types';
+import type { ResumeTemplate, ResumeBuilderData } from '@/types';
 import { getResumeTemplates } from '@/lib/actions/templates';
+import ResumePreview from '@/components/features/resume-builder/ResumePreview';
+
+const getInitialResumeData = (): ResumeBuilderData => ({
+  header: { fullName: "Jane Doe", phone: "555-123-4567", email: "jane.doe@email.com", linkedin: "linkedin.com/in/janedoe", portfolio: "github.com/janedoe", address: "San Francisco, CA" },
+  experience: [
+    { id: "1", jobTitle: "Software Engineer", company: "Tech Solutions Inc.", location: "San Francisco, CA", startDate: "2022-01", endDate: "Present", isCurrent: true, responsibilities: "- Developed and maintained web applications using React and Node.js.\n- Collaborated with cross-functional teams to deliver high-quality software." }
+  ],
+  education: [
+    { id: "1", degree: "Bachelor of Science in Computer Science", university: "State University", location: "San Jose, CA", graduationYear: "2022", details: "- GPA: 3.8/4.0" }
+  ],
+  skills: ["React", "Node.js", "TypeScript", "JavaScript", "HTML", "CSS"],
+  summary: "Results-driven Software Engineer with a passion for developing innovative solutions. Proficient in full-stack development and eager to contribute to a dynamic team.",
+  additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
+  templateId: 'template1',
+});
+
 
 export default function TemplateEditorPage() {
   const params = useParams();
@@ -16,42 +32,52 @@ export default function TemplateEditorPage() {
   const { toast } = useToast();
   const templateId = params.templateId as string;
   const isNewTemplate = templateId === 'new';
+  const resumePreviewRef = useRef<HTMLDivElement>(null);
 
-  const [template, setTemplate] = useState<ResumeTemplate | null>(null);
+  const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
+  const [resumeData, setResumeData] = useState<ResumeBuilderData>(getInitialResumeData());
+  const [templateInfo, setTemplateInfo] = useState<ResumeTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isNewTemplate) {
-      // Create a default structure for a new template
-      setTemplate({
-        id: 'new',
-        name: 'New Untitled Template',
-        description: 'A brand new template.',
-        category: 'Custom',
-        previewImageUrl: '',
-        content: JSON.stringify({ "default": "structure" }),
-      });
-      setIsLoading(false);
-    } else if (templateId) {
-      getResumeTemplates().then(templates => {
-        const found = templates.find(t => t.id === templateId);
-        if (found) {
-          setTemplate(found);
+    getResumeTemplates().then(templates => {
+      setAllTemplates(templates);
+      let currentTemplateId = isNewTemplate ? 'template1' : templateId;
+      
+      const foundTemplate = templates.find(t => t.id === currentTemplateId);
+      
+      if (foundTemplate) {
+        setTemplateInfo(foundTemplate);
+        
+        if (isNewTemplate) {
+          // For a new template, use default content but set the chosen templateId
+          setResumeData(prev => ({ ...prev, templateId: foundTemplate.id }));
         } else {
-          toast({ title: "Template not found", variant: "destructive" });
-          router.push('/admin/template-designer');
+          // For an existing template, try to parse its content
+          try {
+            const parsedData = JSON.parse(foundTemplate.content) as Partial<ResumeBuilderData>;
+            // Merge with default data to ensure all fields are present
+            const defaultData = getInitialResumeData();
+            setResumeData({
+              ...defaultData,
+              ...parsedData,
+              templateId: foundTemplate.id
+            });
+          } catch (e) {
+            console.error("Failed to parse template content, using default data.", e);
+            setResumeData(prev => ({ ...prev, templateId: foundTemplate.id }));
+          }
         }
-        setIsLoading(false);
-      });
-    }
+      } else {
+        toast({ title: "Template not found", variant: "destructive" });
+        router.push('/admin/template-designer');
+      }
+      setIsLoading(false);
+    });
   }, [templateId, isNewTemplate, router, toast]);
 
-  if (isLoading) {
+  if (isLoading || !templateInfo) {
     return <div className="h-screen w-screen flex items-center justify-center">Loading editor...</div>;
-  }
-  
-  if (!template) {
-    return <div className="h-screen w-screen flex items-center justify-center">Could not load template data.</div>;
   }
 
   return (
@@ -63,8 +89,8 @@ export default function TemplateEditorPage() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Exit
           </Button>
           <div>
-            <h1 className="text-lg font-semibold">{template.name}</h1>
-            <p className="text-xs text-muted-foreground">{isNewTemplate ? "Creating New Template" : `Editing Template ID: ${template.id}`}</p>
+            <h1 className="text-lg font-semibold">{templateInfo.name}</h1>
+            <p className="text-xs text-muted-foreground">{isNewTemplate ? "Creating New Template" : `Editing Template ID: ${templateInfo.id}`}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -90,9 +116,8 @@ export default function TemplateEditorPage() {
 
         {/* Center Canvas (Resume Preview) */}
         <main className="flex-1 flex items-center justify-center overflow-auto p-8">
-          <div className="w-full h-full bg-white shadow-lg max-w-4xl aspect-[8.5/11]">
-            {/* Live resume preview will be rendered here */}
-            <p className="p-8 text-muted-foreground">Resume Canvas Area</p>
+          <div className="w-full h-full max-w-4xl">
+            <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} />
           </div>
         </main>
 
