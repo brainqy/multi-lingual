@@ -60,7 +60,6 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
   };
   
   const renderSection = (sectionId: string) => {
-    // This is a map to keep the component logic cleaner
     const sectionComponents: Record<string, React.ReactNode> = {
         'summary': data.summary ? (
             <SortableSection id="summary" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
@@ -73,7 +72,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
             <SortableSection id="skills" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
                 <h2 className="text-sm font-bold uppercase tracking-widest mb-1 text-gray-700">Skills</h2>
                 <div className="w-10 border-b-2 border-gray-300 mb-2"></div>
-                <ul className="list-disc list-outside ml-4 space-y-1 text-xs text-gray-600">{data.skills.map(skill => <li key={skill}>{skill}</li>)}</ul>
+                <p className="text-xs text-gray-600">{data.skills.join(', ')}</p>
             </SortableSection>
         ) : null,
         'education': data.education && data.education.length > 0 ? (
@@ -109,19 +108,32 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
         ) : null
     };
 
+    if (sectionId.startsWith('custom-')) {
+        const key = sectionId.replace('custom-', '');
+        const value = data.additionalDetails?.main[key] || data.additionalDetails?.sidebar[key];
+        if (!value) return null;
+        return (
+            <SortableSection id={sectionId} onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                <h2 className="text-sm font-bold uppercase tracking-widest mb-1 text-gray-700">{key.replace(/_/g, ' ')}</h2>
+                <div className="w-10 border-b-2 border-gray-300 mb-2"></div>
+                <p className="text-xs text-gray-600 whitespace-pre-line">{value}</p>
+            </SortableSection>
+        );
+    }
+
     return sectionComponents[sectionId] || null;
   };
   
-  const mainSections = sectionOrder.filter(id => ['experience'].includes(id));
-  const sidebarSections = sectionOrder.filter(id => ['summary', 'skills', 'education'].includes(id));
+  const mainSections = sectionOrder.filter(id => !['summary', 'skills', 'education'].some(sidebarId => id.includes(sidebarId)));
+  const sidebarSections = sectionOrder.filter(id => ['summary', 'skills', 'education'].some(sidebarId => id.includes(sidebarId)));
   
   const SidebarContent = () => (
      <div className="space-y-4">
-        {/* Contact info is part of the sidebar now */}
-        <div className="text-xs text-gray-600 space-y-1">
+        <div className={cn("text-xs text-gray-600 space-y-1 cursor-pointer p-2 rounded transition-colors duration-200", selectedElementId === 'header' ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-primary/5")} onClick={() => onSelectElement('header')}>
           {data.header.address && <div className="flex items-center gap-2"><Home className="h-3 w-3 shrink-0" /><span>{data.header.address}</span></div>}
           {data.header.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 shrink-0" /><span>{data.header.phone}</span></div>}
           {data.header.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 shrink-0" /><span>{data.header.email}</span></div>}
+          {data.header.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-3 w-3 shrink-0" /><span>{data.header.linkedin}</span></div>}
         </div>
         <div className="border-b border-gray-300"></div>
         {sidebarSections.map(id => <div key={id}>{renderSection(id)}</div>)}
@@ -130,8 +142,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
 
   const MainContent = () => (
      <div className="space-y-4">
-        {/* Name and Title are now in the main column */}
-        <div className="pb-2">
+        <div className={cn("pb-2 cursor-pointer p-2 rounded transition-colors duration-200", selectedElementId === 'header' ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-primary/5")} onClick={() => onSelectElement('header')}>
             <h1 className="text-4xl font-bold text-gray-900">{data.header.fullName}</h1>
             <p className="text-lg font-medium text-gray-700">{data.header.jobTitle}</p>
         </div>
@@ -160,9 +171,9 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
             </div>
         ) : (
              <div className="space-y-4">
-                {/* Fallback for single-column layout, not fully styled to match image */}
-                {renderSection('header')}
-                {sectionOrder.filter(id => id !== 'header').map(id => renderSection(id))}
+                <MainContent />
+                <div className="border-t-2 my-4"></div>
+                <SidebarContent />
              </div>
         )}
     </div>
