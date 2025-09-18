@@ -10,21 +10,15 @@ import CreativeTemplate from './templates/CreativeTemplate';
 interface ResumePreviewProps {
   resumeData: ResumeBuilderData;
   templates: ResumeTemplate[];
+  onSelectElement: (elementId: string | null) => void;
+  selectedElementId: string | null;
 }
 
-const logger = {
-    log: (message: string, ...args: any[]) => console.log(`[ResumePreview] ${message}`, ...args),
-};
-
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
-  ({ resumeData, templates }, ref) => {
+  ({ resumeData, templates, onSelectElement, selectedElementId }, ref) => {
     const { templateId } = resumeData;
-    logger.log('--- ResumePreview Render Start ---');
-    logger.log('Received props:', { resumeData, templatesCount: templates.length });
-    logger.log('Extracted templateId for lookup:', { templateId });
 
     const template = templates.find(t => t.id === templateId);
-    logger.log('Found template object for current ID:', { templateName: template?.name, templateCategory: template?.category });
 
     const styles = {
       headerColor: template?.headerColor,
@@ -35,22 +29,25 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
 
     const renderTemplate = () => {
       const templateCategory = template?.category?.toLowerCase();
-      logger.log('Determined template category:', { templateCategory });
       
+      const templateProps = {
+        data: resumeData,
+        styles: styles,
+        onSelectElement: onSelectElement,
+        selectedElementId: selectedElementId,
+      };
+
       switch (templateCategory) {
         case 'creative':
         case 'academic':
-          logger.log('Rendering: CreativeTemplate');
-          return <CreativeTemplate data={resumeData} styles={styles} />;
+          return <CreativeTemplate {...templateProps} />;
         case 'modern':
         case 'professional':
         default:
-          logger.log('Rendering: ModernTemplate (default)');
-          return <ModernTemplate data={resumeData} styles={styles} />;
+          return <ModernTemplate {...templateProps} />;
       }
     };
 
-    logger.log('--- ResumePreview Render End ---');
     return (
       <div className="sticky top-6">
         <div className="flex justify-between items-center mb-2">

@@ -38,6 +38,7 @@ export default function TemplateEditorPage() {
   const [resumeData, setResumeData] = useState<ResumeBuilderData>(getInitialResumeData());
   const [templateInfo, setTemplateInfo] = useState<ResumeTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
 
   useEffect(() => {
     getResumeTemplates().then(templates => {
@@ -50,13 +51,10 @@ export default function TemplateEditorPage() {
         setTemplateInfo(foundTemplate);
         
         if (isNewTemplate) {
-          // For a new template, use default content but set the chosen templateId
           setResumeData(prev => ({ ...prev, templateId: foundTemplate.id }));
         } else {
-          // For an existing template, try to parse its content
           try {
             const parsedData = JSON.parse(foundTemplate.content) as Partial<ResumeBuilderData>;
-            // Merge with default data to ensure all fields are present
             const defaultData = getInitialResumeData();
             setResumeData({
               ...defaultData,
@@ -75,6 +73,17 @@ export default function TemplateEditorPage() {
       setIsLoading(false);
     });
   }, [templateId, isNewTemplate, router, toast]);
+  
+  const selectedElementTitle = useMemo(() => {
+    if (!selectedElementId) return "No Element Selected";
+    if (selectedElementId === 'header') return "Header Section";
+    if (selectedElementId === 'summary') return "Summary Section";
+    if (selectedElementId === 'experience') return "Experience Section";
+    if (selectedElementId === 'education') return "Education Section";
+    if (selectedElementId === 'skills') return "Skills Section";
+    if (selectedElementId === 'additionalDetails') return "Additional Details";
+    return "Editing Element";
+  }, [selectedElementId]);
 
   if (isLoading || !templateInfo) {
     return <div className="h-screen w-screen flex items-center justify-center">Loading editor...</div>;
@@ -117,7 +126,13 @@ export default function TemplateEditorPage() {
         {/* Center Canvas (Resume Preview) */}
         <main className="flex-1 flex items-center justify-center overflow-auto p-8">
           <div className="w-full h-full max-w-4xl">
-            <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} />
+            <ResumePreview 
+              ref={resumePreviewRef} 
+              resumeData={resumeData} 
+              templates={allTemplates}
+              onSelectElement={setSelectedElementId} 
+              selectedElementId={selectedElementId}
+            />
           </div>
         </main>
 
@@ -126,10 +141,14 @@ export default function TemplateEditorPage() {
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Property Inspector</h2>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">No Element Selected</CardTitle>
+              <CardTitle className="text-base">{selectedElementTitle}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">Click an element on the canvas to edit its properties here.</p>
+               {selectedElementId ? (
+                <p className="text-xs text-muted-foreground">Styling controls for this section will appear here in a future step.</p>
+               ) : (
+                <p className="text-xs text-muted-foreground">Click an element on the canvas to edit its properties here.</p>
+               )}
             </CardContent>
           </Card>
         </aside>
