@@ -4,6 +4,8 @@
 import type { UserProfile, ResumeBuilderData } from "@/types";
 
 export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
+  const defaultSectionOrder = ['summary', 'experience', 'education', 'skills'];
+  
   if (!user) {
     return {
       header: { fullName: "", phone: "", email: "", linkedin: "", portfolio: "", address: "" },
@@ -11,8 +13,13 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
       education: [],
       skills: [],
       summary: "",
-      additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
+      additionalDetails: { main: {}, sidebar: {} },
       templateId: 'template1', // Fallback templateId
+      layout: 'single-column',
+      sectionOrder: defaultSectionOrder,
+      styles: {
+        textAlign: 'left',
+      },
     };
   }
   return {
@@ -29,11 +36,16 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
     skills: user.skills || [],
     summary: user.bio || "",
     additionalDetails: {
-      awards: "",
-      certifications: "",
-      languages: "",
-      interests: (user.interests || []).join(", "),
+      main: {
+        interests: (user.interests || []).join(", "),
+      },
+      sidebar: {}
     },
     templateId: 'template1', // Default templateId
+    layout: 'single-column',
+    sectionOrder: defaultSectionOrder,
+    styles: {
+      textAlign: 'left',
+    },
   };
 };

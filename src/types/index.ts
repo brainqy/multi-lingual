@@ -993,6 +993,7 @@ export interface ResumeBuilderData {
     };
     templateId: string;
     layout: string;
+    sectionOrder: string[];
     styles: {
       headerColor?: string;
       bodyColor?: string;

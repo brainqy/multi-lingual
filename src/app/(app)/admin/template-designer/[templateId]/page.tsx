@@ -5,16 +5,17 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { ResumeTemplate, ResumeBuilderData, ResumeEducationEntry, ResumeExperienceEntry } from '@/types';
+import type { ResumeTemplate, ResumeBuilderData } from '@/types';
 import { getResumeTemplates, updateResumeTemplate, createResumeTemplate } from '@/lib/actions/templates';
 import ResumePreview from '@/components/features/resume-builder/ResumePreview';
 import { getInitialResumeData } from '@/lib/resume-builder-helpers';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 export default function TemplateEditorPage() {
   const params = useParams();
@@ -73,8 +74,9 @@ export default function TemplateEditorPage() {
     if (selectedElementId === 'skills') return { title: "Skills Section", data: { skills: resumeData.skills } };
     
     if (selectedElementId.startsWith('custom-')) {
-        const key = selectedElementId.split('-')[1];
-        return { title: `Custom Section: ${key}`, data: { [key]: (resumeData.additionalDetails as any)?.[key] } };
+        const key = selectedElementId.replace('custom-', '');
+        const sectionData = resumeData.additionalDetails?.main[key] ?? resumeData.additionalDetails?.sidebar[key];
+        return { title: `Custom Section: ${key.replace(/_/g, ' ')}`, data: { [key]: sectionData } };
     }
 
     if (selectedElementId === 'additionalDetails') return { title: "Additional Details", data: resumeData.additionalDetails };
@@ -124,9 +126,8 @@ export default function TemplateEditorPage() {
         } else if (section === 'skills') {
              newData.skills = value.split(',').map(s => s.trim());
         } else if (section.startsWith('custom')) {
-            const customKey = section.split('-')[1];
+            const customKey = section.replace('custom-', '');
             if (!newData.additionalDetails) newData.additionalDetails = { main: {}, sidebar: {} };
-            // Find which column it's in and update
             if (newData.additionalDetails.main.hasOwnProperty(customKey)) {
                 newData.additionalDetails.main[customKey] = value;
             } else if (newData.additionalDetails.sidebar.hasOwnProperty(customKey)) {
@@ -159,7 +160,10 @@ export default function TemplateEditorPage() {
             newDetails[column] = {};
         }
         newDetails[column][key] = `- New detail in your ${sectionName} section.`;
-        return { ...prev, additionalDetails: newDetails };
+        
+        const newSectionOrder = [...(prev.sectionOrder || []), `custom-${key}`];
+
+        return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
     });
     toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
   };
@@ -196,11 +200,27 @@ export default function TemplateEditorPage() {
     setIsSaving(false);
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+        setResumeData(prev => {
+            if (!prev || !prev.sectionOrder) return prev;
+            const oldIndex = prev.sectionOrder.indexOf(active.id as string);
+            const newIndex = prev.sectionOrder.indexOf(over.id as string);
+            return {
+                ...prev,
+                sectionOrder: arrayMove(prev.sectionOrder, oldIndex, newIndex),
+            };
+        });
+    }
+  };
+
   if (isLoading || !resumeData) {
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
   
   return (
+    <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
     <div className="h-screen w-screen bg-muted flex flex-col">
       <header className="flex-shrink-0 bg-card border-b p-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -290,5 +310,6 @@ export default function TemplateEditorPage() {
         </aside>
       </div>
     </div>
+    </DndContext>
   );
 }

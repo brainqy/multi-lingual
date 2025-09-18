@@ -4,6 +4,9 @@
 import React from 'react';
 import type { ResumeBuilderData } from "@/types";
 import { cn } from '@/lib/utils';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
 interface TemplateProps {
   data: ResumeBuilderData;
@@ -12,15 +15,40 @@ interface TemplateProps {
   onDataChange: (field: string, value: string) => void;
 }
 
+const SortableSection = ({ id, children, onSelectElement, selectedElementId }: { id: string, children: React.ReactNode, onSelectElement: (id: string) => void, selectedElementId: string | null }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+    
+    const getSectionClasses = (sectionId: string) => {
+      return cn(
+          "cursor-pointer p-2 rounded transition-colors duration-200 relative group",
+          selectedElementId === sectionId ? "bg-primary/20 ring-2 ring-primary" : "hover:bg-primary/5"
+      );
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className={getSectionClasses(id)} onClick={() => onSelectElement(id)}>
+            <button {...listeners} {...attributes} className="absolute top-2 right-2 p-1 opacity-20 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                <GripVertical className="h-4 w-4" />
+            </button>
+            {children}
+        </div>
+    );
+};
+
+
 const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
-  const { layout, styles } = data;
+  const { styles, sectionOrder } = data;
 
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
       <li key={index} className="ml-4 text-xs">{line.startsWith('-') ? line.substring(1).trim() : line.trim()}</li>
     ));
   };
-
+  
   const getSectionClasses = (id: string) => {
     return cn(
         "cursor-pointer p-2 rounded transition-colors duration-200",
@@ -47,93 +75,107 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
       </div>
   );
   
-  const Content = () => (
-    <>
-        {/* Summary Section */}
-        {data.summary && (
-            <div className={cn("mb-3", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Summary</h2>
-            <p 
-                className="text-xs text-slate-700 whitespace-pre-line"
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => onDataChange('summary', e.currentTarget.textContent || '')}
-            >
-                {data.summary}
-            </p>
-            </div>
-        )}
-
-        {/* Skills Section */}
-        {data.skills.length > 0 && (
-            <div className={cn("mb-3", getSectionClasses('skills'))} onClick={() => onSelectElement('skills')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Skills</h2>
-            <p 
-                className="text-xs text-slate-700"
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => onDataChange('skills', e.currentTarget.textContent || '')}
-            >{data.skills.join(" • ")}</p>
-            </div>
-        )}
-        
-        {/* Experience Section */}
-        {data.experience.length > 0 && (
-            <div className={cn("mb-3", getSectionClasses('experience'))} onClick={() => onSelectElement('experience')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Experience</h2>
-            {data.experience.map((exp, index) => (
-                <div key={exp.id || index} className="mb-2">
-                <h3 className="text-sm font-semibold text-slate-700">{exp.jobTitle}</h3>
-                <p className="text-xs font-medium text-slate-600">{exp.company} {exp.location && `| ${exp.location}`}</p>
-                <p className="text-xs text-slate-500 mb-0.5">{exp.startDate} – {exp.isCurrent ? 'Present' : exp.endDate}</p>
-                {exp.responsibilities && <ul className="list-disc list-outside">{formatResponsibilities(exp.responsibilities)}</ul>}
-                </div>
-            ))}
-            </div>
-        )}
-
-        {/* Education Section */}
-        {data.education.length > 0 && (
-            <div className={cn("mb-3", getSectionClasses('education'))} onClick={() => onSelectElement('education')}>
-            <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
-            {data.education.map((edu, index) => (
-                <div key={edu.id || index} className="mb-1.5">
-                <h3 className="text-sm font-semibold text-slate-700">{edu.degree} {edu.major && `- ${edu.major}`}</h3>
-                <p className="text-xs font-medium text-slate-600">{edu.university} {edu.location && `| ${edu.location}`}</p>
-                <p className="text-xs text-slate-500 mb-0.5">Graduation: {edu.graduationYear}</p>
-                {edu.details && <p className="text-xs text-slate-700 whitespace-pre-line">{edu.details}</p>}
-                </div>
-            ))}
-            </div>
-        )}
-        
-        {/* Additional Details Section */}
-        {data.additionalDetails?.main && Object.entries(data.additionalDetails.main).map(([key, value]) => {
-            if (!value) return null;
-            const sectionId = `custom-${key}`;
-            return (
-                <div key={key} className={cn("mt-3 pt-2 border-t border-slate-200", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
-                    <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>
-                        {key.replace(/_/g, ' ')}
-                    </h2>
-                    <p 
-                        className="text-xs text-slate-700 whitespace-pre-line"
-                        contentEditable
-                        suppressContentEditableWarning
-                        onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
-                    >
-                        {value}
-                    </p>
-                </div>
-            );
-        })}
-    </>
-  );
+  const renderSection = (sectionId: string) => {
+    switch (sectionId) {
+        case 'summary':
+            return data.summary ? (
+                <SortableSection id="summary" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                    <div onClick={() => onSelectElement('summary')}>
+                        <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Summary</h2>
+                        <p 
+                            className="text-xs text-slate-700 whitespace-pre-line"
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => onDataChange('summary', e.currentTarget.textContent || '')}
+                        >
+                            {data.summary}
+                        </p>
+                    </div>
+                </SortableSection>
+            ) : null;
+        case 'skills':
+            return data.skills.length > 0 ? (
+                <SortableSection id="skills" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                    <div onClick={() => onSelectElement('skills')}>
+                        <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Skills</h2>
+                        <p 
+                            className="text-xs text-slate-700"
+                            contentEditable
+                            suppressContentEditableWarning
+                            onBlur={(e) => onDataChange('skills', e.currentTarget.textContent || '')}
+                        >{data.skills.join(" • ")}</p>
+                    </div>
+                </SortableSection>
+            ) : null;
+        case 'experience':
+            return data.experience.length > 0 ? (
+                 <SortableSection id="experience" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                    <div onClick={() => onSelectElement('experience')}>
+                        <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Experience</h2>
+                        {data.experience.map((exp, index) => (
+                            <div key={exp.id || index} className="mb-2">
+                            <h3 className="text-sm font-semibold text-slate-700">{exp.jobTitle}</h3>
+                            <p className="text-xs font-medium text-slate-600">{exp.company} {exp.location && `| ${exp.location}`}</p>
+                            <p className="text-xs text-slate-500 mb-0.5">{exp.startDate} – {exp.isCurrent ? 'Present' : exp.endDate}</p>
+                            {exp.responsibilities && <ul className="list-disc list-outside">{formatResponsibilities(exp.responsibilities)}</ul>}
+                            </div>
+                        ))}
+                    </div>
+                 </SortableSection>
+            ) : null;
+        case 'education':
+             return data.education.length > 0 ? (
+                <SortableSection id="education" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                    <div onClick={() => onSelectElement('education')}>
+                        <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
+                        {data.education.map((edu, index) => (
+                            <div key={edu.id || index} className="mb-1.5">
+                            <h3 className="text-sm font-semibold text-slate-700">{edu.degree} {edu.major && `- ${edu.major}`}</h3>
+                            <p className="text-xs font-medium text-slate-600">{edu.university} {edu.location && `| ${edu.location}`}</p>
+                            <p className="text-xs text-slate-500 mb-0.5">Graduation: {edu.graduationYear}</p>
+                            {edu.details && <p className="text-xs text-slate-700 whitespace-pre-line">{edu.details}</p>}
+                            </div>
+                        ))}
+                    </div>
+                </SortableSection>
+            ) : null;
+        default:
+            if (sectionId.startsWith('custom-')) {
+                const key = sectionId.replace('custom-', '');
+                const value = data.additionalDetails?.main[key] || data.additionalDetails?.sidebar[key];
+                if (!value) return null;
+                return (
+                    <SortableSection id={sectionId} onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
+                        <div onClick={() => onSelectElement(sectionId)}>
+                             <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>
+                                {key.replace(/_/g, ' ')}
+                            </h2>
+                            <p 
+                                className="text-xs text-slate-700 whitespace-pre-line"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
+                            >
+                                {value}
+                            </p>
+                        </div>
+                    </SortableSection>
+                );
+            }
+            return null;
+    }
+  };
 
   return (
     <div className="p-4 text-sm font-sans" style={{ color: styles?.bodyColor, textAlign: styles?.textAlign }}>
       <Header />
-      <Content />
+      <div className="space-y-3">
+        {sectionOrder.map(sectionId => (
+            <div key={sectionId}>
+                {renderSection(sectionId)}
+            </div>
+        ))}
+      </div>
     </div>
   );
 };

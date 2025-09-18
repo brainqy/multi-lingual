@@ -6,6 +6,7 @@ import type { ResumeBuilderData, ResumeTemplate } from "@/types";
 import { Card, CardContent } from '@/components/ui/card';
 import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 interface ResumePreviewProps {
   resumeData: ResumeBuilderData;
@@ -17,7 +18,7 @@ interface ResumePreviewProps {
 
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
   ({ resumeData, templates, onSelectElement, selectedElementId, onDataChange = () => {} }, ref) => {
-    const { templateId } = resumeData;
+    const { templateId, sectionOrder } = resumeData;
 
     const template = templates.find(t => t.id === templateId);
 
@@ -31,15 +32,23 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
         onDataChange: onDataChange,
       };
 
-      switch (templateCategory) {
-        case 'creative':
-        case 'academic':
-          return <CreativeTemplate {...templateProps} />;
-        case 'modern':
-        case 'professional':
-        default:
-          return <ModernTemplate {...templateProps} />;
-      }
+      const templateContent = (() => {
+        switch (templateCategory) {
+          case 'creative':
+          case 'academic':
+            return <CreativeTemplate {...templateProps} />;
+          case 'modern':
+          case 'professional':
+          default:
+            return <ModernTemplate {...templateProps} />;
+        }
+      })();
+      
+      return (
+        <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+            {templateContent}
+        </SortableContext>
+      )
     };
 
     return (
