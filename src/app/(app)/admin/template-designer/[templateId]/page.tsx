@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ResumeTemplate, ResumeBuilderData } from '@/types';
 import { getResumeTemplates, updateResumeTemplate, createResumeTemplate } from '@/lib/actions/templates';
@@ -31,42 +31,47 @@ export default function TemplateEditorPage() {
     category: "Modern",
     content: "{}",
     previewImageUrl: "https://placehold.co/300x400/008080/FFFFFF?text=New",
+    headerColor: '#333333',
+    bodyColor: '#555555',
+    headerFontSize: '24px',
+    textAlign: 'left',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    async function loadInitialData() {
-      setIsLoading(true);
-      const templates = await getResumeTemplates();
-      setAllTemplates(templates);
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    const templates = await getResumeTemplates();
+    setAllTemplates(templates);
 
-      let currentTemplate: ResumeTemplate | undefined;
-      if (!isNewTemplate) {
-        currentTemplate = templates.find(t => t.id === templateId);
-      }
-      
-      if (currentTemplate) {
-        setTemplateInfo(currentTemplate);
-        try {
-          const parsedData = JSON.parse(currentTemplate.content || '{}') as Partial<ResumeBuilderData>;
-          const defaultData = getInitialResumeData();
-          setResumeData({ ...defaultData, ...parsedData, templateId: currentTemplate.id });
-        } catch (e) {
-          console.error("Failed to parse template content, using default data.", e);
-          setResumeData({ ...getInitialResumeData(), templateId: currentTemplate.id });
-        }
-      } else {
-        // For new templates or if template not found
-        const defaultData = getInitialResumeData();
-        setResumeData({ ...defaultData, templateId: 'template1' });
-      }
-
-      setIsLoading(false);
+    let currentTemplate: ResumeTemplate | undefined;
+    if (!isNewTemplate) {
+      currentTemplate = templates.find(t => t.id === templateId);
     }
-    loadData();
+    
+    if (currentTemplate) {
+      setTemplateInfo(currentTemplate);
+      try {
+        const parsedData = JSON.parse(currentTemplate.content || '{}') as Partial<ResumeBuilderData>;
+        const defaultData = getInitialResumeData();
+        setResumeData({ ...defaultData, ...parsedData, templateId: currentTemplate.id });
+      } catch (e) {
+        console.error("Failed to parse template content, using default data.", e);
+        setResumeData({ ...getInitialResumeData(), templateId: currentTemplate.id });
+      }
+    } else {
+      // For new templates or if template not found
+      const defaultData = getInitialResumeData();
+      setResumeData({ ...defaultData, templateId: 'template1' });
+    }
+
+    setIsLoading(false);
   }, [templateId, isNewTemplate]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
   
   const selectedElementTitle = useMemo(() => {
     if (!selectedElementId) return "No Element Selected";
@@ -81,9 +86,6 @@ export default function TemplateEditorPage() {
 
   const handleStyleChange = (property: keyof Omit<ResumeTemplate, 'id' | 'name' | 'description' | 'previewImageUrl' | 'category' | 'content' | 'dataAiHint'>, value: string) => {
     setTemplateInfo(prev => ({ ...prev, [property]: value }));
-    // The resume preview component will get the new styles via the `templates` prop and the `templateId` in `resumeData`
-    // To make it react instantly, we can also inject it into the `resumeData` being passed, but let's see if this works first.
-    // For instant preview, we should update the specific template in `allTemplates` state.
     setAllTemplates(prevTemplates => {
         const newTemplates = [...prevTemplates];
         const index = newTemplates.findIndex(t => t.id === templateInfo.id);
@@ -98,7 +100,6 @@ export default function TemplateEditorPage() {
     setIsSaving(true);
     const { id, ...dataToSave } = templateInfo;
     
-    // Ensure content is stringified resumeData
     dataToSave.content = JSON.stringify(resumeData);
 
     let result;
@@ -193,7 +194,7 @@ export default function TemplateEditorPage() {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="textAlign">Text Alignment</Label>
-                    <Select value={templateInfo.textAlign || 'left'} onValueChange={(value) => handleStyleChange('textAlign', value)}>
+                    <Select value={templateInfo.textAlign || 'left'} onValueChange={(value) => handleStyleChange('textAlign', value as any)}>
                         <SelectTrigger><SelectValue/></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="left">Left</SelectItem>
