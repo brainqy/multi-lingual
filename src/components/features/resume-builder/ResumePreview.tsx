@@ -18,7 +18,7 @@ const logger = {
 
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
   ({ resumeData, templates }, ref) => {
-    const { templateId, ...data } = resumeData;
+    const { templateId } = resumeData;
     logger.log('--- ResumePreview Render Start ---');
     logger.log('Received props:', { resumeData, templatesCount: templates.length });
     logger.log('Extracted templateId for lookup:', { templateId });
@@ -41,12 +41,12 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
         case 'creative':
         case 'academic':
           logger.log('Rendering: CreativeTemplate');
-          return <CreativeTemplate data={data} styles={styles} />;
+          return <CreativeTemplate data={resumeData} styles={styles} />;
         case 'modern':
         case 'professional':
         default:
           logger.log('Rendering: ModernTemplate (default)');
-          return <ModernTemplate data={data} styles={styles} />;
+          return <ModernTemplate data={resumeData} styles={styles} />;
       }
     };
 
