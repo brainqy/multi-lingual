@@ -20,59 +20,91 @@ import { useAuth } from '@/hooks/use-auth';
 import { Slider } from '@/components/ui/slider';
 import TemplateSelectionDialog from '@/components/features/resume-builder/TemplateSelectionDialog';
 
+const logger = {
+  log: (message: string, ...args: any[]) => console.log(`[TemplateEditorPage] ${message}`, ...args),
+};
+
 export default function TemplateEditorPage() {
+  logger.log('Component Render Start');
   const params = useParams();
+  logger.log('useParams', { params });
   const router = useRouter();
+  logger.log('useRouter');
   const searchParams = useSearchParams();
+  logger.log('useSearchParams', { searchParams });
   const { toast } = useToast();
+  logger.log('useToast');
   const { user } = useAuth();
+  logger.log('useAuth', { user });
   const templateId = params.templateId as string;
+  logger.log('templateId', { templateId });
   const isNewTemplate = templateId === 'new';
+  logger.log('isNewTemplate', { isNewTemplate });
   const resumePreviewRef = useRef<HTMLDivElement>(null);
+  logger.log('useRef: resumePreviewRef');
 
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
+  logger.log('useState: allTemplates', { allTemplates });
   const [resumeData, setResumeData] = useState<ResumeBuilderData | null>(null);
+  logger.log('useState: resumeData', { resumeData });
   const [isLoading, setIsLoading] = useState(true);
+  logger.log('useState: isLoading', { isLoading });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  logger.log('useState: selectedElementId', { selectedElementId });
   const [isSaving, setIsSaving] = useState(false);
+  logger.log('useState: isSaving', { isSaving });
   const [zoomLevel, setZoomLevel] = useState(70);
+  logger.log('useState: zoomLevel', { zoomLevel });
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  logger.log('useState: isTemplateDialogOpen', { isTemplateDialogOpen });
 
   const loadData = useCallback(async () => {
+    logger.log('loadData called');
     if (!user) {
+      logger.log('loadData: No user, returning.');
       return;
     }
     setIsLoading(true);
+    logger.log('loadData: Set isLoading to true');
     const templates = await getResumeTemplates();
+    logger.log('loadData: Fetched templates', { count: templates.length });
     setAllTemplates(templates);
-  
-    let initialResumeData: ResumeBuilderData = getInitialResumeData(user);
-  
-    if (!isNewTemplate) {
+
+    if (isNewTemplate) {
+      logger.log('loadData: isNewTemplate is true, setting initial data');
+      setResumeData(getInitialResumeData(user));
+    } else {
       const templateToEdit = templates.find(t => t.id === templateId);
+      logger.log('loadData: Editing existing template', { templateToEdit });
       if (templateToEdit && templateToEdit.content) {
         try {
           const parsedData = JSON.parse(templateToEdit.content);
-          initialResumeData = { ...initialResumeData, ...parsedData };
+          logger.log('loadData: Parsed content from template');
+          setResumeData(parsedData);
         } catch (e) {
-            console.error("Could not parse content from template, using default structure.", e);
+            logger.log('loadData: Error parsing content, using default.', { error: e });
             toast({ title: "Error", description: "Could not parse template content.", variant: "destructive" });
+            setResumeData(getInitialResumeData(user));
         }
       }
     }
     
-    setResumeData(initialResumeData);
     setIsLoading(false);
+    logger.log('loadData: Set isLoading to false');
   }, [user, isNewTemplate, templateId, toast]);
 
   useEffect(() => {
+    logger.log('useEffect[user, loadData] triggered');
     if(user) {
+        logger.log('useEffect[user, loadData]: User exists, calling loadData');
         loadData();
     }
   }, [user, loadData]);
   
   const selectedElementData = useMemo(() => {
+    logger.log('useMemo[selectedElementId, resumeData] triggered', { selectedElementId });
     if (!selectedElementId || !resumeData) {
+      logger.log('useMemo: No selected element or resume data.');
       return null;
     }
     
@@ -90,11 +122,14 @@ export default function TemplateEditorPage() {
 
     if (selectedElementId === 'additionalDetails') return { title: "Additional Details", data: resumeData.additionalDetails };
 
+    logger.log('useMemo: Returning element data');
     return { title: "Editing Element", data: {} };
   }, [selectedElementId, resumeData]);
 
   const handleStyleChange = (property: keyof ResumeBuilderData['styles'], value: any) => {
+    logger.log('handleStyleChange called', { property, value });
     if (!resumeData) {
+      logger.log('handleStyleChange: No resume data.');
       return;
     }
     setResumeData(prev => prev ? ({ 
@@ -107,14 +142,18 @@ export default function TemplateEditorPage() {
   };
   
   const handleLayoutChange = (newLayout: string) => {
+    logger.log('handleLayoutChange called', { newLayout });
     if (!resumeData) {
+      logger.log('handleLayoutChange: No resume data.');
       return;
     }
     setResumeData(prev => prev ? ({ ...prev, layout: newLayout }) : null);
   };
 
   const handleDataChange = (field: string, value: string) => {
+    logger.log('handleDataChange called', { field, value });
     if (!resumeData || !selectedElementId) {
+      logger.log('handleDataChange: No resume data or selected element.');
       return;
     }
 
@@ -155,8 +194,10 @@ export default function TemplateEditorPage() {
   };
   
   const handleAddCustomSection = () => {
+    logger.log('handleAddCustomSection called');
     const sectionName = prompt("Enter a name for the new section (e.g., Projects):");
     if (!sectionName || !sectionName.trim()) {
+      logger.log('handleAddCustomSection: No section name provided.');
       return;
     }
     
@@ -165,6 +206,7 @@ export default function TemplateEditorPage() {
     const sectionExists = resumeData?.sectionOrder.some(s => s === fullKey);
 
     if (sectionExists) {
+        logger.log('handleAddCustomSection: Section already exists.');
         toast({
           title: 'Section Exists',
           description: `A section named "${sectionName}" already exists.`,
@@ -180,6 +222,7 @@ export default function TemplateEditorPage() {
             column = 'sidebar';
         }
     }
+    logger.log('handleAddCustomSection: Determined column', { column });
     
     setResumeData(prev => {
       if (!prev) return prev;
@@ -199,9 +242,11 @@ export default function TemplateEditorPage() {
   };
   
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
+    logger.log('handleAddCommonSection called', { sectionKey, sectionTitle });
     const fullKey = `custom-${sectionKey}`;
     
     if (resumeData?.sectionOrder.includes(fullKey)) {
+        logger.log('handleAddCommonSection: Section already exists.');
         toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
         return;
     }
@@ -220,7 +265,9 @@ export default function TemplateEditorPage() {
 
 
   const handleSaveChanges = async () => {
+    logger.log('handleSaveChanges called');
     if (!resumeData) {
+      logger.log('handleSaveChanges: No resume data.');
       return;
     }
     setIsSaving(true);
@@ -236,23 +283,28 @@ export default function TemplateEditorPage() {
 
     let result;
     if (isNewTemplate) {
+      logger.log('handleSaveChanges: Creating new template.');
       result = await createResumeTemplate(dataToSave as any);
     } else {
+      logger.log('handleSaveChanges: Updating existing template.', { templateId });
       result = await updateResumeTemplate(templateId, dataToSave);
     }
 
     if (result) {
+      logger.log('handleSaveChanges: Save successful.', { result });
       toast({ title: isNewTemplate ? "Template Created" : "Template Saved", description: `Template "${result.name}" has been saved.` });
       if (isNewTemplate) {
         router.push(`/admin/template-designer/${result.id}`);
       }
     } else {
+      logger.log('handleSaveChanges: Save failed.');
       toast({ title: "Error", description: "Failed to save template.", variant: "destructive" });
     }
     setIsSaving(false);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    logger.log('handleDragEnd called', { event });
     const { active, over } = event;
     if (over && active.id !== over.id) {
         setResumeData(prev => {
@@ -268,7 +320,9 @@ export default function TemplateEditorPage() {
   };
   
   const handleTemplateSelect = (template: ResumeTemplate) => {
+    logger.log('handleTemplateSelect called', { template });
     if (!resumeData || !template) {
+      logger.log('handleTemplateSelect: No resume data or template.');
       return;
     }
     
@@ -288,7 +342,7 @@ export default function TemplateEditorPage() {
         description: `Switched to "${template.name}". Your personal details have been preserved.`,
       });
     } catch (e) {
-      console.error("Failed to parse template content:", e);
+      logger.log('handleTemplateSelect: Error parsing template content.', { error: e });
       toast({
         title: "Error Applying Template",
         description: "The selected template has invalid content.",
@@ -305,9 +359,11 @@ export default function TemplateEditorPage() {
   ];
 
   if (isLoading || !resumeData) {
+    logger.log('Render: Loading or no resume data.');
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
   
+  logger.log('Render: Component is rendering with data.');
   return (
     <>
     <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -443,5 +499,3 @@ export default function TemplateEditorPage() {
     </>
   );
 }
-
-    
