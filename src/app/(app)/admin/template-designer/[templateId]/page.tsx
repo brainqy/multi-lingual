@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical, Award, BookCheck, Languages as LanguagesIcon, Heart } from 'lucide-react';
@@ -22,6 +22,7 @@ import { Slider } from '@/components/ui/slider';
 export default function TemplateEditorPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const templateId = params.templateId as string;
@@ -35,7 +36,7 @@ export default function TemplateEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(70);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
     if (!user) return;
     setIsLoading(true);
     const templates = await getResumeTemplates();
@@ -47,7 +48,6 @@ export default function TemplateEditorPage() {
       const templateToEdit = templates.find(t => t.id === templateId);
       if (templateToEdit && templateToEdit.content) {
         try {
-          // Robust parsing: check if content is a string and looks like JSON
           if (typeof templateToEdit.content === 'string' && templateToEdit.content.trim().startsWith('{')) {
             const parsedData = JSON.parse(templateToEdit.content);
             initialResumeData = { ...initialResumeData, ...parsedData };
@@ -56,6 +56,16 @@ export default function TemplateEditorPage() {
             console.error("Could not parse content from template, using default structure.", e);
         }
       }
+    } else if (templateId && templateId !== 'new') {
+        const template = templates.find(t => t.id === templateId);
+        if (template && template.content) {
+            try {
+                const parsedData = JSON.parse(template.content);
+                initialResumeData = { ...initialResumeData, ...parsedData, templateId: template.id };
+            } catch (e) {
+                console.error("Could not parse content from template, using default structure.", e);
+            }
+        }
     }
     
     setResumeData(initialResumeData);
@@ -63,10 +73,12 @@ export default function TemplateEditorPage() {
   }, [user, isNewTemplate, templateId]);
 
   useEffect(() => {
+    const resumeId = searchParams.get('resumeId');
+    const templateIdParam = searchParams.get('templateId');
     if(user) {
-        loadData();
+        loadData(resumeId, templateIdParam || templateId);
     }
-  }, [user, loadData]);
+  }, [user, searchParams, loadData, templateId]);
   
   const selectedElementData = useMemo(() => {
     if (!selectedElementId || !resumeData) return null;
@@ -154,18 +166,15 @@ export default function TemplateEditorPage() {
             column = 'sidebar';
         }
     }
-
+    
     setResumeData(prev => {
-      if (!prev) {
-        return prev;
-      }
+      if (!prev) return prev;
       const key = sectionName.trim().toLowerCase().replace(/\s+/g, '_');
+      
+      const checkIfExists = (details: Record<string, string> | undefined, key: string) => details && Object.prototype.hasOwnProperty.call(details, key);
 
-      if (
-        (prev.additionalDetails?.main && prev.additionalDetails.main.hasOwnProperty(key)) ||
-        (prev.additionalDetails?.sidebar && prev.additionalDetails.sidebar.hasOwnProperty(key))
-      ) {
-        toast({
+      if (checkIfExists(prev.additionalDetails?.main, key) || checkIfExists(prev.additionalDetails?.sidebar, key)) {
+         toast({
           title: 'Section Exists',
           description: `A section named "${sectionName}" already exists.`,
           variant: 'destructive',
@@ -190,7 +199,7 @@ export default function TemplateEditorPage() {
   
   const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
     const fullKey = `custom-${sectionKey}`;
-
+    
     setResumeData(prev => {
         if (!prev) return prev;
         if (prev.sectionOrder.includes(fullKey)) {
