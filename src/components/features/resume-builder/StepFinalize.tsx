@@ -45,36 +45,47 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
     });
 
     try {
+      // Use a higher scale for better resolution
       const canvas = await html2canvas(input, {
-        scale: 2,
+        scale: 3, // Increased scale for better quality
         useCORS: true,
         logging: false,
+        width: input.offsetWidth,
+        height: input.offsetHeight,
       });
 
       const imgData = canvas.toDataURL('image/png');
+      
+      // A4 dimensions in points: 595.28 x 841.89
+      const A4_WIDTH_PT = 595.28;
+      const A4_HEIGHT_PT = 841.89;
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
         format: 'a4'
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const canvasAspectRatio = canvasHeight / canvasWidth;
 
-      let heightLeft = imgHeight;
+      const scaledImgWidth = A4_WIDTH_PT;
+      const scaledImgHeight = scaledImgWidth * canvasAspectRatio;
+
       let position = 0;
+      let heightLeft = scaledImgHeight;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      // Add the first page
+      pdf.addImage(imgData, 'PNG', 0, position, scaledImgWidth, scaledImgHeight);
+      heightLeft -= A4_HEIGHT_PT;
 
+      // Add more pages if the content is taller than one page
       while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
+        position -= A4_HEIGHT_PT;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        pdf.addImage(imgData, 'PNG', 0, position, scaledImgWidth, scaledImgHeight);
+        heightLeft -= A4_HEIGHT_PT;
       }
       
       pdf.save(`${resumeData.header.fullName}_Resume.pdf`);
