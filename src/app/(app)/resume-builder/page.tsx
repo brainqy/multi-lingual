@@ -26,6 +26,7 @@ import { getResumeProfiles } from "@/lib/actions/resumes";
 import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 import { getInitialResumeData } from '@/lib/resume-builder-helpers';
+import Handlebars from 'handlebars';
 
 const logger = {
     log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
@@ -44,6 +45,24 @@ export default function ResumeBuilderPage() {
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  const processTemplate = useCallback((templateContent: string, userData: UserProfile) => {
+    try {
+        const template = Handlebars.compile(templateContent);
+        const initialData = getInitialResumeData(userData);
+        const hydratedJsonString = template(initialData);
+        const parsedData = JSON.parse(hydratedJsonString);
+        // Ensure sectionOrder exists for backward compatibility
+        if (!parsedData.sectionOrder) {
+          parsedData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
+        }
+        return parsedData;
+    } catch (error) {
+        console.error("Error processing Handlebars template:", error);
+        toast({ title: "Template Error", description: "Could not process the template content.", variant: "destructive" });
+        return getInitialResumeData(userData);
+    }
+  }, [toast]);
+
   const loadData = useCallback(async (resumeId: string | null, templateId: string | null) => {
     if (!user) return;
     setIsLoading(true);
@@ -74,21 +93,23 @@ export default function ResumeBuilderPage() {
       }
     } else if (templateId) {
        const template = templates.find(t => t.id === templateId);
-       if (template) {
-         setResumeData(prev => ({ ...getInitialResumeData(user), templateId: template.id }));
+       if (template && template.content) {
+         setResumeData(processTemplate(template.content, user));
          setEditingResumeId(null);
        } else {
          toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
        }
     } else {
       // Default to the first available template if no params
-      const defaultTemplateId = templates.length > 0 ? templates[0].id : 'template1';
-      setResumeData(prev => ({...getInitialResumeData(user), templateId: defaultTemplateId}));
+      const defaultTemplate = templates[0];
+      if (defaultTemplate && defaultTemplate.content) {
+        setResumeData(processTemplate(defaultTemplate.content, user));
+      }
       setEditingResumeId(null);
     }
 
     setIsLoading(false);
-  }, [user, toast]);
+  }, [user, toast, processTemplate]);
   
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
@@ -109,7 +130,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
   
@@ -145,39 +166,16 @@ export default function ResumeBuilderPage() {
   }
 
   const handleTemplateSelect = (template: ResumeTemplate) => {
-    if (!resumeData || !template) {
+    if (!resumeData || !template || !user) {
       return;
     }
     
-    try {
-      const templateData = JSON.parse(template.content) as ResumeBuilderData;
-      
-      // Ensure sectionOrder exists for backward compatibility
-      if (!templateData.sectionOrder) {
-        templateData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
-      }
-
-      // Smart merge: keep header details, but update everything else from the template
-      const mergedData: ResumeBuilderData = {
-        ...templateData,
-        header: resumeData.header, // Preserve user's header info
-        templateId: template.id,
-      };
-
-      setResumeData(mergedData);
-      setIsTemplateDialogOpen(false);
-      toast({
+    setResumeData(processTemplate(template.content, user));
+    setIsTemplateDialogOpen(false);
+    toast({
         title: "Template Changed",
         description: `Switched to "${template.name}". Your personal details have been preserved.`,
-      });
-    } catch (e) {
-      console.error("Failed to parse template content:", e);
-      toast({
-        title: "Error Applying Template",
-        description: "The selected template has invalid content.",
-        variant: "destructive",
-      });
-    }
+    });
   };
   
   const handleSaveComplete = (newResumeId: string) => {
@@ -293,7 +291,7 @@ export default function ResumeBuilderPage() {
           <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} onSelectElement={() => {}} selectedElementId={null} />
            <Button 
             variant="outline" 
-            className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
+            className="w-full border-blue-600 text-blue-600 hover:bg-blue-50" 
             onClick={() => setIsTemplateDialogOpen(true)}
           >
             Change template
