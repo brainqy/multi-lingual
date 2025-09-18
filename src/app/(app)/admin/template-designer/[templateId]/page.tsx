@@ -8,22 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ResumeTemplate, ResumeBuilderData } from '@/types';
-import { getResumeTemplates } from '@/lib/actions/templates';
+import { getResumeTemplates, updateResumeTemplate, createResumeTemplate } from '@/lib/actions/templates';
 import ResumePreview from '@/components/features/resume-builder/ResumePreview';
-
-const getInitialResumeData = (): ResumeBuilderData => ({
-  header: { fullName: "Jane Doe", phone: "555-123-4567", email: "jane.doe@email.com", linkedin: "linkedin.com/in/janedoe", portfolio: "github.com/janedoe", address: "San Francisco, CA" },
-  experience: [
-    { id: "1", jobTitle: "Software Engineer", company: "Tech Solutions Inc.", location: "San Francisco, CA", startDate: "2022-01", endDate: "Present", isCurrent: true, responsibilities: "- Developed and maintained web applications using React and Node.js.\n- Collaborated with cross-functional teams to deliver high-quality software." }
-  ],
-  education: [
-    { id: "1", degree: "Bachelor of Science in Computer Science", university: "State University", location: "San Jose, CA", graduationYear: "2022", details: "- GPA: 3.8/4.0" }
-  ],
-  skills: ["React", "Node.js", "TypeScript", "JavaScript", "HTML", "CSS"],
-  summary: "Results-driven Software Engineer with a passion for developing innovative solutions. Proficient in full-stack development and eager to contribute to a dynamic team.",
-  additionalDetails: { awards: "", certifications: "", languages: "", interests: "" },
-  templateId: 'template1',
-});
+import { getInitialResumeData } from '@/lib/resume-builder-helpers';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 export default function TemplateEditorPage() {
@@ -35,44 +25,48 @@ export default function TemplateEditorPage() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
 
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
-  const [resumeData, setResumeData] = useState<ResumeBuilderData>(getInitialResumeData());
-  const [templateInfo, setTemplateInfo] = useState<ResumeTemplate | null>(null);
+  const [resumeData, setResumeData] = useState<ResumeBuilderData | null>(null);
+  const [templateInfo, setTemplateInfo] = useState<Partial<ResumeTemplate>>({
+    name: "New Template",
+    category: "Modern",
+    content: "{}",
+    previewImageUrl: "https://placehold.co/300x400/008080/FFFFFF?text=New",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    getResumeTemplates().then(templates => {
+    async function loadInitialData() {
+      setIsLoading(true);
+      const templates = await getResumeTemplates();
       setAllTemplates(templates);
-      let currentTemplateId = isNewTemplate ? 'template1' : templateId;
+
+      let currentTemplate: ResumeTemplate | undefined;
+      if (!isNewTemplate) {
+        currentTemplate = templates.find(t => t.id === templateId);
+      }
       
-      const foundTemplate = templates.find(t => t.id === currentTemplateId);
-      
-      if (foundTemplate) {
-        setTemplateInfo(foundTemplate);
-        
-        if (isNewTemplate) {
-          setResumeData(prev => ({ ...prev, templateId: foundTemplate.id }));
-        } else {
-          try {
-            const parsedData = JSON.parse(foundTemplate.content) as Partial<ResumeBuilderData>;
-            const defaultData = getInitialResumeData();
-            setResumeData({
-              ...defaultData,
-              ...parsedData,
-              templateId: foundTemplate.id
-            });
-          } catch (e) {
-            console.error("Failed to parse template content, using default data.", e);
-            setResumeData(prev => ({ ...prev, templateId: foundTemplate.id }));
-          }
+      if (currentTemplate) {
+        setTemplateInfo(currentTemplate);
+        try {
+          const parsedData = JSON.parse(currentTemplate.content || '{}') as Partial<ResumeBuilderData>;
+          const defaultData = getInitialResumeData();
+          setResumeData({ ...defaultData, ...parsedData, templateId: currentTemplate.id });
+        } catch (e) {
+          console.error("Failed to parse template content, using default data.", e);
+          setResumeData({ ...getInitialResumeData(), templateId: currentTemplate.id });
         }
       } else {
-        toast({ title: "Template not found", variant: "destructive" });
-        router.push('/admin/template-designer');
+        // For new templates or if template not found
+        const defaultData = getInitialResumeData();
+        setResumeData({ ...defaultData, templateId: 'template1' });
       }
+
       setIsLoading(false);
-    });
-  }, [templateId, isNewTemplate, router, toast]);
+    }
+    loadData();
+  }, [templateId, isNewTemplate]);
   
   const selectedElementTitle = useMemo(() => {
     if (!selectedElementId) return "No Element Selected";
@@ -85,36 +79,77 @@ export default function TemplateEditorPage() {
     return "Editing Element";
   }, [selectedElementId]);
 
-  if (isLoading || !templateInfo) {
-    return <div className="h-screen w-screen flex items-center justify-center">Loading editor...</div>;
+  const handleStyleChange = (property: keyof Omit<ResumeTemplate, 'id' | 'name' | 'description' | 'previewImageUrl' | 'category' | 'content' | 'dataAiHint'>, value: string) => {
+    setTemplateInfo(prev => ({ ...prev, [property]: value }));
+    // The resume preview component will get the new styles via the `templates` prop and the `templateId` in `resumeData`
+    // To make it react instantly, we can also inject it into the `resumeData` being passed, but let's see if this works first.
+    // For instant preview, we should update the specific template in `allTemplates` state.
+    setAllTemplates(prevTemplates => {
+        const newTemplates = [...prevTemplates];
+        const index = newTemplates.findIndex(t => t.id === templateInfo.id);
+        if (index !== -1) {
+            (newTemplates[index] as any)[property] = value;
+        }
+        return newTemplates;
+    });
+  };
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    const { id, ...dataToSave } = templateInfo;
+    
+    // Ensure content is stringified resumeData
+    dataToSave.content = JSON.stringify(resumeData);
+
+    let result;
+    if (isNewTemplate) {
+      result = await createResumeTemplate(dataToSave as any);
+    } else {
+      result = await updateResumeTemplate(id!, dataToSave);
+    }
+
+    if (result) {
+      toast({ title: isNewTemplate ? "Template Created" : "Template Saved", description: `Template "${result.name}" has been saved.` });
+      if (isNewTemplate) {
+        router.push(`/admin/template-designer/${result.id}`);
+      }
+    } else {
+      toast({ title: "Error", description: "Failed to save template.", variant: "destructive" });
+    }
+    setIsSaving(false);
+  };
+
+  if (isLoading || !resumeData) {
+    return <div className="h-screen w-screen flex items-center justify-center bg-muted">Loading editor...</div>;
   }
 
   return (
     <div className="h-screen w-screen bg-muted flex flex-col">
-      {/* Header */}
       <header className="flex-shrink-0 bg-card border-b p-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => router.push('/admin/template-designer')}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Exit
           </Button>
           <div>
-            <h1 className="text-lg font-semibold">{templateInfo.name}</h1>
-            <p className="text-xs text-muted-foreground">{isNewTemplate ? "Creating New Template" : `Editing Template ID: ${templateInfo.id}`}</p>
+            <Input 
+                value={templateInfo.name || ''} 
+                onChange={(e) => setTemplateInfo(p => ({...p, name: e.target.value}))}
+                className="text-lg font-semibold h-8"
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <Eye className="mr-2 h-4 w-4" /> Preview
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Save className="mr-2 h-4 w-4" /> Save
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSaveChanges} disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+            <Save className="mr-2 h-4 w-4" /> {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </header>
 
-      {/* Main Editor Body */}
       <div className="flex-grow flex overflow-hidden">
-        {/* Left Sidebar (Elements) */}
         <aside className="w-64 bg-card border-r p-4 overflow-y-auto">
           <h2 className="text-sm font-semibold mb-3">Add Elements</h2>
           <div className="space-y-2">
@@ -123,7 +158,6 @@ export default function TemplateEditorPage() {
           </div>
         </aside>
 
-        {/* Center Canvas (Resume Preview) */}
         <main className="flex-1 flex items-center justify-center overflow-auto p-8">
           <div className="w-full h-full max-w-4xl">
             <ResumePreview 
@@ -136,16 +170,39 @@ export default function TemplateEditorPage() {
           </div>
         </main>
 
-        {/* Right Sidebar (Property Inspector) */}
         <aside className="w-72 bg-card border-l p-4 overflow-y-auto">
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Property Inspector</h2>
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{selectedElementTitle}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
                {selectedElementId ? (
-                <p className="text-xs text-muted-foreground">Styling controls for this section will appear here in a future step.</p>
+                <>
+                  <div className="space-y-1">
+                    <Label htmlFor="headerColor">Header Color</Label>
+                    <Input id="headerColor" value={templateInfo.headerColor || ''} onChange={(e) => handleStyleChange('headerColor', e.target.value)} placeholder="e.g., #000000"/>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="bodyColor">Body Text Color</Label>
+                    <Input id="bodyColor" value={templateInfo.bodyColor || ''} onChange={(e) => handleStyleChange('bodyColor', e.target.value)} placeholder="e.g., #333333"/>
+                  </div>
+                   <div className="space-y-1">
+                    <Label htmlFor="headerFontSize">Header Font Size</Label>
+                    <Input id="headerFontSize" value={templateInfo.headerFontSize || ''} onChange={(e) => handleStyleChange('headerFontSize', e.target.value)} placeholder="e.g., 1.5rem or 24px"/>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="textAlign">Text Alignment</Label>
+                    <Select value={templateInfo.textAlign || 'left'} onValueChange={(value) => handleStyleChange('textAlign', value)}>
+                        <SelectTrigger><SelectValue/></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  </div>
+                </>
                ) : (
                 <p className="text-xs text-muted-foreground">Click an element on the canvas to edit its properties here.</p>
                )}

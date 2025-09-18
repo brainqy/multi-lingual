@@ -44,7 +44,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
             {data.header.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.email}</span></div>}
             {data.header.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.phone}</span></div>}
             {data.header.address && <div className="flex items-center gap-2"><Home className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.address}</span></div>}
-            {data.header.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-3 w-3" style={{ color: styles.headerColor }}/><a href={data.header.linkedin} className="text-blue-600 hover:underline">LinkedIn</a></div>}
+            {data.header.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-3 w-3" style={{ color: styles.headerColor }}/><a href={`https://${data.header.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a></div>}
             </div>
         </div>
         

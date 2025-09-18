@@ -39,8 +39,8 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId 
         <div className="text-xs text-slate-600 flex justify-center gap-x-2 flex-wrap">
           {data.header.phone && <span>{data.header.phone}</span>}
           {data.header.email && <span>| {data.header.email}</span>}
-          {data.header.linkedin && <span>| <a href={data.header.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a></span>}
-          {data.header.portfolio && <span>| <a href={data.header.portfolio} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Portfolio</a></span>}
+          {data.header.linkedin && <span>| <a href={`https://${data.header.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkedIn</a></span>}
+          {data.header.portfolio && <span>| <a href={`https://${data.header.portfolio}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Portfolio</a></span>}
         </div>
         {data.header.address && <p className="text-xs text-slate-600 mt-0.5">{data.header.address}</p>}
       </div>
