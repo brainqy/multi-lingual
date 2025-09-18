@@ -26,7 +26,6 @@ export default function TemplateEditorPage() {
 
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [resumeData, setResumeData] = useState<ResumeBuilderData | null>(null);
-  const [templateContent, setTemplateContent] = useState<{ layout: string }>({ layout: 'single-column' });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -35,32 +34,32 @@ export default function TemplateEditorPage() {
     setIsLoading(true);
     const templates = await getResumeTemplates();
     setAllTemplates(templates);
-
+  
     let currentTemplate: ResumeTemplate | undefined;
     if (!isNewTemplate) {
       currentTemplate = templates.find(t => t.id === templateId);
     }
-    
+  
+    let initialResumeData = getInitialResumeData(null);
+  
     if (currentTemplate) {
       try {
-        const parsedData = JSON.parse(currentTemplate.content || '{}') as Partial<ResumeBuilderData>;
-        const defaultData = getInitialResumeData();
-        setResumeData({ ...defaultData, ...parsedData, templateId: currentTemplate.id });
-        setTemplateContent(parsedData.templateId ? JSON.parse(parsedData.templateId) : { layout: 'single-column' });
+        const parsedContent = JSON.parse(currentTemplate.content || '{}');
+        // Merge parsed content into the initial data, which has the full structure
+        initialResumeData = { ...initialResumeData, ...parsedContent, templateId: currentTemplate.id };
       } catch (e) {
         console.error("Failed to parse template content, using default data.", e);
-        setResumeData({ ...getInitialResumeData(), templateId: currentTemplate.id });
-        setTemplateContent({ layout: 'single-column' });
+        toast({ title: "Template Load Error", description: "Could not parse template styles, using defaults.", variant: "destructive" });
+        initialResumeData.templateId = currentTemplate.id; // Still assign the correct ID
       }
     } else {
-      // For new templates or if template not found
-      const defaultData = getInitialResumeData();
-      setResumeData({ ...defaultData, templateId: 'template1' });
-      setTemplateContent({ layout: 'single-column' });
+      // For new templates, use default data but allow selecting the first template
+      initialResumeData.templateId = templates.length > 0 ? templates[0].id : 'template1';
     }
-
+    
+    setResumeData(initialResumeData);
     setIsLoading(false);
-  }, [templateId, isNewTemplate]);
+  }, [templateId, isNewTemplate, toast]);
 
   useEffect(() => {
     loadData();
@@ -85,13 +84,21 @@ export default function TemplateEditorPage() {
     return { title: "Editing Element", data: {} };
   }, [selectedElementId, resumeData]);
 
-  const handleStyleChange = (property: keyof ResumeBuilderData | 'layout', value: any) => {
+  const handleStyleChange = (property: keyof ResumeBuilderData, value: any) => {
     if (!resumeData) return;
-
-    if (property === 'layout') {
-      setTemplateContent(prev => ({ ...prev, layout: value }));
-    } else {
-      setResumeData(prev => prev ? ({ ...prev, [property]: value }) : null);
+    setResumeData(prev => prev ? ({ ...prev, [property]: value }) : null);
+  };
+  
+  const handleLayoutChange = (newLayout: string) => {
+    if (!resumeData) return;
+    try {
+        const currentContent = resumeData.templateId ? JSON.parse(resumeData.templateId) : {};
+        const newContent = { ...currentContent, layout: newLayout };
+        setResumeData(prev => prev ? ({ ...prev, templateId: JSON.stringify(newContent) }) : null);
+    } catch {
+        // If parsing fails, create a new object
+        const newContent = { layout: newLayout };
+        setResumeData(prev => prev ? ({ ...prev, templateId: JSON.stringify(newContent) }) : null);
     }
   };
 
@@ -152,7 +159,8 @@ export default function TemplateEditorPage() {
     // Combine resume data with the layout/style content
     const fullContent = {
       ...resumeData,
-      templateId: JSON.stringify(templateContent), // This is confusing but matches existing structure for now
+      // The templateId field is confusingly used for content in some places.
+      // We should ideally refactor this, but for now we'll ensure it's a JSON string.
     };
     
     const dataToSave: Partial<ResumeTemplate> = {
@@ -184,10 +192,11 @@ export default function TemplateEditorPage() {
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
   
-  const finalResumeDataForPreview = {
-      ...resumeData,
-      templateId: JSON.stringify(templateContent) // Pass the combined styles
-  };
+  let currentLayout = 'single-column';
+  try {
+    currentLayout = JSON.parse(resumeData.templateId || '{}').layout || 'single-column';
+  } catch (e) { /* use default */ }
+
 
   return (
     <div className="h-screen w-screen bg-muted flex flex-col">
@@ -220,7 +229,7 @@ export default function TemplateEditorPage() {
           <div className="w-full h-full max-w-4xl">
             <ResumePreview 
               ref={resumePreviewRef} 
-              resumeData={finalResumeDataForPreview}
+              resumeData={resumeData}
               templates={allTemplates}
               onSelectElement={setSelectedElementId} 
               selectedElementId={selectedElementId}
@@ -238,7 +247,7 @@ export default function TemplateEditorPage() {
             <CardContent className="space-y-4">
                <div className="space-y-1">
                  <Label htmlFor="layout-select" className="text-xs">Layout</Label>
-                 <Select value={templateContent.layout} onValueChange={(value) => handleStyleChange('layout', value)}>
+                 <Select value={currentLayout} onValueChange={handleLayoutChange}>
                    <SelectTrigger id="layout-select">
                      <SelectValue placeholder="Select layout" />
                    </SelectTrigger>
@@ -263,7 +272,7 @@ export default function TemplateEditorPage() {
                </div>
                <div className="space-y-1">
                  <Label htmlFor="text-align" className="text-xs">Text Alignment</Label>
-                 <Select value={resumeData.textAlign} onValueChange={(value) => handleStyleChange('textAlign', value)}>
+                 <Select value={resumeData.textAlign} onValueChange={(value) => handleStyleChange('textAlign', value as any)}>
                    <SelectTrigger id="text-align">
                      <SelectValue placeholder="Select alignment" />
                    </SelectTrigger>

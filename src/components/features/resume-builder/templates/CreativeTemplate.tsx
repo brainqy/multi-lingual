@@ -20,14 +20,20 @@ interface TemplateProps {
 }
 
 const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
-  let layout = 'single-column'; // Default layout
+  let layout = 'single-column';
   try {
-    const templateContent = JSON.parse(data.templateId || '{}');
-    layout = templateContent.layout || 'single-column';
+    const parsedContent = JSON.parse(data.templateId || '{}');
+    if (parsedContent.layout) {
+      layout = parsedContent.layout;
+    } else {
+      // Fallback for old string-based templateId
+      const templateDetails = JSON.parse(data.templateId || '{}');
+      layout = templateDetails.layout || 'single-column';
+    }
   } catch (e) {
-    // Ignore parsing errors, use default
+    // Fallback for completely invalid JSON or old format
+    layout = 'single-column';
   }
-
 
   const formatResponsibilities = (text: string) => {
     return text.split('\n').map((line, index) => (
@@ -59,7 +65,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
               style={{ color: styles.headerColor }}
               contentEditable
               suppressContentEditableWarning
-              onBlur={(e) => onDataChange('experience.jobTitle.0', e.currentTarget.textContent || '')}
+              onBlur={(e) => onDataChange('experience.0.jobTitle', e.currentTarget.textContent || '')}
             >
               {data.experience[0]?.jobTitle || 'Aspiring Professional'}
             </p>
@@ -137,7 +143,7 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
                         className="text-sm text-gray-700 whitespace-pre-line"
                         contentEditable
                         suppressContentEditableWarning
-                        onBlur={(e) => onDataChange(`custom.${key}`, e.currentTarget.textContent || '')}
+                        onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
                     >
                         {value}
                     </p>

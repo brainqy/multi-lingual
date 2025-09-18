@@ -19,12 +19,13 @@ interface TemplateProps {
 }
 
 const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
-    let layout = 'single-column'; // Default layout
+    let layout = 'single-column';
     try {
-        const templateContent = data.templateId ? JSON.parse(data.templateId) : {};
-        layout = templateContent.layout || 'single-column';
+      const parsedContent = data.templateId ? JSON.parse(data.templateId) : {};
+      layout = parsedContent.layout || 'single-column';
     } catch (e) {
-        // Ignore parsing errors, use default
+      // Fallback for when templateId is just a string like "template1"
+      layout = 'single-column';
     }
 
   const formatResponsibilities = (text: string) => {
@@ -80,7 +81,12 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
         {data.skills.length > 0 && (
             <div className={cn("mb-3", getSectionClasses('skills'))} onClick={() => onSelectElement('skills')}>
             <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Skills</h2>
-            <p className="text-xs text-slate-700">{data.skills.join(" • ")}</p>
+            <p 
+                className="text-xs text-slate-700"
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => onDataChange('skills', e.currentTarget.textContent || '')}
+            >{data.skills.join(" • ")}</p>
             </div>
         )}
         
@@ -127,7 +133,7 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId,
                         className="text-xs text-slate-700 whitespace-pre-line"
                         contentEditable
                         suppressContentEditableWarning
-                        onBlur={(e) => onDataChange(`custom.${key}`, e.currentTarget.textContent || '')}
+                        onBlur={(e) => onDataChange(`custom-${key}`, e.currentTarget.textContent || '')}
                     >
                         {value}
                     </p>
