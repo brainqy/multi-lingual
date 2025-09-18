@@ -5,15 +5,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeResumeAndJobDescription } from '@/ai/flows/analyze-resume-and-job-description';
-import type { AnalyzeResumeAndJobDescriptionOutput, ResumeScanHistoryItem, ResumeProfile } from '@/types';
+import type { AnalyzeResumeAndJobDescriptionOutput, ResumeScanHistoryItem, ResumeProfile, ResumeBuilderData } from '@/types';
 import { Loader2 } from "lucide-react";
 import ResumeInputForm from '@/components/features/resume-analyzer/ResumeInputForm';
 import AnalysisReport from '@/components/features/resume-analyzer/AnalysisReport';
 import ScanHistory from '@/components/features/resume-analyzer/ScanHistory';
-import { getResumeProfiles } from '@/lib/actions/resumes';
-import { getScanHistory, createScanHistory } from '@/lib/actions/resumes';
+import { getResumeProfiles, createScanHistory, updateScanHistory } from '@/lib/actions/resumes';
 import { useAuth } from '@/hooks/use-auth';
 import { useSettings } from '@/contexts/settings-provider';
+import { convertResumeDataToText } from '@/lib/utils';
 
 
 export default function ResumeAnalyzerPage() {
@@ -196,7 +196,7 @@ export default function ResumeAnalyzerPage() {
       )}
 
       {analysisReport && (
-        <div data-testid="analysis-report-section">
+        <div data-testid="analysis-report-section" id="analysis-report-section">
           <AnalysisReport
             analysisReport={analysisReport}
             resumeText={currentResumeText}
