@@ -12,19 +12,20 @@ interface ResumePreviewProps {
   templates: ResumeTemplate[];
   onSelectElement: (elementId: string | null) => void;
   selectedElementId: string | null;
+  onDataChange: (field: string, value: string) => void;
 }
 
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
-  ({ resumeData, templates, onSelectElement, selectedElementId }, ref) => {
+  ({ resumeData, templates, onSelectElement, selectedElementId, onDataChange }, ref) => {
     const { templateId } = resumeData;
 
     const template = templates.find(t => t.id === templateId);
 
     const styles = {
-      headerColor: template?.headerColor,
-      bodyColor: template?.bodyColor,
-      headerFontSize: template?.headerFontSize,
-      textAlign: template?.textAlign,
+      headerColor: resumeData.headerColor,
+      bodyColor: resumeData.bodyColor,
+      headerFontSize: resumeData.headerFontSize,
+      textAlign: resumeData.textAlign,
     };
 
     const renderTemplate = () => {
@@ -35,6 +36,7 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
         styles: styles,
         onSelectElement: onSelectElement,
         selectedElementId: selectedElementId,
+        onDataChange: onDataChange,
       };
 
       switch (templateCategory) {

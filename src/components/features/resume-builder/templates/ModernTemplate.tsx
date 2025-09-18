@@ -15,12 +15,13 @@ interface TemplateProps {
   };
   onSelectElement: (elementId: string | null) => void;
   selectedElementId: string | null;
+  onDataChange: (field: string, value: string) => void;
 }
 
-const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId }: TemplateProps) => {
+const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
     let layout = 'single-column'; // Default layout
     try {
-        const templateContent = JSON.parse(data.templateId || '{}');
+        const templateContent = data.templateId ? JSON.parse(data.templateId) : {};
         layout = templateContent.layout || 'single-column';
     } catch (e) {
         // Ignore parsing errors, use default
@@ -41,7 +42,13 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId 
 
   const Header = () => (
      <div className={cn("mb-3 border-b pb-2 border-slate-200", getSectionClasses('header'))} style={{ textAlign: 'center' }} onClick={() => onSelectElement('header')}>
-        {data.header.fullName && <h1 className="text-xl font-bold" style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}>{data.header.fullName}</h1>}
+        {data.header.fullName && <h1 
+            className="text-xl font-bold" 
+            style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={(e) => onDataChange('header.fullName', e.currentTarget.textContent || '')}
+        >{data.header.fullName}</h1>}
         <div className="text-xs text-slate-600 flex justify-center gap-x-2 flex-wrap">
           {data.header.phone && <span>{data.header.phone}</span>}
           {data.header.email && <span>| {data.header.email}</span>}
@@ -58,7 +65,14 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId 
         {data.summary && (
             <div className={cn("mb-3", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
             <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Summary</h2>
-            <p className="text-xs text-slate-700 whitespace-pre-line">{data.summary}</p>
+            <p 
+                className="text-xs text-slate-700 whitespace-pre-line"
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => onDataChange('summary', e.currentTarget.textContent || '')}
+            >
+                {data.summary}
+            </p>
             </div>
         )}
 
@@ -101,34 +115,25 @@ const ModernTemplate = ({ data, styles = {}, onSelectElement, selectedElementId 
         )}
         
         {/* Additional Details Section */}
-        {data.additionalDetails && Object.values(data.additionalDetails).some(val => val && val.length > 0) && (
-            <div className={cn("mt-3 pt-2 border-t border-slate-200", getSectionClasses('additionalDetails'))} onClick={() => onSelectElement('additionalDetails')}>
-            {data.additionalDetails.awards && data.additionalDetails.awards.length > 0 && (
-                <div className="mb-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Awards</h2>
-                <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.awards}</p>
+        {data.additionalDetails && Object.entries(data.additionalDetails).map(([key, value]) => {
+            if (!value) return null;
+            const sectionId = `custom-${key}`;
+            return (
+                <div key={key} className={cn("mt-3 pt-2 border-t border-slate-200", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
+                    <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>
+                        {key.replace(/_/g, ' ')}
+                    </h2>
+                    <p 
+                        className="text-xs text-slate-700 whitespace-pre-line"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => onDataChange(`custom.${key}`, e.currentTarget.textContent || '')}
+                    >
+                        {value}
+                    </p>
                 </div>
-            )}
-            {data.additionalDetails.certifications && data.additionalDetails.certifications.length > 0 && (
-                <div className="mb-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Certifications</h2>
-                <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.certifications}</p>
-                </div>
-            )}
-            {data.additionalDetails.languages && data.additionalDetails.languages.length > 0 && (
-                <div className="mb-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Languages</h2>
-                <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.languages}</p>
-                </div>
-            )}
-            {data.additionalDetails.interests && data.additionalDetails.interests.length > 0 && (
-                <div className="mb-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles.headerColor }}>Interests</h2>
-                <p className="text-xs text-slate-700 whitespace-pre-line">{data.additionalDetails.interests}</p>
-                </div>
-            )}
-            </div>
-        )}
+            );
+        })}
     </>
   );
 

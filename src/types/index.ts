@@ -950,10 +950,6 @@ export interface ResumeTemplate {
   category: string;
   dataAiHint?: string;
   content: string; // JSON string of template structure or Handlebars template
-  headerColor?: string;
-  bodyColor?: string;
-  headerFontSize?: string;
-  textAlign?: 'left' | 'center' | 'right';
 }
 export interface ResumeHeaderData {
     fullName: string;
@@ -991,12 +987,18 @@ export interface ResumeBuilderData {
     education: ResumeEducationEntry[];
     skills: string[];
     additionalDetails?: {
+      [key: string]: string | undefined;
       awards?: string;
       certifications?: string;
       languages?: string;
       interests?: string;
     };
     templateId: string;
+    // Styling properties
+    headerColor?: string;
+    bodyColor?: string;
+    headerFontSize?: string;
+    textAlign?: 'left' | 'center' | 'right';
 }
 
 export const RESUME_BUILDER_STEPS = [

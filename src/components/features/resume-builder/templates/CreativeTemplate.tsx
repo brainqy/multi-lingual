@@ -16,12 +16,12 @@ interface TemplateProps {
   };
   onSelectElement: (elementId: string | null) => void;
   selectedElementId: string | null;
+  onDataChange: (field: string, value: string) => void;
 }
 
-const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId }: TemplateProps) => {
+const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementId, onDataChange }: TemplateProps) => {
   let layout = 'single-column'; // Default layout
   try {
-    // The templateId field in ResumeBuilderData actually holds the content JSON string for the selected template.
     const templateContent = JSON.parse(data.templateId || '{}');
     layout = templateContent.layout || 'single-column';
   } catch (e) {
@@ -45,8 +45,24 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
   const SidebarContent = () => (
      <>
         <div className={getSectionClasses('header')} onClick={() => onSelectElement('header')}>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}>{data.header.fullName}</h1>
-            <p className="text-md font-medium mb-4" style={{ color: styles.headerColor }}>{data.experience[0]?.jobTitle || 'Aspiring Professional'}</p>
+            <h1 
+              className="text-2xl font-bold text-gray-900" 
+              style={{ color: styles.headerColor, fontSize: styles.headerFontSize }}
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={(e) => onDataChange('header.fullName', e.currentTarget.textContent || '')}
+            >
+              {data.header.fullName}
+            </h1>
+            <p 
+              className="text-md font-medium mb-4" 
+              style={{ color: styles.headerColor }}
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={(e) => onDataChange('experience.jobTitle.0', e.currentTarget.textContent || '')}
+            >
+              {data.experience[0]?.jobTitle || 'Aspiring Professional'}
+            </p>
             
             <div className="space-y-3 text-xs">
             {data.header.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" style={{ color: styles.headerColor }}/><span>{data.header.email}</span></div>}
@@ -85,7 +101,14 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
         {data.summary && (
           <div className={cn("mb-4", getSectionClasses('summary'))} onClick={() => onSelectElement('summary')}>
             <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>Profile</h2>
-            <p className="text-sm text-gray-700 whitespace-pre-line">{data.summary}</p>
+            <p 
+                className="text-sm text-gray-700 whitespace-pre-line"
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => onDataChange('summary', e.currentTarget.textContent || '')}
+            >
+                {data.summary}
+            </p>
           </div>
         )}
 
@@ -102,14 +125,25 @@ const CreativeTemplate = ({ data, styles = {}, onSelectElement, selectedElementI
           </div>
         )}
 
-        {data.additionalDetails && Object.values(data.additionalDetails).some(val => val && val.length > 0) && (
-            <div className={cn("mt-4", getSectionClasses('additionalDetails'))} onClick={() => onSelectElement('additionalDetails')}>
-                <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>More</h2>
-                {data.additionalDetails.awards && <div><h3 className="text-sm font-semibold inline-flex items-center gap-1"><Award className="h-4 w-4"/>Awards</h3><p className="text-xs pl-5">{data.additionalDetails.awards}</p></div>}
-                {data.additionalDetails.languages && <div><h3 className="text-sm font-semibold inline-flex items-center gap-1"><Languages className="h-4 w-4"/>Languages</h3><p className="text-xs pl-5">{data.additionalDetails.languages}</p></div>}
-                {data.additionalDetails.interests && <div><h3 className="text-sm font-semibold inline-flex items-center gap-1"><Heart className="h-4 w-4"/>Interests</h3><p className="text-xs pl-5">{data.additionalDetails.interests}</p></div>}
-            </div>
-        )}
+        {data.additionalDetails && Object.entries(data.additionalDetails).map(([key, value]) => {
+            if (!value) return null;
+            const sectionId = `custom-${key}`;
+            return (
+                <div key={key} className={cn("mt-4", getSectionClasses(sectionId))} onClick={() => onSelectElement(sectionId)}>
+                    <h2 className="text-lg font-bold tracking-wide border-b-2 pb-1 mb-2" style={{ color: styles.headerColor, borderColor: styles.headerColor ? `${styles.headerColor}30` : undefined }}>
+                        {key.replace(/_/g, ' ')}
+                    </h2>
+                    <p 
+                        className="text-sm text-gray-700 whitespace-pre-line"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => onDataChange(`custom.${key}`, e.currentTarget.textContent || '')}
+                    >
+                        {value}
+                    </p>
+                </div>
+            );
+        })}
      </>
   );
 
