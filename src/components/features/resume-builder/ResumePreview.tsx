@@ -20,7 +20,8 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
   ({ resumeData, templates }, ref) => {
     const { templateId, ...data } = resumeData;
     logger.log('--- ResumePreview Render Start ---');
-    logger.log('Received props:', { templateId, templatesCount: templates.length, headerName: data.header.fullName });
+    logger.log('Received props:', { resumeData, templatesCount: templates.length });
+    logger.log('Extracted templateId for lookup:', { templateId });
 
     const template = templates.find(t => t.id === templateId);
     logger.log('Found template object for current ID:', { templateName: template?.name, templateCategory: template?.category });
