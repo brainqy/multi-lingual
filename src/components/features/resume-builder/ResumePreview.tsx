@@ -13,9 +13,17 @@ interface ResumePreviewProps {
   templates: ResumeTemplate[];
 }
 
+const logger = {
+    log: (message: string, ...args: any[]) => console.log(`[ResumePreview] ${message}`, ...args),
+};
+
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
   ({ data, templateId, templates }, ref) => {
+    logger.log('--- ResumePreview Render Start ---');
+    logger.log('Received props:', { templateId, templatesCount: templates.length, headerName: data.header.fullName });
+
     const template = templates.find(t => t.id === templateId);
+    logger.log('Found template object for current ID:', { templateName: template?.name, templateCategory: template?.category });
 
     const styles = {
       headerColor: template?.headerColor,
@@ -25,21 +33,23 @@ const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
     };
 
     const renderTemplate = () => {
-      // Use the category from the template data to decide which component to render.
-      // This is more robust than hardcoding template IDs.
       const templateCategory = template?.category?.toLowerCase();
+      logger.log('Determined template category:', { templateCategory });
       
       switch (templateCategory) {
         case 'creative':
-        case 'academic': // Let's use creative for academic for now
+        case 'academic':
+          logger.log('Rendering: CreativeTemplate');
           return <CreativeTemplate data={data} styles={styles} />;
         case 'modern':
         case 'professional':
         default:
+          logger.log('Rendering: ModernTemplate (default)');
           return <ModernTemplate data={data} styles={styles} />;
       }
     };
 
+    logger.log('--- ResumePreview Render End ---');
     return (
       <div className="sticky top-6">
         <div className="flex justify-between items-center mb-2">

@@ -26,6 +26,10 @@ import { getResumeProfiles } from "@/lib/actions/resumes";
 import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 
+const logger = {
+    log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
+};
+
 const getInitialResumeData = (user: UserProfile | null): ResumeBuilderData => {
   if (!user) {
     return {
@@ -157,7 +161,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
   
@@ -193,7 +197,13 @@ export default function ResumeBuilderPage() {
   }
 
   const handleTemplateSelect = (templateId: string) => {
-    setResumeData(prev => ({ ...prev, templateId }));
+    logger.log('handleTemplateSelect: Received templateId in page', { templateId });
+    logger.log('handleTemplateSelect: Current resumeData BEFORE update', { currentTemplateId: resumeData.templateId });
+    setResumeData(prev => {
+      const newData = { ...prev, templateId };
+      logger.log('handleTemplateSelect: New resumeData AFTER update', { newTemplateId: newData.templateId });
+      return newData;
+    });
     setIsTemplateDialogOpen(false);
     toast({ title: "Template Changed", description: "The resume preview has been updated." });
   };
