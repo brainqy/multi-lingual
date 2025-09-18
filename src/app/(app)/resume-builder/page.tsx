@@ -161,7 +161,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
   
@@ -318,7 +318,7 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview ref={resumePreviewRef} data={resumeData} templateId={resumeData.templateId} templates={allTemplates} />
+          <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} />
            <Button 
             variant="outline" 
             className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 

@@ -8,8 +8,7 @@ import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
 
 interface ResumePreviewProps {
-  data: ResumeBuilderData;
-  templateId: string;
+  resumeData: ResumeBuilderData;
   templates: ResumeTemplate[];
 }
 
@@ -18,7 +17,8 @@ const logger = {
 };
 
 const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
-  ({ data, templateId, templates }, ref) => {
+  ({ resumeData, templates }, ref) => {
+    const { templateId, ...data } = resumeData;
     logger.log('--- ResumePreview Render Start ---');
     logger.log('Received props:', { templateId, templatesCount: templates.length, headerName: data.header.fullName });
 
