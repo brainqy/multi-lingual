@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical, Award, BookCheck, Languages as LanguagesIcon, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ResumeTemplate, ResumeBuilderData } from '@/types';
 import { getResumeTemplates, updateResumeTemplate, createResumeTemplate } from '@/lib/actions/templates';
@@ -54,6 +54,11 @@ export default function TemplateEditorPage() {
       }
     } else {
       initialResumeData.templateId = templates.length > 0 ? templates[0].id : 'template1';
+    }
+    
+    // Ensure sectionOrder exists
+    if (!initialResumeData.sectionOrder) {
+      initialResumeData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
     }
     
     setResumeData(initialResumeData);
@@ -168,6 +173,29 @@ export default function TemplateEditorPage() {
     toast({ title: "Section Added", description: `"${sectionName}" added to the ${column} column.` });
   };
 
+  const handleAddCommonSection = (sectionKey: string, sectionTitle: string) => {
+    setResumeData(prev => {
+      if (!prev) return null;
+
+      const fullKey = `custom-${sectionKey}`;
+      // Check if the section already exists in the order array
+      if (prev.sectionOrder.includes(fullKey)) {
+        toast({ title: "Section Exists", description: `The "${sectionTitle}" section is already in your resume.`, variant: "default" });
+        return prev;
+      }
+      
+      const newDetails = { ...(prev.additionalDetails || { main: {}, sidebar: {} }) };
+      if (!newDetails.main) newDetails.main = {};
+
+      newDetails.main[sectionKey] = `- Example entry for ${sectionTitle}`;
+      
+      const newSectionOrder = [...prev.sectionOrder, fullKey];
+
+      toast({ title: "Section Added", description: `"${sectionTitle}" has been added to your resume.` });
+      return { ...prev, additionalDetails: newDetails, sectionOrder: newSectionOrder };
+    });
+  };
+
 
   const handleSaveChanges = async () => {
     if (!resumeData) return;
@@ -214,6 +242,13 @@ export default function TemplateEditorPage() {
         });
     }
   };
+  
+  const commonSections = [
+    { key: 'awards', title: 'Awards', icon: Award },
+    { key: 'certifications', title: 'Certifications', icon: BookCheck },
+    { key: 'languages', title: 'Languages', icon: LanguagesIcon },
+    { key: 'interests', title: 'Interests', icon: Heart },
+  ];
 
   if (isLoading || !resumeData) {
     return <div className="h-screen w-screen flex items-center justify-center bg-muted"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -244,6 +279,15 @@ export default function TemplateEditorPage() {
           <h2 className="text-sm font-semibold mb-3">Add Elements</h2>
           <div className="space-y-2">
             <Button variant="outline" className="w-full justify-start" onClick={handleAddCustomSection}><PlusCircle className="mr-2 h-4 w-4"/> Custom Section</Button>
+          </div>
+          <hr className="my-4" />
+          <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Add Common Sections</h3>
+          <div className="space-y-2">
+             {commonSections.map(section => (
+              <Button key={section.key} variant="outline" className="w-full justify-start font-normal text-sm" onClick={() => handleAddCommonSection(section.key, section.title)}>
+                <section.icon className="mr-2 h-4 w-4 text-muted-foreground" /> {section.title}
+              </Button>
+            ))}
           </div>
         </aside>
 
