@@ -80,7 +80,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
         case 'summary':
             return data.summary ? (
                 <SortableSection id="summary" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                    <div onClick={() => onSelectElement('summary')}>
+                    <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Summary</h2>
                         <p 
                             className="text-xs text-slate-700 whitespace-pre-line"
@@ -96,7 +96,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
         case 'skills':
             return data.skills.length > 0 ? (
                 <SortableSection id="skills" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                    <div onClick={() => onSelectElement('skills')}>
+                    <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>Skills</h2>
                         <p 
                             className="text-xs text-slate-700"
@@ -110,7 +110,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
         case 'experience':
             return data.experience.length > 0 ? (
                  <SortableSection id="experience" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                    <div onClick={() => onSelectElement('experience')}>
+                    <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Experience</h2>
                         {data.experience.map((exp, index) => (
                             <div key={exp.id || index} className="mb-2">
@@ -126,7 +126,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
         case 'education':
              return data.education.length > 0 ? (
                 <SortableSection id="education" onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                    <div onClick={() => onSelectElement('education')}>
+                    <div>
                         <h2 className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: styles?.headerColor }}>Education</h2>
                         {data.education.map((edu, index) => (
                             <div key={edu.id || index} className="mb-1.5">
@@ -146,7 +146,7 @@ const ModernTemplate = ({ data, onSelectElement, selectedElementId, onDataChange
                 if (!value) return null;
                 return (
                     <SortableSection id={sectionId} onSelectElement={onSelectElement} selectedElementId={selectedElementId}>
-                        <div onClick={() => onSelectElement(sectionId)}>
+                        <div>
                              <h2 className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: styles?.headerColor }}>
                                 {key.replace(/_/g, ' ')}
                             </h2>
