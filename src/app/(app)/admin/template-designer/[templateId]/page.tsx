@@ -24,6 +24,8 @@ const logger = {
   log: (message: string, ...args: any[]) => console.log(`[TemplateEditorPage] ${message}`, ...args),
 };
 
+const defaultSectionOrder = ['summary', 'experience', 'education', 'skills'];
+
 export default function TemplateEditorPage() {
   logger.log('Component Render Start');
   const params = useParams();
@@ -79,6 +81,10 @@ export default function TemplateEditorPage() {
       if (templateToEdit && templateToEdit.content) {
         try {
           const parsedData = JSON.parse(templateToEdit.content);
+          // GUARANTEE sectionOrder exists for backward compatibility
+          if (!parsedData.sectionOrder) {
+            parsedData.sectionOrder = defaultSectionOrder;
+          }
           logger.log('loadData: Parsed content from template');
           setResumeData(parsedData);
         } catch (e) {
@@ -86,6 +92,9 @@ export default function TemplateEditorPage() {
             toast({ title: "Error", description: "Could not parse template content.", variant: "destructive" });
             setResumeData(getInitialResumeData(user));
         }
+      } else {
+        // Fallback if template is not found
+        setResumeData(getInitialResumeData(user));
       }
     }
     
@@ -329,6 +338,11 @@ export default function TemplateEditorPage() {
     try {
       const templateData = JSON.parse(template.content) as ResumeBuilderData;
       
+      // Ensure sectionOrder exists for backward compatibility
+      if (!templateData.sectionOrder) {
+        templateData.sectionOrder = defaultSectionOrder;
+      }
+
       const mergedData: ResumeBuilderData = {
         ...templateData,
         header: resumeData.header,
