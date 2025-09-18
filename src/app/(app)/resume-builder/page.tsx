@@ -58,6 +58,10 @@ export default function ResumeBuilderPage() {
       if (resumeToEdit && resumeToEdit.resumeText) {
           try {
               const parsedData = JSON.parse(resumeToEdit.resumeText);
+              // Ensure sectionOrder exists for backward compatibility
+              if (!parsedData.sectionOrder) {
+                parsedData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
+              }
               setResumeData(parsedData);
               setEditingResumeId(resumeToEdit.id);
           } catch (e) {
@@ -140,13 +144,42 @@ export default function ResumeBuilderPage() {
     setResumeData(prev => ({ ...prev, additionalDetails: { ...prev.additionalDetails, ...details } }));
   }
 
-  const handleTemplateSelect = (templateId: string) => {
-    logger.log('handleTemplateSelect: Template ID received!', { templateId });
-    setIsTemplateDialogOpen(false);
-    // Update URL, which will trigger the useEffect to reload the data with the new template
-    router.push(`/resume-builder?templateId=${templateId}`);
-  };
+  const handleTemplateSelect = (template: ResumeTemplate) => {
+    if (!resumeData || !template) {
+      return;
+    }
+    
+    try {
+      const templateData = JSON.parse(template.content) as ResumeBuilderData;
+      
+      // Ensure sectionOrder exists for backward compatibility
+      if (!templateData.sectionOrder) {
+        templateData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
+      }
 
+      // Smart merge: keep header details, but update everything else from the template
+      const mergedData: ResumeBuilderData = {
+        ...templateData,
+        header: resumeData.header, // Preserve user's header info
+        templateId: template.id,
+      };
+
+      setResumeData(mergedData);
+      setIsTemplateDialogOpen(false);
+      toast({
+        title: "Template Changed",
+        description: `Switched to "${template.name}". Your personal details have been preserved.`,
+      });
+    } catch (e) {
+      console.error("Failed to parse template content:", e);
+      toast({
+        title: "Error Applying Template",
+        description: "The selected template has invalid content.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   const handleSaveComplete = (newResumeId: string) => {
     setEditingResumeId(newResumeId);
   };
