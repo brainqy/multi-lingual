@@ -161,7 +161,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev + 1);
+      setCurrentStepIndex(prev => prev - 1);
     }
   };
   
