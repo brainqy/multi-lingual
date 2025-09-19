@@ -9,6 +9,7 @@ import { DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
 
@@ -19,12 +20,6 @@ interface StepFinalizeProps {
   onSaveComplete: (newResumeId: string) => void;
 }
 
-// Function to split text into lines that fit within a max width
-const splitTextToSize = (text: string, maxWidth: number, pdf: jsPDF): string[] => {
-  return pdf.splitTextToSize(text, maxWidth);
-};
-
-
 export default function StepFinalize({ resumeData, previewRef, editingResumeId, onSaveComplete }: StepFinalizeProps) {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
@@ -33,6 +28,16 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
   const [isSaving, setIsSaving] = useState(false);
 
   const handleDownload = async () => {
+    const resumeElement = previewRef.current;
+    if (!resumeElement) {
+      toast({
+        title: "Download Failed",
+        description: "Could not find the resume preview to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsDownloading(true);
     toast({
       title: "Generating PDF...",
@@ -40,136 +45,41 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
     });
 
     try {
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 40;
-      const contentWidth = pageWidth - margin * 2;
-      let y = margin;
+      // Use html2canvas to capture the resume element
+      const canvas = await html2canvas(resumeElement, {
+        scale: 2, // Increase resolution for better quality
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const canvasAspectRatio = canvasHeight / canvasWidth;
       
-      const checkAndAddPage = (spaceNeeded: number) => {
-        if (y + spaceNeeded > pageHeight - margin) {
-          pdf.addPage();
-          y = margin;
-        }
-      };
+      const imgWidth = pdfWidth;
+      const imgHeight = imgWidth * canvasAspectRatio;
 
-      // --- RENDER HEADER ---
-      pdf.setFontSize(24);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(resumeData.header.fullName, pageWidth / 2, y, { align: 'center' });
-      y += 28;
+      let position = 0;
+      let heightLeft = imgHeight;
 
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      const contactInfo = [
-        resumeData.header.phone,
-        resumeData.header.email,
-        resumeData.header.linkedin,
-        resumeData.header.portfolio,
-      ].filter(Boolean).join(' | ');
-      pdf.text(contactInfo, pageWidth / 2, y, { align: 'center' });
-      y += 12;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
 
-      if (resumeData.header.address) {
-        pdf.text(resumeData.header.address, pageWidth / 2, y, { align: 'center' });
-        y += 12;
-      }
-      y += 10;
-      pdf.setLineWidth(0.5);
-      pdf.line(margin, y, pageWidth - margin, y);
-      y += 20;
-
-      // --- RENDER SECTIONS ---
-      for (const sectionId of resumeData.sectionOrder) {
-        switch (sectionId) {
-          case 'summary':
-            checkAndAddPage(40);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("SUMMARY", margin, y);
-            y += 15;
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'normal');
-            const summaryLines = splitTextToSize(resumeData.summary, contentWidth, pdf);
-            pdf.text(summaryLines, margin, y);
-            y += summaryLines.length * 12 + 10;
-            break;
-
-          case 'experience':
-            checkAndAddPage(40);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("EXPERIENCE", margin, y);
-            y += 15;
-            resumeData.experience.forEach(exp => {
-              checkAndAddPage(60);
-              pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'bold');
-              pdf.text(exp.jobTitle, margin, y);
-              pdf.setFont('helvetica', 'normal');
-              pdf.text(`${exp.startDate} - ${exp.endDate || 'Present'}`, pageWidth - margin, y, { align: 'right' });
-              y += 13;
-
-              pdf.setFontSize(10);
-              pdf.text(`${exp.company}${exp.location ? `, ${exp.location}` : ''}`, margin, y);
-              y += 15;
-
-              pdf.setFontSize(10);
-              if (exp.responsibilities) {
-                  exp.responsibilities.split('\n').forEach(line => {
-                      const cleanedLine = line.replace(/^-/, '').trim();
-                      if (cleanedLine) {
-                          const responsibilityLines = splitTextToSize(cleanedLine, contentWidth - 15, pdf);
-                          checkAndAddPage(responsibilityLines.length * 12);
-                          pdf.text(`• ${responsibilityLines[0]}`, margin + 5, y);
-                          if (responsibilityLines.length > 1) {
-                              pdf.text(responsibilityLines.slice(1), margin + 15, y + 12);
-                              y += responsibilityLines.length * 12;
-                          } else {
-                              y += 12;
-                          }
-                      }
-                  });
-              }
-              y += 10;
-            });
-            break;
-
-          case 'education':
-            checkAndAddPage(40);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("EDUCATION", margin, y);
-            y += 15;
-            resumeData.education.forEach(edu => {
-              checkAndAddPage(30);
-              pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'bold');
-              pdf.text(edu.degree, margin, y);
-              pdf.setFont('helvetica', 'normal');
-              pdf.text(edu.graduationYear, pageWidth - margin, y, { align: 'right' });
-              y += 13;
-              pdf.setFontSize(10);
-              pdf.text(edu.university, margin, y);
-              y += 20;
-            });
-            break;
-
-          case 'skills':
-            checkAndAddPage(40);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("SKILLS", margin, y);
-            y += 15;
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'normal');
-            const skillsText = resumeData.skills.join(', ');
-            const skillLines = splitTextToSize(skillsText, contentWidth, pdf);
-            pdf.text(skillLines, margin, y);
-            y += skillLines.length * 12 + 10;
-            break;
-        }
+      // Add new pages if the content is longer than one page
+      while (heightLeft > 0) {
+        position = -pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
       }
       
       pdf.save(`${resumeData.header.fullName}_Resume.pdf`);
@@ -185,7 +95,6 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
       setIsDownloading(false);
     }
   };
-
 
   const handleSaveResume = async () => {
     if (!currentUser) {
