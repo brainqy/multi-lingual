@@ -96,8 +96,6 @@ interface ResumePDFDocumentProps {
 }
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
-  // Robustly sanitize the data to prevent any crashes from undefined properties.
-  // This is the definitive fix for the 'hasOwnProperty' error.
   const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
     if (!d) {
       return {
@@ -106,6 +104,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
         experience: [],
         education: [],
         skills: [],
+        additionalDetails: { main: {}, sidebar: {} },
         templateId: 'template1',
         layout: 'single-column',
         sectionOrder: [],
@@ -118,6 +117,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
       experience: d.experience || [],
       education: d.education || [],
       skills: d.skills || [],
+      additionalDetails: d.additionalDetails || { main: {}, sidebar: {} },
       templateId: d.templateId || 'template1',
       layout: d.layout || 'single-column',
       sectionOrder: d.sectionOrder || [],
