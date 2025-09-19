@@ -96,32 +96,20 @@ interface ResumePDFDocumentProps {
 }
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
+  // This sanitization function is the key fix. It ensures that every property
+  // the PDF renderer expects is an array or object, never undefined.
   const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
-    if (!d) {
-      return {
-        header: { fullName: 'Error', phone: '', email: 'No data', linkedin: '', portfolio: '', address: '', jobTitle: '' },
-        summary: 'Could not load resume data.',
-        experience: [],
-        education: [],
-        skills: [],
-        additionalDetails: { main: {}, sidebar: {} },
-        templateId: 'template1',
-        layout: 'single-column',
-        sectionOrder: [],
-        styles: {},
-      };
-    }
     return {
-      header: d.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
-      summary: d.summary || '',
-      experience: d.experience || [],
-      education: d.education || [],
-      skills: d.skills || [],
-      additionalDetails: d.additionalDetails || { main: {}, sidebar: {} },
-      templateId: d.templateId || 'template1',
-      layout: d.layout || 'single-column',
-      sectionOrder: d.sectionOrder || [],
-      styles: d.styles || {},
+      header: d?.header || { fullName: 'N/A', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+      summary: d?.summary || '',
+      experience: d?.experience || [],
+      education: d?.education || [],
+      skills: d?.skills || [],
+      additionalDetails: d?.additionalDetails || { main: {}, sidebar: {} },
+      templateId: d?.templateId || 'template1',
+      layout: d?.layout || 'single-column',
+      sectionOrder: d?.sectionOrder || [],
+      styles: d?.styles || {},
     };
   };
 
