@@ -1,5 +1,4 @@
 
-
 import type { Locale } from '@/locales';
 import { z } from 'zod';
 import { type UserRole as PrismaUserRole, type EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
@@ -989,6 +988,10 @@ export interface ResumeBuilderData {
     education: ResumeEducationEntry[];
     skills: string[];
     additionalDetails?: {
+      awards?: string;
+      certifications?: string;
+      languages?: string;
+      interests?: string;
       main: Record<string, string>;
       sidebar: Record<string, string>;
     };

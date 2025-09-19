@@ -1,17 +1,17 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ResumeBuilderData, ResumeProfile } from "@/types";
 import { DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
+import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
+import ResumePDFDocument from './ResumePDFDocument';
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -24,77 +24,13 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
-  const [isDownloading, setIsDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const handleDownload = async () => {
-    const resumeElement = previewRef.current;
-    if (!resumeElement) {
-      toast({
-        title: "Download Failed",
-        description: "Could not find the resume preview to download.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsDownloading(true);
-    toast({
-      title: "Generating PDF...",
-      description: "Please wait while your resume is being prepared.",
-    });
-
-    try {
-      // Use html2canvas to capture the resume element
-      const canvas = await html2canvas(resumeElement, {
-        scale: 2, // Increase resolution for better quality
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const canvasAspectRatio = canvasHeight / canvasWidth;
-      
-      const imgWidth = pdfWidth;
-      const imgHeight = imgWidth * canvasAspectRatio;
-
-      let position = 0;
-      let heightLeft = imgHeight;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      // Add new pages if the content is longer than one page
-      while (heightLeft > 0) {
-        position = -pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-      
-      pdf.save(`${resumeData.header.fullName}_Resume.pdf`);
-
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Download Failed",
-        description: "An unexpected error occurred while generating the PDF.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  useEffect(() => {
+    // The PDF renderer components can only be rendered on the client side.
+    setIsClient(true);
+  }, []);
 
   const handleSaveResume = async () => {
     if (!currentUser) {
@@ -157,11 +93,23 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={handleDownload} disabled={isDownloading || isSaving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
-              {isDownloading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
-              {isDownloading ? 'Generating PDF...' : 'Download as PDF'}
-            </Button>
-            <Button onClick={handleSaveResume} disabled={isDownloading || isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
+             {isClient ? (
+                <PDFDownloadLink
+                    document={<ResumePDFDocument data={resumeData} />}
+                    fileName={`${resumeData.header.fullName}_Resume.pdf`}
+                    className="flex-1"
+                >
+                    {({ blob, url, loading, error }) => (
+                        <Button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
+                            {loading ? 'Generating PDF...' : 'Download as PDF'}
+                        </Button>
+                    )}
+                </PDFDownloadLink>
+             ) : (
+                <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
+             )}
+            <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
               {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               {isSaving ? 'Saving...' : 'Save to My Resumes'}
             </Button>
