@@ -5,17 +5,6 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Font, Link } from '@react-pdf/renderer';
 import type { ResumeBuilderData } from '@/types';
 
-// Register fonts
-// In a real app, you might load these fonts from a URL or local file
-// For simplicity, we'll rely on standard fonts, but this is how you would do it:
-// Font.register({
-//   family: 'Open Sans',
-//   fonts: [
-//     { src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf' },
-//     { src: 'https://fonts.gstatic.com/s/opensans/v17/mem5YaGs126MiZpBA-UN_r8-.ttf', fontWeight: 700 },
-//   ]
-// });
-
 // Create styles
 const styles = StyleSheet.create({
   page: {
@@ -104,73 +93,89 @@ const styles = StyleSheet.create({
 });
 
 interface ResumePDFDocumentProps {
-    data: ResumeBuilderData;
+    data?: ResumeBuilderData | null;
 }
 
-const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.fullName}>{data.header.fullName}</Text>
-        {data.header.jobTitle && <Text style={styles.jobTitleHeader}>{data.header.jobTitle}</Text>}
-        <Text style={styles.contactInfo}>
-            {data.header.phone} | {data.header.email}
-            {data.header.linkedin && ` | `}
-            {data.header.linkedin && <Link src={`https://${data.header.linkedin}`} style={styles.link}>LinkedIn</Link>}
-            {data.header.address && ` | ${data.header.address}`}
-        </Text>
-      </View>
+const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
+  if (!data) {
+    return (
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <Text>Error: No resume data provided.</Text>
+        </Page>
+      </Document>
+    );
+  }
+  
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        {data.header && (
+            <View style={styles.header}>
+            <Text style={styles.fullName}>{data.header.fullName}</Text>
+            {data.header.jobTitle && <Text style={styles.jobTitleHeader}>{data.header.jobTitle}</Text>}
+            <Text style={styles.contactInfo}>
+                {data.header.phone || ''}
+                {data.header.email ? ` | ${data.header.email}` : ''}
+                {data.header.linkedin && ` | `}
+                {data.header.linkedin && <Link src={`https://${data.header.linkedin.replace(/^https?:\/\//, '')}`} style={styles.link}>LinkedIn</Link>}
+                {data.header.address && ` | ${data.header.address}`}
+            </Text>
+            </View>
+        )}
 
-      {/* Summary Section */}
-      {data.summary && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Summary</Text>
-          <Text style={styles.content}>{data.summary}</Text>
-        </View>
-      )}
+        {/* Summary Section */}
+        {data.summary && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Summary</Text>
+            <Text style={styles.content}>{data.summary}</Text>
+          </View>
+        )}
 
-      {/* Skills Section */}
-      {data.skills && data.skills.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Skills</Text>
-          <Text style={styles.skills}>{data.skills.join(' • ')}</Text>
-        </View>
-      )}
+        {/* Skills Section */}
+        {data.skills && data.skills.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.skills}>{data.skills.join(' • ')}</Text>
+          </View>
+        )}
 
-      {/* Experience Section */}
-      {data.experience && data.experience.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Work Experience</Text>
-          {data.experience.map((exp, index) => (
-            <View key={exp.id || index} style={styles.experienceEntry}>
-              <Text style={styles.jobTitle}>{exp.jobTitle}</Text>
-              <Text style={styles.companyInfo}>{exp.company} | {exp.startDate} - {exp.isCurrent ? 'Present' : exp.endDate}</Text>
-              <View style={styles.responsibilities}>
-                {exp.responsibilities.split('\n').map((line, i) => (
-                    <Text key={i} style={styles.responsibilityItem}>• {line.replace(/^-/, '').trim()}</Text>
-                ))}
+        {/* Experience Section */}
+        {data.experience && data.experience.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Work Experience</Text>
+            {data.experience.map((exp, index) => (
+              <View key={exp.id || index} style={styles.experienceEntry}>
+                <Text style={styles.jobTitle}>{exp.jobTitle}</Text>
+                <Text style={styles.companyInfo}>{exp.company} | {exp.startDate} - {exp.isCurrent ? 'Present' : exp.endDate}</Text>
+                {exp.responsibilities && (
+                    <View style={styles.responsibilities}>
+                    {exp.responsibilities.split('\n').map((line, i) => (
+                        <Text key={i} style={styles.responsibilityItem}>• {line.replace(/^-/, '').trim()}</Text>
+                    ))}
+                    </View>
+                )}
               </View>
-            </View>
-          ))}
-        </View>
-      )}
+            ))}
+          </View>
+        )}
 
-      {/* Education Section */}
-      {data.education && data.education.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Education</Text>
-          {data.education.map((edu, index) => (
-            <View key={edu.id || index} style={styles.educationEntry}>
-              <Text style={styles.degree}>{edu.degree} {edu.major && `- ${edu.major}`}</Text>
-              <Text style={styles.university}>{edu.university}, {edu.graduationYear}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-    </Page>
-  </Document>
-);
+        {/* Education Section */}
+        {data.education && data.education.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Education</Text>
+            {data.education.map((edu, index) => (
+              <View key={edu.id || index} style={styles.educationEntry}>
+                <Text style={styles.degree}>{edu.degree} {edu.major && `- ${edu.major}`}</Text>
+                <Text style={styles.university}>{edu.university}, {edu.graduationYear}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </Page>
+    </Document>
+  );
+};
 
 export default ResumePDFDocument;
