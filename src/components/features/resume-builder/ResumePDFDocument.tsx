@@ -2,10 +2,9 @@
 "use client";
 
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Font, Link } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Link } from '@react-pdf/renderer';
 import type { ResumeBuilderData } from '@/types';
 
-// Create styles
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -97,15 +96,6 @@ interface ResumePDFDocumentProps {
 }
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
-  // Sanitize the data to prevent crashes from undefined properties
-  const data = {
-    header: unsafeData?.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
-    summary: unsafeData?.summary || '',
-    experience: unsafeData?.experience || [],
-    education: unsafeData?.education || [],
-    skills: unsafeData?.skills || [],
-  };
-
   if (!unsafeData) {
     return (
       <Document>
@@ -115,6 +105,15 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
       </Document>
     );
   }
+
+  // Sanitize the data to prevent crashes from undefined properties
+  const data = {
+    header: unsafeData.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+    summary: unsafeData.summary || '',
+    experience: unsafeData.experience || [],
+    education: unsafeData.education || [],
+    skills: unsafeData.skills || [],
+  };
   
   return (
     <Document>

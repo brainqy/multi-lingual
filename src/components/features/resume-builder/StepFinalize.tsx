@@ -5,12 +5,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ResumeBuilderData, ResumeProfile } from "@/types";
-import { DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
+import { DownloadCloud, Save, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import ResumePDFDocument from './ResumePDFDocument';
 
 interface StepFinalizeProps {
@@ -20,7 +20,7 @@ interface StepFinalizeProps {
   onSaveComplete: (newResumeId: string) => void;
 }
 
-export default function StepFinalize({ resumeData, previewRef, editingResumeId, onSaveComplete }: StepFinalizeProps) {
+export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
@@ -28,7 +28,6 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // The PDF renderer components can only be rendered on the client side.
     setIsClient(true);
   }, []);
 
@@ -41,12 +40,11 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
     
     const resumeProfileData = {
         name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
-        resumeText: JSON.stringify(resumeData), // Store structured data
+        resumeText: JSON.stringify(resumeData),
     };
 
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
-        // Update existing resume
         savedResume = await updateResumeProfile(editingResumeId, {
             ...resumeProfileData,
             userId: currentUser.id,
@@ -59,7 +57,6 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
             });
         }
     } else {
-        // Create new resume
         savedResume = await createResumeProfile({
             ...resumeProfileData,
             userId: currentUser.id,
@@ -93,18 +90,18 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-             {isClient ? (
+             {isClient && resumeData ? (
                 <PDFDownloadLink
                     document={<ResumePDFDocument data={resumeData} />}
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
-                    {({ blob, url, loading, error }: { blob: any; url: any; loading: any; error: any; }) => (
+                    {({ loading }) => (
                         <Button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
                             {loading ? 'Generating PDF...' : 'Download as PDF'}
                         </Button>
-                    ) as any}
+                    )}
                 </PDFDownloadLink>
              ) : (
                 <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
