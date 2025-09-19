@@ -93,15 +93,24 @@ const styles = StyleSheet.create({
 });
 
 interface ResumePDFDocumentProps {
-    data?: ResumeBuilderData | null;
+    data: ResumeBuilderData | null;
 }
 
-const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
-  if (!data) {
+const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
+  // Sanitize the data to prevent crashes from undefined properties
+  const data = {
+    header: unsafeData?.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+    summary: unsafeData?.summary || '',
+    experience: unsafeData?.experience || [],
+    education: unsafeData?.education || [],
+    skills: unsafeData?.skills || [],
+  };
+
+  if (!unsafeData) {
     return (
       <Document>
         <Page size="A4" style={styles.page}>
-          <Text>Error: No resume data provided.</Text>
+          <Text>Error: No resume data provided to generate the PDF.</Text>
         </Page>
       </Document>
     );
@@ -111,19 +120,17 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        {data.header && (
-            <View style={styles.header}>
-            <Text style={styles.fullName}>{data.header.fullName}</Text>
-            {data.header.jobTitle && <Text style={styles.jobTitleHeader}>{data.header.jobTitle}</Text>}
-            <Text style={styles.contactInfo}>
-                {data.header.phone || ''}
-                {data.header.email ? ` | ${data.header.email}` : ''}
-                {data.header.linkedin && ` | `}
-                {data.header.linkedin && <Link src={`https://${data.header.linkedin.replace(/^https?:\/\//, '')}`} style={styles.link}>LinkedIn</Link>}
-                {data.header.address && ` | ${data.header.address}`}
-            </Text>
-            </View>
-        )}
+        <View style={styles.header}>
+          <Text style={styles.fullName}>{data.header.fullName}</Text>
+          {data.header.jobTitle && <Text style={styles.jobTitleHeader}>{data.header.jobTitle}</Text>}
+          <Text style={styles.contactInfo}>
+              {data.header.phone || ''}
+              {data.header.email ? ` | ${data.header.email}` : ''}
+              {data.header.linkedin && ` | `}
+              {data.header.linkedin && <Link src={`https://${data.header.linkedin.replace(/^https?:\/\//, '')}`} style={styles.link}>LinkedIn</Link>}
+              {data.header.address && ` | ${data.header.address}`}
+          </Text>
+        </View>
 
         {/* Summary Section */}
         {data.summary && (
@@ -134,7 +141,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
         )}
 
         {/* Skills Section */}
-        {data.skills && data.skills.length > 0 && (
+        {data.skills.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
             <Text style={styles.skills}>{data.skills.join(' • ')}</Text>
@@ -142,7 +149,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
         )}
 
         {/* Experience Section */}
-        {data.experience && data.experience.length > 0 && (
+        {data.experience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Work Experience</Text>
             {data.experience.map((exp, index) => (
@@ -162,7 +169,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data }) => {
         )}
 
         {/* Education Section */}
-        {data.education && data.education.length > 0 && (
+        {data.education.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
             {data.education.map((edu, index) => (
