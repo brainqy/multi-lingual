@@ -95,9 +95,11 @@ interface ResumePDFDocumentProps {
     data: ResumeBuilderData | null;
 }
 
+// This function ensures every required property has a safe default value.
 const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
   const defaultHeader = { fullName: 'Your Name', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
   const defaultAdditionalDetails = { awards: '', certifications: '', languages: '', interests: '', main: {}, sidebar: {} };
+  
   return {
     header: d?.header || defaultHeader,
     summary: d?.summary || '',
@@ -105,10 +107,10 @@ const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
     education: d?.education || [],
     skills: d?.skills || [],
     additionalDetails: {
-        ...defaultAdditionalDetails,
-        ...(d?.additionalDetails || {}),
-        main: d?.additionalDetails?.main || {},
-        sidebar: d?.additionalDetails?.sidebar || {},
+      ...defaultAdditionalDetails,
+      ...(d?.additionalDetails || {}),
+      main: d?.additionalDetails?.main || {},
+      sidebar: d?.additionalDetails?.sidebar || {},
     },
     templateId: d?.templateId || 'template1',
     layout: d?.layout || 'single-column',
@@ -119,6 +121,7 @@ const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
 
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
+  // Use the sanitized data for rendering to prevent crashes.
   const data = sanitizeData(unsafeData);
 
   return (
