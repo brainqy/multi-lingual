@@ -96,12 +96,12 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
-                    {(({ loading }) => (
+                    {({ loading }: { loading: boolean }) => (
                         <Button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
                             {loading ? 'Generating PDF...' : 'Download as PDF'}
                         </Button>
-                    )) as any}
+                    )}
                 </PDFDownloadLink>
              )}
             <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
