@@ -47,7 +47,7 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
     try {
       // Use a higher scale for better resolution
       const canvas = await html2canvas(input, {
-        scale: 3, // Increased scale for better quality
+        scale: 3, 
         useCORS: true,
         logging: false,
         width: input.offsetWidth,
