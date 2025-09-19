@@ -78,6 +78,30 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
     }
     setIsSaving(false);
   };
+  
+  if (!isClient || !resumeData) {
+    // Render a disabled state or loading indicator while waiting for client-side hydration
+    return (
+        <div className="space-y-6">
+            <Card className="border-green-500 shadow-green-200/50 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-2xl text-green-600">Congratulations!</CardTitle>
+                    <CardDescription>Your resume is ready. Review the preview on the right one last time.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
+                        <Button disabled variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
+                            <Save className="mr-2 h-5 w-5" />
+                            Save to My Resumes
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
 
 
   return (
@@ -96,12 +120,12 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
-                    {({ loading }) => (
+                    {({ loading }: { loading: any }) => (
                         <Button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
                             {loading ? 'Generating PDF...' : 'Download as PDF'}
                         </Button>
-                    )}
+                    ) as any}
                 </PDFDownloadLink>
              ) : (
                 <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
