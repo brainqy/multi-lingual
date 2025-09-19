@@ -95,40 +95,31 @@ interface ResumePDFDocumentProps {
     data: ResumeBuilderData | null;
 }
 
-const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
-  const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
-    const defaultHeader = { fullName: 'N/A', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
-    const defaultAdditionalDetails = { main: {}, sidebar: {} };
-    return {
-      header: d?.header || defaultHeader,
-      summary: d?.summary || '',
-      experience: d?.experience || [],
-      education: d?.education || [],
-      skills: d?.skills || [],
-      additionalDetails: {
-          ...defaultAdditionalDetails,
-          ...(d?.additionalDetails || {}),
-          main: d?.additionalDetails?.main || {},
-          sidebar: d?.additionalDetails?.sidebar || {},
-      },
-      templateId: d?.templateId || 'template1',
-      layout: d?.layout || 'single-column',
-      sectionOrder: d?.sectionOrder || [],
-      styles: d?.styles || {},
-    };
+const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
+  const defaultHeader = { fullName: 'Your Name', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
+  const defaultAdditionalDetails = { awards: '', certifications: '', languages: '', interests: '', main: {}, sidebar: {} };
+  return {
+    header: d?.header || defaultHeader,
+    summary: d?.summary || '',
+    experience: d?.experience || [],
+    education: d?.education || [],
+    skills: d?.skills || [],
+    additionalDetails: {
+        ...defaultAdditionalDetails,
+        ...(d?.additionalDetails || {}),
+        main: d?.additionalDetails?.main || {},
+        sidebar: d?.additionalDetails?.sidebar || {},
+    },
+    templateId: d?.templateId || 'template1',
+    layout: d?.layout || 'single-column',
+    sectionOrder: d?.sectionOrder || ['summary', 'experience', 'education', 'skills'],
+    styles: d?.styles || {},
   };
+};
 
+
+const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
   const data = sanitizeData(unsafeData);
-  
-  if (!data) {
-    return (
-      <Document>
-        <Page size="A4" style={styles.page}>
-          <Text>Error: Resume data is not available.</Text>
-        </Page>
-      </Document>
-    );
-  }
 
   return (
     <Document>
@@ -200,5 +191,3 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
 };
 
 export default ResumePDFDocument;
-
-    
