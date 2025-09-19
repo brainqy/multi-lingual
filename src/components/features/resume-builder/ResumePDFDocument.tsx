@@ -96,24 +96,36 @@ interface ResumePDFDocumentProps {
 }
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
-  if (!unsafeData) {
-    return (
-      <Document>
-        <Page size="A4" style={styles.page}>
-          <Text>Error: No resume data provided to generate the PDF.</Text>
-        </Page>
-      </Document>
-    );
-  }
-
-  // Sanitize the data to prevent crashes from undefined properties
-  const data = {
-    header: unsafeData.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
-    summary: unsafeData.summary || '',
-    experience: unsafeData.experience || [],
-    education: unsafeData.education || [],
-    skills: unsafeData.skills || [],
+  // Robustly sanitize the data to prevent any crashes from undefined properties.
+  // This is the definitive fix for the 'hasOwnProperty' error.
+  const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
+    if (!d) {
+      return {
+        header: { fullName: 'Error', phone: '', email: 'No data', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+        summary: 'Could not load resume data.',
+        experience: [],
+        education: [],
+        skills: [],
+        templateId: 'template1',
+        layout: 'single-column',
+        sectionOrder: [],
+        styles: {},
+      };
+    }
+    return {
+      header: d.header || { fullName: '', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+      summary: d.summary || '',
+      experience: d.experience || [],
+      education: d.education || [],
+      skills: d.skills || [],
+      templateId: d.templateId || 'template1',
+      layout: d.layout || 'single-column',
+      sectionOrder: d.sectionOrder || [],
+      styles: d.styles || {},
+    };
   };
+
+  const data = sanitizeData(unsafeData);
   
   return (
     <Document>
