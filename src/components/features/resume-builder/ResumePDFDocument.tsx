@@ -120,6 +120,16 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
 
   const data = sanitizeData(unsafeData);
   
+  if (!data) {
+    return (
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <Text>Error: Resume data is not available.</Text>
+        </Page>
+      </Document>
+    );
+  }
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -162,7 +172,7 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
                 <Text style={styles.companyInfo}>{exp.company} | {exp.startDate} - {exp.isCurrent ? 'Present' : exp.endDate}</Text>
                 {exp.responsibilities && (
                     <View style={styles.responsibilities}>
-                    {exp.responsibilities.split('\n').map((line, i) => (
+                    {exp.responsibilities.split('\\n').map((line, i) => (
                         <Text key={i} style={styles.responsibilityItem}>• {line.replace(/^-/, '').trim()}</Text>
                     ))}
                     </View>
@@ -190,3 +200,5 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
 };
 
 export default ResumePDFDocument;
+
+    
