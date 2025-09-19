@@ -99,13 +99,20 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
   // This sanitization function is the key fix. It ensures that every property
   // the PDF renderer expects is an array or object, never undefined.
   const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
+    const defaultHeader = { fullName: 'N/A', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
+    const defaultAdditionalDetails = { main: {}, sidebar: {} };
     return {
-      header: d?.header || { fullName: 'N/A', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' },
+      header: d?.header || defaultHeader,
       summary: d?.summary || '',
       experience: d?.experience || [],
       education: d?.education || [],
       skills: d?.skills || [],
-      additionalDetails: d?.additionalDetails || { main: {}, sidebar: {} },
+      additionalDetails: {
+          ...defaultAdditionalDetails,
+          ...(d?.additionalDetails || {}),
+          main: d?.additionalDetails?.main || {},
+          sidebar: d?.additionalDetails?.sidebar || {},
+      },
       templateId: d?.templateId || 'template1',
       layout: d?.layout || 'single-column',
       sectionOrder: d?.sectionOrder || [],

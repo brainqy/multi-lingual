@@ -67,7 +67,7 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
       'Excellent written and verbal communication skills in English.',
       'Ability to communicate and interact with senior business executives.'
     ],
-    additionalDetails: { main: {}, sidebar: {} },
+    additionalDetails: { main: {}, sidebar: {} }, // Ensure this is always initialized
     templateId: 'template2', // Default to Creative for two-column
     layout: 'two-column-left',
     sectionOrder: defaultSectionOrder,
