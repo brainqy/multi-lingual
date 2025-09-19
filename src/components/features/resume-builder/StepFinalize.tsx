@@ -99,12 +99,12 @@ export default function StepFinalize({ resumeData, previewRef, editingResumeId, 
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
-                    {({ blob, url, loading, error }) => (
+                    {({ blob, url, loading, error }: { blob: any; url: any; loading: any; error: any; }) => (
                         <Button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
                             {loading ? 'Generating PDF...' : 'Download as PDF'}
                         </Button>
-                    )}
+                    ) as any}
                 </PDFDownloadLink>
              ) : (
                 <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
