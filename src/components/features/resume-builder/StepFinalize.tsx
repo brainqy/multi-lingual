@@ -114,7 +114,7 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-             {isClient && resumeData ? (
+             {isClient && resumeData && (
                 <PDFDownloadLink
                     document={<ResumePDFDocument data={resumeData} />}
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
@@ -127,8 +127,6 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
                         </Button>
                     ) as any}
                 </PDFDownloadLink>
-             ) : (
-                <Button disabled className="flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading Downloader...</Button>
              )}
             <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
               {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
