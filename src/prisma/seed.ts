@@ -3,6 +3,98 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient()
 
+const modernTemplateContent = `{
+  "header": {
+    "fullName": "{{header.fullName}}",
+    "phone": "{{header.phone}}",
+    "email": "{{header.email}}",
+    "linkedin": "{{header.linkedin}}",
+    "portfolio": "{{header.portfolio}}",
+    "address": "{{header.address}}",
+    "jobTitle": "{{header.jobTitle}}"
+  },
+  "summary": "{{summary}}",
+  "experience": [
+    {
+      "id": "exp1",
+      "jobTitle": "Senior Research Analyst",
+      "company": "Invenio Marketing Solutions, Inc.",
+      "location": "",
+      "startDate": "2017-07",
+      "endDate": "Current",
+      "isCurrent": true,
+      "responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
+    }
+  ],
+  "education": [
+    {
+      "id": "edu1",
+      "degree": "Master of Science",
+      "major": "Marketing Research",
+      "university": "University of Texas",
+      "location": "",
+      "graduationYear": "2007",
+      "details": ""
+    }
+  ],
+  "skills": ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
+  "additionalDetails": { "main": {}, "sidebar": {} },
+  "templateId": "template1",
+  "layout": "single-column",
+  "sectionOrder": ["summary", "experience", "education", "skills"],
+  "styles": {
+    "textAlign": "left",
+    "headerFontSize": "24px",
+    "fontFamily": "sans"
+  }
+}`;
+
+const creativeTemplateContent = `{
+  "header": {
+    "fullName": "{{header.fullName}}",
+    "phone": "{{header.phone}}",
+    "email": "{{header.email}}",
+    "linkedin": "{{header.linkedin}}",
+    "portfolio": "{{header.portfolio}}",
+    "address": "{{header.address}}",
+    "jobTitle": "{{header.jobTitle}}"
+  },
+  "summary": "{{summary}}",
+  "experience": [
+    {
+      "id": "exp1",
+      "jobTitle": "Senior Research Analyst",
+      "company": "Invenio Marketing Solutions, Inc.",
+      "location": "",
+      "startDate": "2017-07",
+      "endDate": "Current",
+      "isCurrent": true,
+      "responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
+    }
+  ],
+  "education": [
+    {
+      "id": "edu1",
+      "degree": "Master of Science",
+      "major": "Marketing Research",
+      "university": "University of Texas",
+      "location": "",
+      "graduationYear": "2007",
+      "details": ""
+    }
+  ],
+  "skills": ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
+  "additionalDetails": { "main": {}, "sidebar": {} },
+  "templateId": "template2",
+  "layout": "two-column-left",
+  "sectionOrder": ["summary", "experience", "education", "skills"],
+  "styles": {
+    "textAlign": "left",
+    "headerFontSize": "24px",
+    "fontFamily": "sans"
+  }
+}`;
+
 async function main() {
   console.log(`Start seeding ...`)
 
@@ -236,7 +328,7 @@ async function main() {
         description: 'A clean and modern template suitable for corporate and tech roles.',
         previewImageUrl: 'https://placehold.co/300x400/008080/FFFFFF?text=Modern',
         category: 'Modern',
-        content: `{"layout": "single-column"}`,
+        content: modernTemplateContent,
       },
       {
         id: 'template2',
@@ -244,7 +336,7 @@ async function main() {
         description: 'A stylish template for creative fields like design and marketing.',
         previewImageUrl: 'https://placehold.co/300x400/3498db/FFFFFF?text=Creative',
         category: 'Creative',
-        content: `{"layout": "two-column-left"}`,
+        content: creativeTemplateContent,
       },
       {
         id: 'template3',
@@ -252,7 +344,7 @@ async function main() {
         description: 'A timeless and traditional format, perfect for formal industries.',
         previewImageUrl: 'https://placehold.co/300x400/2c3e50/FFFFFF?text=Classic',
         category: 'Professional',
-        content: `{"layout": "single-column"}`,
+        content: modernTemplateContent, // Reusing modern for simplicity
       },
       {
         id: 'template4',
@@ -260,7 +352,7 @@ async function main() {
         description: 'A comprehensive template designed for academic and research positions.',
         previewImageUrl: 'https://placehold.co/300x400/9b59b6/FFFFFF?text=Academic',
         category: 'Academic',
-        content: `{"layout": "single-column-detailed"}`,
+        content: creativeTemplateContent, // Reusing creative for simplicity
       },
     ],
     skipDuplicates: true,

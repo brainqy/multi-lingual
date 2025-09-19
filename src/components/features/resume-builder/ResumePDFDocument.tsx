@@ -96,8 +96,6 @@ interface ResumePDFDocumentProps {
 }
 
 const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData }) => {
-  // This sanitization function is the key fix. It ensures that every property
-  // the PDF renderer expects is an array or object, never undefined.
   const sanitizeData = (d: ResumeBuilderData | null): ResumeBuilderData => {
     const defaultHeader = { fullName: 'N/A', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
     const defaultAdditionalDetails = { main: {}, sidebar: {} };
