@@ -47,7 +47,7 @@ export const ResumesDocument = () => {
       <Page size='A4'>
     
        <View style={styles.page}>
-          <Text>summary</Text>
+          <Text>hello world</Text>
        </View>
           
       
