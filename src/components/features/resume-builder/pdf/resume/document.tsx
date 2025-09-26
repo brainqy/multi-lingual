@@ -34,11 +34,13 @@ const styles = StyleSheet.create({
   },
 });
 
+type ResumesDocumentProps = {
+    data: Resume;
+}
 
 
 
-
-export const ResumesDocument = () => {
+export const ResumesDocument = ({ data }: ResumesDocumentProps) => {
   return (
     <Document
       author='Kelvin Mai'
