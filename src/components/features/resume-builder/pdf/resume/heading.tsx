@@ -1,8 +1,8 @@
 import { Text, View, Link, Image, StyleSheet } from '@react-pdf/renderer';
 
 import type { Resume } from '@/lib/constants';
-import { getBaseUrl } from '@/lib/utils';
 import { IconText } from './icons';
+import { getBaseUrl } from '@/lib/utils/urls';
 
 const styles = StyleSheet.create({
   container: {

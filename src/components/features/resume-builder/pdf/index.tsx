@@ -2,8 +2,8 @@
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 
-import { Button } from '../ui/button';
 import { Font } from '@react-pdf/renderer';
+import { Button } from '@/components/ui/button';
 
 // https://github.com/wojtekmaj/react-pdf#import-worker-recommended
 // Unnecessary for now because of not dynamically changing pdf in realtime
@@ -61,7 +61,7 @@ export const PDFDownloadLink = dynamic(
   {
     ssr: false,
     loading: () => (
-      <Button variant='home' disabled>
+      <Button variant='default' disabled>
         <Loader2 className='animate-spin' />
         Loading...
       </Button>

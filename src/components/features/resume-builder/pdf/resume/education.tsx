@@ -1,8 +1,8 @@
 import { Text, View, StyleSheet } from '@react-pdf/renderer';
 
 import type { Resume } from '@/lib/constants';
-import { renderDates } from '@/lib/utils';
 import { IconText } from './icons';
+import { renderDates } from '@/lib/utils/dates';
 
 const styles = StyleSheet.create({
   container: { marginBottom: 8 },

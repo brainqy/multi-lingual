@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import type { Resume } from '@/lib/constants';
-import { renderDates } from '@/lib/utils';
 import { ConditionalLink } from './conditional-link';
 import { Icon, IconText } from './icons';
+import { renderDates } from '@/lib/utils/dates';
 
 const styles = StyleSheet.create({
   title: {
