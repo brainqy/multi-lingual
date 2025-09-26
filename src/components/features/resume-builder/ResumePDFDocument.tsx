@@ -194,5 +194,3 @@ const ResumePDFDocument: React.FC<ResumePDFDocumentProps> = ({ data: unsafeData 
 };
 
 export default ResumePDFDocument;
-
-    

@@ -23,7 +23,7 @@ const modernTemplateObject = {
       startDate: "2017-07",
       endDate: "Current",
       isCurrent: true,
-      responsibilities: "- Managing a team of 2-3 research analysts across industry verticals.\n- Conducting extensive primary and secondary research."
+      responsibilities: "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
     }
   ],
   education: [
@@ -41,8 +41,8 @@ const modernTemplateObject = {
   additionalDetails: { "main": {}, "sidebar": {} },
   templateId: "template1",
   layout: "single-column",
-  sectionOrder": ["summary", "experience", "education", "skills"],
-  styles": {
+  sectionOrder: ["summary", "experience", "education", "skills"],
+  styles: {
     "textAlign": "left",
     "headerFontSize": "24px",
     "fontFamily": "sans"
@@ -69,7 +69,7 @@ const creativeTemplateObject = {
       startDate: "2017-07",
       endDate: "Current",
       isCurrent: true,
-      responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\n- Conducting extensive primary and secondary research."
+      responsibilities: "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
     }
   ],
   education: [
@@ -79,7 +79,7 @@ const creativeTemplateObject = {
       major: "Marketing Research",
       university: "University of Texas",
       location: "",
-      graduationYear": "2007",
+      graduationYear: "2007",
       details: ""
     }
   ],
@@ -87,8 +87,8 @@ const creativeTemplateObject = {
   additionalDetails: { "main": {}, "sidebar": {} },
   templateId: "template2",
   layout: "two-column-left",
-  sectionOrder": ["summary", "experience", "education", "skills"],
-  styles": {
+  sectionOrder: ["summary", "experience", "education", "skills"],
+  styles: {
     "textAlign": "left",
     "headerFontSize": "24px",
     "fontFamily": "sans"
@@ -491,5 +491,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-    
