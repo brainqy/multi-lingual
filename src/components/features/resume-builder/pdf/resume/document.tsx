@@ -1,7 +1,13 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import type { Resume } from '@/lib/constants';
-
+import { Education } from './education';
+import { Experience } from './experience';
+import { Heading } from './heading';
+import { Project } from './project';
+import { Section } from './section';
+import { Skill } from './skill';
+import { Watermark } from './watermark';
 
 const styles = StyleSheet.create({
   page: {
@@ -34,24 +40,58 @@ const styles = StyleSheet.create({
   },
 });
 
+type ResumesDocumentProps = {
+  data: Resume;
+};
 
-
-
-
-export const ResumesDocument: React.FC = () => {
+export const ResumesDocument: React.FC<ResumesDocumentProps> = ({ data }) => {
   return (
     <Document
       author='Kelvin Mai'
-    
+      title={`${data.basics.name} - ${data.basics.label}`}
+      producer='Kelvin Mai'
+      subject={`${data.basics.name} Resume`}
     >
-      <Page size='A4'>
-    
-       <View>
-          <Text>summary</Text>
-       </View>
-          
-       
-        </Page>
-        </Document>
+      <Page size='A4' style={styles.page}>
+        <Watermark />
+        <Heading info={data.basics} />
+        <View style={styles.twoColumn}>
+          <View style={styles.left}>
+            <Section title='About'>
+              <Text>{data.basics.summary}</Text>
+            </Section>
+            <Section title='Work Experience'>
+              {data.work.map((w) => (
+                <Experience key={w.name} {...w} />
+              ))}
+            </Section>
+            <Section title='Projects'>
+              {data.projects.map((p) => (
+                <Project key={p.name} {...p} />
+              ))}
+            </Section>
+          </View>
+          <View style={styles.right}>
+            <Section title='Education'>
+              {data.education.map((e) => (
+                <Education key={e.institution} {...e} />
+              ))}
+            </Section>
+            <Section title='Skills'>
+              {data.skills.map((s) => (
+                <Skill key={s.name} {...s} />
+              ))}
+            </Section>
+          </View>
+        </View>
+        <Text
+          style={styles.pageNumber}
+          render={({ pageNumber, totalPages }) =>
+            `${pageNumber} / ${totalPages}`
+          }
+          fixed
+        />
+      </Page>
+    </Document>
   );
 };
