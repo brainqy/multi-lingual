@@ -45,19 +45,20 @@ export default function ResumeBuilderPage() {
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const processTemplate = useCallback((templateContent: string, userData: UserProfile | null) => {
+  const processTemplateContent = useCallback((templateContent: string, userData: UserProfile | null): ResumeBuilderData => {
     try {
-        const template = Handlebars.compile(templateContent);
+        const parsedData = JSON.parse(templateContent);
+        const template = Handlebars.compile(JSON.stringify(parsedData)); // Re-stringify to handle handlebars in the object
         const initialData = getInitialResumeData(userData);
         const hydratedJsonString = template(initialData);
-        const parsedData = JSON.parse(hydratedJsonString);
-        // Ensure sectionOrder exists for backward compatibility
-        if (!parsedData.sectionOrder) {
-          parsedData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
+        const hydratedData = JSON.parse(hydratedJsonString);
+        
+        if (!hydratedData.sectionOrder) {
+          hydratedData.sectionOrder = ['summary', 'experience', 'education', 'skills'];
         }
-        return parsedData;
+        return hydratedData;
     } catch (error) {
-        console.error("Error processing Handlebars template:", error);
+        console.error("Error processing template content:", error);
         toast({ title: "Template Error", description: "Could not process the template content.", variant: "destructive" });
         return getInitialResumeData(userData);
     }
@@ -94,7 +95,7 @@ export default function ResumeBuilderPage() {
     } else if (templateId) {
        const template = templates.find(t => t.id === templateId);
        if (template && template.content) {
-         setResumeData(processTemplate(template.content, user));
+         setResumeData(processTemplateContent(template.content, user));
          setEditingResumeId(null);
        } else {
          toast({ title: "Template Not Found", description: "Could not find the selected template.", variant: "destructive"});
@@ -103,13 +104,13 @@ export default function ResumeBuilderPage() {
       // Default to the first available template if no params
       const defaultTemplate = templates[0];
       if (defaultTemplate && defaultTemplate.content) {
-        setResumeData(processTemplate(defaultTemplate.content, user));
+        setResumeData(processTemplateContent(defaultTemplate.content, user));
       }
       setEditingResumeId(null);
     }
 
     setIsLoading(false);
-  }, [user, toast, processTemplate]);
+  }, [user, toast, processTemplateContent]);
   
   useEffect(() => {
     const resumeId = searchParams.get('resumeId');
@@ -170,7 +171,7 @@ export default function ResumeBuilderPage() {
       return;
     }
     
-    setResumeData(processTemplate(template.content, user));
+    setResumeData(processTemplateContent(template.content, user));
     setIsTemplateDialogOpen(false);
     toast({
         title: "Template Changed",
@@ -310,3 +311,5 @@ export default function ResumeBuilderPage() {
     </>
   );
 }
+
+    

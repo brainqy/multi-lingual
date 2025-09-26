@@ -3,97 +3,101 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient()
 
-const modernTemplateContent = `{
-  "header": {
-    "fullName": "{{header.fullName}}",
-    "phone": "{{header.phone}}",
-    "email": "{{header.email}}",
-    "linkedin": "{{header.linkedin}}",
-    "portfolio": "{{header.portfolio}}",
-    "address": "{{header.address}}",
-    "jobTitle": "{{header.jobTitle}}"
+const modernTemplateObject = {
+  header: {
+    fullName: "{{header.fullName}}",
+    phone: "{{header.phone}}",
+    email: "{{header.email}}",
+    linkedin: "{{header.linkedin}}",
+    portfolio: "{{header.portfolio}}",
+    address: "{{header.address}}",
+    jobTitle: "{{header.jobTitle}}"
   },
-  "summary": "{{summary}}",
-  "experience": [
+  summary: "{{summary}}",
+  experience: [
     {
-      "id": "exp1",
-      "jobTitle": "Senior Research Analyst",
-      "company": "Invenio Marketing Solutions, Inc.",
-      "location": "",
-      "startDate": "2017-07",
-      "endDate": "Current",
-      "isCurrent": true,
-      "responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
+      id: "exp1",
+      jobTitle: "Senior Research Analyst",
+      company: "Invenio Marketing Solutions, Inc.",
+      location: "",
+      startDate: "2017-07",
+      endDate: "Current",
+      isCurrent: true,
+      responsibilities: "- Managing a team of 2-3 research analysts across industry verticals.\n- Conducting extensive primary and secondary research."
     }
   ],
-  "education": [
+  education: [
     {
-      "id": "edu1",
-      "degree": "Master of Science",
-      "major": "Marketing Research",
-      "university": "University of Texas",
-      "location": "",
-      "graduationYear": "2007",
-      "details": ""
+      id: "edu1",
+      degree: "Master of Science",
+      major: "Marketing Research",
+      university: "University of Texas",
+      location: "",
+      graduationYear: "2007",
+      details: ""
     }
   ],
-  "skills": ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
-  "additionalDetails": { "main": {}, "sidebar": {} },
-  "templateId": "template1",
-  "layout": "single-column",
-  "sectionOrder": ["summary", "experience", "education", "skills"],
-  "styles": {
+  skills: ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
+  additionalDetails: { "main": {}, "sidebar": {} },
+  templateId: "template1",
+  layout: "single-column",
+  sectionOrder": ["summary", "experience", "education", "skills"],
+  styles": {
     "textAlign": "left",
     "headerFontSize": "24px",
     "fontFamily": "sans"
   }
-}`;
+};
 
-const creativeTemplateContent = `{
-  "header": {
-    "fullName": "{{header.fullName}}",
-    "phone": "{{header.phone}}",
-    "email": "{{header.email}}",
-    "linkedin": "{{header.linkedin}}",
-    "portfolio": "{{header.portfolio}}",
-    "address": "{{header.address}}",
-    "jobTitle": "{{header.jobTitle}}"
+const creativeTemplateObject = {
+  header: {
+    fullName: "{{header.fullName}}",
+    phone: "{{header.phone}}",
+    email: "{{header.email}}",
+    linkedin: "{{header.linkedin}}",
+    portfolio: "{{header.portfolio}}",
+    address: "{{header.address}}",
+    jobTitle: "{{header.jobTitle}}"
   },
-  "summary": "{{summary}}",
-  "experience": [
+  summary: "{{summary}}",
+  experience: [
     {
-      "id": "exp1",
-      "jobTitle": "Senior Research Analyst",
-      "company": "Invenio Marketing Solutions, Inc.",
-      "location": "",
-      "startDate": "2017-07",
-      "endDate": "Current",
-      "isCurrent": true,
-      "responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\\n- Conducting extensive primary and secondary research."
+      id: "exp1",
+      jobTitle: "Senior Research Analyst",
+      company: "Invenio Marketing Solutions, Inc.",
+      location: "",
+      startDate: "2017-07",
+      endDate: "Current",
+      isCurrent: true,
+      responsibilities": "- Managing a team of 2-3 research analysts across industry verticals.\n- Conducting extensive primary and secondary research."
     }
   ],
-  "education": [
+  education: [
     {
-      "id": "edu1",
-      "degree": "Master of Science",
-      "major": "Marketing Research",
-      "university": "University of Texas",
-      "location": "",
-      "graduationYear": "2007",
-      "details": ""
+      id: "edu1",
+      degree: "Master of Science",
+      major: "Marketing Research",
+      university: "University of Texas",
+      location: "",
+      graduationYear": "2007",
+      details: ""
     }
   ],
-  "skills": ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
-  "additionalDetails": { "main": {}, "sidebar": {} },
-  "templateId": "template2",
-  "layout": "two-column-left",
-  "sectionOrder": ["summary", "experience", "education", "skills"],
-  "styles": {
+  skills: ["Market Research", "Data Analysis", "Project Management", "Statistical Analysis"],
+  additionalDetails: { "main": {}, "sidebar": {} },
+  templateId: "template2",
+  layout: "two-column-left",
+  sectionOrder": ["summary", "experience", "education", "skills"],
+  styles": {
     "textAlign": "left",
     "headerFontSize": "24px",
     "fontFamily": "sans"
   }
-}`;
+};
+
+const modernTemplateContent = JSON.stringify(modernTemplateObject, null, 2);
+const creativeTemplateContent = JSON.stringify(creativeTemplateObject, null, 2);
+
 
 async function main() {
   console.log(`Start seeding ...`)

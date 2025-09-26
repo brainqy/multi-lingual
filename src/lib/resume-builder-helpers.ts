@@ -27,7 +27,7 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
         startDate: '2017-07',
         endDate: 'Current',
         isCurrent: true,
-        responsibilities: "- Managing a team of 2-3 research analysts across industry verticals, with focus area as Chemicals & Materials and Food & Beverages and mentoring 4-5 junior analysts.\\n- Conducting extensive primary and secondary research for delivering research projects involving competitor analysis & benchmarking, company profiling, go-to-market strategy, market assessment & sizing, and industry/sector analysis.\\n- Responsible for enhancing the quality of research reports & handling client queries."
+        responsibilities: "- Managing a team of 2-3 research analysts across industry verticals, with focus area as Chemicals & Materials and Food & Beverages and mentoring 4-5 junior analysts.\n- Conducting extensive primary and secondary research for delivering research projects involving competitor analysis & benchmarking, company profiling, go-to-market strategy, market assessment & sizing, and industry/sector analysis.\n- Responsible for enhancing the quality of research reports & handling client queries."
       },
       {
         id: 'exp2',
@@ -37,7 +37,7 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
         startDate: '2013-05',
         endDate: '2017-06',
         isCurrent: false,
-        responsibilities: "- Report Creation: Assisted in the creation, data population, visual formatting, data verification, and writing of over 500 client reports.\\n- Project Sustentation: Continually completed multiple ongoing processes related to operations.\\n- Data Verification: Responsible for checking data for both internal data files and client deliverables to ensure the accuracy of the presented results."
+        responsibilities: "- Report Creation: Assisted in the creation, data population, visual formatting, data verification, and writing of over 500 client reports.\n- Project Sustentation: Continually completed multiple ongoing processes related to operations.\n- Data Verification: Responsible for checking data for both internal data files and client deliverables to ensure the accuracy of the presented results."
       }
     ],
     education: [
@@ -78,7 +78,5 @@ export const getInitialResumeData = (user: UserProfile | null): ResumeBuilderDat
     },
   };
 };
-
-    
 
     
