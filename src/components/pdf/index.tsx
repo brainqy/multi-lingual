@@ -43,8 +43,6 @@ Font.register({
   ],
 });
 
-export { ResumeDocument } from '@/components/features/resume-builder/pdf/resume/document';
-
 export const PDFViewer = dynamic(
   () => import('@react-pdf/renderer').then((m) => m.PDFViewer),
   { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> },

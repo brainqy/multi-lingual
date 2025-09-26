@@ -49,7 +49,7 @@ Font.register({
   ],
 });
 
-export { ResumeDocument } from './resume/document';
+
 
 export const PDFViewer = dynamic(
   () => import('@react-pdf/renderer').then((m) => m.PDFViewer),

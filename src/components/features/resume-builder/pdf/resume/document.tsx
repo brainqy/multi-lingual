@@ -1,13 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import type { Resume } from '@/lib/constants';
-import { Watermark } from './watermark';
-import { Heading } from './heading';
-import { Section } from './section';
-import { Experience } from './experience';
-import { Education } from './education';
-import { Project } from './project';
-import { Skill } from './skill';
+
 
 const styles = StyleSheet.create({
   page: {
@@ -40,56 +34,24 @@ const styles = StyleSheet.create({
   },
 });
 
-type ResumeDocumentProps = {
-  resume: Resume;
-};
 
-export const ResumeDocument: React.FC<ResumeDocumentProps> = ({ resume }) => {
+
+
+
+export const ResumesDocument: React.FC = () => {
   return (
     <Document
       author='Kelvin Mai'
-      title={`Resume for Kelvin Mai, ${new Date().getFullYear()}`}
+    
     >
-      <Page size='A4' style={styles.page}>
-        <Heading info={resume.basics} />
-        <Section title='introduction'>
-          <Text>{resume.basics.summary}</Text>
-        </Section>
-        <Section title='skills'>
-          {resume.skills.map((s) => (
-            <Skill key={s.name} {...s} />
-          ))}
-        </Section>
-        <Section title='professional experience'>
-          {resume.work.map((w) => (
-            <Experience key={w.name} {...w} />
-          ))}
-        </Section>
-        <View style={styles.twoColumn}>
-          <View style={styles.left}>
-            <Section title='projects'>
-              {resume.projects.map((p) => (
-                <Project key={p.name} {...p} />
-              ))}
-            </Section>
-          </View>
-          <View style={styles.right}>
-            <Section title='education'>
-              {resume.education.map((e) => (
-                <Education key={e.institution} {...e} />
-              ))}
-            </Section>
-          </View>
-        </View>
-        <Watermark />
-        <Text
-          fixed
-          style={styles.pageNumber}
-          render={({ pageNumber, totalPages }) =>
-            `${pageNumber} / ${totalPages}`
-          }
-        />
-      </Page>
-    </Document>
+      <Page size='A4'>
+    
+       <View>
+          <Text>summary</Text>
+       </View>
+          
+       
+        </Page>
+        </Document>
   );
 };
