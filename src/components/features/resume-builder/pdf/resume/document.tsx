@@ -40,7 +40,7 @@ type ResumesDocumentProps = {
 
 
 
-export const ResumesDocument = ({ data }: ResumesDocumentProps) => {
+export const ResumesDocument = () => {
   return (
     <Document
       author='Kelvin Mai'
