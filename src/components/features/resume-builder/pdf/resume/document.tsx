@@ -108,10 +108,36 @@ const styles = StyleSheet.create({
 });
 
 type ResumesDocumentProps = {
-    data: ResumeBuilderData;
+    data?: ResumeBuilderData;
 }
 
-export const ResumesDocument = ({ data }: ResumesDocumentProps) => {
+// This function ensures every required property has a safe default value.
+const sanitizeData = (d?: ResumeBuilderData): ResumeBuilderData => {
+  const defaultHeader = { fullName: 'Your Name', phone: '', email: '', linkedin: '', portfolio: '', address: '', jobTitle: '' };
+  const defaultAdditionalDetails = { awards: '', certifications: '', languages: '', interests: '', main: {}, sidebar: {} };
+  
+  return {
+    header: d?.header || defaultHeader,
+    summary: d?.summary || '',
+    experience: d?.experience || [],
+    education: d?.education || [],
+    skills: d?.skills || [],
+    additionalDetails: {
+      ...defaultAdditionalDetails,
+      ...(d?.additionalDetails || {}),
+      main: d?.additionalDetails?.main || {},
+      sidebar: d?.additionalDetails?.sidebar || {},
+    },
+    templateId: d?.templateId || 'template1',
+    layout: d?.layout || 'single-column',
+    sectionOrder: d?.sectionOrder || ['summary', 'experience', 'education', 'skills'],
+    styles: d?.styles || {},
+  };
+};
+
+
+export const ResumesDocument = ({ data: unsafeData }: ResumesDocumentProps) => {
+    const data = sanitizeData(unsafeData);
   return (
     <Document
       author={data.header.fullName}
