@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ResumeBuilderData, ResumeProfile } from "@/types";
@@ -10,8 +11,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
-import { PDFDownloadLink } from '@/components/pdf';
-import ResumesDocument from './pdf/resume/document';
+
+// Dynamically import PDFDownloadLink to ensure it's client-side only
+const PDFDownloadLink = dynamic(
+  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
+  { ssr: false, loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> }
+);
+
+// Dynamically import the document component as well
+const ResumesDocument = dynamic(() => import('./pdf/resume/document'), { ssr: false });
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -28,7 +36,6 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This ensures that PDFDownloadLink is only rendered on the client
     setIsClient(true);
   }, []);
 
