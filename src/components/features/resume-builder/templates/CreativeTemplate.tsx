@@ -143,7 +143,7 @@ const CreativeTemplate = ({ data, onSelectElement, selectedElementId, onDataChan
   const MainContent = () => (
      <div className="space-y-4">
         <div className={cn("pb-2 cursor-pointer p-2 rounded transition-colors duration-200", selectedElementId === 'header' ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-primary/5")} onClick={() => onSelectElement('header')}>
-            <h1 className="text-4xl font-bold text-gray-900">{data.header.fullName}</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-1">{data.header.fullName}</h1>
             <p className="text-lg font-medium text-gray-700">{data.header.jobTitle}</p>
         </div>
         <div className="border-b-2 border-gray-400"></div>
