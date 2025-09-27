@@ -1,23 +1,18 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import React, 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ResumeBuilderData, ResumeProfile } from "@/types";
 import { DownloadCloud, Save, Loader2 } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
-import ResumePDFDocument from './pdf/ResumePDFDocument'; // Import the document directly
-
-// Dynamically import PDF components to ensure they are client-side only
-const PDFDownloadLink = dynamic(
-  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
-  { ssr: false, loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> }
-);
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { useState } from 'react';
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -26,16 +21,12 @@ interface StepFinalizeProps {
   onSaveComplete: (newResumeId: string) => void;
 }
 
-export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
+export default function StepFinalize({ resumeData, previewRef, editingResumeId, onSaveComplete }: StepFinalizeProps) {
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleSaveResume = async () => {
     if (!currentUser) {
@@ -51,10 +42,10 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
 
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
+        // Correctly pass only the fields that can be updated
         savedResume = await updateResumeProfile(editingResumeId, {
-            ...resumeProfileData,
-            userId: currentUser.id,
-            tenantId: currentUser.tenantId,
+            name: resumeProfileData.name,
+            resumeText: resumeProfileData.resumeText,
         });
         if (savedResume) {
              toast({
@@ -84,6 +75,56 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
     }
     setIsSaving(false);
   };
+
+  const handleDownloadPdf = async () => {
+    if (!previewRef.current) {
+        toast({ title: 'Error', description: 'Preview element not found for download.', variant: 'destructive' });
+        return;
+    }
+    setIsDownloading(true);
+
+    try {
+        const canvas = await html2canvas(previewRef.current, {
+            scale: 2, // Increase resolution for better quality
+            useCORS: true,
+            logging: true,
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
+        const pdfAspectRatio = pdfWidth / pdfHeight;
+
+        let finalPdfWidth, finalPdfHeight;
+
+        if (canvasAspectRatio > pdfAspectRatio) {
+            finalPdfWidth = pdfWidth;
+            finalPdfHeight = pdfWidth / canvasAspectRatio;
+        } else {
+            finalPdfHeight = pdfHeight;
+            finalPdfWidth = pdfHeight * canvasAspectRatio;
+        }
+
+        const x = (pdfWidth - finalPdfWidth) / 2;
+        const y = 0; // Align to top
+
+        pdf.addImage(imgData, 'PNG', x, y, finalPdfWidth, finalPdfHeight);
+        pdf.save(`${resumeData.header.fullName || 'resume'}_Resume.pdf`);
+    } catch (error) {
+        console.error("Failed to generate PDF:", error);
+        toast({ title: 'PDF Generation Failed', description: 'An error occurred while creating the PDF.', variant: 'destructive' });
+    } finally {
+        setIsDownloading(false);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -95,20 +136,10 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-             {isClient && resumeData && (
-                <PDFDownloadLink
-                    document={<ResumePDFDocument data={resumeData} />}
-                    fileName={`${resumeData.header.fullName || 'resume'}_Resume.pdf`}
-                    className="flex-1"
-                >
-                    {({ loading }) => (
-                        <Button disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
-                            {loading ? 'Generating PDF...' : 'Download as PDF'}
-                        </Button>
-                    )}
-                </PDFDownloadLink>
-             )}
+            <Button onClick={handleDownloadPdf} disabled={isDownloading} className="w-full flex-1 bg-green-600 hover:bg-green-700 text-white">
+              {isDownloading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
+              {isDownloading ? 'Generating PDF...' : 'Download as PDF'}
+            </Button>
             <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
               {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               {isSaving ? 'Saving...' : 'Save to My Resumes'}
