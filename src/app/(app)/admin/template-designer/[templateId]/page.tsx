@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical, Award, BookCheck, Languages as LanguagesIcon, Heart } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Settings, PlusCircle, TextCursorInput, Loader2, GripVertical, Award, BookCheck, Languages as LanguagesIcon, Heart, type LucideIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ResumeTemplate, ResumeBuilderData, UserProfile } from '@/types';
 import { getResumeTemplates, updateResumeTemplate, createResumeTemplate } from '@/lib/actions/templates';
@@ -41,6 +41,13 @@ const sampleUserData: UserProfile = {
 
 
 const defaultSectionOrder = ['summary', 'experience', 'education', 'skills'];
+
+// Define a type for the common section items to resolve the 'never' error
+type CommonSection = {
+  key: string;
+  title: string;
+  icon: LucideIcon;
+};
 
 export default function TemplateEditorPage() {
   const params = useParams();
@@ -342,7 +349,7 @@ export default function TemplateEditorPage() {
     });
   };
   
-  const commonSections = [
+  const commonSections: CommonSection[] = [
     { key: 'awards', title: 'Awards', icon: Award },
     { key: 'certifications', title: 'Certifications', icon: BookCheck },
     { key: 'languages', title: 'Languages', icon: LanguagesIcon },
