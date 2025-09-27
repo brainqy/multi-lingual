@@ -1,4 +1,5 @@
 
+"use client";
 
 import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/renderer";
 
@@ -18,10 +19,7 @@ const MyDocument = () => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.section}>
-        <Text>PDF Render Test: Section #1</Text>
-      </View>
-      <View style={styles.section}>
-        <Text>PDF Render Test: Section #2</Text>
+        <Text>hello world</Text>
       </View>
     </Page>
   </Document>
