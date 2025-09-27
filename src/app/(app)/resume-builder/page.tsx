@@ -174,16 +174,18 @@ export default function ResumeBuilderPage() {
     setResumeData(prev => ({
         ...prev,
         additionalDetails: {
-            ...(prev.additionalDetails || { main: {}, sidebar: {} }),
-            ...details,
             main: {
                 ...(prev.additionalDetails?.main || {}),
-                ...details.main,
+                ...(details?.main || {}),
             },
             sidebar: {
                 ...(prev.additionalDetails?.sidebar || {}),
-                ...details.sidebar,
-            }
+                ...(details?.sidebar || {}),
+            },
+            awards: details?.awards ?? prev.additionalDetails?.awards,
+            certifications: details?.certifications ?? prev.additionalDetails?.certifications,
+            languages: details?.languages ?? prev.additionalDetails?.languages,
+            interests: details?.interests ?? prev.additionalDetails?.interests,
         },
     }));
   };
@@ -226,7 +228,7 @@ export default function ResumeBuilderPage() {
       case 'skills':
         return <StepSkillsForm data={resumeData.skills} onUpdate={updateSkillsData}/>;
       case 'additional-details':
-        return <StepAdditionalDetailsForm data={resumeData.additionalDetails || {}} onUpdate={updateAdditionalDetailsData}/>;
+        return <StepAdditionalDetailsForm data={resumeData.additionalDetails} onUpdate={updateAdditionalDetailsData}/>;
       case 'finalize':
         return <StepFinalize resumeData={resumeData} previewRef={resumePreviewRef} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} />;
       default:
