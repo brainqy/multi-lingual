@@ -163,8 +163,16 @@ export default function ResumeBuilderPage() {
   };
   
   const updateAdditionalDetailsData = (details: Partial<ResumeBuilderData['additionalDetails']>) => {
-    setResumeData(prev => ({ ...prev, additionalDetails: { ...prev.additionalDetails, ...details } }));
-  }
+    setResumeData(prev => ({
+        ...prev,
+        additionalDetails: {
+            main: prev.additionalDetails?.main || {},
+            sidebar: prev.additionalDetails?.sidebar || {},
+            ...(prev.additionalDetails || {}),
+            ...details,
+        },
+    }));
+  };
 
   const handleTemplateSelect = (template: ResumeTemplate) => {
     if (!resumeData || !template || !user) {
@@ -311,5 +319,3 @@ export default function ResumeBuilderPage() {
     </>
   );
 }
-
-    
