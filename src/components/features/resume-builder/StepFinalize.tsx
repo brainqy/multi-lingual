@@ -10,8 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ResumePDFDocument from './ResumePDFDocument';
+import { PDFDownloadLink } from '@/components/pdf';
+import ResumePDFDocument from './pdf/resume/document';
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -96,7 +96,12 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
-                    
+                    {({ loading }) => (
+                        <Button disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
+                            {loading ? 'Generating PDF...' : 'Download as PDF'}
+                        </Button>
+                    )}
                 </PDFDownloadLink>
              )}
             <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
