@@ -1,4 +1,4 @@
-require('dotenv').config();
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -43,4 +43,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Moved dotenv config call into the main export to ensure proper loading
+export default async () => {
+  require('dotenv').config();
+  return nextConfig;
+};
