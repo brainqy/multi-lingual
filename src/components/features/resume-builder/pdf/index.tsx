@@ -1,16 +1,10 @@
+
 'use client';
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 
 import { Font } from '@react-pdf/renderer';
 import { Button } from '@/components/ui/button';
-
-// https://github.com/wojtekmaj/react-pdf#import-worker-recommended
-// Unnecessary for now because of not dynamically changing pdf in realtime
-// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-//   'pdfjs-dist/build/pdf.worker.min.mjs',
-//   import.meta.url,
-// ).toString();
 
 Font.register({
   family: 'Ubuntu',

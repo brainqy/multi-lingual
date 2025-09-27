@@ -11,15 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
+import ResumePDFDocument from './pdf/ResumePDFDocument'; // Import the document directly
 
-// Dynamically import PDFDownloadLink to ensure it's client-side only
+// Dynamically import PDF components to ensure they are client-side only
 const PDFDownloadLink = dynamic(
   () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
   { ssr: false, loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> }
 );
-
-// Dynamically import the document component as well
-const ResumesDocument = dynamic(() => import('./pdf/resume/document'), { ssr: false });
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -97,10 +95,10 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-             {isClient && resumeData && resumeData.header.fullName && (
+             {isClient && resumeData && (
                 <PDFDownloadLink
-                    document={<ResumesDocument data={resumeData} />}
-                    fileName={`${resumeData.header.fullName}_Resume.pdf`}
+                    document={<ResumePDFDocument data={resumeData} />}
+                    fileName={`${resumeData.header.fullName || 'resume'}_Resume.pdf`}
                     className="flex-1"
                 >
                     {({ loading }) => (
