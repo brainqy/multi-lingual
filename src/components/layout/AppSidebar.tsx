@@ -33,7 +33,6 @@ const navItems = [
       { href: "/my-resumes", labelKey: "sideMenu.myResumes", icon: Layers3 },
       { href: "/resume-builder", labelKey: "sideMenu.resumeBuilder", icon: FilePlus2 },
       { href: "/resume-templates", labelKey: "sideMenu.resumeTemplates", icon: Layers3 },
-      { href: "/resume", labelKey: "sideMenu.pdfPreview", icon: FileIcon },
     ]
   },
   { href: "/gallery", labelKey: "sideMenu.eventGallery", icon: GalleryVerticalEnd },
