@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
 import { PDFDownloadLink } from '@/components/pdf';
-import ResumePDFDocument from './pdf/resume/document';
+import ResumesDocument from './pdf/resume/document';
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
@@ -92,7 +92,7 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
           <div className="flex flex-col sm:flex-row gap-3">
              {isClient && resumeData && resumeData.header.fullName && (
                 <PDFDownloadLink
-                    document={<ResumePDFDocument data={resumeData} />}
+                    document={<ResumesDocument data={resumeData} />}
                     fileName={`${resumeData.header.fullName}_Resume.pdf`}
                     className="flex-1"
                 >
