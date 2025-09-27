@@ -4,7 +4,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2 } from "lucide-react";
+import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2, Award, BookCheck, Languages as LanguagesIcon, Heart, type LucideIcon } from "lucide-react";
 import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile, ResumeTemplate } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,14 @@ import Handlebars from 'handlebars';
 const logger = {
     log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
 };
+
+// Define a type for the common section items to resolve the 'never' error
+type CommonSection = {
+  key: string;
+  title: string;
+  icon: LucideIcon;
+};
+
 
 export default function ResumeBuilderPage() {
   const { user } = useAuth();
@@ -166,10 +174,16 @@ export default function ResumeBuilderPage() {
     setResumeData(prev => ({
         ...prev,
         additionalDetails: {
-            main: prev.additionalDetails?.main || {},
-            sidebar: prev.additionalDetails?.sidebar || {},
-            ...(prev.additionalDetails || {}),
+            ...(prev.additionalDetails || { main: {}, sidebar: {} }),
             ...details,
+            main: {
+                ...(prev.additionalDetails?.main || {}),
+                ...details.main,
+            },
+            sidebar: {
+                ...(prev.additionalDetails?.sidebar || {}),
+                ...details.sidebar,
+            }
         },
     }));
   };
@@ -190,6 +204,14 @@ export default function ResumeBuilderPage() {
   const handleSaveComplete = (newResumeId: string) => {
     setEditingResumeId(newResumeId);
   };
+  
+    const commonSections: CommonSection[] = [
+    { key: 'awards', title: 'Awards', icon: Award },
+    { key: 'certifications', title: 'Certifications', icon: BookCheck },
+    { key: 'languages', title: 'Languages', icon: LanguagesIcon },
+    { key: 'interests', title: 'Interests', icon: Heart },
+  ];
+
 
   const renderStepContent = () => {
     switch (currentStep) {
