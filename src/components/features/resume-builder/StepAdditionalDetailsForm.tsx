@@ -1,3 +1,4 @@
+
 "use client";
 
 import type React from 'react';
@@ -6,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import type { ResumeBuilderData } from '@/types';
 
 interface StepAdditionalDetailsFormProps {
-  data: NonNullable<ResumeBuilderData['additionalDetails']>;
+  data: ResumeBuilderData['additionalDetails'] | {}; // Allow an empty object
   onUpdate: (data: Partial<ResumeBuilderData['additionalDetails']>) => void;
 }
 
 export default function StepAdditionalDetailsForm({ data, onUpdate }: StepAdditionalDetailsFormProps) {
   
+  const currentData = 'awards' in data ? data : { awards: '', certifications: '', languages: '', interests: '' };
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onUpdate({ [e.target.name]: e.target.value });
   };
@@ -23,7 +26,7 @@ export default function StepAdditionalDetailsForm({ data, onUpdate }: StepAdditi
         <Textarea
           id="awards"
           name="awards"
-          value={data.awards || ""}
+          value={currentData.awards || ""}
           onChange={handleChange}
           placeholder="- Employee of the Month, Tech Solutions Inc. (2023)&#10;- Dean's List, State University (2017)"
           rows={3}
@@ -34,7 +37,7 @@ export default function StepAdditionalDetailsForm({ data, onUpdate }: StepAdditi
         <Textarea
           id="certifications"
           name="certifications"
-          value={data.certifications || ""}
+          value={currentData.certifications || ""}
           onChange={handleChange}
           placeholder="- AWS Certified Solutions Architect - Associate (2022)&#10;- Project Management Professional (PMP)"
           rows={3}
@@ -45,7 +48,7 @@ export default function StepAdditionalDetailsForm({ data, onUpdate }: StepAdditi
         <Textarea
           id="languages"
           name="languages"
-          value={data.languages || ""}
+          value={currentData.languages || ""}
           onChange={handleChange}
           placeholder="- English (Native)&#10;- Spanish (Conversational)&#10;- French (Basic)"
           rows={3}
@@ -56,7 +59,7 @@ export default function StepAdditionalDetailsForm({ data, onUpdate }: StepAdditi
         <Textarea
           id="interests"
           name="interests"
-          value={data.interests || ""}
+          value={currentData.interests || ""}
           onChange={handleChange}
           placeholder="e.g., Hiking, Photography, Open Source Contributions, Chess"
           rows={3}
