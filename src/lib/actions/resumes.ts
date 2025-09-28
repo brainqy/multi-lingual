@@ -38,11 +38,17 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
   console.log('[ResumeAction LOG] 1. createResumeProfile called.', { userId, name: rest.name });
   try {
     console.log('[ResumeAction LOG] 2. Preparing data for DB creation.');
+    
+    // Correctly parse the JSON string from the client into a Prisma.JsonObject
+    const parsedResumeText = typeof rest.resumeText === 'string' 
+      ? JSON.parse(rest.resumeText) as Prisma.JsonObject 
+      : Prisma.JsonNull;
+      
     const dataForDb = {
       ...rest,
       userId,
       tenantId,
-      resumeText: typeof resumeData.resumeText === 'string' ? JSON.parse(resumeData.resumeText) as Prisma.JsonObject : Prisma.JsonNull,
+      resumeText: parsedResumeText,
     };
     console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data:', dataForDb);
     const newResume = await db.resumeProfile.create({

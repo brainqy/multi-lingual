@@ -31,6 +31,7 @@ interface StepFinalizeProps {
 }
 
 export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
+  console.log('[StepFinalize LOG] Component rendered.');
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    console.log('[StepFinalize LOG] useEffect triggered, setting isClient to true.');
     setIsClient(true);
   }, []);
 
@@ -48,8 +50,8 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
       toast({ title: "Error", description: "You must be logged in to save a resume.", variant: "destructive"});
       return;
     }
-    setIsSaving(true);
     console.log('[StepFinalize LOG] 3. Set isSaving to true.');
+    setIsSaving(true);
     
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
@@ -94,8 +96,8 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
        console.log('[StepFinalize LOG] 8. Save/update failed.');
        toast({ title: "Save Failed", description: "Could not save the resume to your profile.", variant: "destructive" });
     }
-    setIsSaving(false);
     console.log('[StepFinalize LOG] 9. Set isSaving to false.');
+    setIsSaving(false);
   };
   
   return (
