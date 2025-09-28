@@ -61,9 +61,28 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
 export async function updateResumeProfile(resumeId: string, resumeData: Partial<Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt'>>): Promise<ResumeProfile | null> {
     logAction('Updating resume profile', { resumeId });
     try {
+        const { resumeText, ...restOfData } = resumeData;
+        
+        // Prepare data for Prisma, ensuring resumeText is handled as JSON if it's a string
+        const dataForDb: any = { ...restOfData };
+        if (typeof resumeText === 'string') {
+            try {
+                // Attempt to parse to ensure it's valid JSON for the database
+                dataForDb.resumeText = JSON.parse(resumeText);
+            } catch (e) {
+                // If it's not valid JSON, it might be plain text from an older version.
+                // We'll save it as is, but log a warning.
+                console.warn(`[ResumeAction] resumeText for ID ${resumeId} is not valid JSON. Saving as raw string.`);
+                dataForDb.resumeText = resumeText;
+            }
+        } else if (resumeText) {
+            // If it's already an object, Prisma will handle it.
+            dataForDb.resumeText = resumeText;
+        }
+
         const updatedResume = await db.resumeProfile.update({
             where: { id: resumeId },
-            data: resumeData,
+            data: dataForDb,
         });
         return updatedResume as unknown as ResumeProfile;
     } catch (error) {

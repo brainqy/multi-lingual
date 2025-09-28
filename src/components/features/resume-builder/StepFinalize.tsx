@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -44,18 +45,13 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
     }
     setIsSaving(true);
     
-    const resumeProfileData = {
-        name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
-        resumeText: JSON.stringify(resumeData),
-    };
-
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
-        savedResume = await updateResumeProfile(editingResumeId, {
-            ...resumeProfileData,
-            userId: currentUser.id,
-            tenantId: currentUser.tenantId,
-        });
+        const updateData = {
+            name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
+            resumeText: JSON.stringify(resumeData),
+        };
+        savedResume = await updateResumeProfile(editingResumeId, updateData);
         if (savedResume) {
              toast({
                 title: "Resume Updated",
@@ -63,11 +59,13 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
             });
         }
     } else {
-        savedResume = await createResumeProfile({
-            ...resumeProfileData,
+        const createData = {
+            name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
+            resumeText: JSON.stringify(resumeData),
             userId: currentUser.id,
             tenantId: currentUser.tenantId,
-        });
+        };
+        savedResume = await createResumeProfile(createData);
          if (savedResume) {
             toast({
                 title: "Resume Saved",
