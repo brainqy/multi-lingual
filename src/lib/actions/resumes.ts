@@ -77,7 +77,6 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
                 console.log('[ResumeAction LOG] 3a. Successfully parsed resumeText as JSON.');
             } catch (e) {
                 console.warn(`[ResumeAction LOG] 3b. resumeText for ID ${resumeId} is not valid JSON. Saving as raw string, which is incorrect for this schema version.`);
-                // This path should ideally not be taken if the client always sends stringified JSON
                 dataForDb.resumeText = { error: "Invalid JSON string received", raw: resumeText };
             }
         }
