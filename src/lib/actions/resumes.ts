@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import { db } from '@/lib/db';
@@ -36,17 +35,22 @@ export async function getResumeProfiles(userId: string): Promise<ResumeProfile[]
  */
 export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt' | 'lastAnalyzed'>): Promise<ResumeProfile | null> {
   const { userId, tenantId, ...rest } = resumeData;
-  logAction('Creating resume profile', { userId, name: rest.name });
+  console.log('[ResumeAction LOG] 1. createResumeProfile called.', { userId, name: rest.name });
   try {
+    console.log('[ResumeAction LOG] 2. Preparing data for DB creation.');
+    const dataForDb = {
+      ...rest,
+      userId,
+      tenantId,
+    };
+    console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data:', dataForDb);
     const newResume = await db.resumeProfile.create({
-      data: {
-        ...rest,
-        userId,
-        tenantId,
-      },
+      data: dataForDb,
     });
+    console.log('[ResumeAction LOG] 4. DB operation successful. New resume:', newResume);
     return newResume as unknown as ResumeProfile;
   } catch (error) {
+    console.error('[ResumeAction LOG] 5. Error creating resume profile:', error);
     logError('[ResumeAction] Error creating resume profile', error, { userId });
     return null;
   }
@@ -59,33 +63,35 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
  * @returns The updated ResumeProfile object or null if failed.
  */
 export async function updateResumeProfile(resumeId: string, resumeData: Partial<Omit<ResumeProfile, 'id' | 'createdAt' | 'updatedAt'>>): Promise<ResumeProfile | null> {
-    logAction('Updating resume profile', { resumeId });
+    console.log('[ResumeAction LOG] 1. updateResumeProfile called.', { resumeId });
     try {
         const { resumeText, ...restOfData } = resumeData;
         
-        // Prepare data for Prisma, ensuring resumeText is handled as JSON if it's a string
+        console.log('[ResumeAction LOG] 2. Preparing data for DB update.');
         const dataForDb: any = { ...restOfData };
         if (typeof resumeText === 'string') {
+            console.log('[ResumeAction LOG] 3. resumeText is a string. Attempting to parse as JSON.');
             try {
-                // Attempt to parse to ensure it's valid JSON for the database
                 dataForDb.resumeText = JSON.parse(resumeText);
+                console.log('[ResumeAction LOG] 3a. Successfully parsed resumeText as JSON.');
             } catch (e) {
-                // If it's not valid JSON, it might be plain text from an older version.
-                // We'll save it as is, but log a warning.
-                console.warn(`[ResumeAction] resumeText for ID ${resumeId} is not valid JSON. Saving as raw string.`);
+                console.warn(`[ResumeAction LOG] 3b. resumeText for ID ${resumeId} is not valid JSON. Saving as raw string.`);
                 dataForDb.resumeText = resumeText;
             }
         } else if (resumeText) {
-            // If it's already an object, Prisma will handle it.
+            console.log('[ResumeAction LOG] 3c. resumeText is already an object.');
             dataForDb.resumeText = resumeText;
         }
 
+        console.log('[ResumeAction LOG] 4. Calling db.resumeProfile.update with data:', dataForDb);
         const updatedResume = await db.resumeProfile.update({
             where: { id: resumeId },
             data: dataForDb,
         });
+        console.log('[ResumeAction LOG] 5. DB operation successful. Updated resume:', updatedResume);
         return updatedResume as unknown as ResumeProfile;
     } catch (error) {
+        console.error(`[ResumeAction LOG] 6. Error updating resume profile ${resumeId}:`, error);
         logError(`[ResumeAction] Error updating resume profile ${resumeId}`, error, { resumeId });
         return null;
     }
