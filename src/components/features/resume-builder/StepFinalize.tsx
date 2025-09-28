@@ -11,12 +11,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/use-auth';
 import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes';
 import { useRouter } from 'next/navigation';
-import ResumePDFDocument from './pdf/ResumePDFDocument'; // Import the document directly
+import ResumePDFDocument from './pdf/ResumePDFDocument';
 
 // Dynamically import PDF components to ensure they are client-side only
 const PDFDownloadLink = dynamic(
   () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
-  { ssr: false, loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> }
+  { 
+    ssr: false, 
+    loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> 
+  }
 );
 
 interface StepFinalizeProps {
@@ -53,6 +56,8 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         const updateData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
+            userId: currentUser.id,
+            tenantId: currentUser.tenantId,
         };
         console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
         savedResume = await updateResumeProfile(editingResumeId, updateData);

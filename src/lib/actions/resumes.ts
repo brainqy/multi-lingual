@@ -42,10 +42,11 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
       ...rest,
       userId,
       tenantId,
+      resumeText: resumeData.resumeText ? JSON.parse(resumeData.resumeText) as Prisma.JsonObject : Prisma.JsonNull,
     };
     console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data:', dataForDb);
     const newResume = await db.resumeProfile.create({
-      data: dataForDb,
+      data: dataForDb as any,
     });
     console.log('[ResumeAction LOG] 4. DB operation successful. New resume:', newResume);
     return newResume as unknown as ResumeProfile;
@@ -72,15 +73,13 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
         if (typeof resumeText === 'string') {
             console.log('[ResumeAction LOG] 3. resumeText is a string. Attempting to parse as JSON.');
             try {
-                dataForDb.resumeText = JSON.parse(resumeText);
+                dataForDb.resumeText = JSON.parse(resumeText) as Prisma.JsonObject;
                 console.log('[ResumeAction LOG] 3a. Successfully parsed resumeText as JSON.');
             } catch (e) {
-                console.warn(`[ResumeAction LOG] 3b. resumeText for ID ${resumeId} is not valid JSON. Saving as raw string.`);
-                dataForDb.resumeText = resumeText;
+                console.warn(`[ResumeAction LOG] 3b. resumeText for ID ${resumeId} is not valid JSON. Saving as raw string, which is incorrect for this schema version.`);
+                // This path should ideally not be taken if the client always sends stringified JSON
+                dataForDb.resumeText = { error: "Invalid JSON string received", raw: resumeText };
             }
-        } else if (resumeText) {
-            console.log('[ResumeAction LOG] 3c. resumeText is already an object.');
-            dataForDb.resumeText = resumeText;
         }
 
         console.log('[ResumeAction LOG] 4. Calling db.resumeProfile.update with data:', dataForDb);
