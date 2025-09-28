@@ -42,7 +42,7 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
       ...rest,
       userId,
       tenantId,
-      resumeText: resumeData.resumeText ? JSON.parse(resumeData.resumeText) as Prisma.JsonObject : Prisma.JsonNull,
+      resumeText: typeof resumeData.resumeText === 'string' ? JSON.parse(resumeData.resumeText) as Prisma.JsonObject : Prisma.JsonNull,
     };
     console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data:', dataForDb);
     const newResume = await db.resumeProfile.create({
