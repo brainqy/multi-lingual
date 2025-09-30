@@ -1,3 +1,4 @@
+
 "use client";
 import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -14,7 +15,8 @@ import StepSkillsForm from "@/components/features/resume-builder/StepSkillsForm"
 import StepSummaryForm from "@/components/features/resume-builder/StepSummaryForm";
 import StepAdditionalDetailsForm from "@/components/features/resume-builder/StepAdditionalDetailsForm";
 import StepFinalize from "@/components/features/resume-builder/StepFinalize";
-import ResumePreview from "@/components/features/resume-builder/ResumePreview";
+import ResumePDFDocument from "@/components/features/resume-builder/pdf/ResumePDFDocument";
+import { PDFViewer } from '@/components/pdf';
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
@@ -320,14 +322,21 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
-          <ResumePreview ref={resumePreviewRef} resumeData={resumeData} templates={allTemplates} onSelectElement={() => {}} selectedElementId={null} />
-          <Button 
-            variant="outline" 
-            className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
-            onClick={() => setIsTemplateDialogOpen(true)}
-          >
-            Change template
-          </Button>
+          <div className="sticky top-6">
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">PDF Preview</h3>
+             <div className="w-full h-[500px] border border-slate-300 rounded-md overflow-hidden">
+                <PDFViewer width="100%" height="100%">
+                    <ResumePDFDocument data={resumeData} />
+                </PDFViewer>
+             </div>
+            <Button 
+                variant="outline" 
+                className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
+                onClick={() => setIsTemplateDialogOpen(true)}
+            >
+                Change template
+            </Button>
+          </div>
         </aside>
       </div>
     </div>
