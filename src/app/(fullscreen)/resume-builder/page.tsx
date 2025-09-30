@@ -15,7 +15,7 @@ import StepSkillsForm from "@/components/features/resume-builder/StepSkillsForm"
 import StepSummaryForm from "@/components/features/resume-builder/StepSummaryForm";
 import StepAdditionalDetailsForm from "@/components/features/resume-builder/StepAdditionalDetailsForm";
 import StepFinalize from "@/components/features/resume-builder/StepFinalize";
-import ResumePDFDocument from "@/components/features/resume-builder/pdf/ResumePDFDocument";
+import ResumePDFDocument from "@/components/features/resume-builder/pdf/ResumeDocument";
 import { PDFViewer } from '@/components/pdf';
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -54,6 +54,11 @@ export default function ResumeBuilderPage() {
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  const keyCount = useRef(0);
+  useEffect(() => {
+    keyCount.current++;
+  }, [resumeData]);
+
   const processTemplateContent = useCallback((templateContent: string, userData: UserProfile | null): ResumeBuilderData => {
     try {
         const parsedData = JSON.parse(templateContent);
@@ -325,7 +330,7 @@ export default function ResumeBuilderPage() {
           <div className="sticky top-6">
             <h3 className="text-lg font-semibold text-slate-700 mb-2">PDF Preview</h3>
              <div className="w-full h-[500px] border border-slate-300 rounded-md overflow-hidden">
-                <PDFViewer width="100%" height="100%">
+                <PDFViewer width="100%" height="100%" key={keyCount.current}>
                     <ResumePDFDocument data={resumeData} />
                 </PDFViewer>
              </div>
