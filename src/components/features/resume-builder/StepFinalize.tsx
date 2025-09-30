@@ -59,6 +59,8 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         const updateData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
+            userId: currentUser.id, // Pass userId for ownership verification
+            tenantId: currentUser.tenantId, // Pass tenantId for scope
         };
          console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
         savedResume = await updateResumeProfile(editingResumeId, updateData);
