@@ -49,8 +49,11 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
             console.error('[ResumeAction LOG] 2c. FATAL: Failed to parse resumeText string as JSON.', e);
             throw new Error('Invalid resumeText format: Expected a JSON string.');
         }
+    } else if (rest.resumeText && typeof rest.resumeText === 'object') {
+        console.log('[ResumeAction LOG] 2e. resumeText is already an object.');
+        parsedResumeText = rest.resumeText as Prisma.JsonObject;
     } else {
-        console.warn('[ResumeAction LOG] 2d. resumeText is not a string, will be saved as null/undefined.');
+        console.warn('[ResumeAction LOG] 2d. resumeText is not a string or object, will be saved as null/undefined.');
     }
       
     const dataForDb = {
@@ -94,6 +97,9 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
                  console.error(`[ResumeAction LOG] 3b. FATAL: resumeText for ID ${resumeId} is not valid JSON.`, e);
                  throw new Error('Invalid resumeText format: Expected a JSON string.');
             }
+        } else if (resumeText && typeof resumeText === 'object') {
+            console.log('[ResumeAction LOG] 3c. resumeText is already an object.');
+            dataForDb.resumeText = resumeText as Prisma.JsonObject;
         }
 
         console.log('[ResumeAction LOG] 4. Calling db.resumeProfile.update with data for resume:', resumeId);
