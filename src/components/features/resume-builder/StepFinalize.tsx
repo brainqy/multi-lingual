@@ -30,18 +30,45 @@ interface StepFinalizeProps {
   onSaveComplete: (newResumeId: string) => void;
 }
 
+// This client-side only component isolates the PDF download link to prevent re-rendering crashes
+const ClientPDFDownloadLink: React.FC<{ data: ResumeBuilderData }> = ({ data }) => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <Button disabled className="w-full flex-1">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        Loading PDF...
+      </Button>
+    );
+  }
+
+  return (
+    <PDFDownloadLink
+      document={<ResumePDFDocument data={data} />}
+      fileName={`${data.header.fullName || 'resume'}_Resume.pdf`}
+      className="flex-1"
+    >
+      {({ loading }) => (
+        <Button disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
+          {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
+          {loading ? 'Generating PDF...' : 'Download as PDF'}
+        </Button>
+      )}
+    </PDFDownloadLink>
+  );
+};
+
+
 export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
   console.log('[StepFinalize LOG] 0. Component rendering.');
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    console.log('[StepFinalize LOG] useEffect to set isClient.');
-    setIsClient(true);
-  }, []);
 
   const handleSaveResume = async () => {
     console.log('[StepFinalize LOG] 1. handleSaveResume initiated.');
@@ -62,9 +89,9 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
             userId: currentUser.id, // Pass userId for ownership verification
             tenantId: currentUser.tenantId, // Pass tenantId for scope
         };
-         console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
+        console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
         savedResume = await updateResumeProfile(editingResumeId, updateData);
-         console.log('[StepFinalize LOG] 6a. Received response from updateResumeProfile:', savedResume);
+        console.log('[StepFinalize LOG] 6a. Received response from updateResumeProfile:', savedResume);
     } else {
         console.log('[StepFinalize LOG] 4b. In create mode.');
         const createData = {
@@ -75,7 +102,7 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         };
         console.log('[StepFinalize LOG] 5b. Prepared createData:', createData);
         savedResume = await createResumeProfile(createData);
-         console.log('[StepFinalize LOG] 6b. Received response from createResumeProfile:', savedResume);
+        console.log('[StepFinalize LOG] 6b. Received response from createResumeProfile:', savedResume);
     }
    
     if (savedResume) {
@@ -104,20 +131,7 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
         <CardContent className="space-y-4">
           <p className="text-slate-700">You've successfully built your resume. You can now download it or save it to your profile for future use and analysis.</p>
           <div className="flex flex-col sm:flex-row gap-3">
-             {isClient && resumeData && (
-                <PDFDownloadLink
-                    document={<ResumePDFDocument data={resumeData} />}
-                    fileName={`${resumeData.header.fullName || 'resume'}_Resume.pdf`}
-                    className="flex-1"
-                >
-                    {({ loading }) => (
-                        <Button disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <DownloadCloud className="mr-2 h-5 w-5" />}
-                            {loading ? 'Generating PDF...' : 'Download as PDF'}
-                        </Button>
-                    )}
-                </PDFDownloadLink>
-             )}
+             <ClientPDFDownloadLink data={resumeData} />
             <Button onClick={handleSaveResume} disabled={isSaving} variant="outline" className="flex-1 border-slate-400 text-slate-700 hover:bg-slate-100">
               {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               {isSaving ? 'Saving...' : 'Save to My Resumes'}
