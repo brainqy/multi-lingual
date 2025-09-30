@@ -31,6 +31,7 @@ interface StepFinalizeProps {
 }
 
 export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
+  console.log('[StepFinalize LOG] 0. Component rendering.');
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
@@ -38,51 +39,58 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    console.log('[StepFinalize LOG] useEffect to set isClient.');
     setIsClient(true);
   }, []);
 
   const handleSaveResume = async () => {
+    console.log('[StepFinalize LOG] 1. handleSaveResume initiated.');
     if (!currentUser) {
+      console.log('[StepFinalize LOG] 2. No current user found. Toasting error.');
       toast({ title: "Error", description: "You must be logged in to save a resume.", variant: "destructive"});
       return;
     }
+    console.log('[StepFinalize LOG] 3. Set isSaving to true.');
     setIsSaving(true);
     
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
+        console.log('[StepFinalize LOG] 4a. In update mode for resume ID:', editingResumeId);
         const updateData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
+            userId: currentUser.id,
+            tenantId: currentUser.tenantId,
         };
+         console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
         savedResume = await updateResumeProfile(editingResumeId, updateData);
-        if (savedResume) {
-             toast({
-                title: "Resume Updated",
-                description: `"${savedResume.name}" has been successfully updated.`,
-            });
-        }
+         console.log('[StepFinalize LOG] 6a. Received response from updateResumeProfile:', savedResume);
     } else {
+        console.log('[StepFinalize LOG] 4b. In create mode.');
         const createData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
             userId: currentUser.id,
             tenantId: currentUser.tenantId,
         };
+        console.log('[StepFinalize LOG] 5b. Prepared createData:', createData);
         savedResume = await createResumeProfile(createData);
-         if (savedResume) {
-            toast({
-                title: "Resume Saved",
-                description: `"${savedResume.name}" has been saved to 'My Resumes'.`,
-            });
-        }
+         console.log('[StepFinalize LOG] 6b. Received response from createResumeProfile:', savedResume);
     }
    
     if (savedResume) {
+      console.log('[StepFinalize LOG] 7. Save/update successful, calling onSaveComplete and routing.');
       onSaveComplete(savedResume.id);
+      toast({
+        title: editingResumeId ? "Resume Updated" : "Resume Saved",
+        description: `"${savedResume.name}" has been successfully ${editingResumeId ? 'updated' : 'saved'}.`,
+      });
       router.push('/my-resumes');
     } else {
+       console.log('[StepFinalize LOG] 8. Save/update failed.');
        toast({ title: "Save Failed", description: "Could not save the resume to your profile.", variant: "destructive" });
     }
+    console.log('[StepFinalize LOG] 9. Set isSaving to false.');
     setIsSaving(false);
   };
   

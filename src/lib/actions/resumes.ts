@@ -39,10 +39,19 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
   try {
     console.log('[ResumeAction LOG] 2. Preparing data for DB creation.');
     
-    // Correctly parse the JSON string from the client into a Prisma.JsonObject
-    const parsedResumeText = typeof rest.resumeText === 'string' 
-      ? JSON.parse(rest.resumeText) as Prisma.JsonObject 
-      : Prisma.JsonNull;
+    let parsedResumeText: Prisma.JsonObject | Prisma.JsonNull = Prisma.JsonNull;
+    if (typeof rest.resumeText === 'string') {
+        console.log('[ResumeAction LOG] 2a. resumeText is a string. Attempting to parse as JSON.');
+        try {
+            parsedResumeText = JSON.parse(rest.resumeText);
+            console.log('[ResumeAction LOG] 2b. Successfully parsed resumeText.');
+        } catch (e) {
+            console.error('[ResumeAction LOG] 2c. FATAL: Failed to parse resumeText string as JSON.', e);
+            throw new Error('Invalid resumeText format: Expected a JSON string.');
+        }
+    } else {
+        console.warn('[ResumeAction LOG] 2d. resumeText is not a string, will be saved as null/undefined.');
+    }
       
     const dataForDb = {
       ...rest,
@@ -50,14 +59,14 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
       tenantId,
       resumeText: parsedResumeText,
     };
-    console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data:', dataForDb);
+    console.log('[ResumeAction LOG] 3. Calling db.resumeProfile.create with data for user:', userId);
     const newResume = await db.resumeProfile.create({
       data: dataForDb as any,
     });
-    console.log('[ResumeAction LOG] 4. DB operation successful. New resume:', newResume);
+    console.log('[ResumeAction LOG] 4. DB operation successful. New resume ID:', newResume.id);
     return newResume as unknown as ResumeProfile;
   } catch (error) {
-    console.error('[ResumeAction LOG] 5. Error creating resume profile:', error);
+    console.error('[ResumeAction LOG] 5. CATCH BLOCK: Error creating resume profile:', error);
     logError('[ResumeAction] Error creating resume profile', error, { userId });
     return null;
   }
@@ -82,20 +91,20 @@ export async function updateResumeProfile(resumeId: string, resumeData: Partial<
                 dataForDb.resumeText = JSON.parse(resumeText) as Prisma.JsonObject;
                 console.log('[ResumeAction LOG] 3a. Successfully parsed resumeText as JSON.');
             } catch (e) {
-                console.warn(`[ResumeAction LOG] 3b. resumeText for ID ${resumeId} is not valid JSON. Saving as raw string, which is incorrect for this schema version.`);
-                dataForDb.resumeText = { error: "Invalid JSON string received", raw: resumeText };
+                 console.error(`[ResumeAction LOG] 3b. FATAL: resumeText for ID ${resumeId} is not valid JSON.`, e);
+                 throw new Error('Invalid resumeText format: Expected a JSON string.');
             }
         }
 
-        console.log('[ResumeAction LOG] 4. Calling db.resumeProfile.update with data:', dataForDb);
+        console.log('[ResumeAction LOG] 4. Calling db.resumeProfile.update with data for resume:', resumeId);
         const updatedResume = await db.resumeProfile.update({
             where: { id: resumeId },
             data: dataForDb,
         });
-        console.log('[ResumeAction LOG] 5. DB operation successful. Updated resume:', updatedResume);
+        console.log('[ResumeAction LOG] 5. DB operation successful. Updated resume ID:', updatedResume.id);
         return updatedResume as unknown as ResumeProfile;
     } catch (error) {
-        console.error(`[ResumeAction LOG] 6. Error updating resume profile ${resumeId}:`, error);
+        console.error(`[ResumeAction LOG] 6. CATCH BLOCK: Error updating resume profile ${resumeId}:`, error);
         logError(`[ResumeAction] Error updating resume profile ${resumeId}`, error, { resumeId });
         return null;
     }
