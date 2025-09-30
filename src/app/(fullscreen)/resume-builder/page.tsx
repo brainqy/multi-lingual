@@ -15,7 +15,6 @@ import StepSkillsForm from "@/components/features/resume-builder/StepSkillsForm"
 import StepSummaryForm from "@/components/features/resume-builder/StepSummaryForm";
 import StepAdditionalDetailsForm from "@/components/features/resume-builder/StepAdditionalDetailsForm";
 import StepFinalize from "@/components/features/resume-builder/StepFinalize";
-import ResumePDFDocument from "@/components/features/resume-builder/pdf/ResumeDocument";
 import { PDFViewer } from '@/components/pdf';
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -28,6 +27,7 @@ import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 import { getInitialResumeData } from '@/lib/resume-builder-helpers';
 import Handlebars from 'handlebars';
+import ResumePDFDocument from "@/components/features/resume-builder/ResumePDFDocument";
 
 const logger = {
     log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
