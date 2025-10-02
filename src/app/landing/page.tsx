@@ -232,7 +232,7 @@ export default function LandingPage() {
                           <CardTitle className="text-lg leading-tight line-clamp-2 font-semibold">{post.title}</CardTitle>
                           <div className="flex items-center space-x-2 text-xs text-muted-foreground pt-1">
                             <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {post.author}</span>
-                            <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(parseISO(post.date), 'MMM d, yyyy')}</span>
+                            <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(new Date(post.date), 'MMM d, yyyy')}</span>
                           </div>
                         </CardHeader>
                         <CardContent className="p-4 pt-0 flex-grow">
