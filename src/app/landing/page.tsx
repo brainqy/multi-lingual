@@ -10,6 +10,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import CustomerReviewsSection from "@/components/features/landing/CustomerReviewsSection";
 import type { PlatformSettings, BlogPost } from "@/types";
 import { getPlatformSettings } from "@/lib/actions/platform-settings";
@@ -310,7 +311,7 @@ export default function LandingPage() {
             <span className="text-gray-400">|</span>
             <Link href="/terms" className="hover:text-primary">{t("landing.footer.terms")}</Link>
             <span className="text-gray-400">|</span>
-            <Link href="/contact" className="hover:text-primary">{t("landing.footer.contact")}</Link>
+            <Link href="/request-tenant" className="hover:text-primary">Create a Tenant</Link>
           </div>
         </div>
       </footer>
