@@ -39,7 +39,7 @@ export async function createResumeProfile(resumeData: Omit<ResumeProfile, 'id' |
   try {
     console.log('[ResumeAction LOG] 2. Preparing data for DB creation.');
     
-    let parsedResumeText: Prisma.JsonObject | Prisma.JsonNull = Prisma.JsonNull;
+    let parsedResumeText: Prisma.JsonObject | typeof Prisma.JsonNull = Prisma.JsonNull;
     if (typeof rest.resumeText === 'string') {
         console.log('[ResumeAction LOG] 2a. resumeText is a string. Attempting to parse as JSON.');
         try {
@@ -193,9 +193,47 @@ export async function createScanHistory(scanData: Omit<ResumeScanHistoryItem, 'i
 export async function updateScanHistory(scanId: string, updateData: Partial<Omit<ResumeScanHistoryItem, 'id'>>): Promise<ResumeScanHistoryItem | null> {
     logAction('Updating scan history', { scanId });
     try {
+        // Remove fields that should not be updated
+        const { userId, tenantId, ...safeUpdateData } = updateData;
+        // Ensure reportData is compatible with Prisma type
+        if ('reportData' in safeUpdateData) {
+            if (safeUpdateData.reportData == null) {
+                // Assign default object for empty reportData
+                safeUpdateData.reportData = {
+                    hardSkillsScore: 0,
+                    softSkillsScore: 0,
+                    highlightsScore: 0,
+                    overallQualityScore: 0,
+                    matchingSkills: [],
+                    missingSkills: [],
+                    resumeKeyStrengths: '',
+                    jobDescriptionKeyRequirements: '',
+                    overallFeedback: '',
+                    undefinedAcronyms: [],
+                };
+            } else if (typeof safeUpdateData.reportData === 'object') {
+                // Ensure reportData contains all required properties
+                const defaultReportData = {
+                    hardSkillsScore: 0,
+                    softSkillsScore: 0,
+                    highlightsScore: 0,
+                    overallQualityScore: 0,
+                    matchingSkills: [],
+                    missingSkills: [],
+                    resumeKeyStrengths: '',
+                    jobDescriptionKeyRequirements: '',
+                    scanNotes: '',
+                    undefinedAcronyms: [],
+                };
+                safeUpdateData.reportData = {
+                  ...defaultReportData,
+                  ...safeUpdateData.reportData,
+                };
+            }
+        }
         const updatedScan = await db.resumeScanHistory.update({
             where: { id: scanId },
-            data: updateData,
+            data: safeUpdateData,
         });
         return updatedScan as unknown as ResumeScanHistoryItem;
     } catch (error) {
