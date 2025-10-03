@@ -23,43 +23,43 @@ export async function loginUser(email: string, password?: string, tenantIdFromCo
     });
 
     if (user) {
-      const isPlatformLogin = !tenantIdFromContext || tenantIdFromContext === 'platform';
-      
-      let tenant = null;
-      if (!isPlatformLogin && tenantIdFromContext) {
-        // Find tenant by ID or custom domain from the identifier.
-        tenant = await db.tenant.findFirst({
-          where: { OR: [{ domain: tenantIdFromContext }, { id: tenantIdFromContext }] },
-        });
-        if (!tenant) {
-            logError('Login failed: Tenant not found by identifier', { email, identifier: tenantIdFromContext });
-            return null; // The specified tenant subdomain does not exist.
+        // First, check if password is correct, regardless of tenant.
+        const isPasswordMatch = user.password ? (password === user.password) : true;
+        if (!isPasswordMatch) {
+            logError('Login failed: Password incorrect', { email });
+            return null;
         }
-      }
-      
-      const tenantId = tenant ? tenant.id : 'platform';
 
-      if (user.role === 'admin' && !isPlatformLogin) {
-        logError('Admin login attempt failed on tenant subdomain', { email, identifier: tenantIdFromContext });
-        return null;
-      }
-      
-      // A user's tenantId must match the resolved tenantId from the subdomain.
-      if (user.role !== 'admin' && user.tenantId !== tenantId) {
-        logError('User login attempt failed due to tenant mismatch', { email, userTenant: user.tenantId, loginTenant: tenantId });
-        return null;
-      }
+        // Now handle tenant logic.
+        const isTryingPlatformLogin = !tenantIdFromContext || tenantIdFromContext === 'platform';
 
-      const isPasswordMatch = user.password ? (password === user.password) : true;
+        // If user is admin, they must log in through the platform domain.
+        if (user.role === 'admin' && !isTryingPlatformLogin) {
+            logError('Admin login attempt failed on tenant subdomain', { email, identifier: tenantIdFromContext });
+            return null;
+        }
+
+        // If a subdomain is provided, check if it's valid.
+        if (!isTryingPlatformLogin && tenantIdFromContext) {
+            const tenantExists = await db.tenant.findFirst({
+                where: { OR: [{ domain: tenantIdFromContext }, { id: tenantIdFromContext }] },
+            });
+            // If the subdomain is valid but doesn't match the user's tenant, block the login.
+            if (tenantExists && user.role !== 'admin' && user.tenantId !== tenantExists.id) {
+                 logError('User login attempt failed due to tenant mismatch', { email, userTenant: user.tenantId, loginTenant: tenantExists.id });
+                 return null;
+            }
+            // If the subdomain does NOT exist, we ignore it and let the user log in. They will be on their correct tenant domain.
+        }
       
-      if (isPasswordMatch) {
+        // If all checks pass, login is successful.
         const sessionId = `session-${Date.now()}`;
         const updatedUser = await updateUser(user.id, { sessionId, lastLogin: new Date().toISOString() });
         logAction('User login successful', { userId: user.id, email: user.email, tenantId: user.tenantId, sessionId });
         return updatedUser;
-      }
     }
-    logError('Login failed for email', { email, reason: 'User not found or password incorrect' });
+
+    logError('Login failed for email', { email, reason: 'User not found' });
     return null;
   } catch (error) {
     logError('Exception during loginUser', error, { email });
