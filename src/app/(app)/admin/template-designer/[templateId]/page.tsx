@@ -35,8 +35,7 @@ const sampleUserData: UserProfile = {
   bio: 'A visionary Product Manager with over 8 years of experience driving product development from concept to launch.',
   graduationYear: '2015',
   degreeProgram: 'B.Sc',
-  department: 'Computer Science',
-  university: 'Tech University',
+  department: 'Computer Science'
 };
 
 

@@ -155,7 +155,10 @@ export default function DailyInterviewChallengePage() {
         const updatedUser = await updateUser(user.id, { xpPoints: (user.xpPoints || 0) + xpGained });
         if (updatedUser) {
           await login(updatedUser.email); // Re-login to update auth context
-          await createActivity({ userId: user.id, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.` });
+          await createActivity({
+            userId: user.id, description: `Completed daily challenge '${standardChallenge.title}' and earned ${xpGained} XP.`,
+            tenantId: ""
+          });
           toast({
             title: `+${xpGained} XP! Correct Answer!`,
             description: `You've successfully completed the challenge.`,

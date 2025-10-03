@@ -187,7 +187,13 @@ export default function InterviewPracticeHubPage() {
 
 
   const handleCancelPracticeSession = (sessionId: string) => {
-    setPracticeSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'CANCELLED' } : s));
+    setPracticeSessions(prev =>
+      prev.map(s =>
+        s.id === sessionId && 'tenantId' in s
+          ? { ...s, status: 'CANCELLED' } as unknown as LiveInterviewSession
+          : s
+      )
+    );
     toast({ title: "Session Cancelled", description: "The practice session has been cancelled.", variant: "destructive" });
   };
   

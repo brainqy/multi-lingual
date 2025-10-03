@@ -38,7 +38,7 @@ export interface UserProfile {
   lastLogin?: string;
   createdAt?: string;
   status?: UserStatus;
-  
+  interviewCredits?: number;
   // Gamification
   dailyStreak?: number;
   longestStreak?: number;
