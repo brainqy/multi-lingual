@@ -70,7 +70,7 @@ export default function JobBoardPage() {
     setIsLoadingOpenings(true);
     try {
       const [openingsData, applicationsData] = await Promise.all([
-        getJobOpenings(),
+        getJobOpenings(currentUser.id),
         getUserJobApplications(currentUser.id),
       ]);
       setOpenings(openingsData);
