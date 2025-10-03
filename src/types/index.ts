@@ -60,6 +60,7 @@ export interface UserProfile {
   graduationYear?: string;
   degreeProgram?: DegreeProgram;
   department?: string;
+  university?: string;
   currentJobTitle?: string;
   currentOrganization?: string;
   industry?: Industry;
