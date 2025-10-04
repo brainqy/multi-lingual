@@ -216,6 +216,7 @@ export default function JobBoardPage() {
 
     const newApplication = await createJobApplication({
       userId: currentUser.id,
+      tenantId: opening.tenantId,
       companyName: opening.company,
       jobTitle: opening.title,
       status: 'Saved',
@@ -262,6 +263,7 @@ export default function JobBoardPage() {
     } else {
       const newApplication = await createJobApplication({
         userId: currentUser.id,
+        tenantId: opening.tenantId,
         companyName: opening.company,
         jobTitle: opening.title,
         status: 'Applied',
@@ -480,7 +482,7 @@ export default function JobBoardPage() {
               {errors.description && <p className="text-sm text-destructive mt-1">{errors.description.message}</p>}
             </div>
              <div>
-              <Label htmlFor="applicationLink">{t("jobBoard.dialog.linkOptional")}</Label>
+              <Label htmlFor="applicationLink">{t("JobBoard.dialog.linkOptional")}</Label>
               <Controller name="applicationLink" control={control} render={({ field }) => <Input id="applicationLink" type="url" placeholder="https://example.com/apply" {...field} />} />
               {errors.applicationLink && <p className="text-sm text-destructive mt-1">{errors.applicationLink.message}</p>}
             </div>
@@ -596,3 +598,5 @@ export default function JobBoardPage() {
     </div>
   );
 }
+
+    
