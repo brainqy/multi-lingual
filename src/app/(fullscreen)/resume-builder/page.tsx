@@ -16,6 +16,7 @@ import StepSummaryForm from "@/components/features/resume-builder/StepSummaryFor
 import StepAdditionalDetailsForm from "@/components/features/resume-builder/StepAdditionalDetailsForm";
 import StepFinalize from "@/components/features/resume-builder/StepFinalize";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
+import ResumePreview from "@/components/features/resume-builder/ResumePreview";
 import type { ResumeProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -26,7 +27,6 @@ import { getInitialResumeData } from '@/lib/resume-builder-helpers';
 import Handlebars from 'handlebars';
 import { useSettings } from "@/contexts/settings-provider";
 import Link from "next/link";
-import ClientPDFPreview from "@/components/features/resume-builder/ClientPDFPreview";
 
 
 // Define a type for the common section items to resolve the 'never' error
@@ -49,6 +49,8 @@ export default function ResumeBuilderPage() {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const resumePreviewRef = useRef<HTMLDivElement>(null);
+
 
   const processTemplateContent = useCallback((templateContent: string, userData: UserProfile | null): ResumeBuilderData => {
     try {
@@ -222,7 +224,7 @@ export default function ResumeBuilderPage() {
       case 'additional-details':
         return <StepAdditionalDetailsForm data={resumeData.additionalDetails || {}} onUpdate={updateAdditionalDetailsData}/>;
       case 'finalize':
-        return <StepFinalize resumeData={resumeData} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} />;
+        return <StepFinalize resumeData={resumeData} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} previewRef={resumePreviewRef} />;
       default:
         return <p>Unknown step.</p>;
     }
@@ -320,19 +322,20 @@ export default function ResumeBuilderPage() {
 
         {/* Resume Preview Area */}
         <aside className="w-full lg:w-[450px] bg-white p-6 border-l border-slate-200 shadow-inner flex-shrink-0 overflow-y-auto">
-          <div className="sticky top-6">
-            <h3 className="text-lg font-semibold text-slate-700 mb-2">Live Preview</h3>
-             <div className="w-full h-[580px] border border-slate-300 rounded-md overflow-hidden bg-slate-100">
-                 <ClientPDFPreview data={resumeData} />
-             </div>
-            <Button 
+          <ResumePreview 
+            ref={resumePreviewRef}
+            resumeData={resumeData}
+            templates={allTemplates}
+            onSelectElement={() => {}} 
+            selectedElementId={null}
+          />
+           <Button 
                 variant="outline" 
                 className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50" 
                 onClick={() => setIsTemplateDialogOpen(true)}
             >
                 Change template
             </Button>
-          </div>
         </aside>
       </div>
     </div>

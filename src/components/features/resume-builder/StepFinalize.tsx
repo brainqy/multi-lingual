@@ -13,9 +13,8 @@ import { createResumeProfile, updateResumeProfile } from '@/lib/actions/resumes'
 import { useRouter } from 'next/navigation';
 import ResumePDFDocument from './pdf/ResumePDFDocument';
 
-// Dynamically import PDFDownloadLink to ensure it's client-side only
 const PDFDownloadLink = dynamic(
-  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
+  () => import('@/components/pdf').then((mod) => mod.PDFDownloadLink),
   { 
     ssr: false, 
     loading: () => <Button disabled className="w-full flex-1"><Loader2 className="mr-2 h-5 w-5 animate-spin" />Loading PDF...</Button> 
@@ -25,17 +24,20 @@ const PDFDownloadLink = dynamic(
 
 interface StepFinalizeProps {
   resumeData: ResumeBuilderData;
-  previewRef: React.RefObject<HTMLDivElement>;
   editingResumeId?: string | null;
   onSaveComplete: (newResumeId: string) => void;
+  previewRef: React.RefObject<HTMLDivElement>;
 }
 
 // This client-side only component isolates the PDF download link to prevent re-rendering crashes
 const ClientPDFDownloadLink: React.FC<{ data: ResumeBuilderData }> = ({ data }) => {
   const [isClient, setIsClient] = useState(false);
+  const [key, setKey] = useState(0);
+
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    setKey(prev => prev + 1);
+  }, [data]);
 
   if (!isClient) {
     return (
@@ -48,6 +50,7 @@ const ClientPDFDownloadLink: React.FC<{ data: ResumeBuilderData }> = ({ data }) 
 
   return (
     <PDFDownloadLink
+      key={key}
       document={<ResumePDFDocument data={data} />}
       fileName={`${data.header.fullName || 'resume'}_Resume.pdf`}
       className="flex-1"
@@ -64,49 +67,38 @@ const ClientPDFDownloadLink: React.FC<{ data: ResumeBuilderData }> = ({ data }) 
 
 
 export default function StepFinalize({ resumeData, editingResumeId, onSaveComplete }: StepFinalizeProps) {
-  console.log('[StepFinalize LOG] 0. Component rendering.');
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveResume = async () => {
-    console.log('[StepFinalize LOG] 1. handleSaveResume initiated.');
     if (!currentUser) {
-      console.log('[StepFinalize LOG] 2. No current user found. Toasting error.');
       toast({ title: "Error", description: "You must be logged in to save a resume.", variant: "destructive"});
       return;
     }
-    console.log('[StepFinalize LOG] 3. Set isSaving to true.');
     setIsSaving(true);
     
     let savedResume: ResumeProfile | null = null;
     if (editingResumeId) {
-        console.log('[StepFinalize LOG] 4a. In update mode for resume ID:', editingResumeId);
         const updateData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
             userId: currentUser.id, // Pass userId for ownership verification
             tenantId: currentUser.tenantId, // Pass tenantId for scope
         };
-        console.log('[StepFinalize LOG] 5a. Prepared updateData:', updateData);
         savedResume = await updateResumeProfile(editingResumeId, updateData);
-        console.log('[StepFinalize LOG] 6a. Received response from updateResumeProfile:', savedResume);
     } else {
-        console.log('[StepFinalize LOG] 4b. In create mode.');
         const createData = {
             name: `${resumeData.header.fullName}'s Resume (${resumeData.templateId})`,
             resumeText: JSON.stringify(resumeData),
             userId: currentUser.id,
             tenantId: currentUser.tenantId,
         };
-        console.log('[StepFinalize LOG] 5b. Prepared createData:', createData);
         savedResume = await createResumeProfile(createData);
-        console.log('[StepFinalize LOG] 6b. Received response from createResumeProfile:', savedResume);
     }
    
     if (savedResume) {
-      console.log('[StepFinalize LOG] 7. Save/update successful, calling onSaveComplete and routing.');
       onSaveComplete(savedResume.id);
       toast({
         title: editingResumeId ? "Resume Updated" : "Resume Saved",
@@ -114,10 +106,8 @@ export default function StepFinalize({ resumeData, editingResumeId, onSaveComple
       });
       router.push('/my-resumes');
     } else {
-       console.log('[StepFinalize LOG] 8. Save/update failed.');
        toast({ title: "Save Failed", description: "Could not save the resume to your profile.", variant: "destructive" });
     }
-    console.log('[StepFinalize LOG] 9. Set isSaving to false.');
     setIsSaving(false);
   };
   
