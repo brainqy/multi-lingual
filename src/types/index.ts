@@ -1017,7 +1017,7 @@ export const RESUME_BUILDER_STEPS = [
   { id: 'skills', title: 'Skills', description: 'Your Abilities', mainHeading: 'Showcase Your Skills' },
   { id: 'additional-details', title: 'Additional Details', description: 'Awards, Certifications, etc.', mainHeading: 'Include Additional Sections' },
   { id: 'finalize', title: 'Finalize', description: 'Review & Download', mainHeading: 'Finalize and Download Your Resume' },
-] as const;
+] 
 export type ResumeBuilderStep = (typeof RESUME_BUILDER_STEPS)[number]['id'];
 
 export interface BlogPost {
