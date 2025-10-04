@@ -241,7 +241,7 @@ export default function ResumeBuilderPage() {
   // Create a safe variable for the description text
   let stepDescriptionText = '';
   if (currentStepInfo) {
-      stepDescriptionText = currentStepInfo.description || `Next up: ${currentStepInfo.title}`;
+      stepDescriptionText = currentStepInfo.description || '';
   }
   
 
@@ -284,9 +284,6 @@ export default function ResumeBuilderPage() {
                     {stepDescriptionText}
                 </p>
             )}
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
-              {currentStepInfo.mainHeading || currentStepInfo.title}
-            </h2>
             <div className="w-20 h-1 bg-green-400 mb-6"></div>
 
              {currentStep !== 'finalize' && (
