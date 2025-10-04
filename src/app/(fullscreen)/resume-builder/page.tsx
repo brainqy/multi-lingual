@@ -140,7 +140,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev + 1);
+      setCurrentStepIndex(prev => prev - 1);
     }
   };
   
@@ -238,6 +238,13 @@ export default function ResumeBuilderPage() {
     );
   }
 
+  // Create a safe variable for the description text
+  let stepDescriptionText = '';
+  if (currentStepInfo) {
+      stepDescriptionText = currentStepInfo.description || `Next up: ${currentStepInfo.title}`;
+  }
+  
+
   return (
     <>
     <div className="flex flex-col min-h-screen">
@@ -274,7 +281,7 @@ export default function ResumeBuilderPage() {
           <div className="max-w-3xl mx-auto">
             {currentStep !== 'finalize' && (
                 <p className="text-sm text-slate-500 mb-1">
-                    {currentStepInfo ? currentStepInfo.description || `Next up: ${currentStepInfo.title}` : ''}
+                    {stepDescriptionText}
                 </p>
             )}
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
