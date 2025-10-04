@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from "@/components/ui/checkbox";
-import type { GenerateMockInterviewQuestionsInput, InterviewQuestionCategory } from '@/types';
+import type { GenerateMockInterviewQuestionsInput } from '@/ai/flows/generate-mock-interview-questions';
+import type { InterviewQuestionCategory } from '@/types';
 import { Brain, Timer, ListFilter } from 'lucide-react'; 
 
 const ALL_QUESTION_CATEGORIES: InterviewQuestionCategory[] = ['Common', 'Behavioral', 'Technical', 'Coding', 'Role-Specific', 'Analytical', 'HR'];
