@@ -28,6 +28,7 @@ import { useSettings } from "@/contexts/settings-provider";
 import Link from "next/link";
 import ClientPDFPreview from "@/components/features/resume-builder/ClientPDFPreview";
 
+
 // Define a type for the common section items to resolve the 'never' error
 type CommonSection = {
   key: string;
@@ -245,8 +246,8 @@ export default function ResumeBuilderPage() {
             <h1 className="text-xl font-semibold">{platformName}</h1>
           </Link>
           <Button asChild variant="outline" size="sm" className="bg-white/10 text-white hover:bg-white/20 border-white/30">
-            <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            <Link href="/my-resumes">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Resumes
             </Link>
           </Button>
         </div>

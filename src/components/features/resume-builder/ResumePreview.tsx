@@ -8,6 +8,7 @@ import ModernTemplate from './templates/ModernTemplate';
 import CreativeTemplate from './templates/CreativeTemplate';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { cn } from '@/lib/utils';
+import ClientPDFPreview from './ClientPDFPreview';
 
 
 interface ResumePreviewProps {
