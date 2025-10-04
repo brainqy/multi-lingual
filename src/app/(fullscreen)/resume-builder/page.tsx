@@ -37,7 +37,7 @@ type CommonSection = {
 };
 
 export default function ResumeBuilderPage() {
-  const { user } = useAuth();
+  const { user, isLoading: isUserLoading } = useAuth();
   const { settings } = useSettings();
   const platformName = settings.platformName;
   const searchParams = useSearchParams();
@@ -230,7 +230,7 @@ export default function ResumeBuilderPage() {
     }
   };
   
-  if (isLoading || !user || !resumeData || !currentStepInfo) {
+  if (isLoading || isUserLoading || !user || !resumeData) {
     return (
         <div className="flex items-center justify-center h-screen bg-slate-50">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -238,10 +238,10 @@ export default function ResumeBuilderPage() {
     );
   }
 
-  // Create a safe variable for the description text
+  // This check is now safe because of the guard above
   let stepDescriptionText = '';
   if (currentStepInfo) {
-      stepDescriptionText = currentStepInfo.description || '';
+      stepDescriptionText = currentStepInfo.description || `Next up: ${currentStepInfo.title}`;
   }
   
 
@@ -284,6 +284,9 @@ export default function ResumeBuilderPage() {
                     {stepDescriptionText}
                 </p>
             )}
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
+                {currentStepInfo.mainHeading}
+            </h2>
             <div className="w-20 h-1 bg-green-400 mb-6"></div>
 
              {currentStep !== 'finalize' && (
