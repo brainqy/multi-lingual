@@ -86,7 +86,10 @@ export default function LandingPage() {
             <FileText className="h-7 w-7 text-primary" />
             <span className="hidden sm:inline">{platformName}</span>
           </Link>
-          <nav className="space-x-2 sm:space-x-4">
+          <nav className="space-x-2 sm:space-x-4 flex items-center">
+            <Link href="/diwali-special">
+              <Button variant="link" className="text-primary">Diwali Special</Button>
+            </Link>
             <Link href="/auth/login">
               <Button variant="ghost">{t("landing.nav.login")}</Button>
             </Link>
