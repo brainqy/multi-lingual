@@ -106,7 +106,6 @@ export default function LaunchingSoonPage() {
         role: 'user',
         currentJobTitle: '',
         currentOrganization: '',
-        shortBio: '',
         university: '',
         skills: [],
         bio: ''
