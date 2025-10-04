@@ -4,7 +4,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2, Award, BookCheck, Languages as LanguagesIcon, Heart, type LucideIcon } from "lucide-react";
+import { FilePlus2, FileText, Wand2, CheckCircle, ChevronLeft, ChevronRight, DownloadCloud, Save, Eye, Loader2, Award, BookCheck, Languages as LanguagesIcon, Heart, type LucideIcon, ArrowLeft } from "lucide-react";
 import type { ResumeBuilderData, ResumeBuilderStep, ResumeHeaderData, ResumeExperienceEntry, ResumeEducationEntry, UserProfile, ResumeTemplate } from "@/types";
 import { RESUME_BUILDER_STEPS } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -15,9 +15,6 @@ import StepSkillsForm from "@/components/features/resume-builder/StepSkillsForm"
 import StepSummaryForm from "@/components/features/resume-builder/StepSummaryForm";
 import StepAdditionalDetailsForm from "@/components/features/resume-builder/StepAdditionalDetailsForm";
 import StepFinalize from "@/components/features/resume-builder/StepFinalize";
-import { PDFViewer } from '@/components/pdf';
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import ResumeBuilderStepper from "@/components/features/resume-builder/ResumeBuilderStepper";
 import type { ResumeProfile } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,11 +24,9 @@ import { getResumeTemplates } from "@/lib/actions/templates";
 import TemplateSelectionDialog from "@/components/features/resume-builder/TemplateSelectionDialog";
 import { getInitialResumeData } from '@/lib/resume-builder-helpers';
 import Handlebars from 'handlebars';
-import ResumePDFDocument from "@/components/features/resume-builder/ResumePDFDocument";
-
-const logger = {
-    log: (message: string, ...args: any[]) => console.log(`[ResumeBuilderPage] ${message}`, ...args),
-};
+import { useSettings } from "@/contexts/settings-provider";
+import Link from "next/link";
+import ClientPDFPreview from "@/components/features/resume-builder/ClientPDFPreview";
 
 // Define a type for the common section items to resolve the 'never' error
 type CommonSection = {
@@ -40,29 +35,24 @@ type CommonSection = {
   icon: LucideIcon;
 };
 
-
 export default function ResumeBuilderPage() {
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const platformName = settings.platformName;
   const searchParams = useSearchParams();
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [resumeData, setResumeData] = useState<ResumeBuilderData>(() => getInitialResumeData(user));
+  const [resumeData, setResumeData] = useState<ResumeBuilderData | null>(null);
   const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
   const { toast } = useToast();
-  const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [allTemplates, setAllTemplates] = useState<ResumeTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const keyCount = useRef(0);
-  useEffect(() => {
-    keyCount.current++;
-  }, [resumeData]);
 
   const processTemplateContent = useCallback((templateContent: string, userData: UserProfile | null): ResumeBuilderData => {
     try {
         const parsedData = JSON.parse(templateContent);
-        const template = Handlebars.compile(JSON.stringify(parsedData)); // Re-stringify to handle handlebars in the object
+        const template = Handlebars.compile(JSON.stringify(parsedData)); 
         const initialData = getInitialResumeData(userData);
         const hydratedJsonString = template(initialData);
         const hydratedData = JSON.parse(hydratedJsonString);
@@ -119,6 +109,8 @@ export default function ResumeBuilderPage() {
       const defaultTemplate = templates[0];
       if (defaultTemplate && defaultTemplate.content) {
         setResumeData(processTemplateContent(defaultTemplate.content, user));
+      } else {
+        setResumeData(getInitialResumeData(user));
       }
       setEditingResumeId(null);
     }
@@ -135,7 +127,7 @@ export default function ResumeBuilderPage() {
   }, [user, searchParams, loadData]);
 
   const currentStepInfo = RESUME_BUILDER_STEPS[currentStepIndex];
-  const currentStep: ResumeBuilderStep = currentStepInfo.id;
+  const currentStep: ResumeBuilderStep | undefined = currentStepInfo?.id;
 
   const handleNextStep = () => {
     if (currentStepIndex < RESUME_BUILDER_STEPS.length - 1) {
@@ -157,27 +149,27 @@ export default function ResumeBuilderPage() {
   };
   
   const updateHeaderData = (data: Partial<ResumeHeaderData>) => {
-    setResumeData(prev => ({ ...prev, header: { ...prev.header, ...data } }));
+    setResumeData(prev => prev ? ({ ...prev, header: { ...prev.header, ...data } }) : null);
   };
 
   const updateExperienceData = (data: ResumeExperienceEntry[]) => {
-     setResumeData(prev => ({ ...prev, experience: data }));
+     setResumeData(prev => prev ? ({ ...prev, experience: data }) : null);
   };
   
   const updateEducationData = (data: ResumeEducationEntry[]) => {
-    setResumeData(prev => ({...prev, education: data}));
+    setResumeData(prev => prev ? ({...prev, education: data}) : null);
   }
 
   const updateSkillsData = (skills: string[]) => {
-    setResumeData(prev => ({ ...prev, skills }));
+    setResumeData(prev => prev ? ({ ...prev, skills }) : null);
   };
 
   const updateSummaryData = (summary: string) => {
-    setResumeData(prev => ({ ...prev, summary }));
+    setResumeData(prev => prev ? ({ ...prev, summary }) : null);
   };
   
   const updateAdditionalDetailsData = (details: Partial<ResumeBuilderData['additionalDetails']>) => {
-    setResumeData(prev => ({
+    setResumeData(prev => prev ? ({
         ...prev,
         additionalDetails: {
             main: {
@@ -193,7 +185,7 @@ export default function ResumeBuilderPage() {
             languages: details?.languages ?? prev.additionalDetails?.languages,
             interests: details?.interests ?? prev.additionalDetails?.interests,
         },
-    }));
+    }) : null);
   };
 
   const handleTemplateSelect = (template: ResumeTemplate) => {
@@ -212,16 +204,9 @@ export default function ResumeBuilderPage() {
   const handleSaveComplete = (newResumeId: string) => {
     setEditingResumeId(newResumeId);
   };
-  
-    const commonSections: CommonSection[] = [
-    { key: 'awards', title: 'Awards', icon: Award },
-    { key: 'certifications', title: 'Certifications', icon: BookCheck },
-    { key: 'languages', title: 'Languages', icon: LanguagesIcon },
-    { key: 'interests', title: 'Interests', icon: Heart },
-  ];
-
 
   const renderStepContent = () => {
+    if (!resumeData) return null;
     switch (currentStep) {
       case 'header':
         return <StepHeaderForm data={resumeData.header} onUpdate={updateHeaderData} />;
@@ -234,17 +219,17 @@ export default function ResumeBuilderPage() {
       case 'skills':
         return <StepSkillsForm data={resumeData.skills} onUpdate={updateSkillsData}/>;
       case 'additional-details':
-        return <StepAdditionalDetailsForm data={resumeData.additionalDetails} onUpdate={updateAdditionalDetailsData}/>;
+        return <StepAdditionalDetailsForm data={resumeData.additionalDetails || {}} onUpdate={updateAdditionalDetailsData}/>;
       case 'finalize':
-        return <StepFinalize resumeData={resumeData} previewRef={resumePreviewRef} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} />;
+        return <StepFinalize resumeData={resumeData} editingResumeId={editingResumeId} onSaveComplete={handleSaveComplete} />;
       default:
         return <p>Unknown step.</p>;
     }
   };
   
-  if (isLoading || !user) {
+  if (isLoading || !user || !resumeData) {
     return (
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-screen bg-slate-50">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
     );
@@ -255,19 +240,24 @@ export default function ResumeBuilderPage() {
     <div className="flex flex-col min-h-screen">
       <div className="bg-slate-800 text-white py-3 px-4 md:px-8">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <FileText className="h-7 w-7" />
-            <h1 className="text-xl font-semibold">Resume Now.</h1>
-          </div>
+            <h1 className="text-xl font-semibold">{platformName}</h1>
+          </Link>
+          <Button asChild variant="outline" size="sm" className="bg-white/10 text-white hover:bg-white/20 border-white/30">
+            <Link href="/dashboard">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            </Link>
+          </Button>
         </div>
       </div>
 
       <div className="flex-grow flex flex-col lg:flex-row">
         {/* Stepper Sidebar */}
         <aside className="w-full lg:w-72 bg-slate-700 text-slate-200 p-6 space-y-4 flex-shrink-0">
-          <ResumeBuilderStepper currentStep={currentStep} onStepClick={handleStepClick} />
+          <ResumeBuilderStepper currentStep={currentStep!} onStepClick={handleStepClick} />
            <div className="pt-10 text-xs text-slate-400 space-y-1">
-                <p>© {new Date().getFullYear()} JobMatch AI. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} {platformName}. All rights reserved.</p>
                 <div className="space-x-2">
                     <a href="/terms" className="hover:text-white">Terms</a>
                     <a href="/privacy" className="hover:text-white">Privacy Policy</a>
@@ -279,14 +269,16 @@ export default function ResumeBuilderPage() {
         {/* Main Content Area */}
         <main className="flex-1 p-6 md:p-10 bg-slate-50">
           <div className="max-w-3xl mx-auto">
-            {currentStep !== 'finalize' && (
+            {currentStepInfo && currentStep !== 'finalize' && (
                 <p className="text-sm text-slate-500 mb-1">
                     {currentStepInfo.description || `Next up: ${currentStepInfo.title}`}
                 </p>
             )}
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
-              {currentStepInfo.mainHeading || currentStepInfo.title}
-            </h2>
+            {currentStepInfo && (
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
+                {currentStepInfo.mainHeading || currentStepInfo.title}
+              </h2>
+            )}
             <div className="w-20 h-1 bg-green-400 mb-6"></div>
 
              {currentStep !== 'finalize' && (
@@ -326,13 +318,11 @@ export default function ResumeBuilderPage() {
         </main>
 
         {/* Resume Preview Area */}
-        <aside className="w-full lg:w-96 bg-white p-6 border-l border-slate-200 shadow-lg flex-shrink-0 overflow-y-auto">
+        <aside className="w-full lg:w-[450px] bg-white p-6 border-l border-slate-200 shadow-inner flex-shrink-0 overflow-y-auto">
           <div className="sticky top-6">
-            <h3 className="text-lg font-semibold text-slate-700 mb-2">PDF Preview</h3>
-             <div className="w-full h-[500px] border border-slate-300 rounded-md overflow-hidden">
-                <PDFViewer width="100%" height="100%" key={keyCount.current}>
-                    <ResumePDFDocument data={resumeData} />
-                </PDFViewer>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">Live Preview</h3>
+             <div className="w-full h-[580px] border border-slate-300 rounded-md overflow-hidden bg-slate-100">
+                 <ClientPDFPreview data={resumeData} />
              </div>
             <Button 
                 variant="outline" 
