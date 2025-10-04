@@ -248,8 +248,8 @@ export default function ResumeBuilderPage() {
             <h1 className="text-xl font-semibold">{platformName}</h1>
           </Link>
           <Button asChild variant="outline" size="sm" className="bg-white/10 text-white hover:bg-white/20 border-white/30">
-            <Link href="/my-resumes">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Resumes
+            <Link href="/dashboard">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
             </Link>
           </Button>
         </div>
@@ -274,7 +274,7 @@ export default function ResumeBuilderPage() {
           <div className="max-w-3xl mx-auto">
             {currentStepInfo && currentStep !== 'finalize' && (
                 <p className="text-sm text-slate-500 mb-1">
-                    {currentStepInfo.description || `Next up: ${currentStepInfo.title}`}
+                    {currentStepInfo ? currentStepInfo.description || `Next up: ${currentStepInfo.title}` : ''}
                 </p>
             )}
             {currentStepInfo && (
