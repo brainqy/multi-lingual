@@ -1,4 +1,5 @@
 
+
 import type { Locale } from '@/locales';
 import { z } from 'zod';
 import { type UserRole as PrismaUserRole, type EmailTemplateType as PrismaEmailTemplateType } from '@prisma/client';
@@ -607,6 +608,9 @@ export interface GenerateOverallInterviewFeedbackOutput {
     overallScore: number;
 }
 
+export type MockInterviewStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled';
+export type LiveInterviewStatus = 'Scheduled' | 'In-Progress' | 'Completed' | 'Cancelled';
+
 export interface MockInterviewSession {
   id: string;
   userId: string;
@@ -614,7 +618,7 @@ export interface MockInterviewSession {
   topic: string;
   description?: string;
   jobDescription?: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+  status: MockInterviewStatus;
   createdAt: string;
   questions: MockInterviewQuestion[];
   answers: MockInterviewAnswer[];
@@ -658,6 +662,8 @@ export interface PracticeSessionConfig {
     aiQuestionCategories?: InterviewQuestionCategory[];
 }
 
+export type PracticeSessionStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'IN_PROGRESS';
+
 export interface PracticeSession {
   id: string;
   userId: string;
@@ -665,7 +671,7 @@ export interface PracticeSession {
   category: 'Practice with AI' | 'Practice with Experts' | 'Practice with Friends';
   type: string; 
   language: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'IN_PROGRESS';
+  status: PracticeSessionStatus;
   topic: string;
   createdAt: string;
   aiTopicOrRole?: string;
@@ -738,7 +744,7 @@ export interface LiveInterviewSession {
   title: string;
   participants: LiveInterviewParticipant[];
   scheduledTime: string;
-  status: 'Scheduled' | 'In-Progress' | 'Completed' | 'Cancelled';
+  status: LiveInterviewStatus;
   preSelectedQuestions?: MockInterviewQuestion[];
   recordingReferences?: RecordingReference[];
   interviewerScores?: InterviewerScore[];
@@ -1017,7 +1023,7 @@ export const RESUME_BUILDER_STEPS = [
   { id: 'skills', title: 'Skills', description: 'Your Abilities', mainHeading: 'Showcase Your Skills' },
   { id: 'additional-details', title: 'Additional Details', description: 'Awards, Certifications, etc.', mainHeading: 'Include Additional Sections' },
   { id: 'finalize', title: 'Finalize', description: 'Review & Download', mainHeading: 'Finalize and Download Your Resume' },
-] 
+] as const;
 export type ResumeBuilderStep = (typeof RESUME_BUILDER_STEPS)[number]['id'];
 
 export interface BlogPost {
@@ -1092,5 +1098,3 @@ export interface ProductCompany {
   createdAt: string;
   updatedAt: string;
 }
-
-    
