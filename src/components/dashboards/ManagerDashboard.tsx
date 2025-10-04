@@ -73,7 +73,7 @@ export default function ManagerDashboard({ user }: ManagerDashboardProps) {
       if (!user) return;
       setIsLoading(true);
       const [data, promotions] = await Promise.all([
-        getDashboardData(tenantId, user.id, user.role),
+        getDashboardData(user.id, user.role),
         getActivePromotionalContent(user)
       ]);
       setDashboardData(data);
