@@ -140,7 +140,7 @@ export default function ResumeBuilderPage() {
 
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
+      setCurrentStepIndex(prev => prev + 1);
     }
   };
   
@@ -230,7 +230,7 @@ export default function ResumeBuilderPage() {
     }
   };
   
-  if (isLoading || !user || !resumeData) {
+  if (isLoading || !user || !resumeData || !currentStepInfo) {
     return (
         <div className="flex items-center justify-center h-screen bg-slate-50">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -272,16 +272,14 @@ export default function ResumeBuilderPage() {
         {/* Main Content Area */}
         <main className="flex-1 p-6 md:p-10 bg-slate-50">
           <div className="max-w-3xl mx-auto">
-            {currentStepInfo && currentStep !== 'finalize' && (
+            {currentStep !== 'finalize' && (
                 <p className="text-sm text-slate-500 mb-1">
                     {currentStepInfo ? currentStepInfo.description || `Next up: ${currentStepInfo.title}` : ''}
                 </p>
             )}
-            {currentStepInfo && (
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
-                {currentStepInfo.mainHeading || currentStepInfo.title}
-              </h2>
-            )}
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3">
+              {currentStepInfo.mainHeading || currentStepInfo.title}
+            </h2>
             <div className="w-20 h-1 bg-green-400 mb-6"></div>
 
              {currentStep !== 'finalize' && (
